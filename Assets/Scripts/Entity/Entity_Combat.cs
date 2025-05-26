@@ -4,35 +4,40 @@ using UnityEngine;
 
 public class Entity_Combat : MonoBehaviour
 {
+    private Entity _entity;
     private Entity_VFX vfx;
     public float damage = 10f; // damage amount
 
     [Header("Target detection")]
-    [SerializeField] private Transform[] targetCheck;
+    // [SerializeField] private Transform[] targetCheck;
     [SerializeField] private float targetCheckRadius;
     [SerializeField] private LayerMask whatIsTarget;
 
+    [SerializeField] private Transform _targetCheck_Left;
+    [SerializeField] private Transform _targetCheck_Right;
+    [SerializeField] private Transform _targetCheck_Up;
+    [SerializeField] private Transform _targetCheck_Down;
+
     private void Awake()
     {
+        _entity = GetComponent<Entity>();
         vfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
     }
 
-    
 
-public void PerformAttack()
+
+    public void PerformAttack()
     {
         foreach (var target in GetDetectedCollider())
         {
-            IDamagable damagable = target.GetComponent<IDamagable>(); // Corrected variable name from 'damgable' to 'damagable'  
-
-            if (damagable == null) // If the target does not have an IDamagable component, skip to the next target  
+            if (!target.TryGetComponent(out IDamagable damagable)) // If the target does not have an IDamagable component, skip to the next target  
             {
                 continue;
             }
 
             bool targetGotHit = damagable.TakeDamage(damage, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
-            
-            if(targetGotHit)
+
+            if (targetGotHit)
                 vfx?.CreateOnHitVFX(target.transform); // Create a hit visual effect at the target's position  
         }
     }
@@ -44,17 +49,39 @@ public void PerformAttack()
         List<Collider2D> detected = new List<Collider2D>();
 
         // Iterate through each Transform in the targetCheck array  
-        foreach (Transform check in targetCheck)
-        {
-            // Use OverlapCircleAll for each Transform's position  
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(check.position, targetCheckRadius, whatIsTarget);
+        // foreach (Transform check in targetCheck)
+        // {
+        //     // Use OverlapCircleAll for each Transform's position  
+        //     Collider2D[] colliders = Physics2D.OverlapCircleAll(check.position, targetCheckRadius, whatIsTarget);
 
-            // Combine the detected colliders into the list  
-            detected.AddRange(colliders);
-        }
+        //     // Combine the detected colliders into the list  
+        //     detected.AddRange(colliders);
+        // }
+
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTargetTransform().position, targetCheckRadius, whatIsTarget);
+
+        // Combine the detected colliders into the list  
+        detected.AddRange(colliders);
 
         // Return the combined colliders as an array  
         return detected.ToArray();
+    }
+
+    private Transform GetTargetTransform()
+    {
+        if (_entity.currentDir.y >= 1)
+        {
+            return _targetCheck_Up;
+        }
+        if (_entity.currentDir.y <= -1)
+        {
+            return _targetCheck_Down;
+        }
+        if (_entity.currentDir.x <= -1)
+        {
+            return _targetCheck_Left;
+        }
+        return _targetCheck_Right;
     }
 
     private Collider2D[] CombineColliders(Collider2D[] array1, Collider2D[] array2) // Combine two arrays of colliders
@@ -67,13 +94,13 @@ public void PerformAttack()
 
     private void OnDrawGizmos()
     {
-        if (targetCheck != null)
-        {
-            foreach (Transform check in targetCheck)
-            {
-                Gizmos.DrawWireSphere(check.position, targetCheckRadius);
-            }
-        }
+        // if (targetCheck != null)
+        // {
+        //     foreach (Transform check in targetCheck)
+        //     {
+        //         Gizmos.DrawWireSphere(check.position, targetCheckRadius);
+        //     }
+        // }
     }
 }
 

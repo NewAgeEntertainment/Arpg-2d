@@ -216,7 +216,7 @@ GameObject:
   m_Component:
   - component: {fileID: 127056605}
   m_Layer: 7
-  m_Name: TargetCheck (3)
+  m_Name: TargetCheck_D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -940,7 +940,7 @@ GameObject:
   m_Component:
   - component: {fileID: 405728740}
   m_Layer: 7
-  m_Name: TargetCheck (1)
+  m_Name: TargetCheck_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1082,7 +1082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 475949202}
   m_Layer: 7
-  m_Name: TargetCheck
+  m_Name: TargetCheck_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1266,7 +1266,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.9443905, y: -0.8770385, z: 21.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1314,7 +1314,7 @@ GameObject:
   m_Component:
   - component: {fileID: 533229312}
   m_Layer: 7
-  m_Name: TargetCheck (2)
+  m_Name: TargetCheck_U
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1491,7 +1491,7 @@ GameObject:
   m_Component:
   - component: {fileID: 624309044}
   m_Layer: 7
-  m_Name: TargetCheck (1)
+  m_Name: TargetCheck_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1672,15 +1672,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 22
-  targetCheck:
-  - {fileID: 475949202}
-  - {fileID: 405728740}
-  - {fileID: 533229312}
-  - {fileID: 127056605}
   targetCheckRadius: 1.47
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 128
+  _targetCheck_Left: {fileID: 405728740}
+  _targetCheck_Right: {fileID: 475949202}
+  _targetCheck_Up: {fileID: 533229312}
+  _targetCheck_Down: {fileID: 127056605}
 --- !u!114 &624636224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1974,7 +1973,7 @@ GameObject:
   m_Component:
   - component: {fileID: 780117376}
   m_Layer: 7
-  m_Name: TargetCheck (3)
+  m_Name: TargetCheck_D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62181,7 +62180,7 @@ Transform:
   m_GameObject: {fileID: 1454656417}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.9443905, y: -0.8770385, z: 21.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62394,7 +62393,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1461462654}
   m_Layer: 7
-  m_Name: TargetCheck
+  m_Name: TargetCheck_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62664,8 +62663,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1546843122}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.92, y: 0.46, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62727,15 +62726,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 12.6
-  targetCheck:
-  - {fileID: 1461462654}
-  - {fileID: 624309044}
-  - {fileID: 1581580002}
-  - {fileID: 780117376}
   targetCheckRadius: 1.22
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 256
+  _targetCheck_Left: {fileID: 624309044}
+  _targetCheck_Right: {fileID: 1461462654}
+  _targetCheck_Up: {fileID: 1581580002}
+  _targetCheck_Down: {fileID: 780117376}
   counterRecovery: 0.25
 --- !u!114 &1546843131
 MonoBehaviour:
@@ -62927,7 +62925,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1581580002}
   m_Layer: 7
-  m_Name: TargetCheck (2)
+  m_Name: TargetCheck_U
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

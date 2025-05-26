@@ -11,13 +11,12 @@ public class Player_Combat : Entity_Combat
 
         // This method checks if a counter attack was performed by looking for targets that implement the ICounterable interface
         // for each detected collider in the target area, it checks if the target has an ICounterable component
-        foreach (var target in GetDetectedCollider()) // loop through all detected colliders in the target area
+        foreach (Collider2D target in GetDetectedCollider()) // loop through all detected colliders in the target area
         {
             // check if the target has an ICounterable component
             // counterable equals the ICounterable component of the target collider
-            ICounterable counterable = target.GetComponent<ICounterable>();
 
-            if (counterable == null)
+            if (!target.TryGetComponent(out ICounterable counterable))
                 continue; // if the target does not have an ICounterable component, skip to the next target
 
             // if the target has an ICounterable component, call its HandleCounter method
