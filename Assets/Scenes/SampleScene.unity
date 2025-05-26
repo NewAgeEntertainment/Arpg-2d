@@ -231,7 +231,7 @@ Transform:
   m_GameObject: {fileID: 127056604}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.05461502, y: -2.1761537, z: 0.04080917}
+  m_LocalPosition: {x: 2.87, y: 0.06, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -955,7 +955,7 @@ Transform:
   m_GameObject: {fileID: 405728739}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.146923, y: 0.37000012, z: 0.04080917}
+  m_LocalPosition: {x: -2.65, y: 0.32, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1097,7 +1097,7 @@ Transform:
   m_GameObject: {fileID: 475949201}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.93, y: 0.37, z: 0.04080917}
+  m_LocalPosition: {x: 0.17, y: -2.04, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1329,7 +1329,7 @@ Transform:
   m_GameObject: {fileID: 533229311}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.008460999, y: 3.1315386, z: 0.04080917}
+  m_LocalPosition: {x: 0.1, y: 2.27, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1598,7 +1598,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!4 &624636221
 Transform:
   m_ObjectHideFlags: 0
@@ -1636,9 +1636,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  attackDistance: 1.37
+  attackDistance: 2.34
   attackCooldown: 1
-  range: 3.28
+  range: 4.32
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
@@ -1672,7 +1672,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 22
-  targetCheckRadius: 1.47
+  targetCheckRadius: 1.77
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 128
@@ -1695,7 +1695,7 @@ MonoBehaviour:
   currentHp: 0
   isDead: 0
   knockbackDuration: 5
-  onDamageKnockback: {x: 1.5, y: 1}
+  onDamageKnockback: 6.45
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 5
   onHeavyDamageKnockback: {x: 7, y: 7}
@@ -62693,7 +62693,7 @@ MonoBehaviour:
   currentHp: 0
   isDead: 0
   knockbackDuration: 1
-  onDamageKnockback: {x: 1, y: 1.5}
+  onDamageKnockback: 2.48
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 5
   onHeavyDamageKnockback: {x: 7, y: 7}
@@ -62757,7 +62757,7 @@ MonoBehaviour:
     intelligence:
       baseValue: 0
     vitality:
-      baseValue: 10
+      baseValue: 74.33
   offense:
     damage:
       baseValue: 10
@@ -62775,7 +62775,7 @@ MonoBehaviour:
     armor:
       baseValue: 0
     evasion:
-      baseValue: 20
+      baseValue: 0
     fireRes:
       baseValue: 0
     iceRes:
@@ -63536,7 +63536,7 @@ GameObject:
   - component: {fileID: 1853198713}
   - component: {fileID: 1853198712}
   - component: {fileID: 1853198711}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Animator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63635,7 +63635,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
   m_SortingLayer: -1
-  m_SortingOrder: 0
+  m_SortingOrder: 46
   m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

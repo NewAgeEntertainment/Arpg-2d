@@ -94,13 +94,16 @@ public class Entity_Combat : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // if (targetCheck != null)
-        // {
-        //     foreach (Transform check in targetCheck)
-        //     {
-        //         Gizmos.DrawWireSphere(check.position, targetCheckRadius);
-        //     }
-        // }
+        // Fix: Declare and initialize targetCheck to avoid CS0103 error  
+        Transform[] targetCheck = { _targetCheck_Left, _targetCheck_Right, _targetCheck_Up, _targetCheck_Down };
+
+        if (targetCheck != null)
+        {
+            foreach (Transform check in targetCheck)
+            {
+                Gizmos.DrawWireSphere(check.position, targetCheckRadius);
+            }
+        }
     }
 }
 

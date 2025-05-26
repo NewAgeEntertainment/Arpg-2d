@@ -6,6 +6,12 @@ public class Enemy_AttackState : EnemyState
     {
     }
 
+    public override void Enter()
+    {
+        base.Enter();
+        rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering attack state
+    }
+
     public override void Exit()
     {
         base.Exit();
