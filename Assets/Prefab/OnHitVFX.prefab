@@ -119,7 +119,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 889029556325552991}
-  - component: {fileID: -2765308918142960212}
+  - component: {fileID: 1107861938798889286}
+  - component: {fileID: 8958606339864666716}
   m_Layer: 0
   m_Name: OnHitVFX
   m_TagString: Untagged
@@ -137,13 +138,13 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -8.05, y: 0.68, z: -0.024486892}
-  m_LocalScale: {x: 1.75, y: 1.75, z: 1.75}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3043729753626640230}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-2765308918142960212
+--- !u!114 &1107861938798889286
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -152,14 +153,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 6112724607161003390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d47865a6076484f4f8610c086030f0d0, type: 3}
+  m_Script: {fileID: 11500000, guid: 145d8da251b36394c9a9fe753d435cd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
+  onDamageVFXDuration: 0.1
+  hitVfx: {fileID: 6112724607161003390}
+--- !u!114 &8958606339864666716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6112724607161003390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e0b8ad99dab79049b452379129e955b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   autoDestroy: 1
-  destroyDelay: 1
-  randomOffset: 1
-  randomRotation: 1
-  xMinOffset: -0.3
-  xMaxOffset: 0.3
-  yMinOffset: -0.3
-  yMaxOffset: 0.3
+  autoDestroyDelay: 0.2

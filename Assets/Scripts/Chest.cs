@@ -10,12 +10,13 @@ public class Chest : MonoBehaviour, IDamagable
     [Header("Open Details")]
     [SerializeField] private Vector2 knockback; // Direction and force of the knockback
 
-    public void TakeDamage(float damage, Transform damageDealer)
+    public bool TakeDamage(float damage, Transform damageDealer)
     {
         fx.PlayOnDamageVfx(); // Play the damage effect
         anim.SetBool("chestOpen", true); // open the chest
         rb.linearVelocity = knockback; // apply a force to the chest
 
+        return true; // Return true to indicate that the damage was taken
         // Drop item
     }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Entity_Combat : MonoBehaviour
 {
-    
+    private Entity_VFX vfx;
     public float damage = 10f; // damage amount
 
     [Header("Target detection")]
@@ -12,22 +12,31 @@ public class Entity_Combat : MonoBehaviour
     [SerializeField] private float targetCheckRadius;
     [SerializeField] private LayerMask whatIsTarget;
 
-    public void PerformAttack()
+    private void Awake()
     {
-        
-
-        foreach (var target in GetDetectedCollider()) //
-        {
-
-            IDamagable damable = target.GetComponent<IDamagable>(); // get the IDamagable component from the detected target
-            damable?.TakeDamage(damage, transform); // call the TakeDamage method on the target's IDamagable component, if it exists
-
-            Entity_Health targetHealth = target.GetComponent<Entity_Health>(); // get the Entity_Health component from the detected target
-            targetHealth?.TakeDamage(damage,transform); // call the TakeDamage method on the target's Entity_Health component, if it exists
-        }
-
-
+        vfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
     }
+
+    
+
+public void PerformAttack()
+    {
+        foreach (var target in GetDetectedCollider())
+        {
+            IDamagable damagable = target.GetComponent<IDamagable>(); // Corrected variable name from 'damgable' to 'damagable'  
+
+            if (damagable == null) // If the target does not have an IDamagable component, skip to the next target  
+            {
+                continue;
+            }
+
+            bool targetGotHit = damagable.TakeDamage(damage, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+            
+            if(targetGotHit)
+                vfx?.CreateOnHitVFX(target.transform); // Create a hit visual effect at the target's position  
+        }
+    }
+
 
     protected Collider2D[] GetDetectedCollider() // method to get detected colliders  
     {
