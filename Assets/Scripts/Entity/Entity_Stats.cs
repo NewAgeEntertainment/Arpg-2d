@@ -9,7 +9,7 @@ public class Entity_Stats : MonoBehaviour
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
     
 
-    public float GetElementalDamage()
+    public float GetElementalDamage(out ElementType element)
     {
         float fireDamage = offense.fireDamage.GetValue();
         float iceDamage = offense.iceDamage.GetValue();
@@ -17,15 +17,26 @@ public class Entity_Stats : MonoBehaviour
         float bonusElementalDamage = major.intelligence.GetValue(); // Bonus Elemental damage from Intelligence +1 per INT
 
         float highestDamage = fireDamage;
+        element = ElementType.Fire; // Default to Fire element
 
         if (iceDamage > highestDamage)
+        {
             highestDamage = iceDamage;
+            element = ElementType.Ice; // Set element to Ice if it has the highest damage
+        }
+           
 
         if (lightningDamage > highestDamage)
+        {
             highestDamage = lightningDamage;
+            element = ElementType.Lightning; // Set element to Lightning if it has the highest damage
+        }
 
         if (highestDamage <= 0)
+        {
+            element = ElementType.None; // If all elemental damages are 0 or less, set element to None
             return 0;
+        }
 
         float bonusFire = (fireDamage == highestDamage) ? 0 : fireDamage *.5f;
         float bonusIce = (iceDamage == highestDamage) ? 0 : iceDamage * .5f;
@@ -36,6 +47,31 @@ public class Entity_Stats : MonoBehaviour
 
         return finalDamage;
     
+    }
+
+    public float GetElementalResistance(ElementType element)
+    {
+        float baseResistance = 0;
+        float bonusResistance = major.intelligence.GetValue() * .5f; // Bonus resistance from intelligence: +0.5% per INT
+
+        switch (element)
+        {
+            case ElementType.Fire:
+                baseResistance = defense.fireRes.GetValue();
+                break;
+            case ElementType.Ice:
+                baseResistance = defense.iceRes.GetValue();
+                break;
+            case ElementType.Lightning:
+                baseResistance = defense.lightningRes.GetValue();
+                break;
+        }
+
+        float resistance = baseResistance + bonusResistance;
+        float resistanceCap = 75f; // Resistance will be capped at 75%;
+        float finalResistance = Mathf.Clamp(resistance, 0, resistanceCap) / 100; // Convert value into 0 to 1 multiplier
+
+        return finalResistance;
     }
 
     public float GetPhysicalDamage(out bool isCrit)

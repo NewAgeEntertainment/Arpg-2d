@@ -34,9 +34,9 @@ public void PerformAttack()
                 continue;
             }
 
-            float elementalDamage = stats.GetElementalDamage(); // Get the elemental damage and whether it was a critical hit
+            float elementalDamage = stats.GetElementalDamage(out ElementType element); // Get the elemental damage and whether it was a critical hit
             float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit
-            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
             
             if(targetGotHit)
                 vfx?.CreateOnHitVFX(target.transform,isCrit); // Create a hit visual effect at the target's position  

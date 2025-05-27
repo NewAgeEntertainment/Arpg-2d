@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,7 +36,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
 
     // bool Method most retun true or false.
     // / Method to apply damage to the entity, including knockback and health reduction
-    public virtual bool TakeDamage(float damage, float elementalDamage, Transform damageDealer)
+    public virtual bool TakeDamage(float damage, float elementalDamage, ElementType element, Transform damageDealer)
     {
         if (isDead) 
             return false; // If the entity is already dead, do nothing
@@ -52,13 +53,16 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
         float mitigation = stats.GetArmorMitigation(armorReduction); // Get the armor mitigation value from the Entity_Stats component
         float finalDamage = damage * (1 - mitigation); // Calculate the final damage after applying armor mitigation
 
+        float resistance = stats.GetElementalResistance(element);
+        float elementalDamageTaken = elementalDamage * (1 - resistance);
+
         Vector2 knockback = CalculateKnockback(finalDamage, damageDealer); // Calculate the knockback vector based on the damage dealer's position
         float duration = CalculateKnockbackDuration(finalDamage); // Calculate the knockback duration based on the damage amount
 
         entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
         entity?.ReciveKnockback(knockback, duration); // Apply knockback effect
         ReduceHp(finalDamage); // Call the method to reduce health points
-        Debug.Log("Elemental damage Taken: " + elementalDamage);
+        Debug.Log("Elemental damage Taken: " + elementalDamage + " - element:" + element);
 
         return true; // Return true to indicate that damage was successfully applied
     }
