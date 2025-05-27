@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class EnemyState : EntityState
 {
     protected Enemy enemy;

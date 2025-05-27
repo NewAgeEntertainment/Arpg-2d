@@ -216,7 +216,7 @@ GameObject:
   m_Component:
   - component: {fileID: 127056605}
   m_Layer: 7
-  m_Name: TargetCheck_D
+  m_Name: TargetCheck_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1082,7 +1082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 475949202}
   m_Layer: 7
-  m_Name: TargetCheck_R
+  m_Name: TargetCheck_D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1613,10 +1613,10 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1691187556}
-  - {fileID: 475949202}
   - {fileID: 405728740}
-  - {fileID: 533229312}
   - {fileID: 127056605}
+  - {fileID: 533229312}
+  - {fileID: 475949202}
   - {fileID: 2145020952}
   - {fileID: 1913803208}
   - {fileID: 1815650535}
@@ -1677,9 +1677,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   _targetCheck_Left: {fileID: 405728740}
-  _targetCheck_Right: {fileID: 475949202}
+  _targetCheck_Right: {fileID: 127056605}
   _targetCheck_Up: {fileID: 533229312}
-  _targetCheck_Down: {fileID: 127056605}
+  _targetCheck_Down: {fileID: 475949202}
 --- !u!114 &624636224
 MonoBehaviour:
   m_ObjectHideFlags: 0

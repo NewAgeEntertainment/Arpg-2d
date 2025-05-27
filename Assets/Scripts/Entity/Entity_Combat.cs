@@ -58,6 +58,7 @@ public class Entity_Combat : MonoBehaviour
         //     detected.AddRange(colliders);
         // }
 
+
         Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTargetTransform().position, targetCheckRadius, whatIsTarget);
 
         // Combine the detected colliders into the list  
