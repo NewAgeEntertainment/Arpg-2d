@@ -35,7 +35,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
 
     // bool Method most retun true or false.
     // / Method to apply damage to the entity, including knockback and health reduction
-    public virtual bool TakeDamage(float damage, Transform damageDealer)
+    public virtual bool TakeDamage(float damage, float elementalDamage, Transform damageDealer)
     {
         if (isDead) 
             return false; // If the entity is already dead, do nothing
@@ -46,12 +46,19 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
             return false; // If evaded, do not apply damage or knockback
         }
 
-            float duration = CalculateKnockbackDuration(damage); // Calculate the knockback duration based on the damage amount
-        Vector2 knockback = CalculateKnockback(damage, damageDealer); // Calculate the knockback vector based on the damage dealer's position
+        Entity_Stats attackerStats = damageDealer.GetComponent<Entity_Stats>(); // Get the Entity_Stats component from the damage dealer
+        float armorReduction = attackerStats != null ? attackerStats.GetArmorReduction() : 0; // Get the armor reduction value from the attacker's stats, if available
+
+        float mitigation = stats.GetArmorMitigation(armorReduction); // Get the armor mitigation value from the Entity_Stats component
+        float finalDamage = damage * (1 - mitigation); // Calculate the final damage after applying armor mitigation
+
+        Vector2 knockback = CalculateKnockback(finalDamage, damageDealer); // Calculate the knockback vector based on the damage dealer's position
+        float duration = CalculateKnockbackDuration(finalDamage); // Calculate the knockback duration based on the damage amount
 
         entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
         entity?.ReciveKnockback(knockback, duration); // Apply knockback effect
-        ReduceHp(damage); // Call the method to reduce health points
+        ReduceHp(finalDamage); // Call the method to reduce health points
+        Debug.Log("Elemental damage Taken: " + elementalDamage);
 
         return true; // Return true to indicate that damage was successfully applied
     }

@@ -98,7 +98,7 @@ Animator:
   m_GameObject: {fileID: 2425375771941488188}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 92cc14a7023e1354da7c8e399362795b, type: 2}
+  m_Controller: {fileID: 9100000, guid: 3b4f29bbb003a0a4b80cf94a8e296c9f, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 1107861938798889286}
   - component: {fileID: 8958606339864666716}
   m_Layer: 0
-  m_Name: OnHitVFX
+  m_Name: VFX_OnHit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -158,6 +158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
   onDamageVFXDuration: 0.1
+  hitVfxColor: {r: 1, g: 1, b: 1, a: 1}
   hitVfx: {fileID: 6112724607161003390}
 --- !u!114 &8958606339864666716
 MonoBehaviour:
@@ -173,3 +174,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoDestroy: 1
   autoDestroyDelay: 0.2
+  randomOffset: 1
+  randomRotation: 1
+  xMinoffset: -0.3
+  xMaxoffset: 0.3
+  yMinOffset: -0.3
+  yMaxOffset: 0.3

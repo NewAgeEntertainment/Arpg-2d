@@ -5,7 +5,10 @@ using UnityEngine;
 public class Entity_Combat : MonoBehaviour
 {
     private Entity_VFX vfx;
-    public float damage = 10f; // damage amount
+    private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations
+
+
+
 
     [Header("Target detection")]
     [SerializeField] private Transform[] targetCheck;
@@ -15,6 +18,7 @@ public class Entity_Combat : MonoBehaviour
     private void Awake()
     {
         vfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
+        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject, if needed for combat calculations
     }
 
     
@@ -30,10 +34,12 @@ public void PerformAttack()
                 continue;
             }
 
-            bool targetGotHit = damagable.TakeDamage(damage, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+            float elementalDamage = stats.GetElementalDamage(); // Get the elemental damage and whether it was a critical hit
+            float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit
+            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
             
             if(targetGotHit)
-                vfx?.CreateOnHitVFX(target.transform); // Create a hit visual effect at the target's position  
+                vfx?.CreateOnHitVFX(target.transform,isCrit); // Create a hit visual effect at the target's position  
         }
     }
 

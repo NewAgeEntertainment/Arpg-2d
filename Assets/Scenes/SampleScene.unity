@@ -1671,7 +1671,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 142cd868a6454ac43843fef5664a8ae5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 22
   targetCheck:
   - {fileID: 475949202}
   - {fileID: 405728740}
@@ -1695,11 +1694,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentHp: 0
   isDead: 0
-  knockbackDuration: 5
-  onDamageKnockback: {x: 1.5, y: 1}
+  knockbackDuration: 2
+  onDamageKnockback: {x: 1, y: 1}
   heavyDamageThreshold: 1
-  heavyKnockbackDuration: 5
-  onHeavyDamageKnockback: {x: 7, y: 7}
+  heavyKnockbackDuration: 1
+  onHeavyDamageKnockback: {x: 1, y: 1}
   knockbackDuration: 0.2
   onDamageKnockback: {x: 1.5, y: 2.5}
 --- !u!114 &624636225
@@ -1718,6 +1717,7 @@ MonoBehaviour:
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 0.83372265, g: 0.93207544, b: 0.80721253, a: 1}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
+  critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
   attackAlert: {fileID: 2145020950}
 --- !u!114 &624636226
 MonoBehaviour:
@@ -1732,11 +1732,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth:
-    baseValue: 100
+    baseValue: 10000
   major:
     strength:
       baseValue: 0
-    agility:
+    Luck:
       baseValue: 0
     intelligence:
       baseValue: 0
@@ -1749,12 +1749,14 @@ MonoBehaviour:
       baseValue: 0
     critchance:
       baseValue: 0
+    armorReduction:
+      baseValue: 0
     fireDamage:
-      baseValue: 0
+      baseValue: 10
     iceDamage:
-      baseValue: 0
+      baseValue: 7
     lightningDamage:
-      baseValue: 0
+      baseValue: 6
   defense:
     armor:
       baseValue: 0
@@ -61885,6 +61887,7 @@ MonoBehaviour:
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 1, g: 1, b: 1, a: 1}
   hitVfx: {fileID: 0}
+  critHitVfx: {fileID: 0}
 --- !u!1 &1178330334
 GameObject:
   m_ObjectHideFlags: 0
@@ -62694,10 +62697,10 @@ MonoBehaviour:
   currentHp: 0
   isDead: 0
   knockbackDuration: 1
-  onDamageKnockback: {x: 1, y: 1.5}
-  heavyDamageThreshold: 1
-  heavyKnockbackDuration: 5
-  onHeavyDamageKnockback: {x: 7, y: 7}
+  onDamageKnockback: {x: 1, y: 1}
+  heavyDamageThreshold: 0.5
+  heavyKnockbackDuration: 1
+  onHeavyDamageKnockback: {x: 1, y: 1}
 --- !u!114 &1546843129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62714,6 +62717,7 @@ MonoBehaviour:
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 1, g: 0.216981, b: 0.216981, a: 1}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
+  critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
 --- !u!114 &1546843130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62726,7 +62730,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 582dcf26d7460d44dbce2fed38905c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 12.6
   targetCheck:
   - {fileID: 1461462654}
   - {fileID: 624309044}
@@ -62750,22 +62753,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth:
-    baseValue: 100
+    baseValue: 10000
   major:
     strength:
       baseValue: 0
-    agility:
+    Luck:
       baseValue: 0
     intelligence:
       baseValue: 0
     vitality:
-      baseValue: 10
+      baseValue: 0
   offense:
     damage:
       baseValue: 10
     critpower:
       baseValue: 0
     critchance:
+      baseValue: 0
+    armorReduction:
       baseValue: 0
     fireDamage:
       baseValue: 0
@@ -62777,7 +62782,7 @@ MonoBehaviour:
     armor:
       baseValue: 0
     evasion:
-      baseValue: 20
+      baseValue: 0
     fireRes:
       baseValue: 0
     iceRes:
