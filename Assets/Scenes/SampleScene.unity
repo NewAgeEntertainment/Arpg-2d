@@ -216,7 +216,7 @@ GameObject:
   m_Component:
   - component: {fileID: 127056605}
   m_Layer: 7
-  m_Name: TargetCheck (3)
+  m_Name: TargetCheck_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -231,7 +231,7 @@ Transform:
   m_GameObject: {fileID: 127056604}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.05461502, y: -2.1761537, z: 0.04080917}
+  m_LocalPosition: {x: 2.87, y: 0.06, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -940,7 +940,7 @@ GameObject:
   m_Component:
   - component: {fileID: 405728740}
   m_Layer: 7
-  m_Name: TargetCheck (1)
+  m_Name: TargetCheck_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -955,7 +955,7 @@ Transform:
   m_GameObject: {fileID: 405728739}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.146923, y: 0.37000012, z: 0.04080917}
+  m_LocalPosition: {x: -2.65, y: 0.32, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1082,7 +1082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 475949202}
   m_Layer: 7
-  m_Name: TargetCheck
+  m_Name: TargetCheck_D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1097,7 +1097,7 @@ Transform:
   m_GameObject: {fileID: 475949201}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.93, y: 0.37, z: 0.04080917}
+  m_LocalPosition: {x: 0.17, y: -2.04, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1266,7 +1266,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.9443905, y: -0.8770385, z: 21.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1314,7 +1314,7 @@ GameObject:
   m_Component:
   - component: {fileID: 533229312}
   m_Layer: 7
-  m_Name: TargetCheck (2)
+  m_Name: TargetCheck_U
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1329,7 +1329,7 @@ Transform:
   m_GameObject: {fileID: 533229311}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.008460999, y: 3.1315386, z: 0.04080917}
+  m_LocalPosition: {x: 0.1, y: 2.27, z: 0.04080917}
   m_LocalScale: {x: 0.7692308, y: 0.7692308, z: 0.7692308}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1491,7 +1491,7 @@ GameObject:
   m_Component:
   - component: {fileID: 624309044}
   m_Layer: 7
-  m_Name: TargetCheck (1)
+  m_Name: TargetCheck_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1525,9 +1525,9 @@ GameObject:
   - component: {fileID: 624636218}
   - component: {fileID: 624636225}
   - component: {fileID: 624636219}
-  - component: {fileID: 624636223}
   - component: {fileID: 624636224}
   - component: {fileID: 624636226}
+  - component: {fileID: 624636227}
   m_Layer: 8
   m_Name: Enemy_Skeleton (1)
   m_TagString: Untagged
@@ -1598,7 +1598,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!4 &624636221
 Transform:
   m_ObjectHideFlags: 0
@@ -1613,10 +1613,10 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1691187556}
-  - {fileID: 475949202}
   - {fileID: 405728740}
-  - {fileID: 533229312}
   - {fileID: 127056605}
+  - {fileID: 533229312}
+  - {fileID: 475949202}
   - {fileID: 2145020952}
   - {fileID: 1913803208}
   - {fileID: 1815650535}
@@ -1636,9 +1636,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  attackDistance: 1.37
+  attackDistance: 2.34
   attackCooldown: 1
-  range: 3.28
+  range: 4.32
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
@@ -1694,13 +1694,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentHp: 0
   isDead: 0
-  knockbackDuration: 2
-  onDamageKnockback: {x: 1, y: 1}
+  knockbackDuration: 5
+  onDamageKnockback: 6.45
   heavyDamageThreshold: 1
-  heavyKnockbackDuration: 1
-  onHeavyDamageKnockback: {x: 1, y: 1}
-  knockbackDuration: 0.2
-  onDamageKnockback: {x: 1.5, y: 2.5}
+  heavyKnockbackDuration: 5
+  onHeavyDamageKnockback: {x: 7, y: 7}
 --- !u!114 &624636225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1768,6 +1766,27 @@ MonoBehaviour:
       baseValue: 0
     lightningRes:
       baseValue: 0
+--- !u!114 &624636227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624636217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d8239df1796c410c9e130ffeab05fe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 22
+  targetCheckRadius: 1.77
+  whatIsTarget:
+    serializedVersion: 2
+    m_Bits: 128
+  _targetCheck_Left: {fileID: 0}
+  _targetCheck_Right: {fileID: 0}
+  _targetCheck_Up: {fileID: 0}
+  _targetCheck_Down: {fileID: 0}
 --- !u!1 &640006883
 GameObject:
   m_ObjectHideFlags: 0
@@ -1976,7 +1995,7 @@ GameObject:
   m_Component:
   - component: {fileID: 780117376}
   m_Layer: 7
-  m_Name: TargetCheck (3)
+  m_Name: TargetCheck_D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62184,7 +62203,7 @@ Transform:
   m_GameObject: {fileID: 1454656417}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.9443905, y: -0.8770385, z: 21.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62397,7 +62416,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1461462654}
   m_Layer: 7
-  m_Name: TargetCheck
+  m_Name: TargetCheck_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62667,8 +62686,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1546843122}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.92, y: 0.46, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62697,10 +62716,10 @@ MonoBehaviour:
   currentHp: 0
   isDead: 0
   knockbackDuration: 1
-  onDamageKnockback: {x: 1, y: 1}
-  heavyDamageThreshold: 0.5
-  heavyKnockbackDuration: 1
-  onHeavyDamageKnockback: {x: 1, y: 1}
+  onDamageKnockback: 2.48
+  heavyDamageThreshold: 1
+  heavyKnockbackDuration: 5
+  onHeavyDamageKnockback: {x: 7, y: 7}
 --- !u!114 &1546843129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62739,6 +62758,10 @@ MonoBehaviour:
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 256
+  _targetCheck_Left: {fileID: 624309044}
+  _targetCheck_Right: {fileID: 1461462654}
+  _targetCheck_Up: {fileID: 1581580002}
+  _targetCheck_Down: {fileID: 780117376}
   counterRecovery: 0.25
 --- !u!114 &1546843131
 MonoBehaviour:
@@ -62932,7 +62955,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1581580002}
   m_Layer: 7
-  m_Name: TargetCheck (2)
+  m_Name: TargetCheck_U
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63543,7 +63566,7 @@ GameObject:
   - component: {fileID: 1853198713}
   - component: {fileID: 1853198712}
   - component: {fileID: 1853198711}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Animator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63642,7 +63665,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
   m_SortingLayer: -1
-  m_SortingOrder: 0
+  m_SortingOrder: 46
   m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

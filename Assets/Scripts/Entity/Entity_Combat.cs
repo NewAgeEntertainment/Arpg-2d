@@ -1,9 +1,9 @@
-using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Entity_Combat : MonoBehaviour
+public abstract class Entity_Combat : MonoBehaviour
 {
+    protected Entity _entity;
     private Entity_VFX vfx;
     private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations
 
@@ -11,25 +11,24 @@ public class Entity_Combat : MonoBehaviour
 
 
     [Header("Target detection")]
-    [SerializeField] private Transform[] targetCheck;
-    [SerializeField] private float targetCheckRadius;
-    [SerializeField] private LayerMask whatIsTarget;
+    // [SerializeField] private Transform[] targetCheck;
+    [SerializeField] protected float targetCheckRadius;
+    [SerializeField] protected LayerMask whatIsTarget;
 
     private void Awake()
     {
+        _entity = GetComponent<Entity>();
         vfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
         stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject, if needed for combat calculations
     }
 
-    
 
-public void PerformAttack()
+
+    public void PerformAttack()
     {
         foreach (var target in GetDetectedCollider())
         {
-            IDamagable damagable = target.GetComponent<IDamagable>(); // Corrected variable name from 'damgable' to 'damagable'  
-
-            if (damagable == null) // If the target does not have an IDamagable component, skip to the next target  
+            if (!target.TryGetComponent(out IDamagable damagable)) // If the target does not have an IDamagable component, skip to the next target  
             {
                 continue;
             }
@@ -43,25 +42,23 @@ public void PerformAttack()
         }
     }
 
+    public abstract Collider2D[] GetDetectedCollider();
 
-    protected Collider2D[] GetDetectedCollider() // method to get detected colliders  
-    {
-        // Initialize an empty list to store detected colliders  
-        List<Collider2D> detected = new List<Collider2D>();
+    // protected Collider2D[] GetDetectedCollider() // method to get detected colliders  
+    // {
+    //     // Initialize an empty list to store detected colliders  
+    //     List<Collider2D> detected = new List<Collider2D>();
 
-        // Iterate through each Transform in the targetCheck array  
-        foreach (Transform check in targetCheck)
-        {
-            // Use OverlapCircleAll for each Transform's position  
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(check.position, targetCheckRadius, whatIsTarget);
+    //     Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTargetTransform().position, targetCheckRadius, whatIsTarget);
 
-            // Combine the detected colliders into the list  
-            detected.AddRange(colliders);
-        }
+    //     // Combine the detected colliders into the list  
+    //     detected.AddRange(colliders);
 
-        // Return the combined colliders as an array  
-        return detected.ToArray();
-    }
+    //     // Return the combined colliders as an array  
+    //     return detected.ToArray();
+    // }
+
+
 
     private Collider2D[] CombineColliders(Collider2D[] array1, Collider2D[] array2) // Combine two arrays of colliders
     {
@@ -69,17 +66,6 @@ public void PerformAttack()
         array1.CopyTo(combined, 0);
         array2.CopyTo(combined, array1.Length); // copy the first array to the new array
         return combined; // return the combined array
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (targetCheck != null)
-        {
-            foreach (Transform check in targetCheck)
-            {
-                Gizmos.DrawWireSphere(check.position, targetCheckRadius);
-            }
-        }
     }
 }
 

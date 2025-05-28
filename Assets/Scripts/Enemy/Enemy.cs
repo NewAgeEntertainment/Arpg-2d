@@ -1,11 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using UnityEngine;
 
 public class Enemy : Entity
 {
-
     public EntityState previousState;
 
     public Enemy_IdleState idleState;
@@ -28,7 +25,7 @@ public class Enemy : Entity
     [Header("Stunned State details")]
     public float stunnedDuration = 1; // Duration of the stunned state
     public Vector2 stunnedVelocity = new Vector2(7, 7); // Velocity during the stunned state
-    [SerializeField]protected bool canBeStunned; // Flag to check if the enemy is stunned
+    [SerializeField] protected bool canBeStunned; // Flag to check if the enemy is stunned
 
     [Header("Movement details")]
     public float idleTime;
@@ -76,7 +73,7 @@ public class Enemy : Entity
         base.EntityDeath();
         stateMachine.ChangeState(deadState); // Change to the dead state
     }
-    
+
     public void HandlePlayerDeath()
     {
         // Handle how enemy deal player death. logic here
@@ -90,7 +87,7 @@ public class Enemy : Entity
     {
         if (player == null)
             player = PlayerDetected().transform; // Get the player reference if not already set
-    
+
         return player; // Return the player reference
     }
 
@@ -98,10 +95,10 @@ public class Enemy : Entity
     {
         base.Awake();
         //target = patrolPoints[0].position // Initialize the target to the first patrol point
-        
+
 
     }
-            
+
     protected override void Start()
     {
         base.Start();
@@ -135,7 +132,7 @@ public class Enemy : Entity
         //}
 
         stateMachine.currentState.Update();
-    
+
     }
 
     //public virtual void ShowAttackIndicator()
@@ -175,7 +172,6 @@ public class Enemy : Entity
         target = patrolPoints[currentPatrolIndex]; // set the target to the next patrol point  
         isPaused = false; // Set the pause flag to false
         currentDir = target - (Vector2)transform.position; // Calculate the direction to the target  
-        
     }
 
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);

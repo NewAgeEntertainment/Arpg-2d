@@ -41,13 +41,13 @@ public class Entity : MonoBehaviour
 
     protected virtual void Start()
     {
-       
+
     }
 
     protected virtual void Update()
     {
 
-        
+
 
         // HandleCollisionDetection();
         stateMachine.UpdateActiveState();
@@ -74,9 +74,9 @@ public class Entity : MonoBehaviour
     {
         isKnocked = true;
         rb.linearVelocity = knockback; // Apply the knockback force to the rigidbody
-        
+
         yield return new WaitForSeconds(duration);//(0.5f) I use a variable for the duration of the knockback instead of a hardcoded value
-        
+
         rb.linearVelocity = Vector2.zero; // Reset the velocity after the knockback duration
         isKnocked = false;
     }
@@ -141,7 +141,7 @@ public class Entity : MonoBehaviour
     //        wallDetected = Physics2D.Raycast(primaryWallCheck.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
 
 
-    
+
     //}
 
 
