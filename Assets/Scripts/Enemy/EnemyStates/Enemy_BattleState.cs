@@ -15,17 +15,12 @@ public class Enemy_BattleState : EnemyState
     public override void Enter()
     {
         base.Enter();
-
-        //UpdateStateTimer();
-
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
         //if (player == null)
         //{
         //   // player = enemy.GetPlayerReference();
         //}
         Debug.Log("Battle State Entered");
-
-       
     }
 
     public override void Update()

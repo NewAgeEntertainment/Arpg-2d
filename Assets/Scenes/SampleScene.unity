@@ -1525,9 +1525,9 @@ GameObject:
   - component: {fileID: 624636218}
   - component: {fileID: 624636225}
   - component: {fileID: 624636219}
-  - component: {fileID: 624636223}
   - component: {fileID: 624636224}
   - component: {fileID: 624636226}
+  - component: {fileID: 624636227}
   m_Layer: 8
   m_Name: Enemy_Skeleton (1)
   m_TagString: Untagged
@@ -1659,27 +1659,6 @@ MonoBehaviour:
   - {x: -1.22, y: 10.25}
   currentPatrolIndex: 0
   target: {x: 0, y: 0}
---- !u!114 &624636223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 624636217}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 142cd868a6454ac43843fef5664a8ae5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 22
-  targetCheckRadius: 1.77
-  whatIsTarget:
-    serializedVersion: 2
-    m_Bits: 128
-  _targetCheck_Left: {fileID: 405728740}
-  _targetCheck_Right: {fileID: 127056605}
-  _targetCheck_Up: {fileID: 533229312}
-  _targetCheck_Down: {fileID: 475949202}
 --- !u!114 &624636224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1699,8 +1678,6 @@ MonoBehaviour:
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 5
   onHeavyDamageKnockback: {x: 7, y: 7}
-  knockbackDuration: 0.2
-  onDamageKnockback: {x: 1.5, y: 2.5}
 --- !u!114 &624636225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1765,6 +1742,27 @@ MonoBehaviour:
       baseValue: 0
     lightningRes:
       baseValue: 0
+--- !u!114 &624636227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624636217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d8239df1796c410c9e130ffeab05fe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 22
+  targetCheckRadius: 1.77
+  whatIsTarget:
+    serializedVersion: 2
+    m_Bits: 128
+  _targetCheck_Left: {fileID: 0}
+  _targetCheck_Right: {fileID: 0}
+  _targetCheck_Up: {fileID: 0}
+  _targetCheck_Down: {fileID: 0}
 --- !u!1 &640006883
 GameObject:
   m_ObjectHideFlags: 0

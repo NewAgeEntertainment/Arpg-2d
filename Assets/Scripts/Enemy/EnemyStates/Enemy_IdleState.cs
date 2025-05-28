@@ -30,22 +30,14 @@ public class Enemy_IdleState : Enemy_GroundedState
 
         if (enemy.IsPlayerDetected())
         {
-            
+
             stateMachine.ChangeState(enemy.battleState);
-
             //enemy.isPaused = false; // Reset the pause state when exiting
-
         }
-        
-
-
     }
 
     public override void Exit()
     {
         base.Exit();
-        
     }
-
-
 }

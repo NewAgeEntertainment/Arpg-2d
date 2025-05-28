@@ -1,11 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using UnityEngine;
 
 public class Enemy : Entity
 {
-
     public EntityState previousState;
 
     public Enemy_IdleState idleState;
@@ -175,7 +172,6 @@ public class Enemy : Entity
         target = patrolPoints[currentPatrolIndex]; // set the target to the next patrol point  
         isPaused = false; // Set the pause flag to false
         currentDir = target - (Vector2)transform.position; // Calculate the direction to the target  
-
     }
 
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
