@@ -15,4 +15,25 @@ public class EnemyCombat : Entity_Combat
         // Return the combined colliders as an array  
         return detected.ToArray();
     }
+
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.TryGetComponent(out IDamagable damagable))
+        {
+            // If the target has an IDamagable component, call the TakeDamage method on it
+            damagable.TakeDamage(damage, transform);
+        }
+
+    }
+
+    
+
+
+    private void OnDrawGizmos()
+    {
+        // Draw a green sphere at the position of the enemy to visualize its target detection area
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, targetCheckRadius); // Adjust the radius as needed
+    }
 }

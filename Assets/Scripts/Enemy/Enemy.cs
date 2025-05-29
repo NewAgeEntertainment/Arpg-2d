@@ -15,6 +15,7 @@ public class Enemy : Entity
 
     [Header("Attack info")]
     public float attackDistance;
+    public Transform[] targetCheckRadius; // Radius for checking if the player is within attack range
     public float attackCooldown;
     public float range; // Range for the enemy's detection of the player
     [SerializeField] protected LayerMask whatIsPlayer; // Layer mask for the player layer
@@ -189,10 +190,10 @@ public class Enemy : Entity
         Gizmos.color = Color.red; // Set the color of the gizmo to red  
         Gizmos.DrawWireSphere(transform.position, range); // Draw a wire sphere at the enemy's position with the specified range  
 
-        // Fixing the problematic line by correctly accessing the position property of the Transform objects  
-        Gizmos.color = Color.yellow;
-        Vector3 attackRangePosition = new Vector3(transform.position.x, transform.position.y, 0); // Set the attack range position to the enemy's position  
-        Gizmos.DrawWireSphere(attackRangePosition, attackDistance); // Draw a small sphere to represent the attack range  
+        //// Fixing the problematic line by correctly accessing the position property of the Transform objects  
+        //Gizmos.color = Color.yellow;
+        //Vector3 attackRangePosition = new Vector3(transform.position.x, transform.position.y, 0); // Set the attack range position to the enemy's position  
+        //Gizmos.DrawWireSphere(attackRangePosition, targetCheckRadius); // Draw a small sphere to represent the attack range  
 
         // Draw a line between all the patrol points  
         for (int i = 0; i < patrolPoints.Length; i++)

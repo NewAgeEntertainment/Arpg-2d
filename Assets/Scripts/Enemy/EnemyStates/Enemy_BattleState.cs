@@ -41,7 +41,8 @@ public class Enemy_BattleState : EnemyState
 
             float moveToPlayer = Vector2.Distance(enemy.transform.position, detectedPlayer.transform.position);
 
-            if (moveToPlayer < enemy.attackDistance)
+            // Fix: Use enemy.targetCheckRadius[0] or another appropriate index if targetCheckRadius is an array  
+            if (moveToPlayer < enemy.targetCheckRadius[0].position.magnitude)
             {
                 if (CanAttack())
                 {
