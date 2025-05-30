@@ -654,18 +654,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
   attackMovement: []
-  attackVelocity:
-  - {x: 3, y: 1.5}
-  - {x: 1, y: 2.5}
-  - {x: 5, y: 2.5}
   jumpAttackVelocity: {x: 4, y: -6}
-  attackVelocityDuration: 0.1
   comboResetTime: 1
   moveSpeed: 8
   jumpForce: 12
-  wallJumpForce: {x: 6, y: 12}
-  inAirMoveMultiplier: 0.8
-  wallSlideSlowMultiplier: 0.4
   dashDuration: 0.25
   dashSpeed: 20
   ThrustDuration: 0
@@ -1266,7 +1258,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 20.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1585,8 +1577,8 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 200
-  m_LinearDamping: 0
+  m_Mass: 800
+  m_LinearDamping: 3
   m_AngularDamping: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -1609,7 +1601,7 @@ Transform:
   m_GameObject: {fileID: 624636217}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.18, y: 5.13, z: -0.05305192}
+  m_LocalPosition: {x: -16.18, y: 5.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -1637,9 +1629,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  attackDistance: 1.99
+  attackDistance: 2.12
   attackCooldown: 1
-  range: 4.18
+  range: 4.67
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
@@ -1672,13 +1664,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35325787a1707334687762b7e1ebe52f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHp: 0
+  currentHealth: 0
   isDead: 0
+  regenInterval: 1
+  canRegenerateHealth: 1
   knockbackDuration: 5
-  onDamageKnockback: 6.45
+  onDamageKnockback: 1
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 0
-  onHeavyDamageKnockback: {x: 0, y: 70}
+  onHeavyDamageKnockback: 2
 --- !u!114 &624636225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1694,6 +1688,10 @@ MonoBehaviour:
   onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 0.83372265, g: 0.93207544, b: 0.80721253, a: 1}
+  burnVfx: {r: 0.99607843, g: 0.3882353, b: 0.043137256, a: 1}
+  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
+  ElectrifyVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  posionVfx: {fileID: 0}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
   critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
   chillVfx: {r: 0.30980393, g: 0.3882353, b: 1, a: 1}
@@ -1710,43 +1708,79 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 691647f7eb53e894d845afdccc87c72d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth:
-    baseValue: 10000
+  resources:
+    maxHealth:
+      baseValue: 1000
+      modifiers: []
+    healthRegen:
+      baseValue: 0
+      modifiers: []
+    maxMana:
+      baseValue: 0
+      modifiers: []
+    ManaRegen:
+      baseValue: 0
+      modifiers: []
   major:
     strength:
       baseValue: 0
+      modifiers: []
     Luck:
       baseValue: 0
+      modifiers: []
     intelligence:
       baseValue: 0
+      modifiers: []
     vitality:
       baseValue: 0
+      modifiers: []
   offense:
+    attackSpeed:
+      baseValue: 1
+      modifiers: []
     damage:
-      baseValue: 10
+      baseValue: 150
+      modifiers: []
     critpower:
       baseValue: 0
+      modifiers: []
     critchance:
       baseValue: 0
+      modifiers: []
     armorReduction:
       baseValue: 0
+      modifiers: []
     fireDamage:
       baseValue: 0
+      modifiers: []
     iceDamage:
-      baseValue: 10
+      baseValue: 0
+      modifiers: []
     lightningDamage:
-      baseValue: 6
+      baseValue: 0
+      modifiers: []
+    poisonDamage:
+      baseValue: 0
+      modifiers: []
   defense:
     armor:
       baseValue: 0
+      modifiers: []
     evasion:
       baseValue: 0
+      modifiers: []
     fireRes:
       baseValue: 0
+      modifiers: []
     iceRes:
       baseValue: 0
+      modifiers: []
     lightningRes:
       baseValue: 0
+      modifiers: []
+    poisonRes:
+      baseValue: 0
+      modifiers: []
 --- !u!114 &624636227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1759,12 +1793,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d8239df1796c410c9e130ffeab05fe4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCheckRadius: 1.77
+  targetCheckRadius: 1.73
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 128
   defaultDuration: 5
   chillSlowMultiplier: 5
+  electrifyChargeBuildUp: 0.4
+  fireScale: 0.8
+  lightningScale: 2.5
+  poisonScale: 1.5
 --- !u!114 &624636228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1777,6 +1815,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cc2bd7c953c6f644a0f84699e1c0dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lightningStrikeVfx: {fileID: 609128798462994316, guid: 7bbd981de65920c41a3314c74bb5a0bc, type: 3}
+  currentCharge: 0
+  maximumCharge: 1
 --- !u!1 &640006883
 GameObject:
   m_ObjectHideFlags: 0
@@ -61895,6 +61936,10 @@ MonoBehaviour:
   onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 1, g: 1, b: 1, a: 1}
+  burnVfx: {r: 1, g: 0, b: 0, a: 1}
+  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
+  ElectrifyVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  posionVfx: {fileID: 0}
   hitVfx: {fileID: 0}
   critHitVfx: {fileID: 0}
   chillVfx: {r: 0, g: 1, b: 1, a: 1}
@@ -62194,7 +62239,7 @@ Transform:
   m_GameObject: {fileID: 1454656417}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 1.512577}
+  m_LocalPosition: {x: -3.0243905, y: -1.3370385, z: 20.512577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62657,15 +62702,10 @@ MonoBehaviour:
   - 5
   - 3
   - 7
-  attackVelocity: []
   jumpAttackVelocity: {x: 4, y: -6}
-  attackVelocityDuration: 8.01
   comboResetTime: 1
   moveSpeed: 8
   jumpForce: 0
-  wallJumpForce: {x: 6, y: 12}
-  inAirMoveMultiplier: 0.8
-  wallSlideSlowMultiplier: 0.4
   dashDuration: 1
   dashSpeed: 20
   ThrustDuration: 1
@@ -62679,7 +62719,7 @@ Transform:
   m_GameObject: {fileID: 1546843122}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -20}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62705,13 +62745,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a15e285c6eea3bb4fb98c6dd62f02f56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHp: 0
+  currentHealth: 0
   isDead: 0
+  regenInterval: 1
+  canRegenerateHealth: 1
   knockbackDuration: 1
   onDamageKnockback: 2.48
   heavyDamageThreshold: 1
-  heavyKnockbackDuration: 5
-  onHeavyDamageKnockback: {x: 7, y: 7}
+  heavyKnockbackDuration: 1
+  onHeavyDamageKnockback: 1
 --- !u!114 &1546843129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62727,6 +62769,10 @@ MonoBehaviour:
   onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 1, g: 0.216981, b: 0.216981, a: 1}
+  burnVfx: {r: 0.9924528, g: 0.3882353, b: 0.043068595, a: 1}
+  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
+  ElectrifyVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  posionVfx: {fileID: 0}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
   critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
   chillVfx: {r: 0.3075471, g: 0.38629675, b: 1, a: 1}
@@ -62746,8 +62792,12 @@ MonoBehaviour:
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 256
-  defaultDuration: 3
+  defaultDuration: 6
   chillSlowMultiplier: 0.9
+  electrifyChargeBuildUp: 0.4
+  fireScale: 0.8
+  lightningScale: 2.5
+  poisonScale: 1.5
   counterRecovery: 0.25
   _targetCheck_Left: {fileID: 624309044}
   _targetCheck_Right: {fileID: 1461462654}
@@ -62765,43 +62815,79 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 691647f7eb53e894d845afdccc87c72d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth:
-    baseValue: 10000
+  resources:
+    maxHealth:
+      baseValue: 1000
+      modifiers: []
+    healthRegen:
+      baseValue: 100
+      modifiers: []
+    maxMana:
+      baseValue: 0
+      modifiers: []
+    ManaRegen:
+      baseValue: 0
+      modifiers: []
   major:
     strength:
       baseValue: 0
+      modifiers: []
     Luck:
       baseValue: 0
+      modifiers: []
     intelligence:
       baseValue: 0
+      modifiers: []
     vitality:
       baseValue: 0
+      modifiers: []
   offense:
+    attackSpeed:
+      baseValue: 1
+      modifiers: []
     damage:
       baseValue: 10
+      modifiers: []
     critpower:
       baseValue: 0
+      modifiers: []
     critchance:
       baseValue: 0
+      modifiers: []
     armorReduction:
       baseValue: 0
+      modifiers: []
     fireDamage:
       baseValue: 0
+      modifiers: []
     iceDamage:
-      baseValue: 11
+      baseValue: 0
+      modifiers: []
     lightningDamage:
       baseValue: 0
+      modifiers: []
+    poisonDamage:
+      baseValue: 0
+      modifiers: []
   defense:
     armor:
       baseValue: 0
+      modifiers: []
     evasion:
       baseValue: 0
+      modifiers: []
     fireRes:
       baseValue: 0
+      modifiers: []
     iceRes:
       baseValue: 0
+      modifiers: []
     lightningRes:
       baseValue: 0
+      modifiers: []
+    poisonRes:
+      baseValue: 0
+      modifiers: []
 --- !u!61 &1546843132
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -62860,6 +62946,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cc2bd7c953c6f644a0f84699e1c0dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lightningStrikeVfx: {fileID: 609128798462994316, guid: 7bbd981de65920c41a3314c74bb5a0bc, type: 3}
+  currentCharge: 0
+  maximumCharge: 1
 --- !u!1 &1554323854
 GameObject:
   m_ObjectHideFlags: 0
@@ -63236,7 +63325,7 @@ GameObject:
   - component: {fileID: 1691187559}
   - component: {fileID: 1691187558}
   - component: {fileID: 1691187560}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Animator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64154,6 +64243,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 624636221}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &2914954019686992216
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.47
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028324383257270378, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7696820497907663471, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
+      propertyPath: m_Name
+      value: Object_buff
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 86edae17d83f24c4f8bac8b1d8897761, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -64168,3 +64314,4 @@ SceneRoots:
   - {fileID: 624636221}
   - {fileID: 1139348562}
   - {fileID: 2064850832}
+  - {fileID: 2914954019686992216}

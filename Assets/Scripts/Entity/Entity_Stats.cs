@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Entity_Stats : MonoBehaviour
 {
@@ -7,7 +6,7 @@ public class Entity_Stats : MonoBehaviour
     public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
     public Stat_OffenseGroup offense; // Offense stats group containing damage, crit power, crit chance, and elemental damages
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
-    
+
 
     public float GetElementalDamage(out ElementType element, float scaleFactor = 1)
     {
@@ -45,7 +44,7 @@ public class Entity_Stats : MonoBehaviour
             return 0;
         }
 
-        float bonusFire = (fireDamage == highestDamage) ? 0 : fireDamage *.5f;
+        float bonusFire = (fireDamage == highestDamage) ? 0 : fireDamage * .5f;
         float bonusIce = (iceDamage == highestDamage) ? 0 : iceDamage * .5f;
         float bonusLightning = (lightningDamage == highestDamage) ? 0 : lightningDamage * .5f;
         float bonusPoison = (poisonDamage == highestDamage) ? 0 : poisonDamage * .5f; // Bonus damage for weaker elemental types
@@ -54,7 +53,7 @@ public class Entity_Stats : MonoBehaviour
         float finalDamage = highestDamage + weakerElementalDamage + bonusElementalDamage;
 
         return finalDamage * scaleFactor;
-    
+
     }
 
     public float GetElementalResistance(ElementType element)
@@ -102,18 +101,18 @@ public class Entity_Stats : MonoBehaviour
         isCrit = Random.Range(0, 100) < critChance;
         // damage Resualt equals iscrit if yes(?) than take total Base Damge and Multiply it by Critpower. if No that just do Total Base Damge
         float finalDamage = isCrit ? totalBaseDamage * critPower : totalBaseDamage; // 
-        
+
 
         return finalDamage * scaleFactor;
     }
-    
+
     public float GetArmorMitigation(float armorReduction)
     {
         float baseArmor = defense.armor.GetValue();
         float bonusArmor = major.vitality.GetValue(); // bonus armor from Vitality: +1
         float totalArmor = baseArmor + bonusArmor;
 
-        float reductionMultiplier = Mathf.Clamp(1 - armorReduction,0,1); // Calculate the reduction multiplier based on armor reduction
+        float reductionMultiplier = Mathf.Clamp(1 - armorReduction, 0, 1); // Calculate the reduction multiplier based on armor reduction
         float effectiveArmor = totalArmor * reductionMultiplier; // Apply the armor reduction to the total armor
 
         float mitigation = effectiveArmor / (effectiveArmor + 100);
@@ -146,7 +145,7 @@ public class Entity_Stats : MonoBehaviour
 
         return finalEvasion;
     }
-   
+
     //  this method calculates the total maxHp we have accorfing to the Vitality stat and the base Health.
     public float GetMaxHealth()
     {
@@ -163,7 +162,68 @@ public class Entity_Stats : MonoBehaviour
         float baseMaxMana = resources.maxMana.GetValue();
         float bonusMaxMana = major.intelligence.GetValue() * 5; // each point of Intelligence gives +5 mana
         float finalMaxMana = baseMaxMana + bonusMaxMana;
-        
+
         return finalMaxMana; // Return the final maximum mana value
+    }
+
+    public Stat GetStatByType(StatType type)
+    {
+        switch (type)
+        {
+            case StatType.MaxHealth:
+                return resources.maxHealth;
+            case StatType.HealthRegen:
+                return resources.healthRegen;
+            case StatType.MaxMana:
+                return resources.maxMana;
+            case StatType.ManaRegen:
+                return resources.ManaRegen;
+
+            case StatType.Strength:
+                return major.strength;
+            case StatType.Luck:
+                return major.Luck;
+            case StatType.Intelligence:
+                return major.intelligence;
+            case StatType.Vitality:
+                return major.vitality;
+
+            case StatType.AttackSpeed:
+                return offense.attackSpeed;
+            case StatType.Damage:
+                return offense.damage;
+            case StatType.CritPower:
+                return offense.critpower;
+            case StatType.CritChance:
+                return offense.critchance;
+            case StatType.ArmorReduction:
+                return offense.armorReduction;
+
+            case StatType.FireDamage:
+                return offense.fireDamage;
+            case StatType.IceDamage:
+                return offense.iceDamage;
+            case StatType.LightningDamage:
+                return offense.lightningDamage;
+            case StatType.PoisonDamage:
+                return offense.poisonDamage;
+            
+            case StatType.Armor:
+                return defense.armor;
+            case StatType.Evasion:
+                return defense.evasion;
+            
+            case StatType.FireResistance:
+                return defense.fireRes;
+            case StatType.IceResistance:
+                return defense.iceRes;
+            case StatType.LightningResistance:
+                return defense.lightningRes;
+            case StatType.PoisonResistance:
+                return defense.poisonRes;
+            default:
+                Debug.LogError("Stat type not found: " + type);
+                return null; // Return null if the stat type is not found
+        }
     }
 }

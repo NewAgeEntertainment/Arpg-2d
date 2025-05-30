@@ -29,17 +29,18 @@ public abstract class Entity_Combat : MonoBehaviour
 
     public void PerformAttack()
     {
+
         foreach (var target in GetDetectedCollider())
         {
             IDamagable damagable = target.GetComponent<IDamagable>();// If the target does not have an IDamagable component, skip to the next target  
-            
+
             if (damagable == null)
                 continue;
-            
+
 
             float elementalDamage = stats.GetElementalDamage(out ElementType element, .6f); // Get the elemental damage and whether it was a critical hit  
             float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit  
-            
+
             bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
 
             if (element != ElementType.None) // If the element is not None, apply the status effect  
