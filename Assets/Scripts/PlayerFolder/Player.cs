@@ -16,9 +16,7 @@ public class Player : Entity
 
     [Header("Attack details")]
     public float[] attackMovement;
-    public Vector2[] attackVelocity;
     public Vector2 jumpAttackVelocity;
-    public float attackVelocityDuration = .1f;
     public float comboResetTime = 1;
     private Coroutine queuedAttackCo;
 
@@ -27,11 +25,7 @@ public class Player : Entity
     [Header("Movement details")]
     public float moveSpeed;
     public float jumpForce = 5;
-    public Vector2 wallJumpForce;
     [Range(0, 1)]
-    public float inAirMoveMultiplier = .7f; // Should be from 0 to 1;
-    [Range(0, 1)]
-    public float wallSlideSlowMultiplier = .7f;
     [Space]
     public float dashDuration = .25f;
     public float dashSpeed = 20;
@@ -59,6 +53,37 @@ public class Player : Entity
     {
         base.Start();
         stateMachine.Initialize(idleState);
+    }
+
+    protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
+    {
+        float originalMoveSpeed = moveSpeed; // Store the original move speed
+        float originalJumpForce = jumpForce; // Store the original jump force
+        float originalAnimSpeed = anim.speed; // Store the original animation speed
+        float originalAttackMovenment = attackMovement[0]; // Store the original attack movement speed  
+
+        float speedMultiplier = 1 - slowMultiplier; // Calculate the speed multiplier
+
+        moveSpeed = moveSpeed * speedMultiplier; // Apply the slowdown to move speed
+        jumpForce = jumpForce * speedMultiplier; // Apply the slowdown to jump force
+        anim.speed = anim.speed * speedMultiplier; // Apply the slowdown to animation speed
+        dashSpeed = dashSpeed * speedMultiplier; // Apply the slowdown to dash speed
+
+        for (int  i = 0;  i < attackMovement.Length;  i++)
+        {
+            attackMovement[i] = attackMovement[i] * speedMultiplier;
+        }
+
+        yield return new WaitForSeconds(duration); // Wait for the slowdown duration
+
+        moveSpeed = originalMoveSpeed; // Restore the original move speed
+        jumpForce = originalJumpForce; // Restore the original jump force
+        anim.speed = originalAnimSpeed; // Restore the original animation speed
+       
+        for (int i = 0; i < attackMovement.Length; i++)
+        {
+            attackMovement[i] = originalAttackMovenment; // Restore the original attack movement speed
+        }
     }
 
     public override void EntityDeath()

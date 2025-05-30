@@ -68,20 +68,7 @@ public class Enemy : Entity
         anim.speed = oringinalAnimSpeed; // Reset the enemy's animation speed to the original value
     }
 
-    // Added missing 'range' field
-    //[Header("Detection Range")]
-    //[SerializeField] private float range = 5;
-
-    // tryEnterBattleState method is in cause I want to enemy to enter battle state when player attacks
-    //public void TryEnterBattleState(Transform player)
-    //{
-
-    //    if (stateMachine.currentState == battleState || stateMachine.currentState == attackState) // Check if the current state is already battle state
-    //        return;
-
-    //    this.player = player;
-    //    stateMachine.ChangeState(battleState); // Change to the battle state
-    //}
+    
 
     public void EnableCounterWindow(bool enable) => canBeStunned = enable; // Enable or disable the counter window for the enemy
     //  (EnableCoounterWindow) returns canBeStunned to true or false
@@ -138,16 +125,7 @@ public class Enemy : Entity
         //    return;
         //}
 
-        //if (isKnocked == true)
-        //    return;
-
-        //Vector2 movedirection = ((Vector3)target - transform.position).normalized; // Calculate the direction to the target point  
-        //rb.linearVelocity = movedirection * moveSpeed; // Set the enemy's velocity towards the target  
-
-        //if (Vector2.Distance(transform.position, target) < .1f) // check if the enemy has reached the target point  
-        //{
-        //    StartCoroutine(SetPatrolPoint()); // Move to the next patrol point  
-        //}
+        
 
         stateMachine.currentState.Update();
 
@@ -162,23 +140,6 @@ public class Enemy : Entity
     //{
     //    attackIndicator.SetActive(false); // Deactivate the attack signal
     //}
-
-    //public virtual void Knockback(Transform playerTransform, float knockbackForce)
-    //{
-    //    // Calculate the knockback direction based on the player's position
-    //    Vector2 knockbackDirection = (transform.position - playerTransform.position).normalized; // Normalize the direction vector
-    //    rb.linearVelocity = knockbackDirection * knockbackForce; // Apply the knockback force to the rigidbody
-    //    Debug.Log("knockback works");
-    //}
-
-    //public virtual IEnumerator HitKnockBack()
-    //{
-    //    isKnocked = true;
-    //    yield return new WaitForSeconds(knockbackDuration);//(0.5f) I use a variable for the duration of the knockback instead of a hardcoded value
-    //    isKnocked = false;
-    //}
-
-
 
     public virtual IEnumerator SetPatrolPoint() // set patrol point  
     {

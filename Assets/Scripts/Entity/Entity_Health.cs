@@ -18,7 +18,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
     [Header("Heavy Damage Knockback")]
     [SerializeField] private float heavyDamageThreshold = 5f; // percentage of max hp to trigger heavy knockback
     [SerializeField] private float heavyKnockbackDuration = 5f; // Duration of the heavy knockback effect
-    [SerializeField] private Vector2 onHeavyDamageKnockback = new Vector2(7, 7); // Heavy knockback vector
+    [SerializeField] private float onHeavyDamageKnockback; // Heavy knockback vector
 
 
     protected virtual void Awake()
@@ -103,19 +103,25 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
         healthBar.value = currentHp / stats.GetMaxHealth(); // Update the health bar UI based on the current health points
     }
 
-    private Vector2 CalculateKnockback(float damage, Transform damageDealer)
+    
+
+private Vector2 CalculateKnockback(float damage, Transform damageDealer)
     {
         // Calculate the knockback direction based on the damage dealer's position  
         int xDirection = transform.position.x > damageDealer.position.x ? 1 : -1;
         int yDirection = transform.position.y > damageDealer.position.y ? 1 : -1;
 
         // Choose the knockback vector based on heavy damage  
-        Vector2 knockback = IsHeavyDamage(damage) ? onHeavyDamageKnockback : new Vector2(onDamageKnockback * xDirection, onDamageKnockback * yDirection);
+        Vector2 knockback = IsHeavyDamage(damage)
+            ? new Vector2(onHeavyDamageKnockback, onHeavyDamageKnockback) : new Vector2(onDamageKnockback * xDirection, onDamageKnockback * yDirection);
+
         return knockback;
     }
 
     private float CalculateKnockbackDuration(float damage)
     {
+        
+
         // Calculate the knockback duration based on the damage amount
         return IsHeavyDamage(damage) ? heavyKnockbackDuration : knockbackDuration;
     }

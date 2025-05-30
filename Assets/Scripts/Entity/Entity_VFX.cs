@@ -30,6 +30,12 @@ public class Entity_VFX : MonoBehaviour
         originalHitVfxColor = hitVfxColor;
     }
 
+    public void PlayOnStatusVfx(float duration, ElementType element)
+    {
+        if (element == ElementType.Ice)
+            StartCoroutine(PlayStatusVfxco(duration, chillVfx));
+    }
+
     private IEnumerator PlayStatusVfxco(float duration, Color effectColor)
     {
         float tickInterval = .25f; // How often the effect should update
@@ -46,9 +52,11 @@ public class Entity_VFX : MonoBehaviour
             toggle = !toggle; // Toggle the color for the next iteration
 
             yield return new WaitForSeconds(tickInterval); // Wait for the specified tick interval
-
+            timeHasPassed = timeHasPassed + tickInterval; // Update the timer
         }
-    
+
+        sr.color = Color.white; // Reset the sprite renderer color to white after the effect ends
+
     }
 
     public void CreateOnHitVFX(Transform target,bool isCrit)

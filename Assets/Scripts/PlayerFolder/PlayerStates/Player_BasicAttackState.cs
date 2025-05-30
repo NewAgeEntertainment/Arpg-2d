@@ -86,7 +86,7 @@ public class Player_BasicAttackState : PlayerState
         // change the method for it can work with 4 dirctional movment. 
         float attackMovement = player.attackMovement[comboIndex - 1];
 
-        attackVelocityTimer = player.attackVelocityDuration;
+        
         player.SetVelocity(attackMovement * attackDir, attackMovement * attackDiry);
     }// this is the method that sets the attack velocity.
 
