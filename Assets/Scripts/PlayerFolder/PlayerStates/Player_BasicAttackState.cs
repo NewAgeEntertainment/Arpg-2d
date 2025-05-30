@@ -26,6 +26,7 @@ public class Player_BasicAttackState : PlayerState
         base.Enter();
         comboAttackQueued = false;
         ResetComboIndexIfNeeded();
+        SyncAttackSpeed(); // Sync the attack speed with the player's stats
 
         // Modify attack direction based on player input  
         attackDir = player.currentDir.x; // Use xInput for horizontal direction  

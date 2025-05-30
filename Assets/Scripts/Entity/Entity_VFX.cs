@@ -15,6 +15,10 @@ public class Entity_VFX : MonoBehaviour
 
     [Header("On Doing Damage VFX")]
     [SerializeField] private Color hitVfxColor = Color.white;
+    [SerializeField] private Color burnVfx = Color.red; // Example color for burn effect
+    [SerializeField] private Color poisonVfx = Color.green; // Example color for poison effect
+    [SerializeField] private Color ElectrifyVfx = Color.yellow; // Example color for electrify effect
+    [SerializeField] private GameObject posionVfx; // Example GameObject for poison effect
     [SerializeField] private GameObject hitVfx;
     [SerializeField] private GameObject critHitVfx;
 
@@ -28,12 +32,29 @@ public class Entity_VFX : MonoBehaviour
         sr = GetComponentInChildren<SpriteRenderer>();
         originalMaterial = sr.material;
         originalHitVfxColor = hitVfxColor;
+        
     }
 
     public void PlayOnStatusVfx(float duration, ElementType element)
     {
         if (element == ElementType.Ice)
             StartCoroutine(PlayStatusVfxco(duration, chillVfx));
+        
+        if (element == ElementType.Fire)
+            StartCoroutine(PlayStatusVfxco(duration, burnVfx));
+        
+        if (element == ElementType.Poison)
+            StartCoroutine(PlayStatusVfxco(duration, poisonVfx));
+
+        if (element == ElementType.Lightning)
+            StartCoroutine(PlayStatusVfxco(duration, ElectrifyVfx));
+    }
+
+    public void StopAllVfx()
+    {
+        StopAllCoroutines(); // Stop all running coroutines to clear any ongoing visual effects
+        sr.color = Color.white; // Reset the sprite renderer color to white
+        sr.material = originalMaterial; // Reset the sprite renderer material to the original material
     }
 
     private IEnumerator PlayStatusVfxco(float duration, Color effectColor)

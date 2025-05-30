@@ -8,6 +8,8 @@ public class EnemyState : EntityState
 
         rb = enemy.rb;
         anim = enemy.anim;
+        stats = enemy.stats; // Get the Entity_Stats component from the enemy
+
     }
 
     public override void UpdateAnimationParameters()

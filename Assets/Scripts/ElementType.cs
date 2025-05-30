@@ -1,4 +1,4 @@
 using UnityEngine;
 
-public enum ElementType { None, Fire, Ice, Lightning}
+public enum ElementType { None, Fire, Ice, Lightning, Poison}
 

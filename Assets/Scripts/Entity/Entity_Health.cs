@@ -5,12 +5,16 @@ using UnityEngine.UI;
 public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities that can take damage
 {
     private Slider healthBar; // Reference to the health bar UI element
-    private Entity_VFX entityVfx;
     private Entity entity;
-    private Entity_Stats stats; // Reference to the Entity_Stats component for health calculations
+    private Entity_VFX entityVfx;
+    private Entity_Stats entityStats; // Reference to the Entity_Stats component for health calculations
 
-    [SerializeField] protected float currentHp; // Current health points, initialized to maximum health
+    [SerializeField] protected float currentHealth; // Current health points, initialized to maximum health
     [SerializeField] protected bool isDead;
+
+    [Header("Health regen")]
+    [SerializeField] private float regenInterval = 1f; // Amount of health to regenerate per second
+    [SerializeField] private bool canRegenerateHealth = true; // Flag to enable or disable health regeneration
 
     [Header("On Damage Knockback")]
     [SerializeField] private float knockbackDuration = 0.2f; // Duration of the knockback effect
@@ -25,11 +29,13 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
     {
         entity = GetComponent<Entity>(); // Get the Entity component attached to the same GameObject
         entityVfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
-        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
+        entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
         healthBar = GetComponentInChildren<Slider>(); // Get the Slider component for the health bar UI
 
-        currentHp = stats.GetMaxHealth(); // Initialize current health points to maximum health
-        updateHealthBar(); // Update the health bar UI to reflect the initial health points
+        currentHealth = entityStats.GetMaxHealth(); // Initialize current health points to maximum health
+        UpdateHealthBar(); // Update the health bar UI to reflect the initial health points
+
+        InvokeRepeating(nameof(RegenerateHealth), 0, regenInterval); // Start the health regeneration process at regular intervals
 
     }
 
@@ -50,16 +56,79 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
         Entity_Stats attackerStats = damageDealer.GetComponent<Entity_Stats>(); // Get the Entity_Stats component from the damage dealer
         float armorReduction = attackerStats != null ? attackerStats.GetArmorReduction() : 0; // Get the armor reduction value from the attacker's stats, if available
 
-        float mitigation = stats.GetArmorMitigation(armorReduction); // Get the armor mitigation value from the Entity_Stats component
+        float mitigation = entityStats.GetArmorMitigation(armorReduction); // Get the armor mitigation value from the Entity_Stats component
         float physicalDamageTaken = damage * (1 - mitigation); // Calculate the final damage after applying armor mitigation
 
-        float resistance = stats.GetElementalResistance(element);
+        float resistance = entityStats.GetElementalResistance(element);
         float elementalDamageTaken = elementalDamage * (1 - resistance);
         
         TakeKnockback(damageDealer, physicalDamageTaken);
-        ReduceHp(physicalDamageTaken + elementalDamageTaken); // Call the method to reduce health points
+        ReduceHealth(physicalDamageTaken + elementalDamageTaken); // Call the method to reduce health points
 
         return true; // Return true to indicate that damage was successfully applied
+    }
+
+    
+
+    private bool AttackEvaded()
+    {
+        // Placeholder for attack evasion logic, currently always returns false
+        // This can be expanded to include actual evasion mechanics in the future
+        return Random.Range(0, 100) < entityStats.GetEvasion(); // Randomly determine if the attack is evaded based on the entity's evasion stat
+    }
+
+    private void RegenerateHealth()
+    {
+        if (canRegenerateHealth == false)
+            return; // If health regeneration is disabled, do nothing
+
+        float regenAmount = entityStats.resources.healthRegen.GetValue(); // Get the health regeneration amount from the Entity_Stats component
+        IncreaseHealth(regenAmount); // Call the method to increase health points by the regeneration amount
+    }
+
+    public void IncreaseHealth(float healAmount)
+    {
+        if (isDead)
+            return;
+
+        float newHealth = currentHealth + healAmount; // Calculate the new health points after healing
+        float maxHealth = entityStats.GetMaxHealth(); // Get the maximum health points from the Entity_Stats component
+
+        // Ensure the new health does not exceed the maximum health
+        currentHealth = Mathf.Min(newHealth, maxHealth); // Set the current health to the minimum of new health and maximum health
+        UpdateHealthBar(); // Update the health bar UI to reflect the new health points
+        
+        //if (newHealth > maxHealth) other version
+        //    currentHealth = maxHealth; // If the new health exceeds maximum health, set it to maximum health
+        //else
+        //    currentHealth = newHealth; // Otherwise, set the current health to the new health points
+
+    }
+
+
+    public void ReduceHealth(float damage)
+    {
+
+        entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
+        currentHealth = currentHealth - damage; // Reduce the health points by the damage amount
+        UpdateHealthBar(); // Update the health bar UI to reflect the new health points
+
+        if (currentHealth < 0)
+            Die(); // If health points drop below 0, call the Die method
+    }
+
+    private void Die()
+    {
+        isDead = true; // Set the entity as dead
+        entity.EntityDeath(); // Call the EntityDeath method from the Entity class
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBar == null) 
+            return; // If the health bar is not assigned, do nothing
+        
+        healthBar.value = currentHealth / entityStats.GetMaxHealth(); // Update the health bar UI based on the current health points
     }
 
     private void TakeKnockback(Transform damageDealer, float finalDamage)
@@ -70,42 +139,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
         entity?.ReciveKnockback(knockback, duration); // Apply knockback effect
     }
 
-    private bool AttackEvaded()
-    {
-        // Placeholder for attack evasion logic, currently always returns false
-        // This can be expanded to include actual evasion mechanics in the future
-        return Random.Range(0, 100) < stats.GetEvasion(); // Randomly determine if the attack is evaded based on the entity's evasion stat
-    }
-
-
-    protected void ReduceHp(float damage)
-    {
-
-        entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
-        currentHp -= damage; // Reduce the health points by the damage amount
-        updateHealthBar(); // Update the health bar UI to reflect the new health points
-
-        if (currentHp < 0)
-            Die(); // If health points drop below 0, call the Die method
-    }
-
-    private void Die()
-    {
-        isDead = true; // Set the entity as dead
-        entity.EntityDeath(); // Call the EntityDeath method from the Entity class
-    }
-
-    private void updateHealthBar()
-    {
-        if (healthBar == null) 
-            return; // If the health bar is not assigned, do nothing
-        
-        healthBar.value = currentHp / stats.GetMaxHealth(); // Update the health bar UI based on the current health points
-    }
-
-    
-
-private Vector2 CalculateKnockback(float damage, Transform damageDealer)
+    private Vector2 CalculateKnockback(float damage, Transform damageDealer)
     {
         // Calculate the knockback direction based on the damage dealer's position  
         int xDirection = transform.position.x > damageDealer.position.x ? 1 : -1;
@@ -128,7 +162,7 @@ private Vector2 CalculateKnockback(float damage, Transform damageDealer)
 
 
 
-    private bool IsHeavyDamage(float damage) => damage / stats.GetMaxHealth() > heavyDamageThreshold; // Check if the damage is considered heavy based on the threshold
+    private bool IsHeavyDamage(float damage) => damage / entityStats.GetMaxHealth() > heavyDamageThreshold; // Check if the damage is considered heavy based on the threshold
     // damage / MaxHp is the percentage of max hp that is being taken away.
     // If the damage is greater than the threshold, it is considered heavy damage.
 

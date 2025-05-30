@@ -17,6 +17,7 @@ public abstract class PlayerState : EntityState
         anim = player.anim;
         rb = player.rb;
         input = player.input;
+        stats = player.stats; // Get the Entity_Stats component from the player
     }
 
     public override void Update()

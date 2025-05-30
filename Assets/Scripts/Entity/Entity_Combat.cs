@@ -14,6 +14,11 @@ public abstract class Entity_Combat : MonoBehaviour
     [Header("Status effect details")]
     [SerializeField] private float defaultDuration = 2f; // Default duration for the status effect  
     [SerializeField] private float chillSlowMultiplier = .2f;
+    [SerializeField] private float electrifyChargeBuildUp = .4f; // Charge build-up for the electrify effect
+    [Space]
+    [SerializeField] private float fireScale = .8f; // Scale factor for fire damage
+    [SerializeField] private float lightningScale = 2.5f; // Scale factor for lightning damage
+    [SerializeField] private float poisonScale = 1.5f; // Scale factor for poison damage
 
     private void Awake()
     {
@@ -32,13 +37,13 @@ public abstract class Entity_Combat : MonoBehaviour
                 continue;
             
 
-            float elementalDamage = stats.GetElementalDamage(out ElementType element); // Get the elemental damage and whether it was a critical hit  
+            float elementalDamage = stats.GetElementalDamage(out ElementType element, .6f); // Get the elemental damage and whether it was a critical hit  
             float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit  
             
             bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
 
             if (element != ElementType.None) // If the element is not None, apply the status effect  
-                ApplyStatusEffect(target.transform, element); // Apply the status effect to the target  
+                ApplyStatusEffect(target.transform, element); //.8f); // Apply the status effect to the target  
 
             if (targetGotHit)
             {
@@ -48,14 +53,35 @@ public abstract class Entity_Combat : MonoBehaviour
         }
     }
 
-    public void ApplyStatusEffect(Transform target, ElementType element)
+    public void ApplyStatusEffect(Transform target, ElementType element, float scaleFactor = 1)
     {
         Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();// Use TryGetComponent to avoid allocation if the component is not found  
         {
             if (element == ElementType.Ice && statusHandler.CanBeApplied(ElementType.Ice))
-                statusHandler.ApplyChilledEffect(defaultDuration, chillSlowMultiplier);
-            
-            
+                statusHandler.ApplyChillEffect(defaultDuration, chillSlowMultiplier);
+
+            if (element == ElementType.Fire && statusHandler.CanBeApplied(ElementType.Fire))
+            {
+                scaleFactor = fireScale; // Use the fire scale factor to adjust the damage
+                float fireDamage = stats.offense.fireDamage.GetValue() * scaleFactor; // Get the fire damage from the Entity_Stats component
+                statusHandler.ApplyBurnEffect(defaultDuration, fireDamage); // Apply the burn effect with the calculated damage
+            }
+
+            if (element == ElementType.Poison && statusHandler.CanBeApplied(ElementType.Poison))
+            {
+                scaleFactor = poisonScale; // Use the poison scale factor to adjust the damage
+                float poisonDamage = stats.offense.poisonDamage.GetValue() * scaleFactor; // Get the poison damage from the Entity_Stats component
+                statusHandler.ApplyPoisonEffect(defaultDuration, poisonDamage); // Apply the poison effect with the calculated damage
+            }
+
+            if (element == ElementType.Lightning && statusHandler.CanBeApplied(ElementType.Lightning))
+            {
+                scaleFactor = lightningScale; // Use the lightning scale factor to adjust the damage
+                float lightningDamage = stats.offense.lightningDamage.GetValue() * scaleFactor; // Get the lightning damage from the Entity_Stats component
+                statusHandler.ApplyElectrifyEffect(defaultDuration, lightningDamage, electrifyChargeBuildUp); // Apply the electrify effect with the calculated damage and charge build-up
+            }
+
+
         }
     }
 

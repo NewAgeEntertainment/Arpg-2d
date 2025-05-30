@@ -9,6 +9,7 @@ public class Enemy_AttackState : EnemyState
     public override void Enter()
     {
         base.Enter();
+        SyncAttackSpeed(); // Sync the attack speed with the enemy's stats
         rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering attack state
     }
 

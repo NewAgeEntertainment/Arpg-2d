@@ -3,17 +3,18 @@ using UnityEngine.Rendering;
 
 public class Entity_Stats : MonoBehaviour
 {
-    public Stat maxHealth; // Base maximum health points of the entity
+    public Stat_ResourceGroup resources; // Resource stats group containing max health, health regen, max mana, and mana regen
     public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
     public Stat_OffenseGroup offense; // Offense stats group containing damage, crit power, crit chance, and elemental damages
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
     
 
-    public float GetElementalDamage(out ElementType element)
+    public float GetElementalDamage(out ElementType element, float scaleFactor = 1)
     {
         float fireDamage = offense.fireDamage.GetValue();
         float iceDamage = offense.iceDamage.GetValue();
         float lightningDamage = offense.lightningDamage.GetValue();
+        float poisonDamage = offense.poisonDamage.GetValue(); // Poison damage, if applicable
         float bonusElementalDamage = major.intelligence.GetValue(); // Bonus Elemental damage from Intelligence +1 per INT
 
         float highestDamage = fireDamage;
@@ -24,7 +25,13 @@ public class Entity_Stats : MonoBehaviour
             highestDamage = iceDamage;
             element = ElementType.Ice; // Set element to Ice if it has the highest damage
         }
-           
+
+        if (poisonDamage > highestDamage)
+        {
+            highestDamage = poisonDamage;
+            element = ElementType.Poison; // Set element to Poison if it has the highest damage
+        }
+
 
         if (lightningDamage > highestDamage)
         {
@@ -41,11 +48,12 @@ public class Entity_Stats : MonoBehaviour
         float bonusFire = (fireDamage == highestDamage) ? 0 : fireDamage *.5f;
         float bonusIce = (iceDamage == highestDamage) ? 0 : iceDamage * .5f;
         float bonusLightning = (lightningDamage == highestDamage) ? 0 : lightningDamage * .5f;
+        float bonusPoison = (poisonDamage == highestDamage) ? 0 : poisonDamage * .5f; // Bonus damage for weaker elemental types
 
-        float weakerElementalDamage = bonusFire + bonusIce + bonusLightning; // Calculate the weaker elemental damage
+        float weakerElementalDamage = bonusFire + bonusIce + bonusLightning + poisonDamage; // Calculate the weaker elemental damage
         float finalDamage = highestDamage + weakerElementalDamage + bonusElementalDamage;
 
-        return finalDamage;
+        return finalDamage * scaleFactor;
     
     }
 
@@ -65,6 +73,9 @@ public class Entity_Stats : MonoBehaviour
             case ElementType.Lightning:
                 baseResistance = defense.lightningRes.GetValue();
                 break;
+            case ElementType.Poison:
+                baseResistance = defense.poisonRes.GetValue(); // Poison resistance, if applicable
+                break;
         }
 
         float resistance = baseResistance + bonusResistance;
@@ -74,7 +85,7 @@ public class Entity_Stats : MonoBehaviour
         return finalResistance;
     }
 
-    public float GetPhysicalDamage(out bool isCrit)
+    public float GetPhysicalDamage(out bool isCrit, float scaleFactor = 1)
     {
         float baseDamage = offense.damage.GetValue();
         float bonusDamage = major.strength.GetValue();
@@ -93,7 +104,7 @@ public class Entity_Stats : MonoBehaviour
         float finalDamage = isCrit ? totalBaseDamage * critPower : totalBaseDamage; // 
         
 
-        return finalDamage;
+        return finalDamage * scaleFactor;
     }
     
     public float GetArmorMitigation(float armorReduction)
@@ -139,11 +150,20 @@ public class Entity_Stats : MonoBehaviour
     //  this method calculates the total maxHp we have accorfing to the Vitality stat and the base Health.
     public float GetMaxHealth()
     {
-        float baseMaxHealth = maxHealth.GetValue();
+        float baseMaxHealth = resources.maxHealth.GetValue();
         float bonusMaxHealth = major.vitality.GetValue() * 5; // each point of Vitality gives +5 hp
         float finalMaxHealth = baseMaxHealth + bonusMaxHealth;
 
         return finalMaxHealth; // Return the final maximum health value
 
+    }
+
+    public float GetMaxMana()
+    {
+        float baseMaxMana = resources.maxMana.GetValue();
+        float bonusMaxMana = major.intelligence.GetValue() * 5; // each point of Intelligence gives +5 mana
+        float finalMaxMana = baseMaxMana + bonusMaxMana;
+        
+        return finalMaxMana; // Return the final maximum mana value
     }
 }
