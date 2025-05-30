@@ -15,8 +15,11 @@ public class Entity : MonoBehaviour
     [Header("KnockBack info")]
     //[SerializeField] protected float knockbackDuration;// this float variable is to swap 0.5 with your own inside the inspector // Duration of the knockback effect
     //public float knockbackForce; // Force applied during knockback
-    private Coroutine knockbakCo;
+
+    // Condition Variable
     private bool isKnocked; // Flag to check if the entity is knocked back
+    private Coroutine knockbakCo;
+    private Coroutine slowDownCo;
 
     public Transform player { get; private set; } // Reference to the player transform
 
@@ -94,6 +97,19 @@ public class Entity : MonoBehaviour
         //overrideable on other scripts because of virtual
 
 
+    }
+
+    public virtual void SlowDownEntity(float duration, float slowMultiplier)
+    {
+        if (slowDownCo != null)
+            StopCoroutine(slowDownCo); // Stop any existing slowdown coroutine
+
+        slowDownCo = StartCoroutine(SlowDownEntityCo(duration, slowMultiplier)); // Start the slowdown coroutine
+    }
+
+    protected virtual IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
+    {
+        yield return null; // Wait for the next frame to ensure the entity is not in a state that prevents slowing down
     }
 
     public void SetZeroVelocity()

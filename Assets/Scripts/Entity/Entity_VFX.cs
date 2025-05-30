@@ -18,11 +18,37 @@ public class Entity_VFX : MonoBehaviour
     [SerializeField] private GameObject hitVfx;
     [SerializeField] private GameObject critHitVfx;
 
+    [Header("Element Colors")]
+    [SerializeField] private Color chillVfx = Color.cyan;
+    private Color originalHitVfxColor;
+
     private void Awake()
     {
         entity = GetComponent<Entity>();
         sr = GetComponentInChildren<SpriteRenderer>();
         originalMaterial = sr.material;
+        originalHitVfxColor = hitVfxColor;
+    }
+
+    private IEnumerator PlayStatusVfxco(float duration, Color effectColor)
+    {
+        float tickInterval = .25f; // How often the effect should update
+        float timeHasPassed = 0f; // Timer to track the duration of the effect
+
+        Color lightColor = effectColor * 1.2f; // A lighter version of the effect color for the effect
+        Color darkColor = effectColor * .8f; // A darker version of the effect color for the effect
+
+        bool toggle = false; // Toggle to switch between light and dark colors
+    
+        while (timeHasPassed < duration)
+        {
+            sr.color = toggle ? lightColor : darkColor; // Set the sprite renderer color to the current color
+            toggle = !toggle; // Toggle the color for the next iteration
+
+            yield return new WaitForSeconds(tickInterval); // Wait for the specified tick interval
+
+        }
+    
     }
 
     public void CreateOnHitVFX(Transform target,bool isCrit)
@@ -49,6 +75,15 @@ public class Entity_VFX : MonoBehaviour
             vfx.transform.Rotate(0, 0, -270);
         }
 
+    }
+
+    public void UpdateOnHitColor(ElementType element)
+    {
+        if (element == ElementType.Ice)
+            hitVfxColor = chillVfx;
+
+        if (element == ElementType.None)
+            hitVfxColor = originalHitVfxColor;
     }
 
     public void PlayOnDamageVfx()

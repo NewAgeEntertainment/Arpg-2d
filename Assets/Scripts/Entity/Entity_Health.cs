@@ -38,7 +38,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
     // / Method to apply damage to the entity, including knockback and health reduction
     public virtual bool TakeDamage(float damage, float elementalDamage, ElementType element, Transform damageDealer)
     {
-        if (isDead) 
+        if (isDead)
             return false; // If the entity is already dead, do nothing
 
         if (AttackEvaded()) // Check if the attack was evaded
@@ -51,20 +51,23 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
         float armorReduction = attackerStats != null ? attackerStats.GetArmorReduction() : 0; // Get the armor reduction value from the attacker's stats, if available
 
         float mitigation = stats.GetArmorMitigation(armorReduction); // Get the armor mitigation value from the Entity_Stats component
-        float finalDamage = damage * (1 - mitigation); // Calculate the final damage after applying armor mitigation
+        float physicalDamageTaken = damage * (1 - mitigation); // Calculate the final damage after applying armor mitigation
 
         float resistance = stats.GetElementalResistance(element);
         float elementalDamageTaken = elementalDamage * (1 - resistance);
+        
+        TakeKnockback(damageDealer, physicalDamageTaken);
+        ReduceHp(physicalDamageTaken + elementalDamageTaken); // Call the method to reduce health points
 
+        return true; // Return true to indicate that damage was successfully applied
+    }
+
+    private void TakeKnockback(Transform damageDealer, float finalDamage)
+    {
         Vector2 knockback = CalculateKnockback(finalDamage, damageDealer); // Calculate the knockback vector based on the damage dealer's position
         float duration = CalculateKnockbackDuration(finalDamage); // Calculate the knockback duration based on the damage amount
 
-        entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
         entity?.ReciveKnockback(knockback, duration); // Apply knockback effect
-        ReduceHp(finalDamage); // Call the method to reduce health points
-        Debug.Log("Elemental damage Taken: " + elementalDamage + " - element:" + element);
-
-        return true; // Return true to indicate that damage was successfully applied
     }
 
     private bool AttackEvaded()
@@ -78,6 +81,7 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
     protected void ReduceHp(float damage)
     {
 
+        entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
         currentHp -= damage; // Reduce the health points by the damage amount
         updateHealthBar(); // Update the health bar UI to reflect the new health points
 

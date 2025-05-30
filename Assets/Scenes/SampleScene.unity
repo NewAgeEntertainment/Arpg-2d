@@ -1528,6 +1528,7 @@ GameObject:
   - component: {fileID: 624636224}
   - component: {fileID: 624636226}
   - component: {fileID: 624636227}
+  - component: {fileID: 624636228}
   m_Layer: 8
   m_Name: Enemy_Skeleton (1)
   m_TagString: Untagged
@@ -1598,7 +1599,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 7
+  m_Constraints: 4
 --- !u!4 &624636221
 Transform:
   m_ObjectHideFlags: 0
@@ -1636,50 +1637,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  attackDistance: 2.34
+  attackDistance: 1.99
   attackCooldown: 1
-  range: 4.32
+  range: 4.18
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
   attackIndicator: {fileID: 0}
   lastTimeAttacked: 0
-  battleMoveSpeedMultiplier: 1.39
+  battleMoveSpeed: 7
   stunnedDuration: 0.5
   stunnedVelocity: {x: 1, y: 1}
   canBeStunned: 0
   idleTime: 3
-  moveSpeed: 3
+  moveSpeed: 5
   pauseDuration: 5
   battleTime: 3.27
-  moveAnimSpeedMultiplier: 0.97
+  moveAnimSpeedMultiplier: 1
   patrolPoints:
   - {x: -16.3, y: 5.08}
   - {x: -1.22, y: 5.18}
   - {x: -1.22, y: 10.25}
   currentPatrolIndex: 0
   target: {x: 0, y: 0}
---- !u!114 &624636223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 624636217}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 142cd868a6454ac43843fef5664a8ae5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetCheck:
-  - {fileID: 475949202}
-  - {fileID: 405728740}
-  - {fileID: 533229312}
-  - {fileID: 127056605}
-  targetCheckRadius: 1.47
-  whatIsTarget:
-    serializedVersion: 2
-    m_Bits: 128
 --- !u!114 &624636224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1697,8 +1677,8 @@ MonoBehaviour:
   knockbackDuration: 5
   onDamageKnockback: 6.45
   heavyDamageThreshold: 1
-  heavyKnockbackDuration: 5
-  onHeavyDamageKnockback: {x: 7, y: 7}
+  heavyKnockbackDuration: 0
+  onHeavyDamageKnockback: {x: 0, y: 70}
 --- !u!114 &624636225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1716,6 +1696,7 @@ MonoBehaviour:
   hitVfxColor: {r: 0.83372265, g: 0.93207544, b: 0.80721253, a: 1}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
   critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
+  chillVfx: {r: 0, g: 1, b: 1, a: 1}
   attackAlert: {fileID: 2145020950}
 --- !u!114 &624636226
 MonoBehaviour:
@@ -1750,9 +1731,9 @@ MonoBehaviour:
     armorReduction:
       baseValue: 0
     fireDamage:
-      baseValue: 10
+      baseValue: 0
     iceDamage:
-      baseValue: 7
+      baseValue: 10
     lightningDamage:
       baseValue: 6
   defense:
@@ -1778,15 +1759,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d8239df1796c410c9e130ffeab05fe4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 22
   targetCheckRadius: 1.77
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 128
-  _targetCheck_Left: {fileID: 0}
-  _targetCheck_Right: {fileID: 0}
-  _targetCheck_Up: {fileID: 0}
-  _targetCheck_Down: {fileID: 0}
+  defaultDuration: 2
+  chillSlowMultiplier: 0
+--- !u!114 &624636228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624636217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cc2bd7c953c6f644a0f84699e1c0dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &640006883
 GameObject:
   m_ObjectHideFlags: 0
@@ -61907,6 +61897,7 @@ MonoBehaviour:
   hitVfxColor: {r: 1, g: 1, b: 1, a: 1}
   hitVfx: {fileID: 0}
   critHitVfx: {fileID: 0}
+  chillVfx: {r: 0, g: 1, b: 1, a: 1}
 --- !u!1 &1178330334
 GameObject:
   m_ObjectHideFlags: 0
@@ -62577,6 +62568,7 @@ GameObject:
   - component: {fileID: 1546843128}
   - component: {fileID: 1546843131}
   - component: {fileID: 1546843132}
+  - component: {fileID: 1546843133}
   m_Layer: 7
   m_Name: Player (1)
   m_TagString: Player
@@ -62737,6 +62729,7 @@ MonoBehaviour:
   hitVfxColor: {r: 1, g: 0.216981, b: 0.216981, a: 1}
   hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
   critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
+  chillVfx: {r: 0, g: 0.11566973, b: 1, a: 1}
 --- !u!114 &1546843130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62749,20 +62742,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 582dcf26d7460d44dbce2fed38905c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCheck:
-  - {fileID: 1461462654}
-  - {fileID: 624309044}
-  - {fileID: 1581580002}
-  - {fileID: 780117376}
   targetCheckRadius: 1.22
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 256
+  defaultDuration: 3
+  chillSlowMultiplier: 0.9
+  counterRecovery: 0.25
   _targetCheck_Left: {fileID: 624309044}
   _targetCheck_Right: {fileID: 1461462654}
   _targetCheck_Up: {fileID: 1581580002}
   _targetCheck_Down: {fileID: 780117376}
-  counterRecovery: 0.25
 --- !u!114 &1546843131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62798,7 +62788,7 @@ MonoBehaviour:
     fireDamage:
       baseValue: 0
     iceDamage:
-      baseValue: 0
+      baseValue: 11
     lightningDamage:
       baseValue: 0
   defense:
@@ -62858,6 +62848,18 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.84, y: 2.04}
   m_EdgeRadius: 0
+--- !u!114 &1546843133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546843122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cc2bd7c953c6f644a0f84699e1c0dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1554323854
 GameObject:
   m_ObjectHideFlags: 0
@@ -64036,7 +64038,7 @@ MonoBehaviour:
     m_Bits: 128
   attackIndicator: {fileID: 0}
   lastTimeAttacked: 0
-  battleMoveSpeedMultiplier: 1
+  battleMoveSpeed: 0
   stunnedDuration: 1
   stunnedVelocity: {x: 7, y: 7}
   canBeStunned: 0

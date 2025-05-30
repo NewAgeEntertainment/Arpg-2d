@@ -5,67 +5,68 @@ public abstract class Entity_Combat : MonoBehaviour
 {
     protected Entity _entity;
     private Entity_VFX vfx;
-    private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations
-
-
-
+    private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
 
     [Header("Target detection")]
-    // [SerializeField] private Transform[] targetCheck;
     [SerializeField] protected float targetCheckRadius;
     [SerializeField] protected LayerMask whatIsTarget;
+
+    [Header("Status effect details")]
+    [SerializeField] private float defaultDuration = 2f; // Default duration for the status effect  
+    [SerializeField] private float chillSlowMultiplier = .2f;
 
     private void Awake()
     {
         _entity = GetComponent<Entity>();
-        vfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
-        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject, if needed for combat calculations
+        vfx = GetComponent<Entity_VFX>(); // Replaced TryGetComponent with GetComponent to avoid allocation when no component is found  
+        stats = GetComponent<Entity_Stats>(); // Replaced TryGetComponent with GetComponent to avoid allocation when no component is found  
     }
-
-
 
     public void PerformAttack()
     {
         foreach (var target in GetDetectedCollider())
         {
-            if (!target.TryGetComponent(out IDamagable damagable)) // If the target does not have an IDamagable component, skip to the next target  
-            {
-                continue;
-            }
-
-            float elementalDamage = stats.GetElementalDamage(out ElementType element); // Get the elemental damage and whether it was a critical hit
-            float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit
-            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+            IDamagable damagable = target.GetComponent<IDamagable>();// If the target does not have an IDamagable component, skip to the next target  
             
-            if(targetGotHit)
-                vfx?.CreateOnHitVFX(target.transform,isCrit); // Create a hit visual effect at the target's position  
+            if (damagable == null)
+                continue;
+            
+
+            float elementalDamage = stats.GetElementalDamage(out ElementType element); // Get the elemental damage and whether it was a critical hit  
+            float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit  
+            
+            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+
+            if (element != ElementType.None) // If the element is not None, apply the status effect  
+                ApplyStatusEffect(target.transform, element); // Apply the status effect to the target  
+
+            if (targetGotHit)
+            {
+                vfx.UpdateOnHitColor(element);
+                vfx?.CreateOnHitVFX(target.transform, isCrit); // Create a hit visual effect at the target's position  
+            }
+        }
+    }
+
+    public void ApplyStatusEffect(Transform target, ElementType element)
+    {
+        Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();// Use TryGetComponent to avoid allocation if the component is not found  
+        {
+            if (element == ElementType.Ice && statusHandler.CanBeApplied(ElementType.Ice))
+                statusHandler.ApplyChilledEffect(defaultDuration, chillSlowMultiplier);
+            
+            
         }
     }
 
     public abstract Collider2D[] GetDetectedCollider();
 
-    // protected Collider2D[] GetDetectedCollider() // method to get detected colliders  
-    // {
-    //     // Initialize an empty list to store detected colliders  
-    //     List<Collider2D> detected = new List<Collider2D>();
-
-    //     Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTargetTransform().position, targetCheckRadius, whatIsTarget);
-
-    //     // Combine the detected colliders into the list  
-    //     detected.AddRange(colliders);
-
-    //     // Return the combined colliders as an array  
-    //     return detected.ToArray();
-    // }
-
-
-
-    private Collider2D[] CombineColliders(Collider2D[] array1, Collider2D[] array2) // Combine two arrays of colliders
+    private Collider2D[] CombineColliders(Collider2D[] array1, Collider2D[] array2) // Combine two arrays of colliders  
     {
-        Collider2D[] combined = new Collider2D[array1.Length + array2.Length]; // create a new array with the size of both arrays combined
+        Collider2D[] combined = new Collider2D[array1.Length + array2.Length]; // create a new array with the size of both arrays combined  
         array1.CopyTo(combined, 0);
-        array2.CopyTo(combined, array1.Length); // copy the first array to the new array
-        return combined; // return the combined array
+        array2.CopyTo(combined, array1.Length); // copy the first array to the new array  
+        return combined; // return the combined array  
     }
 }
 

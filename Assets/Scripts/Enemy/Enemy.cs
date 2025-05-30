@@ -20,7 +20,7 @@ public class Enemy : Entity
     [SerializeField] protected LayerMask whatIsPlayer; // Layer mask for the player layer
     [SerializeField] public GameObject attackIndicator; // Reference to the attack signal GameObject
     [HideInInspector] public float lastTimeAttacked;
-    public float battleMoveSpeedMultiplier = 1;
+    public float battleMoveSpeed = 3f;
 
     [Header("Stunned State details")]
     public float stunnedDuration = 1; // Duration of the stunned state
@@ -29,7 +29,7 @@ public class Enemy : Entity
 
     [Header("Movement details")]
     public float idleTime;
-    public float moveSpeed;
+    public float moveSpeed = 1.4f;
     public float pauseDuration;
     public float battleTime; // Time the enemy stays in battle state
     [Range(0, 2)]
@@ -46,9 +46,27 @@ public class Enemy : Entity
 
     [Header("Player detection")]
     public Transform player { get; private set; } // Reference to the player transform
-                                                  //[SerializeField] private LayerMask whatIsPlayer;
-                                                  //[SerializeField] private Transform playerCheck;
-                                                  //[SerializeField] private float playerCheckDistance = 10;
+
+    protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
+    {
+        float originalSpeed = moveSpeed; // Store the original speed of the enemy
+        float originalBattleSpeed = battleMoveSpeed;
+        float oringinalAnimSpeed = anim.speed; // Store the original animation speed multiplier
+
+        float speedMultiplier = 1 - slowMultiplier; // Calculate the speed multiplier based on the slow multiplier
+
+        moveSpeed = moveSpeed * speedMultiplier; // Apply the speed multiplier to the enemy's move speed
+        battleMoveSpeed = battleMoveSpeed * speedMultiplier; // Apply the speed multiplier to the enemy's battle move speed
+        anim.speed = anim.speed * speedMultiplier; // Apply the speed multiplier to the enemy's animation speed
+
+
+        yield return new WaitForSeconds(duration);
+
+        // after Yield Return, Reset the enemy's speed and animation to their original values after the slowdown duration
+        moveSpeed = originalSpeed; // Reset the enemy's move speed to the original value
+        battleMoveSpeed = originalBattleSpeed; // Reset the enemy's battle move speed to the original value
+        anim.speed = oringinalAnimSpeed; // Reset the enemy's animation speed to the original value
+    }
 
     // Added missing 'range' field
     //[Header("Detection Range")]
