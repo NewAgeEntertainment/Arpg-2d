@@ -9,5 +9,5 @@ public class Stat_ResourceGroup
 
 
     public Stat maxMana;
-    public Stat ManaRegen;
+    public Stat manaRegen;
 }

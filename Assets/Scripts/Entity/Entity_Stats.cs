@@ -2,10 +2,13 @@ using UnityEngine;
 
 public class Entity_Stats : MonoBehaviour
 {
+    public Stat_SetupS0 defaultStatSetup; // Reference to the stat setup ScriptableObject containing base values for stats
+
+
     public Stat_ResourceGroup resources; // Resource stats group containing max health, health regen, max mana, and mana regen
-    public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
     public Stat_OffenseGroup offense; // Offense stats group containing damage, crit power, crit chance, and elemental damages
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
+    public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
 
 
     public float GetElementalDamage(out ElementType element, float scaleFactor = 1)
@@ -166,9 +169,10 @@ public class Entity_Stats : MonoBehaviour
         return finalMaxMana; // Return the final maximum mana value
     }
 
+    // This method retrieves a specific stat based on its type.
     public Stat GetStatByType(StatType type)
     {
-        switch (type)
+        switch (type) // switch statement to determine the type of stat requested
         {
             case StatType.MaxHealth:
                 return resources.maxHealth;
@@ -177,7 +181,7 @@ public class Entity_Stats : MonoBehaviour
             case StatType.MaxMana:
                 return resources.maxMana;
             case StatType.ManaRegen:
-                return resources.ManaRegen;
+                return resources.manaRegen;
 
             case StatType.Strength:
                 return major.strength;
@@ -225,5 +229,42 @@ public class Entity_Stats : MonoBehaviour
                 Debug.LogError("Stat type not found: " + type);
                 return null; // Return null if the stat type is not found
         }
+    }
+
+    // This method retrieves a specific stat based on its type as a string.
+    [ContextMenu("Update Default Stat Setup")]
+    //goes with scriptable object Stat_SetupS0.cs
+    // This method applies the default stat setup from the assigned ScriptableObject.
+    public void ApplyDefaultStatSetup()
+    {
+        if (defaultStatSetup == null) // check if the defaultStatSetup is assigned
+        {
+            Debug.Log("No Default stat setup assigned");
+            return;
+        }
+
+        resources.maxHealth.SetBaseValue(defaultStatSetup.maxHealth);
+        resources.healthRegen.SetBaseValue(defaultStatSetup.healthRegen);
+        resources.maxMana.SetBaseValue(defaultStatSetup.maxMana);
+        resources.manaRegen.SetBaseValue(defaultStatSetup.manaRegen);
+
+        offense.attackSpeed.SetBaseValue(defaultStatSetup.attackSpeed);
+        offense.damage.SetBaseValue(defaultStatSetup.damage);
+        offense.critchance.SetBaseValue(defaultStatSetup.critChance);
+        offense.critpower.SetBaseValue(defaultStatSetup.critPower);
+        offense.armorReduction.SetBaseValue(defaultStatSetup.armorReduction);
+
+        offense.fireDamage.SetBaseValue(defaultStatSetup.fireDamage);
+        offense.iceDamage.SetBaseValue(defaultStatSetup.iceDamage);
+        offense.lightningDamage.SetBaseValue(defaultStatSetup.lightningDamage);
+        offense.poisonDamage.SetBaseValue(defaultStatSetup.poisonDamage);
+
+        defense.armor.SetBaseValue(defaultStatSetup.armor);
+        defense.evasion.SetBaseValue(defaultStatSetup.evasion);
+
+        defense.fireRes.SetBaseValue(defaultStatSetup.fireResistance);
+        defense.iceRes.SetBaseValue(defaultStatSetup.iceResistance);
+        defense.lightningRes.SetBaseValue(defaultStatSetup.lightningResistance);
+        defense.poisonRes.SetBaseValue(defaultStatSetup.poisonResistance);
     }
 }

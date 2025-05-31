@@ -49,6 +49,10 @@ public class Stat
         return finalValue; // Return the final value after applying all modifiers
     }
 
+    // goes with ScriptableObject Stat_SetupS0
+    // Sets the base value of the stat
+    public void SetBaseValue(float value) => baseValue = value;
+
 }
 
 [Serializable]
