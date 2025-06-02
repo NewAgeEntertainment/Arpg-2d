@@ -56,9 +56,12 @@ public class Enemy_BattleState : EnemyState
         }
 
         moveDir = new Vector2(player.position.x - enemy.transform.position.x, player.position.y - enemy.transform.position.y);
+        moveDir.Normalize();
 
-        enemy.anim.SetFloat("xInput", moveDir.x);
-        enemy.anim.SetFloat("yInput", moveDir.y);
+        enemy.currentDir = moveDir; // Update the enemy's current direction
+
+        enemy.anim.SetFloat("xInput", enemy.currentDir.x);
+        enemy.anim.SetFloat("yInput", enemy.currentDir.y);
 
         moveDir.Normalize();
 

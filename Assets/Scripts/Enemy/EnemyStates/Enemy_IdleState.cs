@@ -12,32 +12,36 @@ public class Enemy_IdleState : Enemy_GroundedState
     {
         base.Enter();
 
-        rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering idle state
+        Debug.Log("Idle State Entered");
+
+        rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering idle state  
 
         stateTimer = enemy.idleTime;
         enemy.anim.SetFloat("xInput", enemy.currentDir.x);
         enemy.anim.SetFloat("yInput", enemy.currentDir.y);
-        //if (enemy.isPaused)
-        //{
-        //    enemy.StartCoroutine(enemy.IdleEnemy());
-        //}
-
     }
 
     public override void Update()
     {
         base.Update();
 
-        if (enemy.IsPlayerDetected())
+        if (stateTimer < 0 && !enemy.isPaused) // Corrected the condition
         {
-
-            stateMachine.ChangeState(enemy.battleState);
-            //enemy.isPaused = false; // Reset the pause state when exiting
+            stateMachine.ChangeState(enemy.patrollingState); // Change to patrolling state after idle time
+            return;
         }
+
+        //if (enemy.IsPlayerDetected())
+        //{
+        //    stateMachine.ChangeState(enemy.battleState);
+        //}
     }
 
     public override void Exit()
     {
         base.Exit();
+        Debug.Log("Idle State Exited");
     }
+
+    
 }

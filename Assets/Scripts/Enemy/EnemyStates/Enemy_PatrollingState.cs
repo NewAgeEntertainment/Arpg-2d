@@ -10,23 +10,26 @@ public class Enemy_PatrollingState : Enemy_GroundedState
     {
         base.Enter();
 
-        enemy.target = enemy.patrolPoints[0]; // Initialize the target to the first patrol point
+        // If entering from Idle state, move to the next patrol point  
+        if (enemy.previousState == enemy.idleState)
+        {
+            enemy.StartCoroutine(enemy.SetPatrolPoint());
+        }
 
-        enemy.anim.SetFloat("xInput", enemy.currentDir.x);
-        enemy.anim.SetFloat("yInput", enemy.currentDir.y);
-        Debug.Log("Patrolling State Entered");
+        enemy.target = enemy.patrolPoints[enemy.currentPatrolIndex]; // Set the target to the current patrol point  
+
+        
     }
 
     public override void Exit()
     {
         base.Exit();
+        
     }
 
     public override void Update()
     {
         base.Update();
-        enemy.anim.SetFloat("xInput", enemy.currentDir.x);
-        enemy.anim.SetFloat("yInput", enemy.currentDir.y);
 
         if (enemy.PlayerDetected()) // 
         {
@@ -36,6 +39,9 @@ public class Enemy_PatrollingState : Enemy_GroundedState
         if (enemy.isPaused)
         {
             rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when paused
+            
+            stateMachine.ChangeState(enemy.idleState); // Change to idle state if paused
+
             return;
         }
 
@@ -46,6 +52,8 @@ public class Enemy_PatrollingState : Enemy_GroundedState
         {
             enemy.StartCoroutine(enemy.SetPatrolPoint()); // Move to the next patrol point  
         }
+
+        // Update the enemy's current direction based on the movement direction
 
     }
 }
