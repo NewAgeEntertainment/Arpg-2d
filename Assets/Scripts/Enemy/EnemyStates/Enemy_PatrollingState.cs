@@ -10,6 +10,13 @@ public class Enemy_PatrollingState : Enemy_GroundedState
     {
         base.Enter();
 
+        // If entering from Battle state, set animation  
+        if (enemy.previousState == enemy.battleState)
+        {
+            enemy.anim.SetFloat("xInput", enemy.currentDir.x);
+            enemy.anim.SetFloat("xInput", enemy.currentDir.y);
+        }
+
         // If entering from Idle state, move to the next patrol point  
         if (enemy.previousState == enemy.idleState)
         {
@@ -17,8 +24,6 @@ public class Enemy_PatrollingState : Enemy_GroundedState
         }
 
         enemy.target = enemy.patrolPoints[enemy.currentPatrolIndex]; // Set the target to the current patrol point  
-
-        
     }
 
     public override void Exit()
@@ -30,6 +35,9 @@ public class Enemy_PatrollingState : Enemy_GroundedState
     public override void Update()
     {
         base.Update();
+       
+        enemy.anim.SetFloat("xInput", enemy.currentDir.x);
+        enemy.anim.SetFloat("yInput", enemy.currentDir.y);
 
         if (enemy.PlayerDetected()) // 
         {
@@ -52,6 +60,7 @@ public class Enemy_PatrollingState : Enemy_GroundedState
         {
             enemy.StartCoroutine(enemy.SetPatrolPoint()); // Move to the next patrol point  
         }
+
 
         // Update the enemy's current direction based on the movement direction
 

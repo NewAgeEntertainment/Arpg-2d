@@ -1,36 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &464045282774249207
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1152253627525763525}
-  m_Layer: 7
-  m_Name: TargetCheck_R
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1152253627525763525
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 464045282774249207}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.19, y: 0.27999997, z: 0.04080917}
-  m_LocalScale: {x: 0.3846154, y: 0.3846154, z: 0.7692308}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3120721964236728205}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &918106640670124927
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,7 +592,7 @@ MonoBehaviour:
   fireScale: 0.8
   lightningScale: 2.5
   poisonScale: 1.5
-  TargetCheck: {fileID: 0}
+  targetCheck: {fileID: 0}
 --- !u!114 &946440742310543714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -781,10 +750,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 4160530579316615442}
-  - {fileID: 1152253627525763525}
-  - {fileID: 2573770661515405645}
+  m_Children: []
   m_Father: {fileID: 5510462054552448366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &5184473181553669639
@@ -876,68 +842,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b935948d3c5b67458df5069aa4676ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &4419110751951394651
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2573770661515405645}
-  m_Layer: 7
-  m_Name: TargetCheck_U
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2573770661515405645
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4419110751951394651}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.0050001144, y: 1.2349999, z: 0.04080917}
-  m_LocalScale: {x: 0.3846154, y: 0.3846154, z: 0.7692308}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3120721964236728205}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &4985280553146406205
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4160530579316615442}
-  m_Layer: 7
-  m_Name: TargetCheck_L
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4160530579316615442
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4985280553146406205}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.96500015, y: 0.30999994, z: 0}
-  m_LocalScale: {x: 0.3846154, y: 0.3846154, z: 0.7692308}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3120721964236728205}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6857865859525928353
 GameObject:
   m_ObjectHideFlags: 0

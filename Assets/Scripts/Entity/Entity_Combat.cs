@@ -38,7 +38,7 @@ public abstract class Entity_Combat : MonoBehaviour
                 continue;
 
 
-            float elementalDamage = stats.GetElementalDamage(out ElementType element, .6f); // Get the elemental damage and whether it was a critical hit  
+            float elementalDamage = stats.GetElementalDamage(out ElementType element, .6f); // Get the elemental damage and whether it was a critical hit
             float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit  
 
             bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
@@ -96,6 +96,14 @@ public abstract class Entity_Combat : MonoBehaviour
         return combined; // return the combined array  
     }
 }
+
+// The issue lies in the line where `stats.GetElementalDamage` is called.  
+// The method `GetElementalDamage` is expected to return an elemental damage value and an `ElementType` through the `out` parameter.  
+// However, the `ElementType` enum only has a single value `None` defined, which means no other elemental types are available.  
+// This could lead to incorrect behavior when applying elemental effects or calculating damage.  
+
+
+
 
 
 //// orignal code to get detected colliders while looping through each target check transform.

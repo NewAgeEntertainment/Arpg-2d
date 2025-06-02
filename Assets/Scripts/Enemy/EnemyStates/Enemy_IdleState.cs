@@ -12,7 +12,7 @@ public class Enemy_IdleState : Enemy_GroundedState
     {
         base.Enter();
 
-        Debug.Log("Idle State Entered");
+        
 
         rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering idle state  
 
@@ -31,16 +31,13 @@ public class Enemy_IdleState : Enemy_GroundedState
             return;
         }
 
-        //if (enemy.IsPlayerDetected())
-        //{
-        //    stateMachine.ChangeState(enemy.battleState);
-        //}
+        
     }
 
     public override void Exit()
     {
         base.Exit();
-        Debug.Log("Idle State Exited");
+        
     }
 
     

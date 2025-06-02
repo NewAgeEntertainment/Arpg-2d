@@ -52,7 +52,7 @@ public class Enemy_BattleState : EnemyState
         else
         {
             if (stateTimer < 0 || Vector2.Distance(player.transform.position, enemy.transform.position) > 7)
-                stateMachine.ChangeState(enemy.patrollingState);
+                stateMachine.ChangeState(enemy.idleState);
         }
 
         moveDir = new Vector2(player.position.x - enemy.transform.position.x, player.position.y - enemy.transform.position.y);
@@ -75,7 +75,7 @@ public class Enemy_BattleState : EnemyState
             enemy.lastTimeAttacked = Time.time;
             return true;
         }
-        Debug.Log("Attack is on cooldown");
+        
         return false;
     }
 
@@ -84,4 +84,13 @@ public class Enemy_BattleState : EnemyState
     //    // Add this method to resolve CS0103
     //    stateTimer = enemy.battleTime;
     //}
+
+    public override void Exit()
+    {
+        base.Exit();
+        Debug.Log("Battle State Exited");
+
+        enemy.anim.SetFloat("xInput", 0f);
+        enemy.anim.SetFloat("yInput", 0f);
+    }
 }
