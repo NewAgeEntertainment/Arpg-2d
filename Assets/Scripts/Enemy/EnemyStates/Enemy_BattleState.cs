@@ -20,7 +20,7 @@ public class Enemy_BattleState : EnemyState
         //{
         //   // player = enemy.GetPlayerReference();
         //}
-        Debug.Log("Battle State Entered");
+        
     }
 
     public override void Update()
@@ -29,12 +29,12 @@ public class Enemy_BattleState : EnemyState
 
         if (player == null)
         {
-            Debug.LogWarning("Player reference is null. Skipping Update logic.");
+            
             return;
         }
 
         Collider2D detectedPlayer = enemy.PlayerDetected();
-        Debug.Log("Detected Player: " + detectedPlayer);
+        
         if (detectedPlayer != null)
         {
             stateTimer = enemy.battleTime;
@@ -88,7 +88,7 @@ public class Enemy_BattleState : EnemyState
     public override void Exit()
     {
         base.Exit();
-        Debug.Log("Battle State Exited");
+        
 
         enemy.anim.SetFloat("xInput", 0f);
         enemy.anim.SetFloat("yInput", 0f);
