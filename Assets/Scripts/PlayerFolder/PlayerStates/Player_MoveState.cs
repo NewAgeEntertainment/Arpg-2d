@@ -1,3 +1,4 @@
+using Rewired;
 using UnityEngine;
 
 public class Player_MoveState : Player_GroundedState
@@ -6,27 +7,35 @@ public class Player_MoveState : Player_GroundedState
     {
     }
 
+    //protected override void FixedUpdate()
+    //{
+    //    base.FixedUpdate();
+
+    //    player.anim.SetFloat("xInput", player.moveInput.x);
+    //    player.anim.SetFloat("yInput", player.moveInput.y);
+    //}
+
     public override void Update()
     {
         base.Update();
 
-        player.anim.SetFloat("xInput", xInput); // x 
-        player.anim.SetFloat("yInput", yInput);
-        // yinput perameters isnt being set in the animator. why?
+        // Use Rewired for input handling  
 
-        if (xInput == 0 && yInput == 0)
+        // Update animator parameters  
+        player.anim.SetFloat("xInput", player.moveInput.x);
+        player.anim.SetFloat("yInput", player.moveInput.y);
+
+        // Transition to idle state if no input  
+        if (player.moveInput.x == 0 && player.moveInput.y == 0)
         {
             stateMachine.ChangeState(player.idleState);
         }
         else
         {
-            player.currentDir = new Vector2(xInput, yInput); // Update currentDir based on input
+            player.currentDir = new Vector2(player.moveInput.x, player.moveInput.y); // Update current direction  
         }
-        
-            // Fix: Directly set the currentDirection property since no SetCurrentDirection method exists
-            
-        
 
-        player.SetVelocity(xInput * player.moveSpeed, yInput * player.moveSpeed); // set
+        // Set player velocity based on input  
+        player.SetVelocity(player.moveInput.x * player.moveSpeed, player.moveInput.y * player.moveSpeed);
     }
 }

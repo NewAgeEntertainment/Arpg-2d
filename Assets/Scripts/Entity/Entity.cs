@@ -33,6 +33,11 @@ public class Entity : MonoBehaviour
 
     }
 
+    protected virtual void FixedUpdate()
+    {
+
+    }
+
     protected virtual void Update()
     {
 

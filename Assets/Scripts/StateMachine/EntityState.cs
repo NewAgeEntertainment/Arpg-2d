@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Windows;
+using Rewired; // Ensure you have the Rewired package installed for input handling
 
 public abstract class EntityState 
 {

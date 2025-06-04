@@ -1,14 +1,20 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using Rewired; // Ensure you have the Rewired package installed for input handling
 
 public abstract class PlayerState : EntityState
 {
-    //protected float xInput; // Use 'new' keyword to explicitly hide the inherited member
-    //protected float yInput; // Use 'new' keyword to explicitly hide the inherited member
+    protected float xInput; // Use 'new' keyword to explicitly hide the inherited member    
+    protected float yInput; // Use 'new' keyword to explicitly hide the inherited member    
 
     protected Player player;
     protected PlayerInputSet input;
+
+    [SerializeField] private int playerID = 0; // Player ID for multiplayer support    
+    [SerializeField] private Rewired.Player rPlayer;
+
+    protected Vector2 moveInput; // Declare moveInput to fix CS0103    
 
     public PlayerState(Player player, StateMachine stateMachine, string animBoolName) : base(stateMachine, animBoolName)
     {
@@ -17,20 +23,21 @@ public abstract class PlayerState : EntityState
         anim = player.anim;
         rb = player.rb;
         input = player.input;
-        stats = player.stats; // Get the Entity_Stats component from the player
+        stats = player.stats; // Get the Entity_Stats component from the player    
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
     }
 
     public override void Update()
     {
         base.Update();
-        xInput = Input.GetAxisRaw("Horizontal");
-        yInput = Input.GetAxisRaw("Vertical");
+        xInput = rPlayer.GetAxis("Horizontal");
+        yInput = rPlayer.GetAxis("Vertical");
 
-        // this is the new input system.
-        //if (input.Player.Dash.WasPressedThisFrame() && CanDash())
-        //    stateMachine.ChangeState(player.dashState);
-
-        /// this is the old input system.
         if (Input.GetKeyDown(KeyCode.F) && CanDash())
             stateMachine.ChangeState(player.dashState);
 
@@ -51,7 +58,6 @@ public abstract class PlayerState : EntityState
         return true;
     }
 
-    
     private bool CanThrust()
     {
         if (stateMachine.currentState == player.thrustState)

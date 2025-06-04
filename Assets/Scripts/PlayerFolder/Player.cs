@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-
+using Rewired; // Ensure you have the Rewired package installed for input handling
 public class Player : Entity
 {
     public static event Action OnPlayerDeath;
@@ -16,13 +16,17 @@ public class Player : Entity
     public Player_DeadState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
 
+    [SerializeField] private int playerID = 0; // Player ID for multiplayer support
+    [SerializeField] private Rewired.Player rPlayer; // Rewired player instance for input handling
+
     [Header("Attack details")]
     public float[] attackMovement;
     public Vector2 jumpAttackVelocity;
     public float comboResetTime = 1;
     private Coroutine queuedAttackCo;
 
-
+    private float xInput; // Horizontal input from Rewired
+    private float yInput; // Vertical input from Rewired
 
     [Header("Movement details")]
     public float moveSpeed;
@@ -56,7 +60,10 @@ public class Player : Entity
     {
         base.Start();
         stateMachine.Initialize(idleState);
+        
     }
+
+    
 
     protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
     {
@@ -119,10 +126,19 @@ public class Player : Entity
         input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
 
         input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
+
+        
     }
 
     private void OnDisable()
     {
         input.Disable();
+    }
+    
+
+    private bool IsGrounded()
+    {
+        // Check if the player is grounded (you can implement this based on your game logic)  
+        return Physics2D.Raycast(transform.position, Vector2.down, 0.1f, LayerMask.GetMask("Ground"));
     }
 }
