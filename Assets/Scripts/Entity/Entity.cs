@@ -8,7 +8,7 @@ public class Entity : MonoBehaviour
     public Entity_Stats stats { get; private set; } // Reference to the entity's stats
     protected StateMachine stateMachine;
 
-    public Vector2 currentDir;
+    [HideInInspector] public Vector2 currentDir;
 
     [Header("KnockBack info")]
     // Condition Variable
@@ -16,7 +16,7 @@ public class Entity : MonoBehaviour
     private Coroutine knockbakCo;
     private Coroutine slowDownCo;
 
-    public Transform player { get; private set; } // Reference to the player transform
+
 
     protected virtual void Awake()
     {

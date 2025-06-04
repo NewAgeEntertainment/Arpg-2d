@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using Rewired; // Ensure you have the Rewired package installed for input handling
+
 public class Player : Entity
 {
     public static event Action OnPlayerDeath;
@@ -25,9 +25,7 @@ public class Player : Entity
     public float comboResetTime = 1;
     private Coroutine queuedAttackCo;
 
-    private float xInput; // Horizontal input from Rewired
-    private float yInput; // Vertical input from Rewired
-
+    
     [Header("Movement details")]
     public float moveSpeed;
     public float jumpForce = 5;
@@ -136,9 +134,5 @@ public class Player : Entity
     }
     
 
-    private bool IsGrounded()
-    {
-        // Check if the player is grounded (you can implement this based on your game logic)  
-        return Physics2D.Raycast(transform.position, Vector2.down, 0.1f, LayerMask.GetMask("Ground"));
-    }
+    
 }

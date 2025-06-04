@@ -5,14 +5,12 @@ using Rewired; // Ensure you have the Rewired package installed for input handli
 
 public abstract class PlayerState : EntityState
 {
-    protected float xInput; // Use 'new' keyword to explicitly hide the inherited member    
-    protected float yInput; // Use 'new' keyword to explicitly hide the inherited member    
 
     protected Player player;
     protected PlayerInputSet input;
 
     [SerializeField] private int playerID = 0; // Player ID for multiplayer support    
-    [SerializeField] private Rewired.Player rPlayer;
+    public Rewired.Player rPlayer {  get; protected set; }
 
     protected Vector2 moveInput; // Declare moveInput to fix CS0103    
 
@@ -38,10 +36,10 @@ public abstract class PlayerState : EntityState
         xInput = rPlayer.GetAxis("Horizontal");
         yInput = rPlayer.GetAxis("Vertical");
 
-        if (Input.GetKeyDown(KeyCode.F) && CanDash())
+        if (rPlayer.GetButtonDown("Dash") && CanDash())
             stateMachine.ChangeState(player.dashState);
 
-        if (Input.GetKeyDown(KeyCode.G) && CanThrust())
+        if (rPlayer.GetButtonDown("Thrust") && CanThrust())
             stateMachine.ChangeState(player.thrustState);
     }
 

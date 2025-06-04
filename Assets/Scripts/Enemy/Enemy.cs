@@ -146,11 +146,11 @@ public class Enemy : Entity
         isPaused = true; // Set the pause flag to true  
 
         yield return new WaitForSeconds(pauseDuration); // Wait for the specified pause duration
-        currentDir = target - (Vector2)transform.position; // Calculate the direction to the target  
+        currentDirection = target - (Vector2)transform.position; // Calculate the direction to the target  
         currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length; // Ensure index wraps around using modulus operator  
         target = patrolPoints[currentPatrolIndex]; // set the target to the next patrol point  
         isPaused = false; // Set the pause flag to false
-        currentDir = target - (Vector2)transform.position; // Calculate the direction to the target  
+        currentDirection = target - (Vector2)transform.position; // Calculate the direction to the target  
     }
 
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
