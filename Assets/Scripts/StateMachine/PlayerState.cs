@@ -30,6 +30,7 @@ public abstract class PlayerState : EntityState
         rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
     }
 
+
     public override void Update()
     {
         base.Update();
