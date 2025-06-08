@@ -98,7 +98,7 @@ Animator:
   m_GameObject: {fileID: 2425375771941488188}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 3b4f29bbb003a0a4b80cf94a8e296c9f, type: 2}
+  m_Controller: {fileID: 9100000, guid: adb67250235e7514e94b54941cd85da1, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -159,7 +159,13 @@ MonoBehaviour:
   onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
   onDamageVFXDuration: 0.1
   hitVfxColor: {r: 1, g: 1, b: 1, a: 1}
+  burnVfx: {r: 1, g: 0, b: 0, a: 1}
+  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
+  shockVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  posionVfx: {fileID: 0}
   hitVfx: {fileID: 6112724607161003390}
+  critHitVfx: {fileID: 0}
+  chillVfx: {r: 0, g: 1, b: 1, a: 1}
 --- !u!114 &8958606339864666716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176,6 +182,10 @@ MonoBehaviour:
   autoDestroyDelay: 0.2
   randomOffset: 1
   randomRotation: 1
+  canFade: 0
+  fadeSpeed: 1
+  minRotation: 0
+  maxRotation: 360
   xMinoffset: -0.3
   xMaxoffset: 0.3
   yMinOffset: -0.3

@@ -17,7 +17,7 @@ public class Entity_VFX : MonoBehaviour
     [SerializeField] private Color hitVfxColor = Color.white;
     [SerializeField] private Color burnVfx = Color.red; // Example color for burn effect
     [SerializeField] private Color poisonVfx = Color.green; // Example color for poison effect
-    [SerializeField] private Color ElectrifyVfx = Color.yellow; // Example color for electrify effect
+    [SerializeField] private Color shockVfx = Color.yellow; // Example color for electrify effect
     [SerializeField] private GameObject posionVfx; // Example GameObject for poison effect
     [SerializeField] private GameObject hitVfx;
     [SerializeField] private GameObject critHitVfx;
@@ -47,7 +47,7 @@ public class Entity_VFX : MonoBehaviour
             StartCoroutine(PlayStatusVfxco(duration, poisonVfx));
 
         if (element == ElementType.Lightning)
-            StartCoroutine(PlayStatusVfxco(duration, ElectrifyVfx));
+            StartCoroutine(PlayStatusVfxco(duration, shockVfx));
     }
 
     public void StopAllVfx()
@@ -80,11 +80,11 @@ public class Entity_VFX : MonoBehaviour
 
     }
 
-    public void CreateOnHitVFX(Transform target,bool isCrit)
+    public void CreateOnHitVFX(Transform target,bool isCrit, ElementType element)
     {
         GameObject hitPrefeb = isCrit ? critHitVfx : hitVfx;
         GameObject vfx = Instantiate(hitPrefeb, target.position, Quaternion.identity);
-        vfx.GetComponentInChildren<SpriteRenderer>().color = hitVfxColor; // set the color of the hit effect to the specified hitVfxColor
+        //vfx.GetComponentInChildren<SpriteRenderer>().color = GetElementColor(element); // set the color of the hit effect to the specified hitVfxColor
 
         if (entity.currentDir.x < -1 && isCrit)
         {
@@ -106,13 +106,22 @@ public class Entity_VFX : MonoBehaviour
 
     }
 
-    public void UpdateOnHitColor(ElementType element)
+    public Color GetElementColor(ElementType element)
     {
-        if (element == ElementType.Ice)
-            hitVfxColor = chillVfx;
+        switch (element)
+        {
+            case ElementType.Ice:
+                return chillVfx;
+            case ElementType.Fire:
+                return burnVfx;
+            case ElementType.Poison:
+                return poisonVfx;
+            case ElementType.Lightning:
+                return shockVfx;
 
-        if (element == ElementType.None)
-            hitVfxColor = originalHitVfxColor;
+            default:
+                return Color.white;
+        }
     }
 
     public void PlayOnDamageVfx()

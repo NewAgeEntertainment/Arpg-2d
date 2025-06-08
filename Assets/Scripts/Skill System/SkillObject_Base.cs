@@ -6,17 +6,34 @@ public class SkillObject_Base : MonoBehaviour
     [SerializeField] protected Transform targetCheck;
     [SerializeField] protected float checkRadius = 1;
 
+    protected Entity_Stats playerStats;
+    protected DamageScaleData damageScaleData;
+    protected ElementType usedElement;
 
     protected void DamageEnemiesInRadius(Transform t, float Radius)
     {
         foreach (var tartget in EnemiesAround(t, Radius))
         {
-            IDamagable damageable = tartget.GetComponent<IDamagable>();
+            IDamageable damageable = target.GetComponent<IDamgable>();
 
             if (damageable == null)
                 continue;
 
-            damageable.TakeDamage(1, 1, ElementType.None, transform);
+            AttackData attackData = playerStats.GetAttackData(damageScaleData);
+            Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
+
+            float physDamage = attackData.phyiscalDamage;
+            float elemDamage = attackData.elementalDamage;
+            ElementType element = attackData.element;
+
+
+            damageable.TakeDamage(physDamage, elemDamage, element, transform);
+
+            if (element != ElementType.None)
+                statusHandler?.ApplyStatusEffect(element, attackData.effectData);
+
+            usedElement = element;
+
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Xml;
 using UnityEngine;
 
 public abstract class Entity_Combat : MonoBehaviour
@@ -6,6 +7,8 @@ public abstract class Entity_Combat : MonoBehaviour
     protected Entity _entity;
     private Entity_VFX vfx;
     private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
+
+    public DamageScaleData basicAttackScale; // Scale data for basic attack damage, chill, burn, poison, and shock effects
 
     [Header("Target detection")]
     [SerializeField] protected float targetCheckRadius;
@@ -32,59 +35,31 @@ public abstract class Entity_Combat : MonoBehaviour
 
         foreach (var target in GetDetectedCollider())
         {
-            IDamagable damagable = target.GetComponent<IDamagable>();// If the target does not have an IDamagable component, skip to the next target  
+            IDamageable damageable = target.GetComponent<IDamageable>();// If the target does not have an IDamagable component, skip to the next target  
 
-            if (damagable == null)
+            if (damageable == null)
                 continue;
 
+            AttackData attackData = stats.GetAttackData(basicAttackScale);
+            Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
 
-            float elementalDamage = stats.GetElementalDamage(out ElementType element, .6f); // Get the elemental damage and whether it was a critical hit
-            float damage = stats.GetPhysicalDamage(out bool isCrit); // Get the physical damage and whether it was a critical hit  
 
-            bool targetGotHit = damagable.TakeDamage(damage, elementalDamage, element, transform); // Call the TakeDamage method on the target's IDamagable component, if it exists  
+            float physDamage = attackData.phyiscalDamage;
+            float elementalDamage = attackData.elementalDamage;
+            ElementType element = attackData.element;
 
-            if (element != ElementType.None) // If the element is not None, apply the status effect  
-                ApplyStatusEffect(target.transform, element); //.8f); // Apply the status effect to the target  
+            bool targetGotHit = damageable.TakeDamage(physDamage, elementalDamage, element, transform);
+
+            if (element != ElementType.None)
+                statusHandler?.ApplyStatusEffect(element, attackData.effectData);
 
             if (targetGotHit)
-            {
-                vfx.UpdateOnHitColor(element);
-                vfx?.CreateOnHitVFX(target.transform, isCrit); // Create a hit visual effect at the target's position  
-            }
-        }
-    }
-
-    public void ApplyStatusEffect(Transform target, ElementType element, float scaleFactor = 1)
-    {
-        Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();// Use TryGetComponent to avoid allocation if the component is not found  
-        {
-            if (element == ElementType.Ice && statusHandler.CanBeApplied(ElementType.Ice))
-                statusHandler.ApplyChillEffect(defaultDuration, chillSlowMultiplier);
-
-            if (element == ElementType.Fire && statusHandler.CanBeApplied(ElementType.Fire))
-            {
-                scaleFactor = fireScale; // Use the fire scale factor to adjust the damage
-                float fireDamage = stats.offense.fireDamage.GetValue() * scaleFactor; // Get the fire damage from the Entity_Stats component
-                statusHandler.ApplyBurnEffect(defaultDuration, fireDamage); // Apply the burn effect with the calculated damage
-            }
-
-            if (element == ElementType.Poison && statusHandler.CanBeApplied(ElementType.Poison))
-            {
-                scaleFactor = poisonScale; // Use the poison scale factor to adjust the damage
-                float poisonDamage = stats.offense.poisonDamage.GetValue() * scaleFactor; // Get the poison damage from the Entity_Stats component
-                statusHandler.ApplyPoisonEffect(defaultDuration, poisonDamage); // Apply the poison effect with the calculated damage
-            }
-
-            if (element == ElementType.Lightning && statusHandler.CanBeApplied(ElementType.Lightning))
-            {
-                scaleFactor = lightningScale; // Use the lightning scale factor to adjust the damage
-                float lightningDamage = stats.offense.lightningDamage.GetValue() * scaleFactor; // Get the lightning damage from the Entity_Stats component
-                statusHandler.ApplyElectrifyEffect(defaultDuration, lightningDamage, electrifyChargeBuildUp); // Apply the electrify effect with the calculated damage and charge build-up
-            }
-
+                vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
 
         }
     }
+
+    
 
     public abstract Collider2D[] GetDetectedCollider();
 

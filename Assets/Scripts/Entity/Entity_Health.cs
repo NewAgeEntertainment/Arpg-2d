@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities that can take damage
+public class Entity_Health : MonoBehaviour, IDamageable // Interface for entities that can take damage
 {
     private Slider healthBar; // Reference to the health bar UI element
     private Entity entity;
@@ -121,6 +121,14 @@ public class Entity_Health : MonoBehaviour, IDamagable // Interface for entities
     {
         isDead = true; // Set the entity as dead
         entity.EntityDeath(); // Call the EntityDeath method from the Entity class
+    }
+
+    public float GetHealthPercent() => currentHealth / entityStats.GetMaxHealth();
+
+    public void SetHealthToPercent(float percent)
+    {
+        currentHealth = entityStats.GetMaxHealth() * Mathf.Clamp01(percent);
+        UpdateHealthBar();
     }
 
     private void UpdateHealthBar()

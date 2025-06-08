@@ -10,6 +10,10 @@ public class Entity_Stats : MonoBehaviour
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
     public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
 
+    public AttackData GetAttackData(DamageScaleData scaleData)
+    {
+        return new AttackData(this, scaleData);
+    }
 
     public float GetElementalDamage(out ElementType element, float scaleFactor = 1)
     {

@@ -18,5 +18,5 @@ public enum SkillUpgradeType
     Shard_MoveToEnemy, // create a time shard that moves to the enemy
     Shard_Multicast, // create a time shard that casts 3 shards
     Shard_Teleport, // create a time shard that teleports the player to the shard
-    shard_TeleportAndHeal, // create a time shard that teleports the player to the shard and heals the player
+    Shard_TeleportHpRewind, // create a time shard that teleports the player to the shard and heals the player
 }
