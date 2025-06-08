@@ -14,6 +14,9 @@ public class Player_DashState : PlayerState
     {
         base.Enter();
 
+        skillManager.dash.OnStartEffect();
+        player.vfx.DoImageEchoEffect(player.dashDuration);
+
         // this is where we set the dash direction. for 4 directional movement.
         dashDirx = player.currentDir.x;
         dashDiry = player.currentDir.y;
@@ -44,6 +47,9 @@ public class Player_DashState : PlayerState
     public override void Exit()
     {
         base.Exit();
+
+        skillManager.dash.OnEndEffect();
+
         player.SetVelocity(0, 0);
         //rb.gravityScale = originalGravityScale;
     }

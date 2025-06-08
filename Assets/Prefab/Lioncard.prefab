@@ -394,7 +394,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5852501936329725365}
   - component: {fileID: 2475480508921098455}
-  - component: {fileID: 3283775864928828794}
   - component: {fileID: 5213953530006539592}
   - component: {fileID: 6972770920434634234}
   - component: {fileID: 6996464327934491418}
@@ -460,28 +459,6 @@ MonoBehaviour:
   dashSpeed: 12
   ThrustDuration: 1
   ThrustSpeed: 20
---- !u!114 &3283775864928828794
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 145d8da251b36394c9a9fe753d435cd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
-  onDamageVFXDuration: 0.1
-  hitVfxColor: {r: 1, g: 0.216981, b: 0.216981, a: 1}
-  burnVfx: {r: 0.9924528, g: 0.3882353, b: 0.043068595, a: 1}
-  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
-  ElectrifyVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  posionVfx: {fileID: 0}
-  hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
-  critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
-  chillVfx: {r: 0.3075471, g: 0.38629675, b: 1, a: 1}
 --- !u!50 &5213953530006539592
 Rigidbody2D:
   serializedVersion: 5
