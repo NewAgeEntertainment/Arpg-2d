@@ -35,6 +35,7 @@ public class Skill_Shard : Skill_Base
     {
         // check is mana is enough.
 
+
         if (CanUseSkill() == false)
             return;
 

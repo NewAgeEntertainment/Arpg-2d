@@ -1,9 +1,11 @@
 using UnityEngine;
 
-public class Skill_Base : MonoBehaviour
+public class Skill_Base : MonoBehaviour 
 {
     public Player_SkillManager skillManager { get; private set; }
     public Player player { get; private set; }
+
+    public Entity_Mana mana { get; private set; }
 
     public DamageScaleData damageScaleData { get; private set; }
 
@@ -11,18 +13,20 @@ public class Skill_Base : MonoBehaviour
     [SerializeField] protected SkillType skillType;
     [SerializeField] protected SkillUpgradeType upgradeType;
     [SerializeField] protected float cooldown;
+    [SerializeField] protected float manaCost; // Placeholder for mana cost, can be set in individual skills if needed
     // [SerializeField] protected float manaCost; // Placeholder for mana cost, can be set in individual skills if needed
     private float lastTimeUsed;
 
     protected virtual void Awake()
     {
+        mana = GetComponentInParent<Entity_Mana>();
         skillManager = GetComponentInParent<Player_SkillManager>();
         player = GetComponentInParent<Player>();
         // Initialize lastTimeUsed to a negative value to allow immediate use of the skill
         lastTimeUsed = lastTimeUsed - cooldown;
     }
 
-    public virtual void TryUseSkill()
+    public virtual void TryUseSkill() // this is the method that will be called to use the skill
     {
 
     }
@@ -32,16 +36,14 @@ public class Skill_Base : MonoBehaviour
     {
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
-        //manaCost = upgrade.manaCost;
+        manaCost = upgrade.manaCost;
         damageScaleData = upgrade.damageScale;
     }
 
     public bool CanUseSkill()
     {
-        if(upgradeType == SkillUpgradeType.None)
-            return false; // if skill is not Unlocked, it cannot be used
-
-
+        if (upgradeType == SkillUpgradeType.None)
+            return false; // if skill is not Unlocked, it cannot be used  
 
         if (OnCooldown())
         {
@@ -49,13 +51,14 @@ public class Skill_Base : MonoBehaviour
             return false;
         }
 
-        //mana Check can be added here if needed
-        //if (player.mana < manaCost)
-        //{
-        //    return false;
-        //}
+        //Corrected mana check
+        if (mana == null || !mana.UseMana(manaCost))
+        {
+            Debug.Log("Not enough mana to use the skill.");
+            return false;
+        }
 
-        //SetSkillOnCooldown();
+        SetSkillOnCooldown();
         return true;
     }
 

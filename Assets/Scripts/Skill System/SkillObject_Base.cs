@@ -12,9 +12,9 @@ public class SkillObject_Base : MonoBehaviour
 
     protected void DamageEnemiesInRadius(Transform t, float Radius)
     {
-        foreach (var tartget in EnemiesAround(t, Radius))
+        foreach (var target in EnemiesAround(t, Radius))
         {
-            IDamageable damageable = target.GetComponent<IDamgable>();
+            IDamageable damageable = target.GetComponent<IDamageable>();
 
             if (damageable == null)
                 continue;
@@ -22,7 +22,7 @@ public class SkillObject_Base : MonoBehaviour
             AttackData attackData = playerStats.GetAttackData(damageScaleData);
             Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
 
-            float physDamage = attackData.phyiscalDamage;
+            float physDamage = attackData.physicalDamage;
             float elemDamage = attackData.elementalDamage;
             ElementType element = attackData.element;
 

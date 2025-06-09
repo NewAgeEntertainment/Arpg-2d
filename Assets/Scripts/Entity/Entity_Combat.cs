@@ -14,15 +14,6 @@ public abstract class Entity_Combat : MonoBehaviour
     [SerializeField] protected float targetCheckRadius;
     [SerializeField] protected LayerMask whatIsTarget;
 
-    [Header("Status effect details")]
-    [SerializeField] private float defaultDuration = 2f; // Default duration for the status effect  
-    [SerializeField] private float chillSlowMultiplier = .2f;
-    [SerializeField] private float electrifyChargeBuildUp = .4f; // Charge build-up for the electrify effect
-    [Space]
-    [SerializeField] private float fireScale = .8f; // Scale factor for fire damage
-    [SerializeField] private float lightningScale = 2.5f; // Scale factor for lightning damage
-    [SerializeField] private float poisonScale = 1.5f; // Scale factor for poison damage
-
     private void Awake()
     {
         _entity = GetComponent<Entity>();
@@ -44,7 +35,7 @@ public abstract class Entity_Combat : MonoBehaviour
             Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
 
 
-            float physDamage = attackData.phyiscalDamage;
+            float physDamage = attackData.physicalDamage;
             float elementalDamage = attackData.elementalDamage;
             ElementType element = attackData.element;
 

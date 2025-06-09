@@ -8,6 +8,7 @@ public class Entity_Mana : MonoBehaviour
     [SerializeField] private Slider manaBar; // Reference to the mana bar UI element  
     private Entity entity;
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for mana calculations  
+    private Skill_Base skill; // Reference to the Skill component for skill-related functionality
 
     [SerializeField] protected float currentMana; // Current mana points, initialized to maximum mana  
     [SerializeField] protected bool isDead; // Flag to indicate if the entity is dead and cannot use mana  
@@ -22,6 +23,7 @@ public class Entity_Mana : MonoBehaviour
 
     protected virtual void Awake()
     {
+        skill = GetComponent<Skill_Base>(); // Get the Skill component attached to the same GameObject
         entity = GetComponent<Entity>(); // Get the Entity component attached to the same GameObject  
         entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject  
         //manaBar = GetComponentInChildren<Slider>(); // Get the Slider component for the mana bar UI  
@@ -69,11 +71,9 @@ public class Entity_Mana : MonoBehaviour
         UpdateManaBar(); // Update the health bar UI to reflect the new health points  
     }
 
-    public void ReduceMana(float manaCost)
+    public void ReduceMana(float manaCost) 
     {
-
-       
-
+        
 
         currentMana = currentMana - manaCost; // Reduce the mana points by the mana cost amount, ensuring it doesn't go below zero  
         UpdateManaBar(); // Update the mana bar UI to reflect the new mana points  

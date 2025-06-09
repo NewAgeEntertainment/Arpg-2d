@@ -9,6 +9,9 @@ public class Player : Entity
     private UI ui;
 
     public Player_SkillManager skillManager { get; private set; }
+    public Entity_Mana mana { get; private set; } // Reference to the player's mana system
+
+
 
     public Player_VFX vfx { get; private set; }
 
