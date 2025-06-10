@@ -1,6 +1,8 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using UnityEngine;
+using Rewired;
 
 public class Player : Entity
 {
@@ -8,9 +10,13 @@ public class Player : Entity
 
     private UI ui;
 
+    private float xInput; // Horizontal input value
+    private float yInput; // Vertical input value
+
     public Player_SkillManager skillManager { get; private set; }
     public Entity_Mana mana { get; private set; } // Reference to the player's mana system
-
+    public Entity_Health health { get; private set; } // Reference to the player's health system
+    public Entity_StatusHandler statusHandler { get; private set; } // Reference to the player's status handler for managing buffs and debuffs
 
 
     public Player_VFX vfx { get; private set; }
@@ -25,6 +31,7 @@ public class Player : Entity
     public Player_DeadState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
     #endregion
+
 
     [SerializeField] private int playerID = 0; // Player ID for multiplayer support
     [SerializeField] private Rewired.Player rPlayer; // Rewired player instance for input handling
@@ -45,16 +52,19 @@ public class Player : Entity
     public float dashSpeed = 20;
     public float ThrustDuration;
     public float ThrustSpeed;
-    public Vector2 moveInput { get; private set; }
+    public Vector2 moveInput { get; set; }
 
     protected override void Awake()
     {
         base.Awake();
 
         ui = FindAnyObjectByType<UI>();
-        input = new PlayerInputSet();
-        skillManager = GetComponent<Player_SkillManager>();
         vfx = GetComponent<Player_VFX>();
+        health = GetComponent<Entity_Health>();
+        skillManager = GetComponent<Player_SkillManager>();
+        statusHandler = GetComponent<Entity_StatusHandler>();
+        
+        input = new PlayerInputSet();
 
         idleState = new Player_IdleState(this, stateMachine, "idle");
         moveState = new Player_MoveState(this, stateMachine, "move");
@@ -63,14 +73,36 @@ public class Player : Entity
         basicAttackState = new Player_BasicAttackState(this, stateMachine, "basicAttack");
         deadState = new Player_DeadState(this, stateMachine, "dead");
         counterAttackState = new Player_CounterAttackState(this, stateMachine, "counterAttack");
+        
     }
 
     protected override void Start()
     {
         base.Start();
         stateMachine.Initialize(idleState);
-        
+        rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
     }
+
+    protected override void Update()
+    {
+        base.Update();
+        // Get input values from Rewired
+        xInput = rPlayer.GetAxis("Horizontal");
+        yInput = rPlayer.GetAxis("Vertical");
+        // Set the move input vector based on Rewired input
+        moveInput = new Vector2(xInput, yInput).normalized;
+
+
+        // Update animator parameters for movement
+
+        anim.SetFloat("xInput", xInput);
+        anim.SetFloat("yInput", yInput);
+        
+        SetVelocity(moveInput.x * moveSpeed, moveInput.y * moveSpeed);
+        // Handle player state updates
+        stateMachine.UpdateActiveState();
+    }
+
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
 
@@ -129,21 +161,26 @@ public class Player : Entity
 
     private void OnEnable()
     {
-        input.Enable();
+        //    input.Enable();
 
-        input.Player.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
+        //    input.Player.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        //    input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
 
-        input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
-        input.Player.Spell.performed += ctx => skillManager.shard.TryUseSkill();
+        //    input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
+        //    input.Player.Spell.performed += ctx => skillManager.shard.TryUseSkill();
+        //    input.Player.SwordThrow.performed += ctx => skillManager.swordSpin.TryUseSkill();
         
+        // The most likely reason for a NullReferenceException in the selected code:  
+        
+
+
     }
 
     private void OnDisable()
     {
         input.Disable();
     }
-    
 
-    
+
+
 }

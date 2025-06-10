@@ -12,13 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5192c683041cba46a278da24a88ad14, type: 3}
   m_Name: Skill data -  Time Shard
   m_EditorClassIdentifier: 
+  displayName: Time Shard
+  description: "\rCreate a shard filled with elemental magic.\r\nThe shard explodes
+    when touched by an enemy or time goes up"
+  icon: {fileID: 896531462, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   cost: 0
   unlockedByDefault: 0
   skillType: 3
   upgradeData:
     upgradeType: 6
     cooldown: 3
-    manaCost: 0
+    manaCost: 10
     damageScale:
       phyiscal: 1
       elemental: 1
@@ -31,7 +35,3 @@ MonoBehaviour:
       shockDuration: 3
       shockDamageScale: 1
       shockCharge: 0.4
-  displayName: Time Shard
-  description: "\rCreate a shard filled with elemental magic.\r\nThe shard explodes
-    when touched by an enemy or time goes up"
-  icon: {fileID: 896531462, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}

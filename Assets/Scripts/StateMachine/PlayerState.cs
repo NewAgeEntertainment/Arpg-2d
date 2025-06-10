@@ -28,6 +28,11 @@ public abstract class PlayerState : EntityState
         mana = player.GetComponent<Entity_Mana>(); // Get the Entity_Mana component from the player
     }
 
+    // The error CS0115 indicates that the method `Start` in `PlayerState` is attempting to override a method that does not exist in its base class `EntityState`.  
+    // To fix this, we need to remove the `override` keyword from the `Start` method in `PlayerState`.  
+
+    
+
     public override void Enter()
     {
         base.Enter();
@@ -38,20 +43,39 @@ public abstract class PlayerState : EntityState
     public override void Update()
     {
         base.Update();
-        xInput = rPlayer.GetAxis("Horizontal");
-        yInput = rPlayer.GetAxis("Vertical");
 
+        // Get input values  
+        //xInput = rPlayer.GetAxis("Horizontal");
+        //yInput = rPlayer.GetAxis("Vertical");
+
+        //// Update player's moveInput  
+        //player.moveInput = new Vector2(xInput, yInput);
+
+        //// Ensure moveInput is applied to movement  
+        //if (player.moveInput != Vector2.zero)
+        //{
+        //    player.SetVelocity(player.moveInput.x * player.moveSpeed, player.moveInput.y * player.moveSpeed);
+        //}
+        //else
+        //{
+        //    player.SetVelocity(0, 0);
+        //}
+
+        // Handle skill inputs  
         if (rPlayer.GetButtonDown("Dash") && CanDash())
         {
             skillManager.dash.SetSkillOnCooldown();
             stateMachine.ChangeState(player.dashState);
-        } 
+        }
 
         if (rPlayer.GetButtonDown("Thrust") && CanThrust())
         {
-            
-            skillManager.thrust.SetSkillOnCooldown();
             stateMachine.ChangeState(player.thrustState);
+        }
+
+        if (rPlayer.GetButtonDown("Shard"))
+        {
+            skillManager.shard.TryUseSkill();
         }
     }
 
@@ -63,11 +87,13 @@ public abstract class PlayerState : EntityState
     private bool CanDash()
     {
         if (skillManager.dash.CanUseSkill() == false)
+        
             return false;
+
 
         if (stateMachine.currentState == player.dashState)
             return false;
-
+        Debug.Log("Can Dash: true");
         return true;
     }
 
