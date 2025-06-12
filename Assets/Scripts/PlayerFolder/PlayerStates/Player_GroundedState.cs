@@ -20,7 +20,7 @@ public class Player_GroundedState : PlayerState
         //if (input.Player.Attack.WasPerformedThisFrame())
         //    stateMachine.ChangeState(player.basicAttackState);
 
-        if (rPlayer.GetButtonDown("Attack")) // Replaced 'input.GetKeyDown' with 'Input.GetKeyDown' from UnityEngine
+        if (rPlayer.GetButton("Attack")) // Replaced 'input.GetKeyDown' with 'Input.GetKeyDown' from UnityEngine
             stateMachine.ChangeState(player.basicAttackState);
     
         //if (input.Player.Attack.WasPerformedThisFrame()) // Using the new input system

@@ -11,6 +11,7 @@ public abstract class PlayerState : EntityState
     protected Player_SkillManager skillManager;
     protected Entity_Mana mana; // Reference to the Entity_Mana component for mana management
 
+    public float attackSpeed { get; protected set; } // Attack speed multiplier for the player
     [SerializeField] private int playerID = 0; // Player ID for multiplayer support    
     public Rewired.Player rPlayer {  get; protected set; }
 
@@ -45,21 +46,18 @@ public abstract class PlayerState : EntityState
         base.Update();
 
         // Get input values  
-        //xInput = rPlayer.GetAxis("Horizontal");
-        //yInput = rPlayer.GetAxis("Vertical");
+        xInput = rPlayer.GetAxis("Horizontal");
+        yInput = rPlayer.GetAxis("Vertical");
 
         //// Update player's moveInput  
-        //player.moveInput = new Vector2(xInput, yInput);
+        moveInput = new Vector2(xInput, yInput);
 
-        //// Ensure moveInput is applied to movement  
-        //if (player.moveInput != Vector2.zero)
-        //{
-        //    player.SetVelocity(player.moveInput.x * player.moveSpeed, player.moveInput.y * player.moveSpeed);
-        //}
-        //else
-        //{
-        //    player.SetVelocity(0, 0);
-        //}
+        Vector2 input = new Vector2(xInput, yInput);
+        if (input.sqrMagnitude > 0.01f)
+        {
+            player.lastMoveDirection = input.normalized;
+        }
+
 
         // Handle skill inputs  
         if (rPlayer.GetButtonDown("Dash") && CanDash())
@@ -82,6 +80,7 @@ public abstract class PlayerState : EntityState
     public override void UpdateAnimationParameters()
     {
         base.UpdateAnimationParameters();
+        
     }
 
     private bool CanDash()

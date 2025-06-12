@@ -1,10 +1,11 @@
 using UnityEngine;
+using Rewired;
 
 public class Player_DashState : PlayerState
 {
     //private float originalGravityScale;
-    private float dashDirx;
-    private float dashDiry;
+    //private float dashDirx;
+    //private float dashDiry;
 
     public Player_DashState(Player player, StateMachine stateMachine, string animBoolName) : base(player, stateMachine, animBoolName)
     {
@@ -18,8 +19,8 @@ public class Player_DashState : PlayerState
         player.vfx.DoImageEchoEffect(player.dashDuration);
 
         // this is where we set the dash direction. for 4 directional movement.
-        dashDirx = player.currentDir.x;
-        dashDiry = player.currentDir.y;
+        //dashDirx = moveInput.x;
+        //dashDiry = moveInput.y;
         //----
         stateTimer = player.dashDuration;
 
@@ -32,7 +33,7 @@ public class Player_DashState : PlayerState
     {
         base.Update();
         CancelDashIfNeeded();
-        player.SetVelocity(player.dashSpeed * dashDirx, player.dashSpeed * dashDiry);
+        player.SetVelocity(player.dashSpeed * moveInput.x, player.dashSpeed * moveInput.y);
 
 
         if (stateTimer < 0)

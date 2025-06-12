@@ -11,9 +11,10 @@ public class Player_IdleState : Player_GroundedState
         base.Enter();
 
         player.SetVelocity(0, 0);
+        UpdateAnimationParameters();
+        anim.SetFloat("xInput", xInput);
+        anim.SetFloat("yInput", yInput);
         
-        player.anim.SetFloat("xInput", player.currentDir.x);
-        player.anim.SetFloat("yInput", player.currentDir.y); 
     }
 
     public override void Update()
@@ -26,4 +27,11 @@ public class Player_IdleState : Player_GroundedState
         if (xInput != 0 || yInput != 0) // if player is not moving
             stateMachine.ChangeState(player.moveState); // 
     }
+
+    public override void UpdateAnimationParameters()
+    {
+        base.UpdateAnimationParameters();
+
+    }
+
 }

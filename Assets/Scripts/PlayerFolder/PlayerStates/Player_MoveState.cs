@@ -22,20 +22,20 @@ public class Player_MoveState : Player_GroundedState
         // Use Rewired for input handling  
 
         // Update animator parameters  
-        player.anim.SetFloat("xInput", player.moveInput.x);
-        player.anim.SetFloat("yInput", player.moveInput.y);
+        anim.SetFloat("xInput", xInput);
+        anim.SetFloat("yInput", yInput);
 
         // Transition to idle state if no input  
-        if (player.moveInput.x == 0 && player.moveInput.y == 0)
+        if (moveInput.x == 0 && moveInput.y == 0)
         {
             stateMachine.ChangeState(player.idleState);
         }
         else
         {
-            player.currentDir = new Vector2(player.moveInput.x, player.moveInput.y); // Update current direction  
+            player.currentDir = new Vector2(moveInput.x, moveInput.y); // Update current direction  
         }
 
         // Set player velocity based on input  
-        player.SetVelocity(player.moveInput.x * player.moveSpeed, player.moveInput.y * player.moveSpeed);
+        player.SetVelocity(moveInput.x * player.moveSpeed, moveInput.y * player.moveSpeed);
     }
 }

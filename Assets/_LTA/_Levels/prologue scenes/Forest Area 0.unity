@@ -17651,6 +17651,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: comboResetTime
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: 'attackMovement.Array.data[0]'
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: resources.maxMana.baseValue
       value: 40
@@ -21128,11 +21136,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 20776842178830598, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 20776842178830598, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 464045282774249207, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_IsActive
@@ -21164,11 +21172,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2542278437894521121, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.55
+      value: -1.57
       objectReference: {fileID: 0}
     - target: {fileID: 2542278437894521121, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.6
+      value: 0.27
       objectReference: {fileID: 0}
     - target: {fileID: 2542278437894521121, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_LocalPosition.z
@@ -21188,7 +21196,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2891903424803747257, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3989411847307889830, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -21240,7 +21248,7 @@ PrefabInstance:
       objectReference: {fileID: 666942163}
     - target: {fileID: 4019127699807728705, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: targetCheckRadius
-      value: 1.31
+      value: 0.97
       objectReference: {fileID: 0}
     - target: {fileID: 4019127699807728705, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: _targetCheck_Right
@@ -27491,6 +27499,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
+  lastMoveDirection: {x: 0, y: -1}
   playerID: 0
   attackMovement:
   - 5

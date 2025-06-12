@@ -18,6 +18,7 @@ public class Player : Entity
     public Entity_Health health { get; private set; } // Reference to the player's health system
     public Entity_StatusHandler statusHandler { get; private set; } // Reference to the player's status handler for managing buffs and debuffs
 
+    public Vector2 lastMoveDirection = Vector2.down;
 
     public Player_VFX vfx { get; private set; }
 
@@ -83,25 +84,25 @@ public class Player : Entity
         rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
     }
 
-    protected override void Update()
-    {
-        base.Update();
-        // Get input values from Rewired
-        xInput = rPlayer.GetAxis("Horizontal");
-        yInput = rPlayer.GetAxis("Vertical");
-        // Set the move input vector based on Rewired input
-        moveInput = new Vector2(xInput, yInput).normalized;
+    //protected override void Update()
+    //{
+    //    base.Update();
+    //    // Get input values from Rewired
+    //    xInput = rPlayer.GetAxis("Horizontal");
+    //    yInput = rPlayer.GetAxis("Vertical");
+    //    // Set the move input vector based on Rewired input
+    //    moveInput = new Vector2(xInput, yInput).normalized;
 
 
-        // Update animator parameters for movement
+    //    // Update animator parameters for movement
 
-        anim.SetFloat("xInput", xInput);
-        anim.SetFloat("yInput", yInput);
+    //    anim.SetFloat("xInput", xInput);
+    //    anim.SetFloat("yInput", yInput);
         
-        SetVelocity(moveInput.x * moveSpeed, moveInput.y * moveSpeed);
-        // Handle player state updates
-        stateMachine.UpdateActiveState();
-    }
+    //    SetVelocity(moveInput.x * moveSpeed, moveInput.y * moveSpeed);
+    //    // Handle player state updates
+    //    stateMachine.UpdateActiveState();
+    //}
 
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;

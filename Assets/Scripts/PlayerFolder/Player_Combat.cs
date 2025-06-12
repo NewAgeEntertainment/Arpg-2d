@@ -60,19 +60,19 @@ public class Player_Combat : Entity_Combat
 
     private Transform GetTargetTransform()
     {
-        if (_entity.currentDir.y >= 1)
+        Vector2 dir = _entity.currentDir;
+
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y)) // Horizontal
         {
-            return _targetCheck_Up;
+            return dir.x < 0 ? _targetCheck_Left : _targetCheck_Right;
         }
-        if (_entity.currentDir.y <= -1)
+        else if (Mathf.Abs(dir.y) > 0) // Vertical
         {
-            return _targetCheck_Down;
+            return dir.y < 0 ? _targetCheck_Down : _targetCheck_Up;
         }
-        if (_entity.currentDir.x <= -1)
-        {
-            return _targetCheck_Left;
-        }
-        return _targetCheck_Right;
+
+        // Default fallback
+        return _targetCheck_Down;
     }
 
     private void OnDrawGizmos()

@@ -6,13 +6,19 @@ public class Player_BasicAttackState : PlayerState
     private float lastTimeAttacked;
 
     private bool comboAttackQueued;
-    private float attackDir; // Corrected type
-    private float attackDiry; // Corrected type
-    private int comboIndex = 1;
-    private int comboLimit = 3; // 
-    private const int FirstComboIndex = 1; // We start combo index with number 1, this parameter is used in the Animator.
+    private float xInput;
+    private float yInput;
+    private float comboInputBufferTime = 0.3f;
+    private float comboInputBufferTimer;
+    private Vector2 attackDir;
+    private Vector2 lastAttackDir;
 
-    public Player_BasicAttackState(Player player, StateMachine stateMachine, string animBoolName) : base(player, stateMachine, animBoolName)
+    private int comboIndex = 1;
+    private int comboLimit = 3;
+    private const int FirstComboIndex = 1;
+
+    public Player_BasicAttackState(Player player, StateMachine stateMachine, string animBoolName)
+        : base(player, stateMachine, animBoolName)
     {
         if (comboLimit != player.attackMovement.Length)
         {
@@ -26,12 +32,24 @@ public class Player_BasicAttackState : PlayerState
         base.Enter();
         comboAttackQueued = false;
         ResetComboIndexIfNeeded();
-        SyncAttackSpeed(); // Sync the attack speed with the player's stats
+        SyncAttackSpeed();
 
-        // Modify attack direction based on player input  
-        attackDir = player.currentDir.x; // Use xInput for horizontal direction  
-        attackDiry = player.currentDir.y; // Use yInput for vertical direction  
-        // this is where we set the attack direction. for 4 directional movement.
+        xInput = player.moveInput.x;
+        yInput = player.moveInput.y;
+
+        Vector2 inputDir = new Vector2(xInput, yInput);
+
+        // Use input direction if player is pressing, otherwise use auto-facing
+        if (inputDir.sqrMagnitude > 0.01f)
+        {
+            lastAttackDir = inputDir.normalized;
+        }
+        else
+        {
+            lastAttackDir = player.lastMoveDirection;
+        }
+
+        SetAttackDirection(lastAttackDir);
 
         anim.SetInteger("basicAttackIndex", comboIndex);
         ApplyAttackVelocity();
@@ -42,8 +60,12 @@ public class Player_BasicAttackState : PlayerState
         base.Update();
         HandleAttackVelocity();
 
-        // detect and damage enemies
-        if (Input.GetKeyDown(KeyCode.E)) // Replaced 'input.GetKeyDown' with 'Input.GetKeyDown' from UnityEngine
+        // Decrease timer
+        if (comboInputBufferTimer > 0)
+            comboInputBufferTimer -= Time.deltaTime;
+
+
+        if (Input.GetKey(KeyCode.E))
             QueueNextAttack();
 
         if (triggerCalled)
@@ -59,19 +81,24 @@ public class Player_BasicAttackState : PlayerState
 
     private void HandleStateExit()
     {
-        if (comboAttackQueued)
+        if (comboAttackQueued || comboInputBufferTimer > 0)
         {
             anim.SetBool(animBoolName, false);
             player.EnterAttackStateWithDelay();
         }
         else
+        {
             stateMachine.ChangeState(player.idleState);
+        }
     }
 
     private void QueueNextAttack()
     {
         if (comboIndex < comboLimit)
+        {
             comboAttackQueued = true;
+            comboInputBufferTimer = comboInputBufferTime;
+        }
     }
 
     private void HandleAttackVelocity()
@@ -82,14 +109,13 @@ public class Player_BasicAttackState : PlayerState
             player.SetVelocity(0, 0);
     }
 
-    private void ApplyAttackVelocity() // use this as a example of how to add attack velocity to the player. for directional movement.
+    private void ApplyAttackVelocity()
     {
-        // change the method for it can work with 4 dirctional movment. 
         float attackMovement = player.attackMovement[comboIndex - 1];
+        player.SetVelocity(attackMovement * lastAttackDir.x, attackMovement * lastAttackDir.y);
 
-        
-        player.SetVelocity(attackMovement * attackDir, attackMovement * attackDiry);
-    }// this is the method that sets the attack velocity.
+        attackVelocityTimer = 0.1f; // Velocity lasts a short time
+    }
 
     private void ResetComboIndexIfNeeded()
     {
@@ -99,4 +125,16 @@ public class Player_BasicAttackState : PlayerState
         if (comboIndex > comboLimit)
             comboIndex = FirstComboIndex;
     }
+
+    private void SetAttackDirection(Vector2 inputDirection)
+    {
+        attackDir = inputDirection.normalized;
+
+        float x = Mathf.Round(attackDir.x);
+        float y = Mathf.Round(attackDir.y);
+
+        anim.SetFloat("xInput", x);
+        anim.SetFloat("yInput", y);
+    }
 }
+
