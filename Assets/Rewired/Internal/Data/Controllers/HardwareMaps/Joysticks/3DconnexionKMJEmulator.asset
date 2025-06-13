@@ -30,6 +30,7 @@ MonoBehaviour:
     _negativeKey: back
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 0
     _name: Horizontal
     _positiveName: Right
@@ -39,6 +40,7 @@ MonoBehaviour:
     _negativeKey: left
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 2
     _name: Vertical
     _positiveName: Up
@@ -48,6 +50,7 @@ MonoBehaviour:
     _negativeKey: down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 5
     _name: Tilt Forward/Back
     _positiveName: Tilt Forward
@@ -57,6 +60,7 @@ MonoBehaviour:
     _negativeKey: tilt/back
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 4
     _name: Tilt Horizontal
     _positiveName: Tilt Right
@@ -66,6 +70,7 @@ MonoBehaviour:
     _negativeKey: tilt/left
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 3
     _name: Twist
     _positiveName: Twist Right
@@ -75,6 +80,7 @@ MonoBehaviour:
     _negativeKey: twist/left
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 6
     _name: Button 1
     _positiveName: 
@@ -84,6 +90,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 7
     _name: Button 2
     _positiveName: 
@@ -93,6 +100,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 8
     _name: Button 3
     _positiveName: 
@@ -102,6 +110,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 9
     _name: Button 4
     _positiveName: 
@@ -111,6 +120,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 15
     _name: Throttle
     _positiveName: Throttle Up
@@ -120,6 +130,7 @@ MonoBehaviour:
     _negativeKey: throttle/down
     _elementType: 0
     _compoundElementType: 11
+    _role: 
   - _id: 10
     _name: Hat Up
     _positiveName: 
@@ -129,6 +140,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 11
     _name: Hat Right
     _positiveName: 
@@ -138,6 +150,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 12
     _name: Hat Down
     _positiveName: 
@@ -147,6 +160,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 13
     _name: Hat Left
     _positiveName: 
@@ -156,6 +170,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 14
     _name: Hat
     _positiveName: 
@@ -165,6 +180,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 11
+    _role: 
   compoundElements:
   - type: 11
     elementIdentifier: 14
@@ -1241,6 +1257,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

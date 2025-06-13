@@ -46,7 +46,7 @@ public class Enemy_PatrollingState : Enemy_GroundedState
 
         if (enemy.isPaused)
         {
-            rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when paused
+            rb.velocity = Vector2.zero; // Stop the enemy's movement when paused
             
             stateMachine.ChangeState(enemy.idleState); // Change to idle state if paused
 
@@ -54,7 +54,7 @@ public class Enemy_PatrollingState : Enemy_GroundedState
         }
 
         Vector2 movedirection = ((Vector3)enemy.target - enemy.transform.position).normalized; // Calculate the direction to the target point  
-        rb.linearVelocity = movedirection * enemy.moveSpeed; // Set the enemy's velocity towards the target  
+        rb.velocity = movedirection * enemy.moveSpeed; // Set the enemy's velocity towards the target  
 
         if (Vector2.Distance(enemy.transform.position, enemy.target) < .1f) // check if the enemy has reached the target point  
         {

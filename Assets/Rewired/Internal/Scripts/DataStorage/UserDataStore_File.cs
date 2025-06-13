@@ -282,8 +282,9 @@ namespace Rewired.Data {
             public bool Save(string absoluteFilePath, string data) {
                 if (string.IsNullOrEmpty(absoluteFilePath)) return false;
                 try {
-                    if (!Directory.Exists(Path.GetDirectoryName(absoluteFilePath))) {
-                        Directory.CreateDirectory(Path.GetDirectoryName(absoluteFilePath));
+                    string dirName = Path.GetDirectoryName(absoluteFilePath);
+                    if (!string.IsNullOrEmpty(dirName) && !Directory.Exists(dirName)) {
+                        Directory.CreateDirectory(dirName);
                     }
                     switch(_dataFormatDelegate()) {
                         case DataFormat.Binary:

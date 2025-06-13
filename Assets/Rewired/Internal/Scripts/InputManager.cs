@@ -158,7 +158,7 @@ namespace Rewired {
             platform = Rewired.Platforms.Platform.Blackberry;
 #endif
 
-#if UNITY_IPHONE || UNITY_IOS
+#if UNITY_IPHONE || UNITY_IOS || UNITY_VISIONOS
             platform = Rewired.Platforms.Platform.iOS;
 #endif
 
@@ -214,6 +214,10 @@ namespace Rewired {
 
 #if UNITY_SWITCH
             platform = Rewired.Platforms.Platform.Switch;
+#endif
+
+#if UNITY_SWITCH2 || UNITY_OUNCE
+            platform = Rewired.Platforms.Platform.Switch2;
 #endif
 
 #if UNITY_FLASH

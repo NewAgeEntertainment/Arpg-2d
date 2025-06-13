@@ -2,15 +2,41 @@ using UnityEngine;
 
 public class Object_ItemPickup : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private SpriteRenderer sr;
+
+    [SerializeField] private ItemDataSO itemData;
+
+    private Inventory_Item itemToAdd;// // The item to add to the inventory when picked up
+    private Inventory_Base inventory;// // Reference to the player's inventory
+
+    private void Awake()
     {
-        
+        itemToAdd = new Inventory_Item(itemData);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnValidate()
     {
-        
+
+        if (itemData == null)
+        {
+            return;
+        }
+
+        sr = GetComponent<SpriteRenderer>();
+        sr.sprite = itemData.itemIcon;
+        gameObject.name = "Object_ItemPickup - " + itemData.itemName;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+
+        inventory = collision.GetComponent<Inventory_Base>();
+
+        if (inventory != null && inventory.CanAddItem())
+        {
+            inventory.AddItem(itemToAdd);
+        }
+            Destroy(gameObject);
+        //}
     }
 }

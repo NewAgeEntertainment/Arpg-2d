@@ -14,7 +14,7 @@ public class Enemy_IdleState : Enemy_GroundedState
 
         
 
-        rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when entering idle state  
+        rb.velocity = Vector2.zero; // Stop the enemy's movement when entering idle state  
 
         stateTimer = enemy.idleTime;
         enemy.anim.SetFloat("xInput", enemy.currentDir.x);

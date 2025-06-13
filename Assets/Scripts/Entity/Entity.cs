@@ -50,11 +50,11 @@ public class Entity : MonoBehaviour
     public virtual IEnumerator KnockbackCo(Vector2 knockback, float duration)
     {
         isKnocked = true;
-        rb.linearVelocity = knockback; // Apply the knockback force to the rigidbody
+        rb.velocity = knockback; // Apply the knockback force to the rigidbody
 
         yield return new WaitForSeconds(duration);//(0.5f) I use a variable for the duration of the knockback instead of a hardcoded value
 
-        rb.linearVelocity = Vector2.zero; // Reset the velocity after the knockback duration
+        rb.velocity = Vector2.zero; // Reset the velocity after the knockback duration
         isKnocked = false;
     }
 
@@ -88,7 +88,7 @@ public class Entity : MonoBehaviour
     {
         if (isKnocked)
             return;
-        rb.linearVelocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
     }
 
     public void SetVelocity(float xVelocity, float yVelocity)
@@ -96,7 +96,7 @@ public class Entity : MonoBehaviour
         if (isKnocked)
             return;
 
-        rb.linearVelocity = new Vector2(xVelocity, yVelocity);
+        rb.velocity = new Vector2(xVelocity, yVelocity);
         //HandleFlip(xVelocity);
     }
 

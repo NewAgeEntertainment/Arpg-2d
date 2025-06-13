@@ -29,6 +29,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/up
   - _id: 1
     _name: D-Pad Right
     _positiveName: 
@@ -38,6 +39,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/right
   - _id: 2
     _name: D-Pad Down
     _positiveName: 
@@ -47,6 +49,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/down
   - _id: 3
     _name: D-Pad Left
     _positiveName: 
@@ -56,6 +59,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/left
   - _id: 4
     _name: Center Button
     _positiveName: 
@@ -65,6 +69,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: navigate_select
   - _id: 5
     _name: Back
     _positiveName: 
@@ -74,6 +79,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: back
   - _id: 6
     _name: Mic
     _positiveName: 
@@ -83,6 +89,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 7
     _name: D-Pad
     _positiveName: 
@@ -92,6 +99,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 10
+    _role: 
   compoundElements:
   - type: 10
     elementIdentifier: 7
@@ -709,6 +717,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

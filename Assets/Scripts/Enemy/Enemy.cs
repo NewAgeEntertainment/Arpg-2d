@@ -44,7 +44,7 @@ public class Enemy : Entity
 
     public Vector2 target;
 
-    [Header("Player detection")]
+    
     public Transform player { get; private set; } // Reference to the player transform
 
     protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)

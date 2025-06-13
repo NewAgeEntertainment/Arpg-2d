@@ -16,7 +16,7 @@ public class Enemy_StunnedState : EnemyState
         vfx.EnableAttackAlert(false); // Disable the attack alert when entering the stunned state
         enemy.EnableCounterWindow(false); // Disable the counter window
         stateTimer = enemy.stunnedDuration; // Set the state timer to the stunned duration
-        rb.linearVelocity = new Vector2(enemy.stunnedVelocity.x * -enemy.currentDir.x, enemy.stunnedVelocity.y -enemy.currentDir.y); // Apply the stunned velocity
+        rb.velocity = new Vector2(enemy.stunnedVelocity.x * -enemy.currentDir.x, enemy.stunnedVelocity.y -enemy.currentDir.y); // Apply the stunned velocity
     
 
     }

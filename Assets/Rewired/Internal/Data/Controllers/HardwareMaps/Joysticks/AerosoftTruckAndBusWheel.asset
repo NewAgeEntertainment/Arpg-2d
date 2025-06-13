@@ -30,6 +30,7 @@ MonoBehaviour:
     _negativeKey: wheel/left
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/wheel
   - _id: 1
     _name: Accelerator
     _positiveName: Accelerator
@@ -39,6 +40,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/accelerator
   - _id: 2
     _name: Brake
     _positiveName: Brake
@@ -48,6 +50,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/brake
   - _id: 3
     _name: Clutch
     _positiveName: Clutch
@@ -57,6 +60,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/clutch
   - _id: 4
     _name: Stick X
     _positiveName: Stick Right
@@ -66,15 +70,17 @@ MonoBehaviour:
     _negativeKey: stick/left
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/x
   - _id: 5
     _name: Stick Y
     _positiveName: Stick Up
     _negativeName: Stick Down
-    _key: stick/verical
+    _key: stick/vertical
     _positiveKey: stick/up
     _negativeKey: stick/down
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/y
   - _id: 6
     _name: A
     _positiveName: 
@@ -84,6 +90,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/a
   - _id: 7
     _name: B
     _positiveName: 
@@ -93,6 +100,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/b
   - _id: 8
     _name: X
     _positiveName: 
@@ -102,6 +110,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/x
   - _id: 9
     _name: Y
     _positiveName: 
@@ -111,6 +120,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/y
   - _id: 10
     _name: View
     _positiveName: 
@@ -120,6 +130,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/select
   - _id: 11
     _name: Menu
     _positiveName: 
@@ -129,6 +140,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/start
   - _id: 12
     _name: D-Pad Up
     _positiveName: 
@@ -138,6 +150,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/up
   - _id: 13
     _name: D-Pad Right
     _positiveName: 
@@ -147,6 +160,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/right
   - _id: 14
     _name: D-Pad Down
     _positiveName: 
@@ -156,6 +170,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/down
   - _id: 15
     _name: D-Pad Left
     _positiveName: 
@@ -165,6 +180,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/left
   - _id: 16
     _name: Engine Start Stop
     _positiveName: 
@@ -174,6 +190,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 17
     _name: Horn
     _positiveName: 
@@ -183,6 +200,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 18
     _name: Indicator Left
     _positiveName: 
@@ -192,6 +210,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 19
     _name: Indicator Right
     _positiveName: 
@@ -201,6 +220,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 20
     _name: High Beams
     _positiveName: 
@@ -210,6 +230,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 21
     _name: High Beams (Momentary)
     _positiveName: 
@@ -219,6 +240,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 22
     _name: Lights Off
     _positiveName: 
@@ -228,6 +250,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 23
     _name: Parking Lights
     _positiveName: 
@@ -237,6 +260,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 24
     _name: Headlights
     _positiveName: 
@@ -246,6 +270,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 25
     _name: Indicator Button
     _positiveName: 
@@ -255,6 +280,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 26
     _name: Retarder Down
     _positiveName: 
@@ -264,6 +290,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 27
     _name: Retarder Up
     _positiveName: 
@@ -273,6 +300,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 28
     _name: Retarder Lever Knob Pos 1
     _positiveName: 
@@ -282,6 +310,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 29
     _name: Retarder Lever Knob Pos 2
     _positiveName: 
@@ -291,6 +320,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 30
     _name: Retarder Lever Knob Pos 3
     _positiveName: 
@@ -300,6 +330,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 31
     _name: Max Off
     _positiveName: 
@@ -309,6 +340,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 32
     _name: Stick
     _positiveName: 
@@ -318,6 +350,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 0
+    _role: 
   - _id: 33
     _name: D-Pad
     _positiveName: 
@@ -327,6 +360,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 10
+    _role: 
   compoundElements:
   - type: 0
     elementIdentifier: 32
@@ -2566,6 +2600,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

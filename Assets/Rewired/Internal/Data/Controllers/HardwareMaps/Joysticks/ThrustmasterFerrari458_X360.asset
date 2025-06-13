@@ -30,6 +30,7 @@ MonoBehaviour:
     _negativeKey: wheel/left
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/wheel
   - _id: 1
     _name: Accelerator
     _positiveName: 
@@ -39,6 +40,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/accelerator
   - _id: 2
     _name: Brake
     _positiveName: 
@@ -48,6 +50,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: racing/brake
   - _id: 3
     _name: Left Paddle
     _positiveName: 
@@ -57,6 +60,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: racing/gear/down
   - _id: 4
     _name: Right Paddle
     _positiveName: 
@@ -66,6 +70,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: racing/gear/up
   - _id: 5
     _name: A
     _positiveName: 
@@ -75,6 +80,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/a
   - _id: 6
     _name: B
     _positiveName: 
@@ -84,6 +90,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/b
   - _id: 7
     _name: X
     _positiveName: 
@@ -93,6 +100,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/x
   - _id: 8
     _name: Y
     _positiveName: 
@@ -102,6 +110,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/y
   - _id: 9
     _name: Back
     _positiveName: 
@@ -111,6 +120,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/select
   - _id: 10
     _name: Start
     _positiveName: 
@@ -120,6 +130,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/start
   - _id: 11
     _name: Guide
     _positiveName: 
@@ -129,6 +140,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/logo_button
   - _id: 12
     _name: LSB
     _positiveName: 
@@ -138,6 +150,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick1/press
   - _id: 13
     _name: RSB
     _positiveName: 
@@ -147,6 +160,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick2/press
   - _id: 14
     _name: D-Pad Up
     _positiveName: 
@@ -156,6 +170,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/up
   - _id: 15
     _name: D-Pad Right
     _positiveName: 
@@ -165,6 +180,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/right
   - _id: 16
     _name: D-Pad Down
     _positiveName: 
@@ -174,6 +190,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/down
   - _id: 17
     _name: D-Pad Left
     _positiveName: 
@@ -183,6 +200,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/left
   - _id: 18
     _name: D-Pad
     _positiveName: 
@@ -192,6 +210,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 10
+    _role: 
   compoundElements:
   - type: 10
     elementIdentifier: 18
@@ -2325,6 +2344,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

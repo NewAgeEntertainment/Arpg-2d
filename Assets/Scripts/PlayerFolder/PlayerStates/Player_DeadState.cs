@@ -13,7 +13,7 @@ public class Player_DeadState : PlayerState
         //input.Disable();
         //this is for the old input system.
         input.Player.Movement.Disable();
-        rb.linearVelocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
         rb.simulated = false; // Disable physics simulation
     }
 }

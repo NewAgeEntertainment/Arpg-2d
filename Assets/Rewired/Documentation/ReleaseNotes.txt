@@ -1,3 +1,57 @@
+1.1.59.0:
+
+    Changes:
+      - Added support for Nintendo Switch 2 plugin.
+      - Glyphs pack: UnityUITextMeshProGlyphHelper updates Text Mesh Pro text when UnityUITextMeshProGlyphHelper.text is set changed regardless of whether the new text contains any tags.
+      - Nintendo Switch Controller glyph set: Changed "RS" and "LS" to "R" and "L".
+      - Added VisionOS build support through existing iOS support.
+      - Changed Input Behavior Digital Axis Simulation to disabled by default.
+      - Relative Joystick and Custom Controller axes can now be detected during rebind polling.
+      - Added Controller Element Identifier Roles.
+      - UserDataStore Implementations: Added Action Mapping Save Mode options to save and load mappings by controller (existing and default behavior) or by controller element role.
+      - MacOS, Native + Use Game Controller Framework: Changed method of determining which devices are supported by Game Controller Framework to prevent HID devices that use the Generic profile from being handled by Game Controller Framework instead of IO Kit.
+
+    API Changes:
+      - Added PlayerController.AbsoluteToRelativeScalingMode enum.
+      - Added PlayerController.Axis.absoluteToRelativeScalingMode property.
+      - Added PlayerController.Axis.Definition.absoluteToRelativeScalingMode field.
+      - Added PlayerController.absoluteToRelativeScalingReferenceResolution property.
+      - Added Controller.Element.excludeFromPolling property.
+      - Added Controller.Axis.axisCoordinateMode property.
+      - Added ControllerMap.Create function.
+      - Added ControllerElementIdentifier.role property.
+      - Added Data.UserDataStore_KeyValue.ActionMappingSaveMode enum.
+      - Added Data.UserDataStore_KeyValue.actionMappingSaveMode property.
+      - Added Data.UserDataStore_PlayerPrefs.ActionMappingSaveMode enum.
+      - Added Data.UserDataStore_PlayerPrefs.actionMappingSaveMode property.
+      - Added ControllerMap.modifiedTime property.
+      - Added ControllerMap.isModified property.
+
+    New Controller Definitions:
+      - Xbox Game Core Racing Wheel
+      - Nintendo Switch 2 Console
+      - Nintendo Switch 2 Joy-Con (Dual)
+      - Nintendo Switch 2 Joy-Con (L)
+      - Nintendo Switch 2 Joy-Con (R)
+      - Nintendo Switch 2 Pro Controller
+    
+    Modified Controller Definitions:
+      - Added Role to some element identifiers on many controllers.
+      - Removed TM symbols from all Nintendo Switch controller names.
+      - Added Android mappings to Oculus Touch Left and Oculus Touch Right definitions.
+      - Aerosoft Truck and Bus Wheel: Fixed Stick Y key spelling from "stick/verical" to "stick/vertical".
+
+    Bug Fixes:
+      - Player Mouse: When "Use Hardware Pointer Position" is enabled and the Player Mouse's X/Y axes have also been mapped to the physical mouse axes using a Mouse Map, the hardware pointer position now overrides the mapped mouse delta input instead of the two conflicting mouse inputs being processed
+ additivly which resulted in pointer jitter at lower frame rates.
+      - Player Mouse: Fixed mouse wheel scroll issues when scrolling left or down when "Activate Action Buttons on Negative Value" is enabled.
+      - UserDataStore_File: Fixed attempting to create output directory with no name if save file path has no directory.
+      - Gamepad Template: Changed mapping of Atari Jaguar Controller A button to Action Bottom Row 3.
+      - Gamepad Template: Removed Center 3 mapping from Thrustmaster FireStorm Dual Power.
+      - MacOS, Game Controller Framework: Fixed rare exception when an input event is received with an out of range index when multiple controllers are connected when entering Play mode.
+      - MacOS, Game controller Framework: Fixed exception when GetElementSfSymbolsName or GetElementLocalizedName or unmapped versions of functions when the controller doesn't have an element that corresponds to the element identifier id passed to the function.
+      - MacOS, Game controller Framework: Fixed incorrect value returned from GetElementSfSymbolsName and GetElementLocalizedName or unmapped versions of functions for the whole D-Pad element.
+
 1.1.58.4:
 
     Bug Fixes:

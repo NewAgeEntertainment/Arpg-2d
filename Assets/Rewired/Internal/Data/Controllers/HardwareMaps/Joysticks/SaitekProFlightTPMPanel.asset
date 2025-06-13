@@ -29,6 +29,7 @@ MonoBehaviour:
     _negativeKey: throttle/down
     _elementType: 0
     _compoundElementType: 0
+    _role: flight/throttle
   - _id: 1
     _name: Prop
     _positiveName: Prop Up
@@ -38,6 +39,7 @@ MonoBehaviour:
     _negativeKey: prop/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 2
     _name: Mixture
     _positiveName: Mixture Up
@@ -47,6 +49,7 @@ MonoBehaviour:
     _negativeKey: mixture/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 3
     _name: G1
     _positiveName: 
@@ -56,6 +59,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 4
     _name: G2
     _positiveName: 
@@ -65,6 +69,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 5
     _name: G3
     _positiveName: 
@@ -74,6 +79,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 6
     _name: G4
     _positiveName: 
@@ -83,6 +89,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 7
     _name: G5
     _positiveName: 
@@ -92,6 +99,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 8
     _name: G6
     _positiveName: 
@@ -101,6 +109,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 9
     _name: G7
     _positiveName: 
@@ -110,6 +119,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 10
     _name: G8
     _positiveName: 
@@ -119,6 +129,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 11
     _name: G9
     _positiveName: 
@@ -128,6 +139,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   compoundElements: []
   directInput:
     description: 
@@ -2493,6 +2505,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

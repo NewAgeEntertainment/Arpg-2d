@@ -11,7 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 323110133, guid: 09c9b883b79ef864a99683bb36c5776d, type: 3}
   m_Name: NintendoSwitchJoyCon_Right
   m_EditorClassIdentifier: 
-  controllerName: "Joy-Con\u2122 (R)"
+  controllerName: Joy-Con (R)
   editorControllerName: Nintendo Switch Joy-Con (R)
   description: 
   controllerGuid: 605dc720-1b38-473d-a459-67d5857aa6ea
@@ -30,6 +30,7 @@ MonoBehaviour:
     _negativeKey: stick/left
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/x
   - _id: 1
     _name: Stick Y
     _positiveName: Stick Up
@@ -39,6 +40,7 @@ MonoBehaviour:
     _negativeKey: stick/down
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/y
   - _id: 2
     _name: A
     _positiveName: 
@@ -48,6 +50,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/a
   - _id: 3
     _name: X
     _positiveName: 
@@ -57,6 +60,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/b
   - _id: 4
     _name: B
     _positiveName: 
@@ -66,6 +70,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/x
   - _id: 5
     _name: Y
     _positiveName: 
@@ -75,6 +80,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/y
   - _id: 6
     _name: SL
     _positiveName: 
@@ -84,6 +90,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/lt
   - _id: 7
     _name: SR
     _positiveName: 
@@ -93,6 +100,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/rt
   - _id: 8
     _name: R
     _positiveName: 
@@ -102,6 +110,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: joycon/lr
   - _id: 9
     _name: ZR
     _positiveName: 
@@ -111,6 +120,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: joycon/zlzr
   - _id: 10
     _name: HOME
     _positiveName: 
@@ -120,6 +130,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: home
   - _id: 11
     _name: + Button
     _positiveName: 
@@ -129,6 +140,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/start
   - _id: 12
     _name: Stick
     _positiveName: 
@@ -138,6 +150,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick1/press
   - _id: 13
     _name: Stick
     _positiveName: 
@@ -147,6 +160,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 0
+    _role: 
   compoundElements:
   - type: 0
     elementIdentifier: 13
@@ -3071,6 +3085,20 @@ MonoBehaviour:
         buttonInfo:
           _excludeFromPolling: 0
           _isPressureSensitive: 0
+    variants: []
+  nintendoSwitch2:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
     variants: []
   internalDriver:
     description: 

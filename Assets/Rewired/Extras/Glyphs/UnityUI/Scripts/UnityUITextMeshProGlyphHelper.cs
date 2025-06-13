@@ -324,10 +324,6 @@ namespace Rewired.Glyphs.UnityUI {
 #if UNITY_EDITOR
             // Handle recompile in Play mode
             if (!Initialize()) return;
-            
-            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.M)) {
-                this.baseSpriteMaterial = _baseSpriteMaterial;
-            }
 
             // Handle inspector value changes
             if (_editorInspectorChanged) {
@@ -484,6 +480,8 @@ namespace Rewired.Glyphs.UnityUI {
                 string newText;
                 if (ParseText(_textPrev, out newText)) {
                     _tmProText.text = newText;
+                } else {
+                    _tmProText.text = _text;
                 }
             }
 

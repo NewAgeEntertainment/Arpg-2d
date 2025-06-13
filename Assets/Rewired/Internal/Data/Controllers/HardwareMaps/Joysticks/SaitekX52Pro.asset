@@ -30,6 +30,7 @@ MonoBehaviour:
     _negativeKey: stick/left
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/x
   - _id: 1
     _name: Stick Y
     _positiveName: Stick Up
@@ -39,6 +40,7 @@ MonoBehaviour:
     _negativeKey: stick/down
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/y
   - _id: 56
     _name: Stick Rotate
     _positiveName: Stick Rotate Right
@@ -48,6 +50,7 @@ MonoBehaviour:
     _negativeKey: stick_rotate/left
     _elementType: 0
     _compoundElementType: 0
+    _role: stick1/z
   - _id: 2
     _name: Trigger (1st Stage)
     _positiveName: 
@@ -57,6 +60,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick1/trigger/stage1
   - _id: 3
     _name: Trigger (2nd Stage)
     _positiveName: 
@@ -66,6 +70,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick1/trigger
   - _id: 5
     _name: Fire
     _positiveName: 
@@ -75,6 +80,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 6
     _name: A
     _positiveName: 
@@ -84,6 +90,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/a
   - _id: 7
     _name: B
     _positiveName: 
@@ -93,6 +100,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/b
   - _id: 8
     _name: C
     _positiveName: 
@@ -102,6 +110,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 9
     _name: Pinky Trigger
     _positiveName: 
@@ -111,6 +120,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 10
     _name: Mode 1
     _positiveName: 
@@ -120,6 +130,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 11
     _name: Mode 2
     _positiveName: 
@@ -129,6 +140,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 12
     _name: Mode 3
     _positiveName: 
@@ -138,6 +150,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 13
     _name: Stick Center Hat Up
     _positiveName: 
@@ -147,6 +160,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 14
     _name: Stick Center Hat Up-Right
     _positiveName: 
@@ -156,6 +170,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 15
     _name: Stick Center Hat Right
     _positiveName: 
@@ -165,6 +180,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 16
     _name: Stick Center Hat Down-Right
     _positiveName: 
@@ -174,6 +190,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 17
     _name: Stick Center Hat Down
     _positiveName: 
@@ -183,6 +200,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 18
     _name: Stick Center Hat Down-Left
     _positiveName: 
@@ -192,6 +210,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 19
     _name: Stick Center Hat Left
     _positiveName: 
@@ -201,6 +220,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 20
     _name: Stick Center Hat Up-Left
     _positiveName: 
@@ -210,6 +230,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 21
     _name: Stick Left Hat Up
     _positiveName: 
@@ -219,6 +240,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 22
     _name: Stick Left Hat Up-Right
     _positiveName: 
@@ -228,6 +250,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 23
     _name: Stick Left Hat Right
     _positiveName: 
@@ -237,6 +260,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 24
     _name: Stick Left Hat Down-Right
     _positiveName: 
@@ -246,6 +270,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 25
     _name: Stick Left Hat Down
     _positiveName: 
@@ -255,6 +280,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 26
     _name: Stick Left Hat Down-Left
     _positiveName: 
@@ -264,6 +290,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 27
     _name: Stick Left Hat Left
     _positiveName: 
@@ -273,6 +300,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 28
     _name: Stick Left Hat Up-Left
     _positiveName: 
@@ -282,6 +310,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 29
     _name: T1
     _positiveName: 
@@ -291,6 +320,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 30
     _name: T2
     _positiveName: 
@@ -300,6 +330,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 31
     _name: T3
     _positiveName: 
@@ -309,6 +340,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 32
     _name: T4
     _positiveName: 
@@ -318,6 +350,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 33
     _name: T5
     _positiveName: 
@@ -327,6 +360,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 34
     _name: T6
     _positiveName: 
@@ -336,6 +370,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 35
     _name: Throttle
     _positiveName: Throttle Up
@@ -345,6 +380,7 @@ MonoBehaviour:
     _negativeKey: throttle/down
     _elementType: 0
     _compoundElementType: 0
+    _role: flight/throttle
   - _id: 36
     _name: Throttle Slider
     _positiveName: Throttle Slider Up
@@ -354,6 +390,7 @@ MonoBehaviour:
     _negativeKey: throttle_slider/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 37
     _name: D
     _positiveName: 
@@ -363,6 +400,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 38
     _name: E Button
     _positiveName: 
@@ -372,6 +410,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 39
     _name: E Rotary
     _positiveName: 
@@ -381,6 +420,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 40
     _name: i Button
     _positiveName: 
@@ -390,6 +430,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 41
     _name: i Rotary
     _positiveName: 
@@ -399,6 +440,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 42
     _name: Throttle Wheel Fwd
     _positiveName: 
@@ -408,6 +450,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 43
     _name: Throttle Wheel Back
     _positiveName: 
@@ -417,6 +460,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 44
     _name: Throttle Wheel Press
     _positiveName: 
@@ -426,6 +470,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 45
     _name: Throttle Hat Up
     _positiveName: 
@@ -435,6 +480,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 46
     _name: Throttle Hat Up-Right
     _positiveName: 
@@ -444,6 +490,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 47
     _name: Throttle Hat Right
     _positiveName: 
@@ -453,6 +500,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 48
     _name: Throttle Hat Down-Right
     _positiveName: 
@@ -462,6 +510,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 49
     _name: Throttle Hat Down
     _positiveName: 
@@ -471,6 +520,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 50
     _name: Throttle Hat Down-Left
     _positiveName: 
@@ -480,6 +530,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 51
     _name: Throttle Hat Left
     _positiveName: 
@@ -489,6 +540,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 52
     _name: Throttle Hat Up-Left
     _positiveName: 
@@ -498,6 +550,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 57
     _name: Mouse Nub X
     _positiveName: Mouse Nub Right
@@ -507,6 +560,7 @@ MonoBehaviour:
     _negativeKey: mouse_nub/left
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 58
     _name: Mouse Nub Y
     _positiveName: Mouse Nub Up
@@ -516,6 +570,7 @@ MonoBehaviour:
     _negativeKey: mouse_nub/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 59
     _name: Mouse Nub Button
     _positiveName: 
@@ -525,6 +580,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 53
     _name: MFD Wheel 1 Up
     _positiveName: 
@@ -534,6 +590,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 62
     _name: MFD Wheel 1 Down
     _positiveName: 
@@ -543,6 +600,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 63
     _name: MFD Wheel 1 Press
     _positiveName: 
@@ -552,6 +610,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 64
     _name: MFD Wheel 2 Up
     _positiveName: 
@@ -561,6 +620,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 65
     _name: MFD Wheel 2 Down
     _positiveName: 
@@ -570,6 +630,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 66
     _name: MFD Wheel 2 Press
     _positiveName: 
@@ -579,6 +640,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 54
     _name: Start-Stop
     _positiveName: 
@@ -588,6 +650,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 55
     _name: Reset
     _positiveName: 
@@ -597,6 +660,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 60
     _name: Stick
     _positiveName: 
@@ -606,6 +670,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 0
+    _role: 
   - _id: 61
     _name: Mouse Nub
     _positiveName: 
@@ -615,6 +680,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 0
+    _role: 
   - _id: 67
     _name: Stick Center Hat
     _positiveName: 
@@ -624,6 +690,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 11
+    _role: 
   - _id: 68
     _name: Stick Left Hat
     _positiveName: 
@@ -633,6 +700,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 11
+    _role: 
   - _id: 69
     _name: Throttle Hat
     _positiveName: 
@@ -642,6 +710,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 11
+    _role: 
   compoundElements:
   - type: 0
     elementIdentifier: 60
@@ -10368,6 +10437,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

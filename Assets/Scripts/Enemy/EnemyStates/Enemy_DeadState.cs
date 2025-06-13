@@ -12,7 +12,7 @@ public class Enemy_DeadState : EnemyState
         base.Enter();
 
         anim.Play("dead");
-        rb.linearVelocity = Vector2.zero; // Stop the enemy's movement
+        rb.velocity = Vector2.zero; // Stop the enemy's movement
 
         Debug.Log("Entered dead State");
     }

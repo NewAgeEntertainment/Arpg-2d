@@ -29,6 +29,7 @@ MonoBehaviour:
     _negativeKey: touchpad/left
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 1
     _name: Touchpad Y
     _positiveName: Touchpad Up
@@ -38,6 +39,7 @@ MonoBehaviour:
     _negativeKey: touchpad/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 2
     _name: Menu
     _positiveName: 
@@ -47,6 +49,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: menu
   - _id: 3
     _name: Play
     _positiveName: 
@@ -56,6 +59,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 4
     _name: Touchpad Click
     _positiveName: 
@@ -65,6 +69,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: navigate_select
   - _id: 14
     _name: D-Pad Up
     _positiveName: 
@@ -74,6 +79,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/up
   - _id: 15
     _name: D-Pad Right
     _positiveName: 
@@ -83,6 +89,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/right
   - _id: 16
     _name: D-Pad Down
     _positiveName: 
@@ -92,6 +99,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/down
   - _id: 17
     _name: D-Pad Left
     _positiveName: 
@@ -101,6 +109,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/left
   - _id: 6
     _name: Pitch
     _positiveName: 
@@ -110,6 +119,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 7
     _name: Rotate
     _positiveName: 
@@ -119,6 +129,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 8
     _name: Acceleration X
     _positiveName: 
@@ -128,6 +139,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 9
     _name: Acceleration Y
     _positiveName: 
@@ -137,6 +149,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 10
     _name: Acceleration Z
     _positiveName: 
@@ -146,6 +159,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 11
     _name: Gravity X
     _positiveName: 
@@ -155,6 +169,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 12
     _name: Gravity Y
     _positiveName: 
@@ -164,6 +179,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 13
     _name: Gravity Z
     _positiveName: 
@@ -173,6 +189,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 5
     _name: Touchpad Stick
     _positiveName: 
@@ -182,6 +199,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 0
+    _role: 
   - _id: 18
     _name: D-Pad
     _positiveName: 
@@ -191,6 +209,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 100
     _compoundElementType: 10
+    _role: 
   compoundElements:
   - type: 0
     elementIdentifier: 5
@@ -1053,6 +1072,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

@@ -20,7 +20,7 @@ public class EnemyState : EntityState
         anim.SetFloat("battleAnimSpeedMultiplier", battleAnimSpeedMultiplier);
         anim.SetFloat("moveAnimSpeedMultiplier", enemy.moveAnimSpeedMultiplier);
 
-        anim.SetFloat("xInput", rb.linearVelocity.x);
-        anim.SetFloat("yInput", rb.linearVelocity.y);
+        anim.SetFloat("xInput", rb.velocity.x);
+        anim.SetFloat("yInput", rb.velocity.y);
     }
 }

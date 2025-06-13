@@ -29,6 +29,7 @@ MonoBehaviour:
     _negativeKey: whammy_bar/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 1
     _name: Vertical Orientation
     _positiveName: Orientation Up
@@ -38,6 +39,7 @@ MonoBehaviour:
     _negativeKey: orientation/down
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 2
     _name: Pickup Selector
     _positiveName: 
@@ -47,6 +49,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: 
   - _id: 3
     _name: Right Trigger
     _positiveName: 
@@ -56,6 +59,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 0
     _compoundElementType: 0
+    _role: gamepad/rt
   - _id: 4
     _name: Green (A)
     _positiveName: 
@@ -65,6 +69,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 5
     _name: Red (B)
     _positiveName: 
@@ -74,6 +79,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 6
     _name: Blue (X)
     _positiveName: 
@@ -83,6 +89,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 7
     _name: Yellow (Y)
     _positiveName: 
@@ -92,6 +99,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 8
     _name: LB
     _positiveName: 
@@ -101,6 +109,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/lb
   - _id: 9
     _name: RB
     _positiveName: 
@@ -110,6 +119,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/rb
   - _id: 10
     _name: Back
     _positiveName: 
@@ -119,6 +129,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/select
   - _id: 11
     _name: Start
     _positiveName: 
@@ -128,6 +139,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/start
   - _id: 12
     _name: Guide
     _positiveName: 
@@ -137,6 +149,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: gamepad/logo_button
   - _id: 13
     _name: Fret Modifier
     _positiveName: 
@@ -146,6 +159,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 14
     _name: Right Stick Button
     _positiveName: 
@@ -155,6 +169,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: stick2/press
   - _id: 15
     _name: Strum Bar Up
     _positiveName: 
@@ -164,6 +179,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 16
     _name: Strum Bar Down
     _positiveName: 
@@ -173,6 +189,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: 
   - _id: 17
     _name: D-Pad Left
     _positiveName: 
@@ -182,6 +199,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/left
   - _id: 18
     _name: D-Pad Right
     _positiveName: 
@@ -191,6 +209,7 @@ MonoBehaviour:
     _negativeKey: 
     _elementType: 1
     _compoundElementType: 0
+    _role: dpad/right
   compoundElements: []
   directInput:
     description: 
@@ -834,6 +853,20 @@ MonoBehaviour:
       buttons: []
     variants: []
   nintendoSwitch:
+    description: 
+    matchingCriteria:
+      axisCount: 0
+      buttonCount: 0
+      disabled: 0
+      tag: 
+      alwaysMatch: 0
+      productName_useRegex: 0
+      productName: []
+    elements:
+      axes: []
+      buttons: []
+    variants: []
+  nintendoSwitch2:
     description: 
     matchingCriteria:
       axisCount: 0

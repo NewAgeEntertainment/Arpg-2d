@@ -14,7 +14,7 @@ public class Object_Chest : MonoBehaviour, IDamageable
     {
         fx.PlayOnDamageVfx(); // Play the damage effect
         anim.SetBool("chestOpen", true); // open the chest
-        rb.linearVelocity = knockback; // apply a force to the chest
+        rb.velocity = knockback; // apply a force to the chest
 
         return true; // Return true to indicate that the damage was taken
         // Drop item

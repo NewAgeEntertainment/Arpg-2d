@@ -5999,6 +5999,22 @@
             This is a component wrapper for Player Controller which can be added to a GameObject.
             </summary>
         </member>
+        <member name="P:Rewired.Components.PlayerController.ElementWithSourceInfo.absoluteSourceSensitivity">
+            <summary>
+            The absolute to relative sensitivity multiplier for axes. This is only applied when the axis coordinate mode is set to Relative and the axis receives
+            Absolute coordinate mode input (joystick axes, keyboard keys, etc.).
+            This is equivalent to pixels per second on a 1920x1080 screen.
+            The final result can also be affected by <see cref="P:Rewired.Components.PlayerController.ElementWithSourceInfo.absoluteToRelativeScalingMode"/> and, for a mouse, <see cref="P:Rewired.Components.PlayerMouse.pointerSpeed"/>.
+            </summary>
+        </member>
+        <member name="P:Rewired.Components.PlayerController.ElementWithSourceInfo.absoluteToRelativeScalingMode">
+            <summary>
+            Determines how a relative axis value will be scaled when controlled by an absolute axis (eg: a joystick).
+            This can be used to scale axis value based on screen or viewport resolution.
+            This is used for scaling mouse pointer speed.
+            Set <see cref="P:Rewired.PlayerController.absoluteToRelativeScalingReferenceResolution"/> to use a custom scaling reference resolution.
+            </summary>
+        </member>
         <member name="P:Rewired.Components.PlayerController.playerId">
             <summary>
             The Player id of the Player used for the source of input.
@@ -6919,6 +6935,11 @@
             The controller element identifier.
             </summary>
         </member>
+        <member name="P:Rewired.Controller.Element.excludeFromPolling">
+            <summary>
+            Determines if the element is excluded from rebind polling.
+            </summary>
+        </member>
         <member name="P:Rewired.Controller.Element.isMemberElement">
             <summary>
             Returns True if the element is a member of a compound element such as an Axis2D.
@@ -6999,6 +7020,17 @@
             Do not set this value extremely low or noisy axes will be detected when at rest.
             A value of -1 means the default global polling dead zone will be used instead.
             [Default = -1]
+            </summary>
+        </member>
+        <member name="P:Rewired.Controller.Axis.axisCoordinateMode">
+            <summary>
+            The coordinate mode of the axis.
+            This describes the format of the data returned by the axis.
+            </summary>
+        </member>
+        <member name="P:Rewired.Controller.Axis.excludeFromPolling">
+            <summary>
+            Determines if the element is excluded from rebind polling.
             </summary>
         </member>
         <member name="M:Rewired.Controller.Axis.GetCalibratedValueForPolling(Rewired.UpdateLoopType,Rewired.AxisCalibration)">
@@ -10286,6 +10318,9 @@
         <member name="T:Rewired.Data.Mapping.HardwareJoystickMap.Platform_NintendoSwitch">
             <exclude></exclude>
         </member>
+        <member name="T:Rewired.Data.Mapping.HardwareJoystickMap.Platform_NintendoSwitch2">
+            <exclude></exclude>
+        </member>
         <member name="T:Rewired.Data.Mapping.HardwareJoystickMap.Platform_GameCore_Base">
             <exclude></exclude>
         </member>
@@ -12135,6 +12170,23 @@
             <param name="index">The index of the element.</param>
             <returns>The element at the specified index. Returns null if no element exists at the specified index or it is not the correct type.</returns>
         </member>
+        <member name="P:Rewired.PlayerController.absoluteToRelativeScalingReferenceResolution">
+            <summary>
+            The reference resolution for absolute to relative value scaling.
+            This is used in conjunction with <see cref="P:Rewired.PlayerController.Axis.absoluteToRelativeScalingMode"/> to
+            determine how to scale absolute values to relative values.
+            When <see cref="P:Rewired.PlayerController.Axis.absoluteToRelativeScalingMode"/> is set to any of the screen / viewport
+            scaling modes, if the scaling mode is based on the horizontal dimension of the screen / viewport, the horizontal resolution will
+            be divided by the reference X resolution to determine the final scaling factor. For example, if the horizontal reference resolution
+            is 1920 pixels and the current screen / viewport horizontal resolution is 3840 pixels, the final scaling multiplier will be 2, resulting
+            in a doubling of value to compensate for the increased resolution.
+            If the scaling mode is based on the vertical dimension of the screen / viewport, the vertical resolution will
+            be divided by the reference Y resolution to determine the final scaling factor. For example, if the vertical reference resolution
+            is 1080 pixels and the current screen / viewport horizontal resolution is 720 pixels, the final scaling multiplier will be 0.66667, resulting
+            in a reduction of value to compensate for the decreased resolution.
+            [Default = 1920x1080]
+            </summary>
+        </member>
         <member name="T:Rewired.PlayerController.Factory">
             <summary>
             Class for creating Player Controller instances.
@@ -12147,6 +12199,56 @@
             <param name="definition">Definition use to set initial values in the controller.</param>
             <returns>A new Player Controller.</returns>
         </member>
+        <member name="T:Rewired.PlayerController.AbsoluteToRelativeScalingMode">
+            <summary>
+            Determines how the values will be scaled when controlled by an absolute value (eg: a joystick).
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.None">
+            <summary>
+            No scaling.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.ScreenWidth">
+            <summary>
+            Scales based on the screen width.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.ScreenHeight">
+            <summary>
+            Scales based on the screen height.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.MaxScreenDimension">
+            <summary>
+            Scales based on the larger of screen width or height.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.MinScreenDimension">
+            <summary>
+            Scales based on the smaller of screen width or height.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.ViewportWidth">
+            <summary>
+            Scales based on the viewport width.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.ViewportHeight">
+            <summary>
+            Scales based on the viewport height.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.MaxViewportDimension">
+            <summary>
+            Scales based on the larger of viewport width or height.
+            </summary>
+        </member>
+        <member name="F:Rewired.PlayerController.AbsoluteToRelativeScalingMode.MinViewportDimension">
+            <summary>
+            Scales based on the smaller of viewport width or height.
+            </summary>
+        </member>
         <member name="T:Rewired.PlayerController.Axis">
             <summary>
             An Axis that uses Player Actions as the value source.
@@ -12156,6 +12258,15 @@
             <summary>
             The absolute to relative sensitivity multiplier. This is only applied when the axis coordinate mode is set to Relative and the axis receives
             Absolute coordinate mode input (joystick axes, keyboard keys, etc.).
+            This is equivalent to pixels per second on a 1920x1080 screen.
+            The final result can also be affected by <see cref="P:Rewired.PlayerController.Axis.absoluteToRelativeScalingMode"/> and, for a mouse, <see cref="P:Rewired.PlayerMouse.pointerSpeed"/>.
+            </summary>
+        </member>
+        <member name="P:Rewired.PlayerController.Axis.absoluteToRelativeScalingMode">
+            <summary>
+            Determines how a relative axis value will be scaled when controlled by an absolute axis (eg: a joystick).
+            This can be used to scale axis value based on screen or viewport resolution.
+            This is used for scaling mouse pointer speed.
             </summary>
         </member>
         <member name="P:Rewired.PlayerController.Axis.coordinateMode">
@@ -12201,15 +12312,17 @@
             Absolute coordinate mode input (joystick axes, keyboard keys, etc.).
             </summary>
         </member>
+        <member name="F:Rewired.PlayerController.Axis.Definition.absoluteToRelativeScalingMode">
+            <summary>
+            Determines how a relative axis value will be scaled when controlled by an absolute axis (eg: a joystick).
+            This can be used to scale axis value based on screen or viewport resolution.
+            This is used for scaling mouse pointer speed.
+            </summary>
+        </member>
         <member name="T:Rewired.PlayerController.MouseAxis">
             <summary>
             A Mouse Axis that uses Player Actions as the value source.
             Source value is automatically scaled to screen resolution.
-            </summary>
-        </member>
-        <member name="P:Rewired.PlayerController.MouseAxis.value">
-            <summary>
-            The current value.
             </summary>
         </member>
         <member name="T:Rewired.PlayerController.MouseAxis.Definition">
@@ -15906,6 +16019,11 @@
             This is used for localization and glyph lookup.
             </summary>
         </member>
+        <member name="P:Rewired.ControllerElementIdentifier.role">
+            <summary>
+            The role of this element.
+            </summary>
+        </member>
         <member name="M:Rewired.ControllerElementIdentifier.#ctor">
             <summary>
             Constructor.
@@ -16595,6 +16713,18 @@
         <member name="P:Rewired.ControllerMap.ButtonMaps">
             <summary>
             Gets all Button ActionElementMaps in this controller map.
+            </summary>
+        </member>
+        <member name="P:Rewired.ControllerMap.modifiedTime">
+            <summary>
+            The last time the Controller Map was modified since it was created.
+            Returns 0 if the Controller Map was not modified or if <see cref="P:Rewired.ControllerMap.isModified"/> was set to false.
+            </summary>
+        </member>
+        <member name="P:Rewired.ControllerMap.isModified">
+            <summary>
+            Determines if the Controller Map has been modified since it was created.
+            If this is manually set to true, <see cref="P:Rewired.ControllerMap.modifiedTime"/> will also be set to the current time.
             </summary>
         </member>
         <member name="M:Rewired.ControllerMap.ContainsAction(System.String)">
@@ -17784,6 +17914,15 @@
             <param name="results">List which will be populated with matching results.</param>
             <param name="skipDisabledMaps">Should disabled ActionElementMaps be skipped?</param>
             <exception cref="T:System.ArgumentNullException">results is null</exception>
+        </member>
+        <member name="M:Rewired.ControllerMap.Create(Rewired.Controller,System.Int32,System.Int32)">
+            <summary>
+            Creates a Controller Map for the specified Controller.
+            </summary>
+            <param name="controller">The Controller.</param>
+            <param name="categoryId">The map category id.</param>
+            <param name="layoutId">The layout id.</param>
+            <returns>Controller Map</returns>
         </member>
         <member name="T:Rewired.ControllerMapWithAxes">
             <summary>
