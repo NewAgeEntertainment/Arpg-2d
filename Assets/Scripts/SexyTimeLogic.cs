@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +9,7 @@ using rewired = Rewired;
 
 public class SexyTimeLogic : MonoBehaviour
 {
-    [Header("Gallery")]
+    //[Header("Gallery")]
     //[SerializeField] private GalleryUnlockedItems unlockedSO;
     [Tooltip("Id is from GalleryItemHolder SO")]
     [SerializeField] private int animID;
@@ -51,11 +51,7 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Sex Exp")]
     [SerializeField] private float sexExpToGive = 5f;
 
-    [Header("Dialogue Trigger")]
-    [SerializeField] private List<DialogueTriggerProperties> dialoguesToTrigger; //for blue bar
-    [SerializeField] private List<DialogueTriggerProperties> dialoguesToTriggerPinkBar; //for pink bar
-    //[SerializeField] private float triggerAtBarValue = 50f;
-    //[SerializeField] public GraphDataContainer dialogueToTrigger;
+    
 
     [Header("Player")]
     [SerializeField] private int playerID = 0;
@@ -136,10 +132,10 @@ public class SexyTimeLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (player.GetButtonDown("StrokeSexyGame"))
+        if (player.GetButtonDown("Stroke"))
             StrokeLogic(default);
 
-        if (player.GetButtonDown("DeepBreatheSkillSexyGame"))
+        if (player.GetButtonDown("DeepBreathe"))
             CastDeepBreathe(default);
 
         CastNPCAttackBarFill();
@@ -172,7 +168,7 @@ public class SexyTimeLogic : MonoBehaviour
                 isSexyTimeGoingOn = false;
                 isCoroutineRunning = false;
                 cumReached = false;
-                /*StatsManager.Instance.AddSexExp(sexExpToGive)*/;
+                // StatsManager.Instance.AddSexExp(sexExpToGive);
                 //unlockedSO.UnlockAnim(animID);
             }
         }
@@ -244,46 +240,17 @@ public class SexyTimeLogic : MonoBehaviour
 
             if (!isMouthOpen)
             {
-                anim.Play("fuck mouth closed", 0, 0f);
+                anim.Play("fuck", 0, 0f);
             }
             else
             {
-                anim.Play("fuck mouth opened", 0, 0f);
+                anim.Play("fuck", 0, 0f);
             }
 
-            //blueBar.value += blueBarFillPerStroke + StatsManager.Instance.stroke - StatsManager.Instance.resilience;
-            //pinkBar.value += pinkBarFillPerStroke + StatsManager.Instance.stroke;
+            blueBar.value += blueBarFillPerStroke; //+ StatsManager.Instance.stroke - StatsManager.Instance.resilience;
+            pinkBar.value += pinkBarFillPerStroke; //+ StatsManager.Instance.stroke;
 
-            foreach (DialogueTriggerProperties dtp in dialoguesToTrigger)
-            {
-                if (blueBar.value >= dtp.valueToTriggerAt /*|| pinkBar.value >= dtp.valueToTriggerAt*/)
-                {
-                    if (!dtp.isAlreadyTriggered)
-                    {
-                        //TriggerDialogue(dtp.dialogueToTrigger);
-                        dtp.isAlreadyTriggered = true;
-                        break;
-                    }
-                }
-            }
-
-            foreach (DialogueTriggerProperties dtp in dialoguesToTriggerPinkBar)
-            {
-                if (/*blueBar.value >= dtp.valueToTriggerAt ||*/ pinkBar.value >= dtp.valueToTriggerAt)
-                {
-                    if (!dtp.isAlreadyTriggered)
-                    {
-                        /*TriggerDialogue(dtp.dialogueToTrigger)*/;
-                        dtp.isAlreadyTriggered = true;
-                        break;
-                    }
-                }
-            }
-            //if (blueBar.value >= triggerAtBarValue || pinkBar.value >= triggerAtBarValue)
-            //{
-            //    TriggerDialogue();
-            //    isMouthOpen = true;
-            //}
+            
 
             if (blueBar.value >= blueBarMaxValue || pinkBar.value >= pinkBarMaxValue)
             {
@@ -346,15 +313,7 @@ public class SexyTimeLogic : MonoBehaviour
 
     }
 
-    //private void TriggerDialogue(NPC_Dialogue dialogueToTrigger)
-    //{
-    //    if (DialogueTypewriter.Instance != null)
-    //    {
-    //        DialogueTypewriter.Instance.StartDialogue(dialogueToTrigger, OnEndDialogue);
-
-    //        shouldPause = true;
-    //    }
-    //}
+    
 
     private void OnEndDialogue()
     {
@@ -412,12 +371,6 @@ public class SexyTimeLogic : MonoBehaviour
     //    }
     //}
 
-    [System.Serializable]
-    public class DialogueTriggerProperties
-    {
-        [HideInInspector]
-        public bool isAlreadyTriggered;
-        public float valueToTriggerAt;
-        //public NPC_Dialogue dialogueToTrigger;
-    }
+    
 }
+

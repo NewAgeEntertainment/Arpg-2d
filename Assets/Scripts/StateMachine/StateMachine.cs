@@ -20,6 +20,6 @@ public class StateMachine
 
     public void UpdateActiveState()
     {
-        currentState.Update();        
+        currentState.Update();
     }
 }
