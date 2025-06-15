@@ -17,4 +17,7 @@ public class Stat_OffenseGroup
     public Stat iceDamage; // Base ice damage of the entity
     public Stat lightningDamage; // Base lightning damage of the entity
     public Stat poisonDamage; // Base poison damage of the entity
+
+    //Sexual damage
+    public Stat StrokeDamage; // Base stroke damage of the entity
 }

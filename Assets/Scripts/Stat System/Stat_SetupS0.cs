@@ -40,5 +40,5 @@ public class Stat_SetupS0 : ScriptableObject
 
     [Header("Sex Stats")]
     public float Stroke;
-    public float Defiance;
+    public float Resilence;
 }
