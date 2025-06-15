@@ -1,33 +1,34 @@
+﻿using System.Collections;
 using UnityEngine;
 
-public class Sex_ClimaxState : SexState
+public class Sex_ClimaxState : SexyTimeState
 {
-    public Sex_ClimaxState(SexyTimeLogic sex) : base(sex) 
+
+    public Sex_ClimaxState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine) : base(logic, stateMachine) { }
+
+    public override void EnterState()
     {
-        
+        Debug.Log("Entering Climax State");
+
+        logic.anim.Play("sperm shot", 0, 0f);
+        logic.shouldPause = true;
+        logic.cumReached = true;
+
+        // Start coroutine to end sexy time after climax duration
+        logic.StartCoroutine(ClimaxRoutine());
     }
 
-    //public override void Enter()
-    //{
-    //    context.cumTimeElapsed = 0f;
+    private IEnumerator ClimaxRoutine()
+    {
+        yield return new WaitForSeconds(logic.cumDuration);
 
-    //    //if (SoundManager.instance != null && context.cummingSound != null)
-    //    //    SoundManager.instance.PlaySound(context.cummingSound);
+        logic.shouldPause = false;
+        logic.ResetSexyTime();
 
-    //    context.anim?.SetTrigger("Climax");
-    
-    //}
+        stateMachine.ChangeState(new Sex_IdleState(logic, stateMachine));
+    }
 
-    //public override void Update()
-    //{
-    //    context.cumTimeElapsed += Time.deltaTime;
+    public override void UpdateState() { } // Empty since coroutine handles everything
 
-    //    if (context.cumTimeElapsed >= context.cumDuration)
-    //    {
-    //        //context.StatsManager.Instance.AddSexExp(context.sexExpToGive);
-    //        //context.unlockedSO.UnlockAnim(context.animID);
-    //        context.ChangeState(new Sex_FinishState(context));
-    //    }
-    //}
 }
 

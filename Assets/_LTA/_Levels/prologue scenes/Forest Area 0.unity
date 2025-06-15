@@ -20199,7 +20199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: offense.StrokeDamage.baseValue
-      value: 30
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: resources.healthRegen.baseValue
@@ -31770,6 +31770,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 272001bc424dc6d46b3ef4248a2d34db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stateMachine: {fileID: 1872132359}
   animID: 0
   canvasBackground: {fileID: 1036242279}
   autoStart: 1
@@ -31784,9 +31785,8 @@ MonoBehaviour:
   blueBar: {fileID: 1242750107}
   pinkBarMaxValue: 100
   blueBarMaxValue: 100
-  barDecayPerSecond: 0
   baseBlueBarFillPerStroke: 0
-  strokeMultiplier: 6.26
+  strokeMultiplier: 2.61
   blueBarFillText: {fileID: 1749414307}
   pinkBarFillText: {fileID: 967969836}
   blueBarFillPowerText: {fileID: 1824018350}
@@ -31810,6 +31810,23 @@ MonoBehaviour:
   OnPinkBarFull:
     m_PersistentCalls:
       m_Calls: []
+  blueBarReachedOnce: 0
+  pinkBarReachedOnce: 0
+  cumReached: 0
+  cumTimeElapsed: 0
+--- !u!114 &1872132359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872132344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cb8edac0e90c4c4db15a5d083591399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logic: {fileID: 1872132351}
 --- !u!1 &1883032519
 GameObject:
   m_ObjectHideFlags: 0
@@ -34015,11 +34032,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 485444551430582908, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 485444551430582908, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 563796040088860685, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.data[0]
@@ -34192,6 +34209,10 @@ PrefabInstance:
     - target: {fileID: 4857512142089180178, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -98.74899
+      objectReference: {fileID: 0}
+    - target: {fileID: 4857512142268677358, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4857512142364247219, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchorMax.y
@@ -34607,11 +34628,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7748287277381187945, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7748287277381187945, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0.197
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7748414737884335668, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.data[0]
@@ -34647,14 +34668,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8931125116674084894, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8931125116674084894, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
-      insertIndex: 5
+      insertIndex: 3
+      addedObject: {fileID: 1872132359}
+    - targetCorrespondingSourceObject: {fileID: 8931125116674084894, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
+      insertIndex: 6
       addedObject: {fileID: 1872132351}
   m_SourcePrefab: {fileID: 100100000, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
 --- !u!1 &2131895860

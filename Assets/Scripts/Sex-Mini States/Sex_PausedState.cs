@@ -2,20 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Sex_PausedState : SexState
+public class Sex_PausedState : SexyTimeState
 {
-    public Sex_PausedState(SexyTimeLogic context) : base(context) { }
+    private SexyTimeState previousState;
 
-    public override void Enter()
+    public Sex_PausedState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine, SexyTimeState previousState)
+        : base(logic, stateMachine)
     {
-        //context.shouldPause = true;
-        Time.timeScale = 0f; // Optional: Freeze time
+        this.previousState = previousState;
     }
 
-    public override void Exit()
+    public override void EnterState()
     {
-        //context.shouldPause = false;
-        Time.timeScale = 1f; // Resume time
+        Debug.Log("Paused for Dialogue");
+        logic.anim.speed = 0f; // pause animation
+        //logic.playerLocked = true; // optional flag to block inputs elsewhere
+    }
+
+    public override void ExitState()
+    {
+        logic.anim.speed = 1f; // resume animation
+        //logic.playerLocked = false;
+    }
+
+    // Ignore input while paused
+    public override void HandleStroke() { }
+    public override void HandleDeepBreathe() { }
+
+    public void ResumeFromPause()
+    {
+        stateMachine.ChangeState(previousState);
     }
 }
 
