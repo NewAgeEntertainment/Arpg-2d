@@ -20186,7 +20186,23 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: major.Luck.baseValue
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: major.strength.baseValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: offense.damage.baseValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: defense.Resilence.baseValue
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: offense.critpower.baseValue
       value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
@@ -20194,12 +20210,20 @@ PrefabInstance:
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: defense.Resilience.baseValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: offense.critchance.baseValue
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: resources.manaRegen.baseValue
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: offense.StrokeDamage.baseValue
-      value: 5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 2498352163099435946, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: resources.healthRegen.baseValue
@@ -24530,6 +24554,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8527505050682111766, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: defense.Resilence.baseValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8527505050682111766, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
+      propertyPath: offense.critpower.baseValue
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8527505050682111766, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
@@ -30883,7 +30911,7 @@ MonoBehaviour:
     poisonRes:
       baseValue: 0
       modifiers: []
-    Resilence:
+    Resilience:
       baseValue: 0
       modifiers: []
   major:
@@ -31778,24 +31806,23 @@ MonoBehaviour:
   offsetForPosition: {x: 0, y: -4, z: 0}
   playerStats: {fileID: 1468730651}
   partnerStats: {fileID: 1530223320}
-  barSpeed: 0
-  strokeEffect: {fileID: 0}
   critText: {fileID: 0}
+  strokeEffect: {fileID: 0}
   pinkBar: {fileID: 657824943}
   blueBar: {fileID: 1242750107}
-  pinkBarMaxValue: 100
-  blueBarMaxValue: 100
-  baseBlueBarFillPerStroke: 0
-  strokeMultiplier: 2.61
+  pinkBarMaxValue: 500
+  blueBarMaxValue: 500
+  arouselPerStroke: 7
+  strokeMultiplier: 0
   blueBarFillText: {fileID: 1749414307}
   pinkBarFillText: {fileID: 967969836}
   blueBarFillPowerText: {fileID: 1824018350}
   pinkBarFillPowerText: {fileID: 1069229825}
   blueBarValueDeplete: 10
   deepBreatheCooldown: 3
-  npcAttackBarFillValue: 30
-  npcAttackBarFillCooldown: 5
-  npcAttackBarFillCooldownText: {fileID: 221622625}
+  pussySqueeze: 20
+  pussySqueezeCooldown: 5
+  pussySqueezeCooldownText: {fileID: 221622625}
   shouldNpcAttackImmediately: 0
   cumDuration: 5
   sexExpToGive: 5
@@ -31813,6 +31840,7 @@ MonoBehaviour:
   blueBarReachedOnce: 0
   pinkBarReachedOnce: 0
   cumReached: 0
+  barSpeed: 0
   cumTimeElapsed: 0
 --- !u!114 &1872132359
 MonoBehaviour:
@@ -34061,7 +34089,7 @@ PrefabInstance:
     - target: {fileID: 3185843152180861439, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: f784939b7b5bf3f4680f5d449b953718, type: 2}
+      objectReference: {fileID: 2100000, guid: 3fbbd56d992c3354783d13f447507b81, type: 2}
     - target: {fileID: 3430305246935293558, guid: ad0c1eac92fcdaf45ba47cabe33b11a2, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.data[0]
       value: 1801810542

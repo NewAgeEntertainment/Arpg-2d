@@ -8,7 +8,7 @@ public class Entity_Stats : MonoBehaviour
     public Stat_ResourceGroup resources; // Resource stats group containing max health, health regen, max mana, and mana regen
     public Stat_OffenseGroup offense; // Offense stats group containing damage, crit power, crit chance, and elemental damages
     public Stat_DefenseGroup defense; // Defense stats group containing armor, evasion, and elemental resistances
-    public Stat_MajorGroup major; // Major stats group containing strength, agility, intelligence, and vitality
+    public Stat_MajorGroup major; // Major stats group containing strength, Luck, intelligence, and vitality
 
     public AttackData GetAttackData(DamageScaleData scaleData)
     {
@@ -56,7 +56,7 @@ public class Entity_Stats : MonoBehaviour
         float bonusLightning = (lightningDamage == highestDamage) ? 0 : lightningDamage * .5f;
         float bonusPoison = (poisonDamage == highestDamage) ? 0 : poisonDamage * .5f; // Bonus damage for weaker elemental types
 
-        float weakerElementalDamage = bonusFire + bonusIce + bonusLightning + poisonDamage; // Calculate the weaker elemental damage
+        float weakerElementalDamage = bonusFire + bonusIce + bonusLightning + bonusPoison; // Calculate the weaker elemental damage
         float finalDamage = highestDamage + weakerElementalDamage + bonusElementalDamage;
 
         return finalDamage * scaleFactor;
@@ -65,14 +65,15 @@ public class Entity_Stats : MonoBehaviour
 
     public float GetSexualResistance()
     {
-        float baseResilience = defense.Resilence.GetValue(); // Base resilience is the sum of health and mana regen
-        float bonusResilience = major.vitality.GetValue() * 0.5f; // Bonus resilience from Vitality: +0.5% per Vitality point
+        float baseResilience = defense.Resilience.GetValue(); // From defense stat group
+        float bonusResilience = major.vitality.GetValue() * 0.5f; // From vitality
         float totalResilience = baseResilience + bonusResilience;
-        // Clamp the resilience value to a maximum cap to prevent excessive resilience
-        float resilienceCap = 50f; // Maximum resilience will be capped at 50%
-        float finalResilience = Mathf.Clamp(totalResilience, 0f, resilienceCap); // Clamp the final resilience value between 0 and the resilienceCap.
-        return finalResilience; // Return the final resilience value
+
+        float resilienceCap = 50f; // Max cap of 50%
+        float finalResilience = Mathf.Clamp(totalResilience, 0f, resilienceCap);
+        return finalResilience;
     }
+
     public float GetElementalResistance(ElementType element)
     {
         float baseResistance = 0;
@@ -120,6 +121,7 @@ public class Entity_Stats : MonoBehaviour
         float finalDamage = isCrit ? totalBaseDamage * critPower : totalBaseDamage; // 
 
 
+
         return finalDamage * scaleFactor;
     }
 
@@ -140,16 +142,29 @@ public class Entity_Stats : MonoBehaviour
         return finalMitigation;
     }
 
-    public float GetSexualDamage()
+    public float GetSexualDamage(out bool isCrit, float scaleFactor = 1)
     {
-        float baseStrokeDamage = offense.StrokeDamage.GetValue();
-        float bonusStrokeDamage = major.strength.GetValue() * 0.5f; // each point of Strength gives +0.5% stroke damage
-        float totalStrokeDamage = baseStrokeDamage + bonusStrokeDamage;
-        // Clamp the stroke damage value to a maximum cap to prevent excessive damage
-        float strokeCap = 100f; // Maximum stroke damage will be capped at 100%
-        float finalStrokeDamage = Mathf.Clamp(totalStrokeDamage, 0f, strokeCap); // Clamp the final stroke damage value between 0 and the strokeCap.
-        return finalStrokeDamage;
+        float baseSexDamage = offense.StrokeDamage.GetValue();
+        float bonusSexDamage = major.strength.GetValue() * 0.5f;
+        float totalBaseSexDamage = baseSexDamage + bonusSexDamage;
+
+        float baseCritChance = offense.critchance.GetValue();
+        float bonusCritChance = major.Luck.GetValue() * 0.3f;
+        float critChance = baseCritChance + bonusCritChance;
+
+        float baseCritPower = offense.critpower.GetValue(); // Should be something like 1.5
+        float bonusCritPower = major.Luck.GetValue() * 0.05f; // Changed from 0.5 to 0.05 if critPower is in 1.x range
+        float critPower = Mathf.Max(baseCritPower + bonusCritPower, 1f); // No divide by 100!
+
+        isCrit = UnityEngine.Random.Range(0f, 100f) < critChance;
+
+        float finalSexDamage = isCrit ? totalBaseSexDamage * critPower : totalBaseSexDamage;
+
+        return finalSexDamage * scaleFactor;
     }
+
+
+
 
     public float GetArmorReduction()
     {
@@ -227,7 +242,7 @@ public class Entity_Stats : MonoBehaviour
                 return offense.critchance;
             case StatType.ArmorReduction:
                 return offense.armorReduction;
-            case StatType.Stroke:
+            case StatType.SexualDamage:
                 return offense.StrokeDamage;
 
             case StatType.FireDamage:
@@ -243,8 +258,8 @@ public class Entity_Stats : MonoBehaviour
                 return defense.armor;
             case StatType.Evasion:
                 return defense.evasion;
-            case StatType.Resilence:
-                return defense.Resilence;
+            case StatType.Resilience:
+                return defense.Resilience;
             
             case StatType.FireResistance:
                 return defense.fireRes;
@@ -291,7 +306,7 @@ public class Entity_Stats : MonoBehaviour
 
         defense.armor.SetBaseValue(defaultStatSetup.armor);
         defense.evasion.SetBaseValue(defaultStatSetup.evasion);
-        defense.Resilence.SetBaseValue(defaultStatSetup.Resilence);
+        defense.Resilience.SetBaseValue(defaultStatSetup.Resilence);
         //defense.
 
         defense.fireRes.SetBaseValue(defaultStatSetup.fireResistance);
@@ -300,26 +315,7 @@ public class Entity_Stats : MonoBehaviour
         defense.poisonRes.SetBaseValue(defaultStatSetup.poisonResistance);
     }
 
-    public float GetSexualStrokeDamage(out bool isCrit)
-    {
-        float baseStroke = offense.StrokeDamage.GetValue();
-        float bonusStroke = major.strength.GetValue() * 0.5f;
-        float totalBaseStroke = baseStroke + bonusStroke;
-
-        float critChance = offense.critchance.GetValue() + major.Luck.GetValue() * 0.3f;
-        float critPower = (offense.critpower.GetValue() + major.Luck.GetValue() * 0.5f) / 100f;
-
-        isCrit = Random.Range(0f, 100f) < critChance;
-
-        float stroke = isCrit ? totalBaseStroke * critPower : totalBaseStroke;
-
-        float strokeCap = 100f;
-        return Mathf.Clamp(stroke, 0f, strokeCap);
     
-    
-    
-    
-    }
 
     public float GetBlueBarStrokeValue()
     {
@@ -332,10 +328,10 @@ public class Entity_Stats : MonoBehaviour
 
     public float GetPinkBarStrokeValue()
     {
-        float strokeDamage = GetSexualDamage(); // this includes Stroke stat + bonuses
-        
+        bool isCrit; // Declare a variable to capture the 'isCrit' output parameter  
+        float sexDamage = GetSexualDamage(out isCrit); // Pass the required 'isCrit' parameter  
 
-        return strokeDamage;
+        return sexDamage;
     }
 
     public float GetCastFillReductionMultiplier()

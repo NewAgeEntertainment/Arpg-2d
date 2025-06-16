@@ -16,5 +16,5 @@ public class Stat_DefenseGroup
     public Stat poisonRes; // Base poison resistance of the entity, which reduces poison damage taken
 
     // Sexual Resistance
-    public Stat Resilence; // Base stroke resistance of the entity, which reduces stroke damage taken
+    public Stat Resilience; // Base stroke resistance of the entity, which reduces stroke damage taken
 }

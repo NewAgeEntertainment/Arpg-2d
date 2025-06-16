@@ -26,37 +26,39 @@ public class SexyTimeLogic : MonoBehaviour
 
     public Entity_Stats playerStats;
     [SerializeField] private Entity_Stats partnerStats; // Optional: the receiver of the stroking
-
-
-    public float barSpeed = 0f;
-
-    [SerializeField] private ParticleSystem strokeEffect;
     [SerializeField] private TextMeshProUGUI critText;
+    [SerializeField] private ParticleSystem strokeEffect;
+    public Animator anim { get; private set; }
 
+    //public event Action OnCriticalStroke;
+
+    #region settings
     [Header("Bars")]
-    public Slider pinkBar, blueBar;
+    public Slider pinkBar;
+    public Slider blueBar;
     public float pinkBarMaxValue;
     public float blueBarMaxValue;
-    private float blueBarFillPerStroke { get; set; }
-    private float pinkBarFillPerStroke { get; set; }
+    private float blueBarFillPerStroke;
+    private float pinkBarFillPerStroke;
     public float barDecayPerSecond { get; set; }
 
-    public float baseBlueBarFillPerStroke = 3f;
+    public float arouselPerStroke = 3f;
     public float strokeMultiplier = 1f;
 
     [Header("Info Text")]
-    [SerializeField] private TextMeshProUGUI blueBarFillText;
-    [SerializeField] private TextMeshProUGUI pinkBarFillText;
-    [SerializeField] private TextMeshProUGUI blueBarFillPowerText, pinkBarFillPowerText;
+    public TextMeshProUGUI blueBarFillText;
+    public TextMeshProUGUI pinkBarFillText;
+    [SerializeField] private TextMeshProUGUI blueBarFillPowerText;
+    [SerializeField] private TextMeshProUGUI pinkBarFillPowerText;
 
     [Header("Deep Breathe")]
     [SerializeField] private float blueBarValueDeplete = 10f;
     [SerializeField] private float deepBreatheCooldown = 3f;
 
-    [Header("NPC Attack Bar Fill")]
-    [SerializeField] private float npcAttackBarFillValue = 10f;
-    [SerializeField] private float npcAttackBarFillCooldown = 5f;
-    [SerializeField] private TextMeshProUGUI npcAttackBarFillCooldownText;
+    [Header("NPC Attack skill")]
+    [SerializeField] private float pussySqueeze = 10f;
+    [SerializeField] private float pussySqueezeCooldown = 5f;
+    [SerializeField] private TextMeshProUGUI pussySqueezeCooldownText;
     [Tooltip("True if the npc attack should be executed immediately when starting the sexy time. If false, it will wait for the cooldown initially.")]
     [SerializeField] private bool shouldNpcAttackImmediately = false;
 
@@ -84,13 +86,13 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Quest System")]
     [SerializeField] public UnityEvent OnBlueBarFull = new UnityEvent();
     [SerializeField] public UnityEvent OnPinkBarFull = new UnityEvent();
+    #endregion
 
+
+    #region bools
     public static bool isSexyTimeGoingOn = false;
     public bool blueBarReachedOnce = false;
     public bool pinkBarReachedOnce = false;
-
-    public Animator anim { get; private set; }
-
     public bool isFucking { get; private set; }
     public bool isMouthOpen { get; private set; }
     public bool isCumming { get; private set; }
@@ -98,15 +100,18 @@ public class SexyTimeLogic : MonoBehaviour
     public bool cumReached = false;
     private bool isDialogueAlreadyTriggered = false;
     public bool shouldPause { get; set; }
+    public bool HasSexyTimeFinished => cumTimeElapsed >= cumDuration;
+    #endregion
 
+    #region floats
+    public float barSpeed = 0f;
     private float lastStrokeTimestamp;
     private float timeBetweenStrokes = 1f;
     public float cumTimeElapsed;
     private float deepBreatheTimestamp;
     private float npcAttackBarFillTimestamp;
-    //private CharacterActionsInputs playerInputActions;
+    #endregion
 
-    public bool HasSexyTimeFinished => cumTimeElapsed >= cumDuration;
 
     // Start is called before the first frame update
     void Start()
@@ -114,28 +119,23 @@ public class SexyTimeLogic : MonoBehaviour
         stateMachine = GetComponent<SexyTimeStateMachine>();
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
-        // Enter that state
-
         
-
-        //playerInputActions = new CharacterActionsInputs();
-        //foreach (InputAction action in playerInputActions)
-        //{
-        //    string overridePath = PlayerPrefs.GetString($"CharacterActionsInputs_{action.name}", null);
-        //    if (!string.IsNullOrEmpty(overridePath))
-        //        action.ApplyBindingOverride(overridePath);
-        //}
-
-        //playerInputActions.Player.Enable();
-        //playerInputActions.Player.StrokeSexyGame.performed += StrokeLogic;
-        //playerInputActions.Player.StrokeSexyGame.Enable();
-
-        //playerInputActions.Player.DeepBreatheSkillSexyGame.performed += CastDeepBreathe;
-        //playerInputActions.Player.DeepBreatheSkillSexyGame.Enable();
-
         player = rewired.ReInput.players.GetPlayer(playerID);
-
         anim = GetComponent<Animator>();
+
+        // Reset bar values
+        if (blueBar != null)
+            blueBar.value = 0;
+
+        if (pinkBar != null)
+            pinkBar.value = 0;
+
+        // Optional: also reset the text display
+        if (blueBarFillText != null)
+            blueBarFillText.text = $"0 / {Mathf.FloorToInt(blueBarMaxValue)}";
+
+        if (pinkBarFillText != null)
+            pinkBarFillText.text = $"0 / {Mathf.FloorToInt(pinkBarMaxValue)}";
 
         //if (StatsManager.Instance.sexLevel > 1)
         //{
@@ -143,16 +143,15 @@ public class SexyTimeLogic : MonoBehaviour
         //    blueBarMaxValue += StatsManager.Instance.blueBarMaxValuePerLevel * StatsManager.Instance.sexLevel;
         //}
 
-        
-
         blueBar.maxValue = blueBarMaxValue;
         pinkBar.maxValue = pinkBarMaxValue;
 
         if (!shouldNpcAttackImmediately)
-            npcAttackBarFillTimestamp = Time.time + npcAttackBarFillCooldown;
+            npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
         if (autoStart)
             StartSexyTime();
+
     }
 
 
@@ -160,16 +159,7 @@ public class SexyTimeLogic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (cumReached)
-        //{
-        //    cumTimeElapsed += Time.deltaTime;
-
-        //    if (cumTimeElapsed >= cumDuration)
-        //    {
-        //        Debug.Log("Cum duration over, resetting sexy time");
-        //        ResetSexyTime();
-        //    }
-        //}
+       
 
         if (shouldPause)
             return;
@@ -181,6 +171,19 @@ public class SexyTimeLogic : MonoBehaviour
         HandleFuckingInput();
         DepleteBars();
 
+    }
+
+    public void UpdateBarText()
+    {
+        if (blueBarFillText != null)
+        {
+            blueBarFillText.text = $"{Mathf.FloorToInt(blueBar.value)} / {Mathf.FloorToInt(blueBarMaxValue)}";
+        }
+
+        if (pinkBarFillText != null)
+        {
+            pinkBarFillText.text = $"{Mathf.FloorToInt(pinkBar.value)} / {Mathf.FloorToInt(pinkBarMaxValue)}";
+        }
     }
 
     private void HandleInput()
@@ -196,7 +199,7 @@ public class SexyTimeLogic : MonoBehaviour
     {
         CastNPCAttackBarFill();
         float remainingCooldown = Mathf.Max(0, npcAttackBarFillTimestamp - Time.time);
-        npcAttackBarFillCooldownText.text = remainingCooldown.ToString("F1");
+        pussySqueezeCooldownText.text = remainingCooldown.ToString("F1");
     }
 
     private void UpdateBarUI()
@@ -204,8 +207,11 @@ public class SexyTimeLogic : MonoBehaviour
         blueBarFillText.text = $"{blueBar.value:F0}/{blueBar.maxValue:F0}";
         pinkBarFillText.text = $"{pinkBar.value:F0}/{pinkBar.maxValue:F0}";
 
-        blueBarFillPowerText.text = $"+{playerStats.GetBlueBarStrokeValue():F0}";
-        pinkBarFillPowerText.text = $"+{playerStats.GetPinkBarStrokeValue():F0}";
+        blueBarFillPowerText.text = $"+{arouselPerStroke:F0}";
+        pinkBarFillPowerText.text = $"+{arouselPerStroke:F0}";
+
+        //blueBarFillPowerText.text = $"+{playerStats.GetBlueBarStrokeValue():F0}";
+        //pinkBarFillPowerText.text = $"+{playerStats.GetPinkBarStrokeValue():F0}";
     }
 
     private void HandleClimaxTimer()
@@ -224,7 +230,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isFucking || !Input.GetKeyDown(KeyCode.Space)) return;
 
         bool isCrit = false;
-        float strokePower = playerStats?.GetSexualStrokeDamage(out isCrit) ?? 10f;
+        float strokePower = playerStats?.GetSexualDamage(out isCrit) ?? 10f;
         float resilience = Mathf.Clamp(partnerStats?.GetSexualResistance() ?? 0f, 0f, 50f);
         float adjustedStroke = strokePower * (1f - (resilience / 100f));
 
@@ -267,15 +273,15 @@ public class SexyTimeLogic : MonoBehaviour
         strokeMultiplier = multiplier;
     }
 
-    void ShowCritFeedback()
+    public void ShowCritFeedback()
     {
-        if (strokeEffect) strokeEffect.Play();
-        if (critText)
-        {
-            critText.text = "💥 Critical Stroke!";
-            critText.gameObject.SetActive(true);
-            StartCoroutine(HideCritText());
-        }
+       if (strokeEffect) strokeEffect.Play();
+            if (critText)
+            {
+                critText.text = "💥 Critical Stroke!";
+                critText.gameObject.SetActive(true);
+                StartCoroutine(HideCritText());
+            }
     }
 
     IEnumerator HideCritText()
@@ -284,25 +290,7 @@ public class SexyTimeLogic : MonoBehaviour
         critText.gameObject.SetActive(false);
     }
 
-    //private void StrokeLogic(InputAction.CallbackContext context)
-    //{
-    //    if (!cumReached && !shouldPause)
-    //    {
-    //        timeBetweenStrokes = Time.time - lastStrokeTimestamp;
-    //        Debug.Log(timeBetweenStrokes);
-    //        if (!isFucking)
-    //        {
-    //            InitiateStroke();
-    //        }
-    //        else
-    //        {
-    //            cachedStrokeWhileFucking = true;
-    //        }
-
-    //        lastStrokeTimestamp = Time.time;
-
-    //    }
-    //}
+   
 
     private void DepleteBars()
     {
@@ -326,65 +314,6 @@ public class SexyTimeLogic : MonoBehaviour
        
     }
 
-
-
-    //public void PerformStroke()
-    //{
-    //    float blueGain = playerStats != null ? playerStats.GetBlueBarStrokeValue() : 0f;
-    //    float pinkGain = playerStats != null ? playerStats.GetPinkBarStrokeValue() : 0f;
-
-    //    blueBar.value += blueGain;
-    //    pinkBar.value += pinkGain;
-    //}
-
-    //private void InitiateStroke()
-    //{
-    //    if (!isFucking && !cumReached)
-    //    {
-    //        anim.SetFloat("speed", GetSpeed());
-
-    //        if (!isMouthOpen)
-    //        {
-    //            anim.Play("fuck", 0, 0f);
-    //        }
-    //        else
-    //        {
-    //            anim.Play("fuck", 0, 0f);
-    //        }
-
-    //        // Get stroke values from stats
-    //        float blueGain = playerStats != null ? playerStats.GetBlueBarStrokeValue() : 0f;
-    //        float pinkGain = playerStats != null ? playerStats.GetPinkBarStrokeValue() : 0f;
-
-    //        blueBar.value += blueGain;
-    //        pinkBar.value += pinkGain;
-
-    //        if (blueBar.value >= blueBarMaxValue || pinkBar.value >= pinkBarMaxValue)
-    //        {
-    //            anim.Play("sperm shot", 0, 0f);
-    //            cumReached = true;
-
-    //            //if (SoundManager.instance != null && cummingSound != null)
-    //            //    SoundManager.instance.PlaySound(cummingSound);
-    //        }
-
-    //        if (blueBar.value >= blueBarMaxValue && !blueBarReachedOnce)
-    //        {
-    //            blueBarReachedOnce = true;
-    //            Debug.Log("Blue BAR FULL QUEST");
-    //            OnBlueBarFull?.Invoke();
-    //        }
-
-    //        if (pinkBar.value >= pinkBarMaxValue && !pinkBarReachedOnce)
-    //        {
-    //            pinkBarReachedOnce = true;
-    //            Debug.Log("Pink BAR FULL QUEST");
-    //            OnPinkBarFull?.Invoke();
-    //        }
-
-    //        isFucking = true;
-    //    }
-    //}
 
     bool isCoroutineRunning = false;
     public void StartSexyTime()
@@ -439,62 +368,26 @@ public class SexyTimeLogic : MonoBehaviour
         }
     }
 
-
-
     private void CastNPCAttackBarFill()
     {
         if (Time.time >= npcAttackBarFillTimestamp && !shouldPause)
         {
             float reduction = playerStats.GetResilienceReductionMultiplier(); // or targetStats, depending who’s getting hit
-            blueBar.value += npcAttackBarFillValue * reduction;
-            npcAttackBarFillTimestamp = Time.time + npcAttackBarFillCooldown;
+            blueBar.value += pussySqueeze * reduction;
+            npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
         }
     }
-
-    //private float GetSpeed()
-    //{
-    //    float speed = 1f;
-
-    //    if (timeBetweenStrokes >= 0.5f)
-    //    {
-    //        speed = 1f;
-    //    }
-    //    else if (timeBetweenStrokes >= 0.25f && timeBetweenStrokes < 0.5f)
-    //    {
-    //        speed = 1.25f;
-    //    }
-    //    else if (timeBetweenStrokes >= 0.15f && timeBetweenStrokes < 0.25f)
-    //    {
-    //        speed = 1.5f;
-    //    }
-    //    else if (timeBetweenStrokes >= 0.05f && timeBetweenStrokes < 0.15f)
-    //    {
-    //        speed = 2f;
-    //    }
-
-    //    return speed;
-    //}
-
-    //public void OpenSexyIfEnoughGold(int goldToSpend)
-    //{
-    //    if (StatsManager.Instance.gold >= goldToSpend)
-    //    {
-    //        StatsManager.Instance.gold -= goldToSpend;
-    //        this.gameObject.SetActive(true);
-    //    }
-    //}
+ 
 
     public void ResetSexyTime()
     {
         // Reset bars
-        //blueBarMaxValue = 0f;
-        //pinkBarMaxValue = 0f;
         blueBar.value = 0f;
         pinkBar.value = 0f;
 
 
-        npcAttackBarFillValue = 0f;
-        npcAttackBarFillCooldown = 0f;
+        pussySqueeze = 0f;
+        pussySqueezeCooldown = 0f;
         // Reset flags
         cumReached = false;
         cumTimeElapsed = 0f;
@@ -507,9 +400,7 @@ public class SexyTimeLogic : MonoBehaviour
         // Reset animation or state
         anim.Play("idle"); // Or whatever your default anim is
 
-        // Reset background
-        //if (canvasBackground != null)
-        //    canvasBackground.SetActive(false);
+        
 
         this.gameObject.SetActive(false);
         isSexyTimeGoingOn = false;
@@ -520,13 +411,9 @@ public class SexyTimeLogic : MonoBehaviour
 
         Debug.Log("SexyTime Reset Complete");
 
-        //StartCoroutine(RestartSexyTimeAfterDelay(2f));
+        
     }
 
-    //private IEnumerator RestartSexyTimeAfterDelay(float delay)
-    //{
-    //    yield return new WaitForSeconds(delay);
-    //    StartSexyTime();
-    //}
+    
 }
 
