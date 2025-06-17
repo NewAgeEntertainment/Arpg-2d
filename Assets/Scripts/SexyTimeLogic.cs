@@ -4,13 +4,14 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using rewired = Rewired;
+using Rewired;
+
 
 public class SexyTimeLogic : MonoBehaviour
 {
     [SerializeField] private SexyTimeStateMachine stateMachine;
     Entity_Stats stats;
-
+    [SerializeField] private Player_SkillManager skillManager;
 
     //[Header("Gallery")]
     //[SerializeField] private GalleryUnlockedItems unlockedSO;
@@ -51,9 +52,10 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private TextMeshProUGUI blueBarFillPowerText;
     [SerializeField] private TextMeshProUGUI pinkBarFillPowerText;
 
-    [Header("Deep Breathe")]
-    [SerializeField] private float blueBarValueDeplete = 10f;
-    [SerializeField] private float deepBreatheCooldown = 3f;
+    
+
+    public float deepBreatheCooldown { get; set; } = 5f; // Cooldown for deep breathing
+    public float blueBarValueDeplete { get; set; } = 10f; // Amount to deplete from blue bar when deep breathing
 
     [Header("NPC Attack skill")]
     [SerializeField] private float pussySqueeze = 10f;
@@ -72,7 +74,7 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private int playerID = 0;
-    private rewired.Player player;
+    private Rewired.Player player;
 
     [Header("Input/Keybinds")]
     [SerializeField] private KeyCode strokeKey = KeyCode.P;
@@ -105,10 +107,10 @@ public class SexyTimeLogic : MonoBehaviour
 
     #region floats
     public float barSpeed = 0f;
-    private float lastStrokeTimestamp;
-    private float timeBetweenStrokes = 1f;
+    public float lastStrokeTimestamp { get; private set; } = 0f; // Timestamp of the last stroke
+    public float timeBetweenStrokes { get; set; } = 1f; // Time in seconds between strokes
     public float cumTimeElapsed;
-    private float deepBreatheTimestamp;
+    public float deepBreatheTimestamp { get; set; } = 0f; // Timestamp for the last deep breathe action
     private float npcAttackBarFillTimestamp;
     #endregion
 
@@ -119,8 +121,9 @@ public class SexyTimeLogic : MonoBehaviour
         stateMachine = GetComponent<SexyTimeStateMachine>();
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
-        
-        player = rewired.ReInput.players.GetPlayer(playerID);
+        //skillManager = Player_SkillManager.Instance;
+
+        player = Rewired.ReInput.players.GetPlayer(playerID);
         anim = GetComponent<Animator>();
 
         // Reset bar values
@@ -192,7 +195,7 @@ public class SexyTimeLogic : MonoBehaviour
             stateMachine.Stroke();
 
         if (player.GetButtonDown("DeepBreathe"))
-            CastDeepBreathe(default);
+            CastDeepBreathe();
     }
 
     private void UpdateAttackBarCooldown()
@@ -359,13 +362,22 @@ public class SexyTimeLogic : MonoBehaviour
         shouldPause = false;
     }
 
-    private void CastDeepBreathe(InputAction.CallbackContext context)
+    public bool IsDeepBreathUnlocked()
     {
-        if (Time.time >= deepBreatheTimestamp && !shouldPause)
+        SexSkill_DeepBreath deepBreath = skillManager?.deepBreath;
+        return deepBreath != null && deepBreath.Unlocked(SkillUpgradeType.DeepBreath);
+    }
+
+    public void CastDeepBreathe()
+    {
+        if (!IsDeepBreathUnlocked())
         {
-            blueBar.value -= blueBarValueDeplete;
-            deepBreatheTimestamp = Time.time + deepBreatheCooldown;
+            Debug.Log("Deep Breathe is locked.");
+            return;
         }
+
+        // Call TryUseSkill() to handle cooldown, blue bar drain, etc.
+        skillManager.deepBreath.TryUseSkill();
     }
 
     private void CastNPCAttackBarFill()

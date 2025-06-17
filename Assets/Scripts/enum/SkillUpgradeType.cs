@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public enum SkillUpgradeType
 {
     None,
@@ -27,5 +28,5 @@ public enum SkillUpgradeType
     Sword_Multicast, // create a time shard that casts 3 shards
     SwordThrow_Bounce, // Bounce sword will bounce between enemies
 
-
+    DeepBreath, // Deep Breath skill to heal the player
 }

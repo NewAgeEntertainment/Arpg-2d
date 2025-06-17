@@ -7,5 +7,6 @@ public enum SkillType
     Thrust,
     TimeShard,
     SwordSpin,
-    DomainExpansion
+    DomainExpansion,
+    DeepBreath, // Skill to heal the player
 }

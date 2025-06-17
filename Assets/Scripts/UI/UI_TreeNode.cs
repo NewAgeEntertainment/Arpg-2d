@@ -63,8 +63,30 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         skillTree.RemoveSkillPoints(skillData.cost);
         connectHandler.UnlockConnectionImage(true);
 
-        skillTree.skillManager.GetSkillByType(skillData.skillType).SetSkillUpgrade(skillData.upgradeData);
+        var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
+
+        if (skill == null)
+        {
+            Debug.LogError("Skill returned from GetSkillByType is NULL!");
+        }
+        else
+        {
+            Debug.Log("Skill found: " + skill.GetType().Name);
+
+            if (skill is SexSkill_DeepBreath deepBreath)
+            {
+                Debug.Log("Unlocking Deep Breath skill now...");
+                deepBreath.Unlock();
+            }
+            else
+            {
+                Debug.LogWarning("Returned skill is not of type SexSkill_DeepBreath.");
+            }
+        }
+
+        skill.SetSkillUpgrade(skillData.upgradeData);
     }
+
 
     private bool CanBeUnlocked()
     {

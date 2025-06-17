@@ -32,7 +32,7 @@ public class Skill_Base : MonoBehaviour
     }
 
     // this connects the skill Manager
-    public void SetSkillUpgrade(UpgradeData upgrade)
+    public virtual void SetSkillUpgrade(UpgradeData upgrade)
     {
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
@@ -62,7 +62,7 @@ public class Skill_Base : MonoBehaviour
         return true;
     }
 
-    protected bool Unlocked(SkillUpgradeType upgradeToCheck) => upgradeType == upgradeToCheck;
+    public bool Unlocked(SkillUpgradeType upgradeToCheck) => upgradeType == upgradeToCheck;
 
 
     protected bool OnCooldown() => Time.time < lastTimeUsed + cooldown;
