@@ -5,7 +5,7 @@ using System;
 public class Stat_MajorGroup
 {
     public Stat strength;
-    public Stat Luck;
+    public Stat luck;
     public Stat intelligence;
     public Stat vitality;
 }

@@ -26,5 +26,8 @@ public enum StatType
     PoisonResistance,
     LightningResistance,
     SexualDamage,
-    Resilience
+    Resilience,
+    ElementalDamage,
+    SexualRestraint,
+    Stroke
 }

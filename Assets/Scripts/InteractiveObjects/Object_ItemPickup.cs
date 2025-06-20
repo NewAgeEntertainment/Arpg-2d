@@ -32,7 +32,9 @@ public class Object_ItemPickup : MonoBehaviour
 
         inventory = collision.GetComponent<Inventory_Base>();
 
-        if (inventory != null && inventory.CanAddItem())
+        bool canAddItem = inventory.CanAddItem() || inventory.FindStackable(itemToAdd) != null;
+
+        if (inventory != null && canAddItem)
         {
             inventory.AddItem(itemToAdd);
         }

@@ -47,51 +47,54 @@ public class Sex_StrokingState : SexyTimeState
 
         logic.anim.SetFloat("speed", GetSpeed());
 
-        // Get resilience multiplier (resilience capped in GetSexualResistance)
-        float resilience = logic.playerStats.GetSexualResistance();
+        // Define resilienceReduction variable  
+        float resilienceReduction = 0f; // Assign a default or calculated value as needed  
+
+        // Get resilience multiplier (resilience capped in GetSexualResistance)  
+        float resilience = logic.playerStats.GetResilienceMitigation(resilienceReduction);
         float reductionMultiplier = 1f - (resilience / 100f);
 
-        // Blue bar increase: arouselPerStroke reduced by resilience
+        // Blue bar increase: arouselPerStroke reduced by resilience  
         float blueIncrease = logic.arouselPerStroke * reductionMultiplier;
         logic.blueBar.value += blueIncrease;
 
-        // Get stroke damage and check for crit
+        // Get stroke damage and check for crit  
         bool isCrit = false;
         float strokeDamage = logic.playerStats.GetSexualDamage(out isCrit);
 
-        // Pink bar increases by arouselPerStroke always
+        // Pink bar increases by arouselPerStroke always  
         logic.pinkBar.value += logic.arouselPerStroke;
 
-        // If crit, increase pink bar more with strokeDamage * crit multiplier (e.g., 1.5x)
+        // If crit, increase pink bar more with strokeDamage * crit multiplier (e.g., 1.5x)  
         if (isCrit)
         {
             logic.pinkBar.value += strokeDamage;
-            // Show crit feedback here if needed
+            // Show crit feedback here if needed  
 
-            // Show crit feedback, example:
-            //if (logic.critText != null)
-            //{
-            //    logic.critText.text = "CRIT!";
-            //    logic.critText.gameObject.SetActive(true);
-            //}
+            // Show crit feedback, example:  
+            //if (logic.critText != null)  
+            //{  
+            //    logic.critText.text = "CRIT!";  
+            //    logic.critText.gameObject.SetActive(true);  
+            //}  
         }
         else
         {
-            // Normal strokeDamage addition
+            // Normal strokeDamage addition  
             logic.pinkBar.value += strokeDamage;
 
-            //if (logic.critText != null)
-            //    logic.critText.gameObject.SetActive(false);
+            //if (logic.critText != null)  
+            //    logic.critText.gameObject.SetActive(false);  
         }
 
-        // Clamp bars to max values
+        // Clamp bars to max values  
         logic.blueBar.value = Mathf.Min(logic.blueBar.value, logic.blueBarMaxValue);
         logic.pinkBar.value = Mathf.Min(logic.pinkBar.value, logic.pinkBarMaxValue);
 
-        // Optional: update the "25 / 100" style bar text
+        // Optional: update the "25 / 100" style bar text  
         logic.UpdateBarText();
 
-        // Climax trigger
+        // Climax trigger  
         if (logic.blueBar.value >= logic.blueBarMaxValue || logic.pinkBar.value >= logic.pinkBarMaxValue)
         {
             logic.cumReached = true;
@@ -99,7 +102,7 @@ public class Sex_StrokingState : SexyTimeState
             stateMachine.ChangeState(new Sex_ClimaxState(logic, stateMachine));
         }
 
-        // Milestone triggers
+        // Milestone triggers  
         if (logic.blueBar.value >= logic.blueBarMaxValue && !logic.blueBarReachedOnce)
         {
             logic.blueBarReachedOnce = true;

@@ -233,8 +233,9 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isFucking || !Input.GetKeyDown(KeyCode.Space)) return;
 
         bool isCrit = false;
+        float resilienceReduction = 0f; // Define resilienceReduction variable  
         float strokePower = playerStats?.GetSexualDamage(out isCrit) ?? 10f;
-        float resilience = Mathf.Clamp(partnerStats?.GetSexualResistance() ?? 0f, 0f, 50f);
+        float resilience = Mathf.Clamp(partnerStats != null ? partnerStats.GetResilienceMitigation(resilienceReduction) : 0f, 0f, 50f);
         float adjustedStroke = strokePower * (1f - (resilience / 100f));
 
         if (isCrit)

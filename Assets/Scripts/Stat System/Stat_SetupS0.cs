@@ -36,9 +36,15 @@ public class Stat_SetupS0 : ScriptableObject
     public float strength;
     public float luck;
     public float intelligence;
-    public float Vitality;
+    public float vitality;
 
-    [Header("Sex Stats")]
-    public float Stroke;
-    public float Resilence;
+    [Header("Major Sex Stats")]
+    public float stroke;
+    public float resilience;
+
+    [Header("Offense - sex Stats")]
+    public float SexualDamge;
+
+    [Header("Defense - Sex Stats")]
+    public float sexualRestraint;
 }
