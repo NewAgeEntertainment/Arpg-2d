@@ -8,6 +8,7 @@ public class Stat_SetupS0 : ScriptableObject
     public float healthRegen;
     public float maxMana = 50;
     public float manaRegen;
+    
 
     [Header("Offense - Physical Damage")]
     public float attackSpeed = 1;
@@ -39,11 +40,12 @@ public class Stat_SetupS0 : ScriptableObject
     public float vitality;
 
     [Header("Major Sex Stats")]
+    public float maxArousal;
     public float stroke;
     public float resilience;
 
     [Header("Offense - sex Stats")]
-    public float SexualDamge;
+    public float sexualDamge;
 
     [Header("Defense - Sex Stats")]
     public float sexualRestraint;

@@ -29,5 +29,6 @@ public enum StatType
     Resilience,
     ElementalDamage,
     SexualRestraint,
-    Stroke
+    Stroke,
+    MaxArousal
 }

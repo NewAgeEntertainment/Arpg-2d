@@ -30,7 +30,7 @@ public class SexSkill_DeepBreath : Skill_Base
         if (Time.time >= sexyTimeLogic.deepBreatheTimestamp)
         {
             // ✅ Blue bar logic directly here
-            sexyTimeLogic.blueBar.value -= sexyTimeLogic.blueBarValueDeplete;
+            sexyTimeLogic.playerBar.value -= sexyTimeLogic.playerBarValueDeplete;
             sexyTimeLogic.deepBreatheTimestamp = Time.time + sexyTimeLogic.deepBreatheCooldown;
 
             Debug.Log("Deep Breath used. Blue bar reduced.");

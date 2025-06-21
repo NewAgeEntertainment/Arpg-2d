@@ -1,7 +1,7 @@
-
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using Rewired;
 
 public class Player : Entity
@@ -17,6 +17,7 @@ public class Player : Entity
     public Entity_Mana mana { get; private set; } // Reference to the player's mana system
     public Entity_Health health { get; private set; } // Reference to the player's health system
     public Entity_StatusHandler statusHandler { get; private set; } // Reference to the player's status handler for managing buffs and debuffs
+    public Slider playerBar; // Reference to the player's health or mana bar UI element
 
     public Vector2 lastMoveDirection = Vector2.down;
 
@@ -82,6 +83,7 @@ public class Player : Entity
         base.Start();
         stateMachine.Initialize(idleState);
         rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
+
     }
 
     //protected override void Update()

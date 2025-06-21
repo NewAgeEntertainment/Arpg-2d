@@ -206,6 +206,14 @@ public class Entity_Stats : MonoBehaviour
 
     }
 
+    public float GetMaxArousel()
+    {
+        float baseMaxArousel = sex.maxArousal.GetValue();
+        float bonusMaxArousal = major.vitality.GetValue() * 5;
+        return baseMaxArousel + bonusMaxArousal;
+    }
+    
+
     public float GetMaxMana()
     {
         float baseMaxMana = resources.maxMana.GetValue();
@@ -228,6 +236,7 @@ public class Entity_Stats : MonoBehaviour
                 return resources.maxMana;
             case StatType.ManaRegen:
                 return resources.manaRegen;
+                
 
             case StatType.Strength:
                 return major.strength;
@@ -249,6 +258,8 @@ public class Entity_Stats : MonoBehaviour
             case StatType.ArmorReduction:
                 return offense.armorReduction;
 
+            case StatType.MaxArousal:
+                return sex.maxArousal;
             case StatType.Stroke:
                 return sex.stroke;
             case StatType.SexualDamage:
@@ -257,6 +268,7 @@ public class Entity_Stats : MonoBehaviour
                 return sex.sexualRestraint;
             case StatType.Resilience:
                 return sex.resilience;
+                
 
 
             case StatType.FireDamage:
@@ -313,8 +325,9 @@ public class Entity_Stats : MonoBehaviour
         
         sex.stroke.SetBaseValue(defaultStatSetup.stroke);
         sex.resilience.SetBaseValue(defaultStatSetup.resilience);
-        sex.sexualDamage.SetBaseValue(defaultStatSetup.SexualDamge);
+        sex.sexualDamage.SetBaseValue(defaultStatSetup.sexualDamge);
         sex.sexualRestraint.SetBaseValue(defaultStatSetup.sexualRestraint);
+        sex.maxArousal.SetBaseValue(defaultStatSetup.maxArousal);
 
 
         offense.fireDamage.SetBaseValue(defaultStatSetup.fireDamage);

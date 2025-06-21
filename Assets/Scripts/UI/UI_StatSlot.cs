@@ -124,6 +124,9 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 break;
 
             // sexual Stats
+            case StatType.MaxArousal:
+                value = playerStats.GetMaxArousel();
+                break;
             case StatType.Stroke:
                 value = playerStats.sex.stroke.GetValue();
                 break;
@@ -192,6 +195,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case StatType.Resilience: return "Resilience";
             case StatType.SexualDamage: return "Sexual Damage";
             case StatType.SexualRestraint: return "Sexual Restraint";
+            case StatType.MaxArousal: return "Max Arousal";
             default: return "Unknown Stat";
         }
     }
