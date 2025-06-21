@@ -1,66 +1,61 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using Rewired;
-
-using UnityEngine;
 
 public class Sex_StrokingState : SexyTimeState
 {
-
-    
     private float strokeCooldown = 0.2f;
-    private float timeBetweenStrokes;
-    private float lastStrokeTime = 1f;
-   
+    private float lastStrokeTime;
+
     public Sex_StrokingState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine)
-        : base(logic, stateMachine) { }
+        : base(logic, stateMachine)
+    {
+    }
 
     public override void EnterState()
     {
-        Debug.Log("Entered Stroking State");
+        
         lastStrokeTime = Time.time;
     }
 
     public override void HandleStroke()
     {
-        if (Time.time - lastStrokeTime < 0.2f) // optional cooldown
+        if (Time.time - lastStrokeTime < strokeCooldown)
             return;
 
         lastStrokeTime = Time.time;
 
         AnimatorStateInfo stateInfo = logic.anim.GetCurrentAnimatorStateInfo(0);
 
+        // Restart "fuck" animation if not playing or completed
         if (!stateInfo.IsName("fuck") || stateInfo.normalizedTime >= 1f)
         {
             logic.anim.Play("fuck", 0, 0f);
         }
+
         ApplyStrokeBars();
     }
 
     private void ApplyStrokeBars()
     {
-        AnimatorStateInfo stateInfo = logic.anim.GetCurrentAnimatorStateInfo(0);
-
-        if (!stateInfo.IsName("fuck"))
-            logic.anim.Play("fuck", 0, 0f);
-
         logic.anim.SetFloat("speed", GetSpeed());
 
-        float maxArousal = logic.playerStats.GetMaxArousel();
+        float maxArousal = logic.playerStats.sex.maxArousal.GetValue();
         float strokeGain = logic.playerStats.GetBlueBarStrokeValue();
+        Debug.Log($"partnerBar is {(logic.partnerBar == null ? "NULL ❌" : "set ✅")}");
 
+        // Apply resilience mitigation
         float resilience = logic.playerStats.GetResilienceMitigation(0f);
         float reductionMultiplier = 1f - (resilience / 100f);
+
         float blueIncrease = logic.arouselPerStroke * reductionMultiplier;
 
+        // Total increase to player bar this stroke
         float totalGain = strokeGain + blueIncrease;
 
-        float oldValue = logic.currentArousal;
+        float oldArousal = logic.currentArousal;
         logic.currentArousal = Mathf.Min(logic.currentArousal + totalGain, maxArousal);
         logic.playerBar.value = logic.currentArousal;
 
-        Debug.Log($"[STROKE] StrokeGain: {strokeGain}, BlueIncrease: {blueIncrease}, TotalGain: {totalGain}");
-        Debug.Log($"[STROKE] Arousal: {oldValue} → {logic.currentArousal} (max: {maxArousal})");
+        
 
         if (logic.playerBarFillText != null)
             logic.playerBarFillText.text = $"{Mathf.FloorToInt(logic.currentArousal)} / {Mathf.FloorToInt(maxArousal)}";
@@ -70,15 +65,32 @@ public class Sex_StrokingState : SexyTimeState
         float strokeDamage = logic.playerStats.GetSexualDamage(out isCrit);
 
         float partnerOldValue = logic.partnerBar.value;
-        float partnerIncrease = logic.arouselPerStroke + strokeDamage;
-        logic.partnerBar.value += partnerIncrease;
-        logic.partnerBar.value = Mathf.Min(logic.partnerBar.value, logic.partnerMaxArousalValue);
+        float partnerResilience = logic.partnerStats?.GetResilienceMitigation(0f) ?? 0f;
+        float resilienceMultiplier = 1f - (partnerResilience / 100f);
 
-        Debug.Log($"[PARTNER] Bar: {partnerOldValue} → {logic.partnerBar.value} (added: {partnerIncrease})");
+        
+        //// Optional: Sensitivity boost
+        //float sensitivityBonus = logic.partnerStats?.sex.sensitivity.GetValue() ?? 1f;
 
-        logic.UpdateBarText();
+        float baseGain = logic.arouselPerStroke + strokeDamage;
+        float partnerIncrease = baseGain * resilienceMultiplier;// * sensitivityBonus;
 
-        // Handle climax
+        logic.partnerBar.value = Mathf.Min(logic.partnerBar.value + partnerIncrease, logic.partnerBar.maxValue);
+        
+
+        //Debug.Log($"[PARTNER] Bar: {partnerOldValue} → {logic.partnerBar.value} (added: {partnerIncrease})");
+
+        if (logic.partnerBarFillText != null)
+        {
+            float partnerMax = logic.partnerStats?.sex.maxArousal.GetValue() ?? logic.partnerBar.maxValue;
+            
+
+            logic.partnerBarFillText.text = $"{Mathf.FloorToInt(logic.partnerBar.value)} / {Mathf.FloorToInt(partnerMax)}";
+            Debug.Log($"📢 FillText Updated: {logic.partnerBarFillText.text}");
+        }
+
+
+        // Check for climax
         if (logic.playerBar.value >= maxArousal || logic.partnerBar.value >= logic.partnerMaxArousalValue)
         {
             logic.cumReached = true;
@@ -86,6 +98,7 @@ public class Sex_StrokingState : SexyTimeState
             stateMachine.ChangeState(new Sex_ClimaxState(logic, stateMachine));
         }
 
+        // Milestone events
         if (logic.playerBar.value >= maxArousal && !logic.playerBarReachedOnce)
         {
             logic.playerBarReachedOnce = true;
@@ -99,18 +112,16 @@ public class Sex_StrokingState : SexyTimeState
         }
     }
 
-
-
-
-
-
     private float GetSpeed()
     {
-        if (timeBetweenStrokes >= 0.5f)
+        // Example speed logic based on cooldown
+        float timeSinceLastStroke = Time.time - lastStrokeTime;
+
+        if (timeSinceLastStroke >= 0.5f)
             return 1f;
-        else if (timeBetweenStrokes >= 0.25f)
+        else if (timeSinceLastStroke >= 0.25f)
             return 1.25f;
-        else if (timeBetweenStrokes >= 0.15f)
+        else if (timeSinceLastStroke >= 0.15f)
             return 1.5f;
         else
             return 2f;
@@ -118,7 +129,7 @@ public class Sex_StrokingState : SexyTimeState
 
     public override void UpdateState()
     {
-        // Optional: add passive drain or time logic here
+        // Add any continuous behavior here if needed
     }
 
     public override void ExitState()
@@ -126,5 +137,3 @@ public class Sex_StrokingState : SexyTimeState
         Debug.Log("Exiting Stroking State");
     }
 }
-
-

@@ -8,7 +8,6 @@ public class Sex_IdleState : SexyTimeState
 
     public override void EnterState()
     {
-        Debug.Log("Entering Idle State");
         if (logic.anim != null)
             logic.anim.Play("fuck");
         else
