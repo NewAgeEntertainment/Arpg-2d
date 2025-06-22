@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -11,8 +12,14 @@ public class SexyTimeLogic : MonoBehaviour
     Entity_Stats stats;
     [SerializeField] private Player_SkillManager skillManager;
 
-    //[Header("Gallery")]
-    //[SerializeField] private GalleryUnlockedItems unlockedSO;
+    [Header("Camera Control")]
+    [SerializeField] private Camera sexyTimeCamera;
+    [SerializeField] private Camera mainGameplayCamera;
+    [SerializeField] private CinemachineCamera sexyTimeVirtualCam;
+    [SerializeField] private CinemachineCamera mainVirtualCam;
+    [SerializeField] private bool autoPositionSexyCamera = true;
+    [SerializeField] private Vector3 sexyCameraOffset = new Vector3(0f, 3f, -5f);
+
     [Tooltip("Id is from GalleryItemHolder SO")]
     [SerializeField] private int animID;
     [Header("Background & Settings")]
@@ -24,27 +31,21 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private Vector3 offsetForPosition = new Vector3(0f, -4f, 0f);
 
     public Entity_Stats playerStats;
-    public Entity_Stats partnerStats; // Optional: the receiver of the stroking
+    public Entity_Stats partnerStats;
     [SerializeField] private TextMeshProUGUI critText;
     [SerializeField] private ParticleSystem strokeEffect;
     public Animator anim { get; private set; }
 
-    //public event Action OnCriticalStroke;
-
-    #region settings
     [Header("Bars")]
     public Slider partnerBar;
     public Slider playerBar;
     public float partnerMaxArousalValue;
     [HideInInspector] public float currentArousal = 0f;
     [HideInInspector] public float partnerCurrentArousal = 0f;
-    //private float blueBarArousalPerStroke;
-    //private float partnerArousalPerStroke;
     private float originalPussySqueeze;
     private float originalPussySqueezeCooldown;
 
     public float barDecayPerSecond { get; set; }
-
     public float arouselPerStroke = 3f;
     public float strokeMultiplier = 1f;
 
@@ -53,17 +54,15 @@ public class SexyTimeLogic : MonoBehaviour
     public TextMeshProUGUI partnerBarFillText;
     [SerializeField] private TextMeshProUGUI playerPowerText;
     [SerializeField] private TextMeshProUGUI partnerPowerText;
-    private bool npcAttackApplied = false; 
+    private bool npcAttackApplied = false;
 
-
-    public float deepBreatheCooldown { get; set; } = 5f; // Cooldown for deep breathing
-    public float playerBarValueDeplete { get; set; } = 10f; // Amount to deplete from blue bar when deep breathing
+    public float deepBreatheCooldown { get; set; } = 5f;
+    public float playerBarValueDeplete { get; set; } = 10f;
 
     [Header("NPC Attack skill")]
     [SerializeField] private float pussySqueeze = 10f;
     [SerializeField] private float pussySqueezeCooldown = 5f;
     [SerializeField] private TextMeshProUGUI pussySqueezeCooldownText;
-    [Tooltip("True if the npc attack should be executed immediately when starting the sexy time. If false, it will wait for the cooldown initially.")]
     [SerializeField] private bool shouldNpcAttackImmediately = false;
 
     [Header("Climax Reach")]
@@ -71,8 +70,7 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Header("Sex Exp")]
     [SerializeField] private float sexExpToGive = 5f;
-    private GameObject target; // Add this field to define 'target'
-
+    private GameObject target;
 
     [Header("Player")]
     [SerializeField] private int playerID = 0;
@@ -81,6 +79,7 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Input/Keybinds")]
     [SerializeField] private KeyCode strokeKey = KeyCode.P;
     [SerializeField] private KeyCode deepBreatheKey = KeyCode.T;
+    [SerializeField] private KeyCode startSexyTimeKey = KeyCode.Y;
 
     [Header("Stroke Sound")]
     [SerializeField] private AudioClip strokeSound;
@@ -90,10 +89,7 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Quest System")]
     [SerializeField] public UnityEvent OnPlayerBarFull = new UnityEvent();
     [SerializeField] public UnityEvent OnPartnerBarFull = new UnityEvent();
-    #endregion
 
-
-    #region bools
     public static bool isSexyTimeGoingOn = false;
     public bool playerBarReachedOnce = false;
     public bool partnerBarReachedOnce = false;
@@ -105,96 +101,64 @@ public class SexyTimeLogic : MonoBehaviour
     private bool isDialogueAlreadyTriggered = false;
     public bool shouldPause { get; set; }
     public bool HasSexyTimeFinished => cumTimeElapsed >= cumDuration;
-    #endregion
 
-    #region floats
     public float barSpeed = 0f;
-    public float lastStrokeTimestamp { get; private set; } = 0f; // Timestamp of the last stroke
-    public float timeBetweenStrokes { get; set; } = 1f; // Time in seconds between strokes
+    public float lastStrokeTimestamp { get; private set; } = 0f;
+    public float timeBetweenStrokes { get; set; } = 1f;
     public float cumTimeElapsed;
-    public float deepBreatheTimestamp { get; set; } = 0f; // Timestamp for the last deep breathe action
+    public float deepBreatheTimestamp { get; set; } = 0f;
     private float npcAttackBarFillTimestamp;
-    #endregion
 
+    private bool isCoroutineRunning = false;
 
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
-
-        stateMachine = GetComponent<SexyTimeStateMachine>();
-        stateMachine.logic = this;
-        stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
-
-        // ✅ Apply stat setup FIRST
-        playerStats.ApplyDefaultStatSetup(); // Make sure this is done BEFORE using any GetValue()
-
-        player = Rewired.ReInput.players.GetPlayer(playerID);
-        anim = GetComponent<Animator>();
-
-        // ✅ NOW we can safely fetch max arousal
-        float playerArousalMax = playerStats.GetMaxArousel(); // uses sex.maxArousal + vitality * 5
-        playerBar.maxValue = playerArousalMax;
-        playerBar.value = 0f;
-
-        if (playerBarFillText != null)
-            playerBarFillText.text = $"0 / {Mathf.FloorToInt(playerArousalMax)}";
-
-        if (playerBar != null)
-            playerBar.value = 0;
-
-        if (partnerBar != null)
-            partnerBar.value = 0;
-
-        if (partnerStats != null)
+        if (!isSexyTimeGoingOn)
         {
-            Debug.Log("[INIT] partnerStats found ✅");
+            if (sexyTimeCamera != null) sexyTimeCamera.enabled = false;
+            if (mainGameplayCamera != null) mainGameplayCamera.enabled = true;
 
-            partnerStats.ApplyDefaultStatSetup();
-
-            float maxArousal = partnerStats.sex.maxArousal.GetValue();
-            Debug.Log($"[CHECK] partnerStats.sex.maxArousal = {maxArousal}");
-
-            partnerBar.maxValue = maxArousal;
-            partnerBar.value = 0f;
-
-            partnerMaxArousalValue = maxArousal;
+            if (sexyTimeVirtualCam != null) sexyTimeVirtualCam.Priority = 0;
+            if (mainVirtualCam != null) mainVirtualCam.Priority = 10;
         }
         else
         {
-            Debug.LogError("❌ partnerStats is NULL at StartSexyTime()");
+            if (sexyTimeCamera != null) sexyTimeCamera.enabled = true;
+            if (mainGameplayCamera != null) mainGameplayCamera.enabled = false;
+
+            if (sexyTimeVirtualCam != null) sexyTimeVirtualCam.Priority = 10;
+            if (mainVirtualCam != null) mainVirtualCam.Priority = 0;
         }
+    }
 
-
-        if (partnerBarFillText != null)
-            partnerBarFillText.text = $"0 / {Mathf.FloorToInt(partnerMaxArousalValue)}";
-        
-
-        if (!shouldNpcAttackImmediately)
-            npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
+    void Start()
+    {
+        player = Rewired.ReInput.players.GetPlayer(playerID);
+        anim = GetComponent<Animator>();
 
         if (autoStart)
             StartSexyTime();
     }
 
-
-
-
-
-    // Update is called once per frame
     void Update()
     {
-
-
         if (shouldPause)
             return;
 
-        HandleInput();
-        UpdateAttackBarCooldown();
-        UpdateBarUI();
-        HandleClimaxTimer();
-        HandleFuckingInput();
-        DepleteBars();
+        if (!isSexyTimeGoingOn && Input.GetKeyDown(startSexyTimeKey))
+        {
+            StartSexyTime();
+        }
 
+        if (isSexyTimeGoingOn)
+        {
+            HandleInput();
+            UpdateAttackBarCooldown();
+            UpdateBarUI();
+            HandleClimaxTimer();
+            HandleFuckingInput();
+            DepleteBars();
+        }
     }
 
     //public void SetPlayerData(Entity_Stats playerStats, Slider playerBar, TextMeshProUGUI playerBarFillText)
@@ -399,9 +363,27 @@ public class SexyTimeLogic : MonoBehaviour
     }
 
 
-    bool isCoroutineRunning = false;
+    //bool isCoroutineRunning = false;
     public void StartSexyTime()
     {
+        isSexyTimeGoingOn = true;
+        this.gameObject.SetActive(true);
+
+        if (sexyTimeCamera != null) sexyTimeCamera.enabled = true;
+        if (mainGameplayCamera != null) mainGameplayCamera.enabled = false;
+
+        if (sexyTimeVirtualCam != null) sexyTimeVirtualCam.Priority = 10;
+        if (mainVirtualCam != null) mainVirtualCam.Priority = 0;
+
+        if (canvasBackground != null && sexyTimeCamera != null)
+        {
+            canvasBackground.transform.SetParent(sexyTimeCamera.transform, false);
+            canvasBackground.transform.localPosition = new Vector3(0f, 0f, 2f);
+            canvasBackground.transform.localRotation = Quaternion.identity;
+            canvasBackground.transform.localScale = Vector3.one;
+            canvasBackground.SetActive(true);
+        }
+
         stateMachine = GetComponent<SexyTimeStateMachine>();
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
@@ -479,9 +461,25 @@ public class SexyTimeLogic : MonoBehaviour
     {
         yield return new WaitForSeconds(0.75f);
 
+        // 🎥 Enable sexy time camera and disable main camera
+        if (sexyTimeCamera != null)
+        {
+            sexyTimeCamera.enabled = true;
 
-        if (canvasBackground != null)
-            canvasBackground.SetActive(true);
+            if (autoPositionSexyCamera)
+            {
+                sexyTimeCamera.transform.position = this.transform.position + sexyCameraOffset;
+                sexyTimeCamera.transform.LookAt(this.transform.position);
+            }
+        }
+
+
+        if (mainGameplayCamera != null)
+        {
+            mainGameplayCamera.enabled = false;
+        }
+
+        
 
         if (goToPlayerPosition)
         {
@@ -507,8 +505,16 @@ public class SexyTimeLogic : MonoBehaviour
             }
         }
 
-
+        if (canvasBackground != null)
+        {
+            canvasBackground.transform.SetParent(sexyTimeCamera.transform);
+            canvasBackground.transform.localPosition = new Vector3(0, 0, 1f);
+            canvasBackground.transform.localRotation = Quaternion.identity;
+            canvasBackground.transform.localScale = Vector3.one;
+            canvasBackground.SetActive(true); // ✅ Enable UI canvas
+        }
     }
+
 
 
 
@@ -586,6 +592,19 @@ public class SexyTimeLogic : MonoBehaviour
 
     public void ResetSexyTime()
     {
+            canvasBackground.SetActive(false);
+
+        // 🎬 Switch back to normal camera
+        if (sexyTimeCamera != null)
+            sexyTimeCamera.enabled = false;
+
+        if (mainGameplayCamera != null)
+            mainGameplayCamera.enabled = true;
+
+        if (canvasBackground != null)
+
+
+
         // Reset bars
         playerBar.value = 0f;
         partnerBar.value = 0f;
