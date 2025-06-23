@@ -57,7 +57,12 @@ public abstract class PlayerState : EntityState
         {
             player.lastMoveDirection = input.normalized;
         }
-
+        
+        //if (input.Player.Dash.WasPressedThisFrame() && CanDash())
+        //{
+        //    skillManager.dash.SetSkillOnCooldown();
+        //    stateMachine.ChangeState(player.dashState);
+        //}
 
         // Handle skill inputs  
         if (rPlayer.GetButtonDown("Dash") && CanDash())

@@ -8,4 +8,8 @@ public class ItemDataSO : ScriptableObject
     public Sprite itemIcon;
     public ItemType itemType;
     public int maxStackSize = 1; // Maximum stack size for the item
+
+    [Header("Item effects")]
+    public ItemEffect_DataSO itemEffect; // Array of item effects
+
 }

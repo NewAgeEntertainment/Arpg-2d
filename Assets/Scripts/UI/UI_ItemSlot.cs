@@ -29,10 +29,27 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         if (itemInSlot == null || itemInSlot.itemData.itemType == ItemType.Material)
             return;
 
-        inventory.TryEquipItem(itemInSlot); // Call the method to try to equip the item
-        
+        if (itemInSlot.itemData.itemType == ItemType.Consumable)
+        {
+            if (itemInSlot.itemEffect.CanBeUsed() == false)
+            {
+                return;
+            }
+            inventory.TryUseItem(itemInSlot); // Call the method to try to use the item
+        }
+        else
+            inventory.TryEquipItem(itemInSlot); // Call the method to try to equip the item
+            
+
         if (itemInSlot == null)
             ui.itemToolTip.ShowToolTip(false, null);
+        
+        //if (inventory != null && item != null)
+        //{
+            
+        //    inventory.TryUseItem(item, player);
+        //}
+
 
     }
 

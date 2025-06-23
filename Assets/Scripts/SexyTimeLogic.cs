@@ -145,7 +145,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (shouldPause)
             return;
 
-        if (!isSexyTimeGoingOn && Input.GetKeyDown(startSexyTimeKey))
+        if (!isSexyTimeGoingOn && player.GetButtonDown("StartSexyTime"))
         {
             StartSexyTime();
         }
@@ -488,16 +488,16 @@ public class SexyTimeLogic : MonoBehaviour
             {
                 this.transform.position = playerObj.transform.position + offsetForPosition;
 
-                Player playerComponent = playerObj.GetComponent<Player>();
-                if (playerComponent != null)
-                {
-                    if (playerBar == null)
-                        playerBar = playerComponent.playerBar;
-                }
-                else
-                {
-                    Debug.LogError("Player component not found on Player GameObject.");
-                }
+                //Player playerComponent = playerObj.GetComponent<Player>();
+                //if (playerComponent != null)
+                //{
+                //    if (playerBar == null)
+                //        playerBar = playerComponent.playerBar;
+                //}
+                //else
+                //{
+                //    Debug.LogError("Player component not found on Player GameObject.");
+                //}
             }
             else
             {

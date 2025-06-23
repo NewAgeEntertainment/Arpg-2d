@@ -11,6 +11,12 @@ public class Entity_Stats : MonoBehaviour
     public Stat_MajorGroup major; // Major stats group containing strength, Luck, intelligence, and vitality
     public Stat_SexGroup sex; // Sexual stats group containing sexual damage and sexual resistance
 
+
+    protected virtual void Awake()
+    {
+
+    }
+
     public AttackData GetAttackData(DamageScaleData scaleData)
     {
         return new AttackData(this, scaleData);

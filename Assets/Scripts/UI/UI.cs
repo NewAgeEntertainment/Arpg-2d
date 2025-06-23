@@ -1,4 +1,5 @@
 using UnityEngine;
+using Rewired;
 
 public class UI : MonoBehaviour
 {
@@ -6,8 +7,18 @@ public class UI : MonoBehaviour
     public UI_ItemToolTip itemToolTip { get; private set; }
     public UI_StatToolTip statToolTip { get; private set; }
 
-    public UI_SkillTree skillTree { get; private set; }
+    public UI_SkillTree skillTreeUI { get; private set; }
+    public UI_Inventory inventoryUI { get; private set; }
+
     private bool skillTreeEnabled;
+    private bool inventoryUIEnabled;
+
+    [Header("Rewired Input")]
+    [SerializeField] private int playerID = 0;
+    [SerializeField] private string toggleSkillTreeAction = "OpenSkillTree";
+    [SerializeField] private string toggleInventoryAction = "OpenInventory";
+
+    private Rewired.Player player;
 
     private void Awake()
     {
@@ -15,15 +26,46 @@ public class UI : MonoBehaviour
         skillToolTip = GetComponentInChildren<UI_SkillToolTip>();
         statToolTip = GetComponentInChildren<UI_StatToolTip>();
         
+        skillTreeUI = GetComponentInChildren<UI_SkillTree>(true);
+        inventoryUI = GetComponentInChildren<UI_Inventory>(true);
+
+        skillTreeEnabled = skillTreeUI.gameObject.activeSelf;
+        inventoryUIEnabled = inventoryUI.gameObject.activeSelf;
+    }
+
+    private void Start()
+    {
+        player = ReInput.players.GetPlayer(playerID);
+    }
+
+    private void Update()
+    {
+        if (player != null && player.GetButtonDown(toggleSkillTreeAction))
+        {
+            ToggleSkillTreeUI();
+        }
         
-        skillTree = GetComponentInChildren<UI_SkillTree>(true);
+        if (player != null && player.GetButtonDown(toggleInventoryAction))
+        {
+            ToggleInventoryUI();
+        }
+
+        
     }
 
     public void ToggleSkillTreeUI()
     {
         skillTreeEnabled = !skillTreeEnabled;
-        skillTree.gameObject.SetActive(skillTreeEnabled);
+        skillTreeUI.gameObject.SetActive(skillTreeEnabled);
         skillToolTip.ShowToolTip(false, null);
     }
 
+
+    public void ToggleInventoryUI()
+    {
+        inventoryUIEnabled = !inventoryUIEnabled;
+        inventoryUI.gameObject.SetActive(inventoryUIEnabled);
+        statToolTip.ShowToolTip(false, null);
+        itemToolTip.ShowToolTip(false, null);
+    }
 }

@@ -91,6 +91,12 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case StatType.HealthRegen:
                 value = playerStats.resources.healthRegen.GetValue();
                 break;
+            case StatType.MaxMana:
+                value = playerStats.GetMaxMana();
+                break;
+            case StatType.ManaRegen:
+                value = playerStats.resources.manaRegen.GetValue();
+                break;
             case StatType.Evasion:
                 value = playerStats.GetEvasion();
                 break;

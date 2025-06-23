@@ -1,9 +1,12 @@
 using UnityEditor;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Entity_Health : MonoBehaviour, IDamageable // Interface for entities that can take damage
 {
+    public event Action OnTakingDamage;
+
     private Slider healthBar; // Reference to the health bar UI element
     private Entity entity;
     private Entity_VFX entityVfx;
@@ -65,6 +68,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
         TakeKnockback(damageDealer, physicalDamageTaken);
         ReduceHealth(physicalDamageTaken + elementalDamageTaken); // Call the method to reduce health points
 
+        OnTakingDamage?.Invoke(); // Invoke the event to notify that damage has been taken
         return true; // Return true to indicate that damage was successfully applied
     }
 
@@ -74,7 +78,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     {
         // Placeholder for attack evasion logic, currently always returns false
         // This can be expanded to include actual evasion mechanics in the future
-        return Random.Range(0, 100) < entityStats.GetEvasion(); // Randomly determine if the attack is evaded based on the entity's evasion stat
+        return UnityEngine.Random.Range(0, 100) < entityStats.GetEvasion(); // Randomly determine if the attack is evaded based on the entity's evasion stat
     }
 
     private void RegenerateHealth()

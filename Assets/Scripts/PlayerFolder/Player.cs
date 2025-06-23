@@ -17,7 +17,7 @@ public class Player : Entity
     public Entity_Mana mana { get; private set; } // Reference to the player's mana system
     public Entity_Health health { get; private set; } // Reference to the player's health system
     public Entity_StatusHandler statusHandler { get; private set; } // Reference to the player's status handler for managing buffs and debuffs
-    public Slider playerBar; // Reference to the player's health or mana bar UI element
+    public Player_Combat combat { get; private set; } // Reference to the player's combat system for handling attacks and abilities
 
     public Vector2 lastMoveDirection = Vector2.down;
 
@@ -63,9 +63,11 @@ public class Player : Entity
         ui = FindAnyObjectByType<UI>();
         vfx = GetComponent<Player_VFX>();
         health = GetComponent<Entity_Health>();
+        mana = GetComponent<Entity_Mana>();
         skillManager = GetComponent<Player_SkillManager>();
         statusHandler = GetComponent<Entity_StatusHandler>();
-        
+        combat = GetComponent<Player_Combat>();
+
         input = new PlayerInputSet();
 
         idleState = new Player_IdleState(this, stateMachine, "idle");
@@ -164,17 +166,17 @@ public class Player : Entity
 
     private void OnEnable()
     {
-        //    input.Enable();
+        input.Enable();
 
-        //    input.Player.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        //    input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
+        input.Player.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
 
-        //    input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
-        //    input.Player.Spell.performed += ctx => skillManager.shard.TryUseSkill();
-        //    input.Player.SwordThrow.performed += ctx => skillManager.swordSpin.TryUseSkill();
-        
+        input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
+        input.Player.Spell.performed += ctx => skillManager.shard.TryUseSkill();
+        input.Player.SwordThrow.performed += ctx => skillManager.swordSpin.TryUseSkill();
+        //input.Player.ToggleInventoryUI.performed += ctx => ui.ToggleInventoryUI();
         // The most likely reason for a NullReferenceException in the selected code:  
-        
+
 
 
     }

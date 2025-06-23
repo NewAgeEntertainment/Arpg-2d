@@ -10,13 +10,15 @@ public class Inventory_Item
     public int stackSize = 1; // The current stack size of the item in the inventory
 
     public ItemModifier[] modifiers { get; private set; } // Array of modifiers that can be applied to the item
-    
+    public ItemEffect_DataSO itemEffect;
+
     public Inventory_Item(ItemDataSO itemData)
     {
         this.itemData = itemData; // the item data for this inventory item
 
+        itemEffect = itemData.itemEffect;
         modifiers = EquipmentData()?.modifiers; // if the item is an equptment, get its modifiers
-    
+
         itemId = itemData.itemName + " - " + Guid.NewGuid();
     }
 
@@ -37,6 +39,9 @@ public class Inventory_Item
             statToModify.RemoveModifier(itemId);
         }
     }
+
+    public void AddItemEffect(Player player) => itemEffect?.Subscribe(player);
+    public void RemoveItemEffect() => itemEffect?.Unsubscribe();
 
     private EquipmentDataSO EquipmentData()
     {

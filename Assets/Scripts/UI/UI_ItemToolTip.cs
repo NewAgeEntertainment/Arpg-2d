@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -25,6 +23,9 @@ public class UI_ItemToolTip : UI_ToolTip
         if (item.itemData.itemType == ItemType.Material)
             return "Used for Crafting.";
 
+        if (item.itemData.itemType == ItemType.Consumable)
+            return item.itemData.itemEffect.effectDescription;
+
         StringBuilder sb = new StringBuilder();
 
         sb.AppendLine("");
@@ -34,6 +35,13 @@ public class UI_ItemToolTip : UI_ToolTip
             string modType = GetStatNameByType(mod.statType);
             string modValue = IsPercentageStat(mod.statType) ? mod.value.ToString() + "%" : mod.value.ToString();
             sb.AppendLine("+ " + modValue + " " + modType);
+        }
+
+        if (item.itemEffect != null)
+        {
+            sb.AppendLine("");
+            sb.AppendLine("Unique Effect:");
+            sb.AppendLine(item.itemEffect.effectDescription);
         }
 
         return sb.ToString();

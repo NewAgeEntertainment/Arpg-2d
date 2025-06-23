@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEngine;
 
 public abstract class Entity_Combat : MonoBehaviour
 {
+    public event Action<float> OnDoingPhysicalDamage;
     protected Entity _entity;
     private Entity_VFX vfx;
     private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
@@ -35,17 +37,20 @@ public abstract class Entity_Combat : MonoBehaviour
             Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
 
 
-            float physDamage = attackData.physicalDamage;
+            float physicalDamage = attackData.physicalDamage;
             float elementalDamage = attackData.elementalDamage;
             ElementType element = attackData.element;
 
-            bool targetGotHit = damageable.TakeDamage(physDamage, elementalDamage, element, transform);
+            bool targetGotHit = damageable.TakeDamage(physicalDamage, elementalDamage, element, transform);
 
             if (element != ElementType.None)
                 statusHandler?.ApplyStatusEffect(element, attackData.effectData);
 
             if (targetGotHit)
+            {
+                OnDoingPhysicalDamage?.Invoke(physicalDamage); // Notify subscribers about the physical damage dealt
                 vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
+            }
 
         }
     }

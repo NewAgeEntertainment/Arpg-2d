@@ -84,13 +84,21 @@ public class Entity_Mana : MonoBehaviour
     }
 
 
-    
+
 
     //private void Die()
     //{
     //    isDead = true; // Set the entity as dead  
     //    entity.EntityDeath(); // Call the EntityDeath method from the Entity class  
     //}
+
+    public float GetManaPercent() => currentMana / entityStats.GetMaxMana();
+
+    public void SetManaToPercent(float percent)
+    {
+        currentMana = entityStats.GetMaxMana() * Mathf.Clamp01(percent);
+        UpdateManaBar();
+    }
 
     private void UpdateManaBar()
     {
