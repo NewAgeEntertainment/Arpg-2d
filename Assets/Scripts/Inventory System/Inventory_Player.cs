@@ -5,11 +5,13 @@ public class Inventory_Player : Inventory_Base
 {
     private Player player;
     public List<Inventory_EquipmentSlot> equipList;
+    public Inventory_Storage storage { get; private set; }
 
     protected override void Awake()
     {
         base.Awake();
         player = GetComponent<Player>();
+        storage = FindFirstObjectByType<Inventory_Storage>();
 
     }
 
@@ -48,14 +50,14 @@ public class Inventory_Player : Inventory_Base
 
         player.health.SetHealthToPercent(savedHealthPercent); // Restore health to the previous percentage after equipping the item
         player.mana.SetManaToPercent(ManaPercent); // Restore mana to the previous percentage after equipping the item
-        RemoveItem(itemToEquip);
+        RemoveOneItem(itemToEquip);
 
 
     }
 
     public void UnequipItem(Inventory_Item itemToUnequip, bool replacingItem = false)
     {
-        if (CanAddItem() == false && replacingItem == false)
+        if (CanAddItem(itemToUnequip) == false && replacingItem == false)
         {
             Debug.Log("NoSpace");
             return;

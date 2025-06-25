@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Rewired;
+using Unity.VisualScripting;
+using UnityEditor;
 
 public class Player : Entity
 {
@@ -88,25 +90,16 @@ public class Player : Entity
 
     }
 
-    //protected override void Update()
-    //{
-    //    base.Update();
-    //    // Get input values from Rewired
-    //    xInput = rPlayer.GetAxis("Horizontal");
-    //    yInput = rPlayer.GetAxis("Vertical");
-    //    // Set the move input vector based on Rewired input
-    //    moveInput = new Vector2(xInput, yInput).normalized;
+    protected override void Update()
+    {
+        base.Update();
+        // ✅ Rewired Interact input check
+        if (rPlayer.GetButtonDown("Interact"))
+        {
 
-
-    //    // Update animator parameters for movement
-
-    //    anim.SetFloat("xInput", xInput);
-    //    anim.SetFloat("yInput", yInput);
-        
-    //    SetVelocity(moveInput.x * moveSpeed, moveInput.y * moveSpeed);
-    //    // Handle player state updates
-    //    stateMachine.UpdateActiveState();
-    //}
+            TryInteract();
+        }
+    }
 
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
@@ -162,6 +155,31 @@ public class Player : Entity
     {
         yield return new WaitForEndOfFrame();
         stateMachine.ChangeState(basicAttackState);
+    }
+
+    private void TryInteract()
+    {
+        Transform closest = null;
+        float closestDistance = Mathf.Infinity;
+        Collider2D[] objectAround = Physics2D.OverlapCircleAll(transform.position, 1.5f);
+
+        foreach (var target in objectAround)
+        {
+            IInteractable interactable = target.GetComponent<IInteractable>();
+            if (interactable == null) continue;
+
+            float distance = Vector2.Distance(transform.position, target.transform.position);
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closest = target.transform;
+            }
+        }
+
+        if (closest == null) return;
+
+        closest.GetComponent<IInteractable>().Interact(); // Call the Interact method on the closest interactable object
     }
 
     private void OnEnable()

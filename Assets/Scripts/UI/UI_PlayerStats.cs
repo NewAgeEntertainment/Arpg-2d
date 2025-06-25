@@ -13,7 +13,7 @@ public class UI_PlayerStats : MonoBehaviour
         uiStatSlots = GetComponentsInChildren<UI_StatSlot>();
 
         inventory = FindFirstObjectByType<Inventory_Player>();
-        inventory.onInventoryChange += UpdateStatsUI;
+        inventory.OnInventoryChange += UpdateStatsUI;
     }
 
     private void Start()
