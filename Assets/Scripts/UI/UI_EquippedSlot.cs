@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UI_EquipSlot : UI_ItemSlot
+public class UI_EquippedSlot : UI_ItemSlot
 {
     public ItemType slotType;
 

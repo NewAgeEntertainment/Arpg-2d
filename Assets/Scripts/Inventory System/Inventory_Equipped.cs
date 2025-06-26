@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 [Serializable]
-public class Inventory_EquipmentSlot
+public class Inventory_Equipped
 {
     public ItemType slotType;
     public Inventory_Item equipedItem;

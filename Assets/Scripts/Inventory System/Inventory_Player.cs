@@ -4,7 +4,7 @@ using UnityEngine;
 public class Inventory_Player : Inventory_Base
 {
     private Player player;
-    public List<Inventory_EquipmentSlot> equipList;
+    public List<Inventory_Equipped> equipList;
     public Inventory_Storage storage { get; private set; }
 
     protected override void Awake()
@@ -39,7 +39,7 @@ public class Inventory_Player : Inventory_Base
 
 
 
-    private void EquipItem(Inventory_Item itemToEquip, Inventory_EquipmentSlot slot)
+    private void EquipItem(Inventory_Item itemToEquip, Inventory_Equipped slot)
     {
         float savedHealthPercent = player.health.GetHealthPercent();
         float ManaPercent = player.mana.GetManaPercent();

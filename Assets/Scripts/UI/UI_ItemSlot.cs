@@ -79,5 +79,12 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     {
         ui.itemToolTip.ShowToolTip(false, null);
     }
+
+    public virtual void Clear()
+    {
+        itemInSlot = null;
+        itemIcon.sprite = defaultIconSprite;
+        itemStackSize.text = "";
+    }
 }
 

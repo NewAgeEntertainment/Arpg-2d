@@ -5,7 +5,7 @@ using Rewired;
 public class UI_Inventory : MonoBehaviour
 {
     private Inventory_Player inventory;
-    private UI_EquipSlot[] uiEquipSlots;
+    private UI_EquippedSlot[] uiEquipSlots;
 
     [SerializeField] private UI_ItemSlotParent inventorySlotsParent;
     [SerializeField] private Transform uiEquipSlotParent;
@@ -18,7 +18,7 @@ public class UI_Inventory : MonoBehaviour
 
     private void Awake()
     {
-        uiEquipSlots = uiEquipSlotParent.GetComponentsInChildren<UI_EquipSlot>();
+        uiEquipSlots = uiEquipSlotParent.GetComponentsInChildren<UI_EquippedSlot>();
 
         inventory = FindFirstObjectByType<Inventory_Player>();
         inventory.OnInventoryChange += UpdateUI;
@@ -54,7 +54,7 @@ public class UI_Inventory : MonoBehaviour
 
     private void UpdateEquipmentSlots()
     {
-        List<Inventory_EquipmentSlot> playerEquipList = inventory.equipList;
+        List<Inventory_Equipped> playerEquipList = inventory.equipList;
 
         for (int i = 0; i < uiEquipSlots.Length; i++)
         {
