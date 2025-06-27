@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +16,8 @@ public class Inventory_Storage : Inventory_Base
         else
             materialStash.Add(itemToAdd); // Otherwise, add the new item to the stash
 
-        TriggerUpdateUI(); // Notify subscribers that the inventory has changed
+        NotifyInventoryChanged(); // ✅ This will trigger UI update via the event
+        
     }
 
     public Inventory_Item StackableInStash(Inventory_Item itemToAdd)
@@ -49,7 +50,8 @@ public class Inventory_Storage : Inventory_Base
 
         }
 
-        TriggerUpdateUI();
+        NotifyInventoryChanged(); // ✅ This will trigger UI update via the event
+        
     }
 
     public void FromStorageToPlayer(Inventory_Item item,bool transferFullStack)
@@ -69,7 +71,7 @@ public class Inventory_Storage : Inventory_Base
         }
 
 
-        TriggerUpdateUI();
+        NotifyInventoryChanged();
     } 
 }
 

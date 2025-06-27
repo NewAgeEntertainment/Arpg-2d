@@ -20,6 +20,9 @@ public class Inventory_Equipment : Inventory_Base
         }
 
         base.AddItem(itemToAdd);
+
+        Debug.Log($"Added {itemToAdd.itemData.name} to equipment inventory. Total items: {itemList.Count}");
+        NotifyInventoryChanged();  // invoke via protected helper
     }
 
     // Override CanAddItem to reject non-equipment types

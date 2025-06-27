@@ -53,18 +53,18 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     }
 
-    public void UpdateSlot(Inventory_Item item)
+    public virtual void UpdateSlot(Inventory_Item item)
     {
-        itemInSlot = item;
-
-        if (itemInSlot == null)
+        if (item == null)
         {
-            itemStackSize.text = "";
-            itemIcon.sprite = defaultIconSprite;
+            Debug.Log("UpdateSlot called with null item, clearing slot");
+            Clear();
             return;
         }
 
-        itemIcon.sprite = itemInSlot.itemData.itemIcon;
+        Debug.Log($"UpdateSlot called with item: {item.itemData.itemName}");
+        itemInSlot = item;
+        itemIcon.sprite = item.itemData.itemIcon;
         itemStackSize.text = item.stackSize.ToString();
     }
 
@@ -82,9 +82,10 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     public virtual void Clear()
     {
+        Debug.Log("Clear called on slot");
         itemInSlot = null;
-        itemIcon.sprite = defaultIconSprite;
         itemStackSize.text = "";
+        itemIcon.sprite = defaultIconSprite;
     }
 }
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class UI_EquipmentSlot : UI_ItemSlot
 {
@@ -11,22 +12,27 @@ public class UI_EquipmentSlot : UI_ItemSlot
     }
 
     // Optional: override OnPointerDown if you want different behavior for equipment-only inventory
-    public override void OnPointerDown(UnityEngine.EventSystems.PointerEventData eventData)
+    public override void OnPointerDown(PointerEventData eventData)
     {
-        if (itemInSlot == null) return;
+        if (itemInSlot == null)
+            return;
 
-        // Prevent using non-equipment types from this UI
-        var type = itemInSlot.itemData.itemType;
-        if (type != ItemType.Weapon && type != ItemType.Armor && type != ItemType.trinket)
+        // Only allow equipping valid equipment types
+        if (itemInSlot.itemData.itemType != ItemType.Weapon &&
+            itemInSlot.itemData.itemType != ItemType.Armor &&
+            itemInSlot.itemData.itemType != ItemType.trinket)
         {
             Debug.Log("This slot only handles equipment.");
             return;
         }
 
-        // Try to equip item
-        inventory.TryEquipItem(itemInSlot);
+        // Try to equip from equipment inventory
+        Debug.Log($"Attempting to equip item from equipment inventory: {itemInSlot.itemData.itemName}");
+        inventory.TryEquipFromEquipmentInventory(itemInSlot);
 
+        // Hide tooltip if successful
         if (itemInSlot == null)
             ui.itemToolTip.ShowToolTip(false, null);
     }
+
 }

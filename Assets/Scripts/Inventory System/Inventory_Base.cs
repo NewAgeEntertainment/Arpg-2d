@@ -1,89 +1,75 @@
-﻿using Rewired;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory_Base : MonoBehaviour
 {
-    public event Action OnInventoryChange; // Event to notify when the inventory changes
-    [SerializeField] private Player player; // Assign in inspector or via code
-    public int maxInventorySize = 10; // Maximum number of items allowed in the inventory  
+    public event Action OnInventoryChange;
 
-    //[SerializeField] // Ensure the list is visible in the Inspector  
-    public List<Inventory_Item> itemList = new List<Inventory_Item>(); // List to hold inventory items  
+    public int maxInventorySize = 10;
+    public List<Inventory_Item> itemList = new List<Inventory_Item>();
 
-    protected virtual void Awake()
+    protected virtual void Awake() { }
+
+    public void NotifyInventoryChanged()
     {
-      
+        OnInventoryChange?.Invoke();
     }
-    
-    public void TryUseItem(Inventory_Item itemToUse)
+
+    public virtual void AddItem(Inventory_Item itemToAdd)
     {
-        Inventory_Item consumable = itemList.Find(item => item == itemToUse);
-
-        if (consumable == null)
-            return; // If the item is not found in the inventory, exit the method
-
-        consumable.itemEffect.ExecuteEffect(); // 👈 Pass player directly
-
-        if (consumable.stackSize > 1)
-            consumable.RemoveStack();
+        Inventory_Item existing = FindStackable(itemToAdd);
+        if (existing != null)
+            existing.AddStack();
         else
-            RemoveOneItem(consumable); // If the item is a consumable and its stack size is 1, remove it from the inventory
-    
-        OnInventoryChange?.Invoke(); // Invoke the event to notify subscribers of the change
+            itemList.Add(itemToAdd);
+
+        NotifyInventoryChanged();
+    }
+
+    public virtual void RemoveOneItem(Inventory_Item itemToRemove)
+    {
+        Inventory_Item found = itemList.Find(item => item == itemToRemove);
+        if (found != null)
+        {
+            if (found.stackSize > 1)
+                found.RemoveStack();
+            else
+                itemList.Remove(found);
+
+            NotifyInventoryChanged();
+        }
+    }
+
+    public Inventory_Item FindStackable(Inventory_Item item)
+    {
+        return itemList.Find(i => i.itemData == item.itemData && i.CanAddStack());
     }
 
     public bool CanAddItem(Inventory_Item itemToAdd)
     {
-        bool hasStackable = FindStackable(itemToAdd) != null; // Check if there is an existing stackable item in the inventory  
-        return hasStackable || itemList.Count < maxInventorySize; // Check if the inventory can accept more items  
+        return FindStackable(itemToAdd) != null || itemList.Count < maxInventorySize;
     }
 
-    public Inventory_Item FindStackable(Inventory_Item itemToAdd)
+    public Inventory_Item FindItem(ItemDataSO itemData)
     {
-        List<Inventory_Item> stackableItems = itemList.FindAll(item => item.itemData == itemToAdd.itemData);
-    
-        foreach (var stackableItem in stackableItems)
+        return itemList.Find(item => item.itemData == itemData);
+    }
+
+    public void TryUseItem(Inventory_Item itemToUse)
+    {
+        if (itemToUse == null || !itemList.Contains(itemToUse)) return;
+
+        if (itemToUse.itemEffect != null)
         {
-            if (stackableItem.CanAddStack())
-                return stackableItem;
+            itemToUse.itemEffect.ExecuteEffect();
+
+            if (itemToUse.stackSize > 1)
+                itemToUse.RemoveStack();
+            else
+                RemoveOneItem(itemToUse);
+
+            NotifyInventoryChanged();
         }
-
-        return null;
     }
-
-    public void AddItem(Inventory_Item itemToAdd) // Method to add an item to the inventory  
-    {
-
-
-        Inventory_Item itemInInventory = FindStackable(itemToAdd); // Check if the item already exists in the inventory
-
-        if (itemInInventory != null)
-            itemInInventory.AddStack(); // If it exists, increase the stack size
-        else
-            itemList.Add(itemToAdd); // If it doesn't exist, add the new item to the inventory
-
-        OnInventoryChange?.Invoke(); // Invoke the event to notify subscribers of the change
-    }
-
-    public void RemoveOneItem(Inventory_Item itemToRemove)
-    {
-        Inventory_Item itemInInventory = itemList.Find(item => item == itemToRemove); // Find the item in the inventory
-
-        if (itemInInventory.stackSize > 1)
-            itemInInventory.RemoveStack();
-        else
-            itemList.Remove(itemInInventory); // If the stack size is 1, remove the item from the inventory
-
-
-        OnInventoryChange?.Invoke(); // Invoke the event to notify subscribers of the change
-    }
-
-    public Inventory_Item FindItem(ItemDataSO itemData) // Method to find an item in the inventory by its data  
-    {
-        return itemList.Find(item => item.itemData == itemData); // Return the first matching item or null if not found
-    }
-
-    public void TriggerUpdateUI() => OnInventoryChange?.Invoke(); // Method to trigger the UI update event, notifying subscribers that the inventory has changed
 }

@@ -42,7 +42,7 @@ public class Player_Stats : Entity_Stats
         
         }
 
-        inventory.TriggerUpdateUI();
+        inventory.NotifyInventoryChanged();
         activeBuff.Remove(source);
     }
 }

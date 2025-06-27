@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class UI_EquipmentInventory : MonoBehaviour
 {
@@ -9,11 +9,20 @@ public class UI_EquipmentInventory : MonoBehaviour
 
     private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
 
-    private void Start()
+    private void Awake()
     {
+        if (equipmentInventory == null)
+            equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
+
         equipmentInventory.OnInventoryChange += UpdateUI;
         InitializeSlots();
         UpdateUI();
+    }
+
+    private void OnDestroy()
+    {
+        if (equipmentInventory != null)
+            equipmentInventory.OnInventoryChange -= UpdateUI;
     }
 
     private void InitializeSlots()
@@ -27,8 +36,9 @@ public class UI_EquipmentInventory : MonoBehaviour
 
     private void UpdateUI()
     {
-        var items = equipmentInventory.itemList;
+        if (equipmentInventory == null) return;
 
+        var items = equipmentInventory.itemList;
         for (int i = 0; i < uiSlots.Count; i++)
         {
             if (i < items.Count)
@@ -37,10 +47,4 @@ public class UI_EquipmentInventory : MonoBehaviour
                 uiSlots[i].Clear();
         }
     }
-
-    private void OnDestroy()
-    {
-        equipmentInventory.OnInventoryChange -= UpdateUI;
-    }
 }
-
