@@ -72,7 +72,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     {
         if(itemInSlot == null) return;
 
-        ui.itemToolTip.ShowToolTip(true, rect, itemInSlot);
+        ui.itemToolTip.ShowToolTip(true, itemInSlot);
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)

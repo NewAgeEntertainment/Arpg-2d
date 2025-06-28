@@ -16,7 +16,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private void OnValidate()
     {
         // this will give the gameobject a name.
-        gameObject.name = "UI_Stat - " + GetStatNameByType(statSlotType);
+        gameObject.name = "UI_Stat - " + statSlotType.GetStatName();
         statName.text = GetStatNameByType(statSlotType);
     }
 
