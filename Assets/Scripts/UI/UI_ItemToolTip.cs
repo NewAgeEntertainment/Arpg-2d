@@ -9,6 +9,15 @@ public class UI_ItemToolTip : UI_ToolTip
     [SerializeField] private TextMeshProUGUI itemInfo;
 
 
+    private Player_Stats playerStats;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        playerStats = FindAnyObjectByType<Player_Stats>();
+    }
+
+
     public void ShowToolTip(bool show, RectTransform targetRect, Inventory_Item itemToShow)
     {
         base.ShowToolTip(show, targetRect);
@@ -27,25 +36,46 @@ public class UI_ItemToolTip : UI_ToolTip
             return item.itemData.itemEffect.effectDescription;
 
         StringBuilder sb = new StringBuilder();
-
-        sb.AppendLine("");
+        sb.AppendLine();
 
         foreach (var mod in item.modifiers)
         {
             string modType = GetStatNameByType(mod.statType);
-            string modValue = IsPercentageStat(mod.statType) ? mod.value.ToString() + "%" : mod.value.ToString();
-            sb.AppendLine("+ " + modValue + " " + modType);
+            float current = playerStats.GetStatValue(mod.statType);
+
+            bool isPercentage = IsPercentageStat(mod.statType);
+
+            float value = mod.value;
+            string displayValue = isPercentage ? value.ToString() + "%" : value.ToString();
+
+            string prefix = "+";
+            string colorTag = "#FFFFFF";
+
+            if (value > current)
+            {
+                prefix = "+";
+                colorTag = "#00FF00"; // Green if better
+            }
+            else if (value < current)
+            {
+                prefix = "-";
+                colorTag = "#FF0000"; // Red if worse
+            }
+
+            sb.AppendLine($"{prefix} <color={colorTag}>{displayValue}</color> {modType} (Current: {current})");
         }
+
 
         if (item.itemEffect != null)
         {
-            sb.AppendLine("");
+            sb.AppendLine();
             sb.AppendLine("Unique Effect:");
             sb.AppendLine(item.itemEffect.effectDescription);
         }
 
         return sb.ToString();
     }
+
 
     private string GetStatNameByType(StatType type)
     {

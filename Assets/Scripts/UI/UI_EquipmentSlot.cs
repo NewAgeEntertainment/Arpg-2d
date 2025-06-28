@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +9,22 @@ public class UI_EquipmentSlot : UI_ItemSlot
     public void SetItem(Inventory_Item item)
     {
         UpdateSlot(item);
+    }
+
+    public override void OnPointerEnter(PointerEventData eventData)
+    {
+        if (ui != null)
+            ui.hoveredItem = itemInSlot; // ✅ when pointer enters, mark hovered item
+
+        base.OnPointerEnter(eventData); // show tooltip if needed
+    }
+
+    public override void OnPointerExit(PointerEventData eventData)
+    {
+        if (ui != null)
+            ui.hoveredItem = null; // ✅ clear when pointer exits
+
+        base.OnPointerExit(eventData);
     }
 
     // Optional: override OnPointerDown if you want different behavior for equipment-only inventory

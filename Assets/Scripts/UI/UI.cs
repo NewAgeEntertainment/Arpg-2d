@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Rewired;
 
 public class UI : MonoBehaviour
 {
     public UI_SkillToolTip skillToolTip { get; private set; }
     public UI_ItemToolTip itemToolTip { get; private set; }
+    public Inventory_Item hoveredItem; // 👈 tracks which equipment is hovered
     public UI_StatToolTip statToolTip { get; private set; }
 
     public UI_SkillTree skillTreeUI { get; private set; }

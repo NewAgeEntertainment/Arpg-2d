@@ -8,6 +8,7 @@ public class Player_Stats : Entity_Stats
     private List<string> activeBuff = new List<string>();
     private Inventory_Player inventory;
 
+
     protected override void Awake()
     {
         base.Awake();
@@ -45,4 +46,10 @@ public class Player_Stats : Entity_Stats
         inventory.NotifyInventoryChanged();
         activeBuff.Remove(source);
     }
+
+    public float GetStatValue(StatType type)
+    {
+        return GetStatByType(type).GetValue();
+    }
+
 }

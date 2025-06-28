@@ -23,38 +23,38 @@ public class Object_ItemPickup : MonoBehaviour
 
         Inventory_Item itemToAdd = new Inventory_Item(itemData);
 
-        // Handle Material → Storage
         if (itemData.itemType == ItemType.Material)
         {
             inventoryPlayer.storage.AddMaterialToStash(itemToAdd);
             Destroy(gameObject);
-            return; // exit here
+            return;
         }
 
-        // Handle Equipment → Equipment Inventory
-        if (inventoryPlayer.equipmentInventory.CanAddItem(itemToAdd))
+        bool added = false;
+
+        if (itemData.itemType == ItemType.Weapon ||
+            itemData.itemType == ItemType.Armor ||
+            itemData.itemType == ItemType.trinket)
         {
-            inventoryPlayer.equipmentInventory.AddItem(itemToAdd);
-            Debug.Log($"Added {itemToAdd.itemData.itemName} to Equipment Inventory.");
-            Destroy(gameObject);
-            return; // exit here!
+            if (inventoryPlayer.equipmentInventory.CanAddItem(itemToAdd))
+            {
+                inventoryPlayer.equipmentInventory.AddItem(itemToAdd);
+                added = true;
+            }
         }
         else
         {
-            Debug.LogWarning("Cannot add item to equipment inventory (full or invalid type).");
+            if (inventoryPlayer.CanAddItem(itemToAdd))
+            {
+                inventoryPlayer.AddItem(itemToAdd);
+                added = true;
+            }
         }
 
-        // Fallback: Add to base player inventory (e.g., Consumable)
-        if (inventoryPlayer.CanAddItem(itemToAdd))
-        {
-            inventoryPlayer.AddItem(itemToAdd);
+        if (added)
             Destroy(gameObject);
-            return; // exit here
-        }
         else
-        {
-            Debug.Log("No space in inventory.");
-        }
+            Debug.Log("No space in inventories. Item not picked up.");
     }
 
 

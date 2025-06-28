@@ -52,6 +52,19 @@ public class Inventory_Item
         return null; // Ensure all code paths return a value  
     }
 
+    public float GetStatValue(StatType type)
+    {
+        if (itemData == null || itemData.itemModifiers == null)
+            return 0f;
+
+        foreach (var mod in itemData.itemModifiers)
+        {
+            if (mod.statType == type)
+                return mod.value;
+        }
+        return 0f;
+    }
+
     public bool CanAddStack() => stackSize < itemData.maxStackSize;
 
     public void AddStack() => stackSize++;

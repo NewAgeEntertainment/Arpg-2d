@@ -12,6 +12,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private TextMeshProUGUI statName;
     [SerializeField] private TextMeshProUGUI statValue;
 
+    public Inventory_Item hoveredItem;
     private void OnValidate()
     {
         // this will give the gameobject a name.
@@ -36,6 +37,8 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         ui.statToolTip.ShowToolTip(false, null);
         
     }
+
+
 
     public void UpdateStatValue()
     {
@@ -206,5 +209,16 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    
+    private float GetEquippedItemStatValue(StatType statType)
+    {
+        if (ui == null || ui.hoveredItem == null)
+        {
+            Debug.LogWarning("No hovered item to compare for stat: " + statType);
+            return 0f;
+        }
+
+        return ui.hoveredItem.GetStatValue(statType);
+    }
+
+
 }
