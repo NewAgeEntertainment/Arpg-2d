@@ -127,6 +127,7 @@ public class Inventory_Player : Inventory_Base
         float savedHealthPercent = player.health.GetHealthPercent();
         float manaPercent = player.mana.GetManaPercent();
 
+        // Remove it from the slot
         var slotToUnequip = equipList.Find(slot => slot.equipedItem == itemToUnequip);
         if (slotToUnequip != null)
             slotToUnequip.equipedItem = null;
@@ -137,11 +138,24 @@ public class Inventory_Player : Inventory_Base
         player.health.SetHealthToPercent(savedHealthPercent);
         player.mana.SetManaToPercent(manaPercent);
 
-        // Try to store back in equipment inventory
+        // ✅ Now: add back to equipment inventory if possible
         if (equipmentInventory.CanAddItem(itemToUnequip))
+        {
             equipmentInventory.AddItem(itemToUnequip);
+        }
+        else if (CanAddItem(itemToUnequip)) // fallback: general inventory
+        {
+            AddItem(itemToUnequip);
+        }
         else
-            AddItem(itemToUnequip); // fallback to general inventory
+        {
+            Debug.Log("No space in any inventory!");
+            // Or drop to ground here if you want:
+            // SpawnPickup(itemToUnequip);
+        }
+
+        NotifyInventoryChanged();
     }
+
 
 }
