@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -11,6 +11,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     protected RectTransform rect;
 
     [Header("UI Slot Setup")]
+    [SerializeField] private TextMeshProUGUI itemNameText;
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemStackSize;
     [SerializeField] private Sprite defaultIconSprite; // <-- This is the default UI sprite
@@ -55,18 +56,21 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     public virtual void UpdateSlot(Inventory_Item item)
     {
-        if (item == null)
+        itemInSlot = item;
+
+        if (itemInSlot == null || itemInSlot.itemData == null)
         {
-            Debug.Log("UpdateSlot called with null item, clearing slot");
-            Clear();
+            itemIcon.sprite = defaultIconSprite;
+            itemNameText.text = "";
+            itemStackSize.text = "";
             return;
         }
 
-        Debug.Log($"UpdateSlot called with item: {item.itemData.itemName}");
-        itemInSlot = item;
-        itemIcon.sprite = item.itemData.itemIcon;
-        itemStackSize.text = item.stackSize.ToString();
+        itemIcon.sprite = itemInSlot.itemData.itemIcon;
+        itemNameText.text = itemInSlot.itemData.itemName;
+        itemStackSize.text = itemInSlot.stackSize > 1 ? "x" + itemInSlot.stackSize : "";
     }
+
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {

@@ -20,7 +20,8 @@ public class ItemDataSO : ScriptableObject
 
 
 // Removed duplicate [Serializable] attribute  
-
+
+
 public class ItemStatModifier
 {
     public StatType statType;
