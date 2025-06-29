@@ -1,54 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class UI_EquipmentSlot : UI_ItemSlot
 {
-    // This method can be used by the UI panel to populate the slot with an equipment item
+    /// ✅ So `UI_EquipmentInventory` can call this:
     public void SetItem(Inventory_Item item)
     {
         UpdateSlot(item);
     }
 
-    public override void OnPointerEnter(PointerEventData eventData)
-    {
-        if (ui != null)
-            ui.hoveredItem = itemInSlot; // ✅ when pointer enters, mark hovered item
-
-        base.OnPointerEnter(eventData); // show tooltip if needed
-    }
-
-    public override void OnPointerExit(PointerEventData eventData)
-    {
-        if (ui != null)
-            ui.hoveredItem = null; // ✅ clear when pointer exits
-
-        base.OnPointerExit(eventData);
-    }
-
-    // Optional: override OnPointerDown if you want different behavior for equipment-only inventory
     public override void OnPointerDown(PointerEventData eventData)
     {
-        if (itemInSlot == null)
-            return;
+        if (itemInSlot == null) return;
 
-        // Only allow equipping valid equipment types
-        if (itemInSlot.itemData.itemType != ItemType.Weapon &&
-            itemInSlot.itemData.itemType != ItemType.Armor &&
-            itemInSlot.itemData.itemType != ItemType.trinket)
-        {
-            Debug.Log("This slot only handles equipment.");
-            return;
-        }
-
-        // Try to equip from equipment inventory
-        Debug.Log($"Attempting to equip item from equipment inventory: {itemInSlot.itemData.itemName}");
+        // Try to equip this item FROM the equipment inventory bag
         inventory.TryEquipFromEquipmentInventory(itemInSlot);
 
-        // Hide tooltip if successful
-        if (itemInSlot == null)
-            ui.itemToolTip.ShowToolTip(false, null);
+        // Hide tooltip if needed
+        ui.itemToolTip.ShowToolTip(false, null);
     }
-
 }

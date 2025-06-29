@@ -1,49 +1,59 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class UI_Inventory : MonoBehaviour
 {
     [SerializeField] private Inventory_Player inventory;
-    [SerializeField] private UI_ItemSlotParent inventorySlotsParent;
-    [SerializeField] private UI_EquippedSlot[] uiEquipSlots;
+    [Header("Backpack")]
+    [SerializeField] private UI_ItemSlotParent backpackSlotsParent;  // UI_ItemPack
+    [Header("Equipment Panel")]
+    [SerializeField] public UI_EquipmentInventory equipmentInventoryPanel; // shows unequipped gear
+    [SerializeField] private UI_EquippedSlot[] equippedSlots;  // Equipped slots on character
 
     private void Awake()
     {
-        if (inventory == null)
-            inventory = FindFirstObjectByType<Inventory_Player>();
-
-        if (uiEquipSlots == null || uiEquipSlots.Length == 0)
-            uiEquipSlots = GetComponentsInChildren<UI_EquippedSlot>();
-
-        if (inventory != null)
-            inventory.OnInventoryChange += UpdateUI;
+        inventory = FindFirstObjectByType<Inventory_Player>();
+        inventory.OnInventoryChange += UpdateUI;
+        
 
         UpdateUI();
+
+       
     }
+
+    
 
     private void OnDestroy()
     {
         if (inventory != null)
-            inventory.OnInventoryChange -= UpdateUI;
-    }
-
-    private void UpdateUI()
-    {
-        if (inventory == null) return;
-
-        inventorySlotsParent.UpdateSlots(inventory.itemList);
-        UpdateEquipmentSlots();
-    }
-
-    private void UpdateEquipmentSlots()
-    {
-        if (inventory == null || inventory.equipList == null) return;
-
-        for (int i = 0; i < uiEquipSlots.Length; i++)
         {
-            if (i >= inventory.equipList.Count) break;
-
-            var slot = inventory.equipList[i];
-            uiEquipSlots[i].UpdateSlot(slot.HasItem() ? slot.equipedItem : null);
+            inventory.OnInventoryChange -= UpdateUI;
+            inventory.equipmentInventory.OnInventoryChange -= UpdateUI;
         }
+    }
+
+    public void UpdateUI()
+    {
+        if (backpackSlotsParent != null)
+        {
+            Debug.Log("[UI_Inventory] Updating backpack slots with: " + inventory.itemList.Count);
+            backpackSlotsParent.UpdateSlots(inventory.itemList);
+        }
+
+        if (equipmentInventoryPanel != null)
+            equipmentInventoryPanel.UpdateUI();
+
+        for (int i = 0; i < equippedSlots.Length; i++)
+        {
+            if (i >= inventory.equipList.Count) continue;
+            var slot = inventory.equipList[i];
+            equippedSlots[i].UpdateSlot(slot.HasItem() ? slot.equipedItem : null);
+        }
+       
+        Debug.Log($"Backpack items: {inventory.itemList.Count}");
+        for (int i = 0; i < inventory.itemList.Count; i++)
+        {
+            Debug.Log($"Item {i}: {inventory.itemList[i].itemData.itemName}");
+        }
+
     }
 }

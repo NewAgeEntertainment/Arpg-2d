@@ -1,35 +1,47 @@
-using Spine;
-using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class UI_Storage : MonoBehaviour
 {
-    private Inventory_Player inventory;
+    [SerializeField] private UI_ItemSlotParent playerInventorySlotParent; // Shows BOTH backpack + unequipped gear
+    [SerializeField] private UI_ItemSlotParent storageSlotParent;
+    [SerializeField] private UI_ItemSlotParent materialStashSlotParent;
+
+    private Inventory_Player playerInventory;
     private Inventory_Storage storage;
 
-    [SerializeField] private UI_ItemSlotParent inventoryParent;
-    [SerializeField] private UI_ItemSlotParent storageParent;
-    [SerializeField] private UI_ItemSlotParent materialStashParent;
-
-    public void SetupStorage(Inventory_Player inventory, Inventory_Storage storage)
+    public void SetupStorage(Inventory_Player player, Inventory_Storage storage)
     {
-        this.inventory = inventory;
+        this.playerInventory = player;
         this.storage = storage;
-        // Initialize the UI with the current items in storage
-        storage.OnInventoryChange += UpdateUI;
-        UpdateUI();
 
-        UI_StorageSlot[] storageSlots = GetComponentsInChildren<UI_StorageSlot>();
-        
-        foreach (var slot in storageSlots)
+        storage.SetInventory(player);
+
+        storage.OnInventoryChange += UpdateUI;
+        playerInventory.OnInventoryChange += UpdateUI;
+        playerInventory.equipmentInventory.OnInventoryChange += UpdateUI;
+
+        foreach (var slot in GetComponentsInChildren<UI_StorageSlot>())
             slot.SetStorage(storage);
+
+        UpdateUI();
     }
 
-    private void UpdateUI()
+    public void UpdateUI()
     {
-        inventoryParent.UpdateSlots(inventory.itemList);
-        storageParent.UpdateSlots(storage.itemList);
-        materialStashParent.UpdateSlots(storage.materialStash);
+        var combined = new List<Inventory_Item>();
+        combined.AddRange(playerInventory.itemList);  // backpack items
+        combined.AddRange(playerInventory.equipmentInventory.itemList);  // unequipped gear too
+
+        playerInventorySlotParent.UpdateSlots(combined);
+        storageSlotParent.UpdateSlots(storage.itemList);
+        materialStashSlotParent.UpdateSlots(storage.materialStash);
+    }
+
+    private void OnDisable()
+    {
+        if (storage != null) storage.OnInventoryChange -= UpdateUI;
+        if (playerInventory != null) playerInventory.OnInventoryChange -= UpdateUI;
+        if (playerInventory?.equipmentInventory != null) playerInventory.equipmentInventory.OnInventoryChange -= UpdateUI;
     }
 }

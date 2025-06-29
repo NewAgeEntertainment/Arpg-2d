@@ -1,77 +1,117 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory_Storage : Inventory_Base
 {
     private Inventory_Player playerInventory;
-    public List<Inventory_Item> materialStash;
+    public List<Inventory_Item> materialStash = new List<Inventory_Item>();
+
+    public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
 
     public void AddMaterialToStash(Inventory_Item itemToAdd)
     {
         var stackableItem = StackableInStash(itemToAdd);
 
         if (stackableItem != null)
-            stackableItem.AddStack(); // If a stackable item is found, increase its stack size
+            stackableItem.AddStack();
         else
-            materialStash.Add(itemToAdd); // Otherwise, add the new item to the stash
+            materialStash.Add(itemToAdd);
 
-        NotifyInventoryChanged(); // ✅ This will trigger UI update via the event
-        
+        NotifyInventoryChanged();
     }
 
     public Inventory_Item StackableInStash(Inventory_Item itemToAdd)
     {
-        List<Inventory_Item> stackableItems = materialStash.FindAll(item => item.itemData == itemToAdd.itemData);
-
-        foreach (var stackableItem in stackableItems)
+        foreach (var stackableItem in materialStash)
         {
-            if (stackableItem.CanAddStack())
+            if (stackableItem.itemData == itemToAdd.itemData && stackableItem.CanAddStack())
                 return stackableItem;
         }
         return null;
     }
 
-    public void SetInventory(Inventory_Player inventory) => this.playerInventory = inventory;
-
-    public void FromPlayerToStorage(Inventory_Item item,bool transferFullStack)
+    public void FromPlayerToStorage(Inventory_Item item, bool transferFullStack)
     {
-        int transferAmount = transferFullStack ? item.stackSize : 1; // Determine how many items to transfer based on the transferFullStack flag
+        int transferAmount = transferFullStack ? item.stackSize : 1;
 
         for (int i = 0; i < transferAmount; i++)
         {
-            if (CanAddItem(item))
+            if (item.itemData.itemType == ItemType.Material)
             {
-                var itemToAdd = new Inventory_Item(item.itemData); // Create a new item instance to avoid modifying the original item
-            
-                playerInventory.RemoveOneItem(item); // Remove the item from the player's inventory
-                AddItem(itemToAdd); // Add the item to the storage inventory
+                var itemToAdd = new Inventory_Item(item.itemData);
+                playerInventory.RemoveOneItem(item);
+                AddMaterialToStash(itemToAdd);
             }
-
+            else if (item.itemData.itemType == ItemType.Weapon ||
+                     item.itemData.itemType == ItemType.Armor ||
+                     item.itemData.itemType == ItemType.trinket)
+            {
+                if (CanAddItem(item))
+                {
+                    var itemToAdd = new Inventory_Item(item.itemData);
+                    playerInventory.equipmentInventory.RemoveOneItem(item);
+                    AddItem(itemToAdd);
+                }
+                else
+                {
+                    Debug.LogWarning("No space in storage for this equipment item.");
+                    break;
+                }
+            }
+            else
+            {
+                if (CanAddItem(item))
+                {
+                    var itemToAdd = new Inventory_Item(item.itemData);
+                    playerInventory.RemoveOneItem(item);
+                    AddItem(itemToAdd);
+                }
+                else
+                {
+                    Debug.LogWarning("No space in storage for this item.");
+                    break;
+                }
+            }
         }
 
-        NotifyInventoryChanged(); // ✅ This will trigger UI update via the event
-        
+        NotifyInventoryChanged();
     }
 
-    public void FromStorageToPlayer(Inventory_Item item,bool transferFullStack)
+    public void FromStorageToPlayer(Inventory_Item item, bool transferFullStack)
     {
-        int transferAmount = transferFullStack ? item.stackSize : 1; // Determine how many items to transfer based on the transferFullStack flag
+        int transferAmount = transferFullStack ? item.stackSize : 1;
 
         for (int i = 0; i < transferAmount; i++)
         {
             if (playerInventory.CanAddItem(item))
             {
-                var itemToAdd = new Inventory_Item(item.itemData); // Create a new item instance to avoid modifying the original item
-
-                RemoveOneItem(item); // Remove the item from the storage inventory
-                playerInventory.AddItem(itemToAdd); // Add the item to the player's inventory
+                var itemToAdd = new Inventory_Item(item.itemData);
+                RemoveOneItem(item);
+                playerInventory.AddItem(itemToAdd);
             }
-
+            else if (item.itemData.itemType == ItemType.Weapon ||
+                     item.itemData.itemType == ItemType.Armor ||
+                     item.itemData.itemType == ItemType.trinket)
+            {
+                if (playerInventory.equipmentInventory.CanAddItem(item))
+                {
+                    var itemToAdd = new Inventory_Item(item.itemData);
+                    RemoveOneItem(item);
+                    playerInventory.equipmentInventory.AddItem(itemToAdd);
+                }
+                else
+                {
+                    Debug.LogWarning("No space in equipment inventory for this equipment item.");
+                    break;
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No space in player inventory for this item.");
+                break;
+            }
         }
 
-
         NotifyInventoryChanged();
-    } 
+    }
 }
-

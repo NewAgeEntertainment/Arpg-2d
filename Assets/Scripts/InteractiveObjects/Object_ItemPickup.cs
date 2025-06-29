@@ -46,15 +46,25 @@ public class Object_ItemPickup : MonoBehaviour
         {
             if (inventoryPlayer.CanAddItem(itemToAdd))
             {
+                Debug.Log($"[Pickup] Adding {itemToAdd.itemData.itemName} to player inventory.");
                 inventoryPlayer.AddItem(itemToAdd);
                 added = true;
+            }
+            else
+            {
+                Debug.Log("[Pickup] Player cannot accept item, inventory full.");
             }
         }
 
         if (added)
+        {
+            Debug.Log($"[Pickup] Final: Added {itemToAdd.itemData.itemName}.");
             Destroy(gameObject);
+        }
         else
+        {
             Debug.Log("No space in inventories. Item not picked up.");
+        }
     }
 
 

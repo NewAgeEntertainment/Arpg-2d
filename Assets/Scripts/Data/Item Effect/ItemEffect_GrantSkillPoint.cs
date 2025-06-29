@@ -11,6 +11,6 @@ public class ItemEffect_GrantSkillPoint : ItemEffect_DataSO
     public override void ExecuteEffect()
     {
         UI ui = FindFirstObjectByType<UI>();
-        ui.skillTreeUI.AddSkillPoints(pointsToAdd);
+        ui.SkillTreeUI.AddSkillPoints(pointsToAdd);
     }
 }
