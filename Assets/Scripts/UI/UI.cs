@@ -17,6 +17,7 @@ public class UI : MonoBehaviour
     public UI_Storage StorageUI => storageUI;
     [SerializeField] public UI_EquipmentInventory equipmentInventoryPanel;
     public GameObject UI_Character; // <- drag your whole UI_character GameObject here!
+    public UI_Craft craftUI { get; private set; }
 
     private bool characterUIEnabled = false;
     private bool skillTreeEnabled;
@@ -40,6 +41,7 @@ public class UI : MonoBehaviour
         // ✅ DO NOT auto-find these anymore — you drag them!
         skillTreeEnabled = skillTreeUI.gameObject.activeSelf;
         inventoryUIEnabled = inventoryUI.gameObject.activeSelf;
+        craftUI = GetComponentInChildren<UI_Craft>(true);
 
         if (UI_Character == null)
             Debug.LogError("[UI] UI_Character is not assigned!");

@@ -10,25 +10,31 @@ public class UI_Storage : MonoBehaviour
     private Inventory_Player playerInventory;
     private Inventory_Storage storage;
 
-    public void SetupStorage(Inventory_Player player, Inventory_Storage storage)
+    public void SetupStorageUI(Inventory_Storage storage)
     {
-        this.playerInventory = player;
         this.storage = storage;
-
-        storage.SetInventory(player);
+        playerInventory = storage.playerInventory;
 
         storage.OnInventoryChange += UpdateUI;
         playerInventory.OnInventoryChange += UpdateUI;
         playerInventory.equipmentInventory.OnInventoryChange += UpdateUI;
 
-        foreach (var slot in GetComponentsInChildren<UI_StorageSlot>())
+        foreach (var slot in GetComponentsInChildren<UI_StorageSlot>(true))
             slot.SetStorage(storage);
 
-        UpdateUI();
+        UpdateUI(); // 👈 refresh right away
+    }
+
+    private void OnEnable()
+    {
+        UpdateUI(); // 👈 refresh again on open
     }
 
     public void UpdateUI()
     {
+        if (storage == null)
+            return;
+
         var combined = new List<Inventory_Item>();
         combined.AddRange(playerInventory.itemList);  // backpack items
         combined.AddRange(playerInventory.equipmentInventory.itemList);  // unequipped gear too

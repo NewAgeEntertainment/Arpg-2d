@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Text;
 using UnityEngine;
 
 [Serializable]
@@ -69,4 +70,62 @@ public class Inventory_Item
 
     public void AddStack() => stackSize++;
     public void RemoveStack() => stackSize--;
+
+    public string GetItemInfo()
+    {
+        if (itemData.itemType == ItemType.Material)
+            return "Used for crafting.";
+
+        if (itemData.itemType == ItemType.Consumable && itemEffect != null)
+            return itemEffect.effectDescription;
+
+        StringBuilder sb = new StringBuilder();
+
+        foreach (var mod in modifiers)
+        {
+            string modType = mod.statType.ToString();
+            string modValue = mod.value > 0 ? $"+{mod.value}" : mod.value.ToString();
+            sb.AppendLine($"{modValue} {modType}");
+        }
+
+        if (itemEffect != null)
+        {
+            sb.AppendLine();
+            sb.AppendLine("Unique Effect:");
+            sb.AppendLine(itemEffect.effectDescription);
+        }
+
+        return sb.ToString();
+    }
+
+
+
+    private string GetStatNameByType(StatType type)
+    {
+        switch (type)
+        {
+            case StatType.MaxHealth: return "Max Health";
+            case StatType.HealthRegen: return "Health Regen";
+            // ➜ keep your other cases here
+            default: return "Unknown Stat";
+        }
+    }
+
+    private bool IsPercentageStat(StatType type)
+    {
+        switch (type)
+        {
+            case StatType.CritChance:
+            case StatType.CritPower:
+            case StatType.ArmorReduction:
+            case StatType.FireResistance:
+            case StatType.IceResistance:
+            case StatType.PoisonResistance:
+            case StatType.LightningResistance:
+            case StatType.Evasion:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

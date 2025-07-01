@@ -13,9 +13,11 @@ public class Inventory_Player : Inventory_Base
         base.Awake();
         player = GetComponent<Player>();
 
-        Debug.Log("[UI_Inventory] Found Inventory_Player:");
-        equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
-        
+        if (equipmentInventory == null)
+            equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
+
+        Debug.Log("[Inventory_Player] equipmentInventory: " + (equipmentInventory != null));
+
 
         storage = FindFirstObjectByType<Inventory_Storage>();
         Debug.Log($"storage: {storage}");

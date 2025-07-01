@@ -16,6 +16,9 @@ public class ItemDataSO : ScriptableObject
 
     [Header("Item stat modifiers")]
     public List<ItemStatModifier> itemModifiers; // ✅ Add this!
+
+    [Header("Craft details")]
+    public Inventory_Item[] craftRecipe;
 }
 
 

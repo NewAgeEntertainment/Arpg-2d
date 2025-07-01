@@ -20,9 +20,42 @@ public class Object_BlackSmith : Object_NPC, IInteractable
 
     public void Interact()
     {
-        ui.StorageUI.gameObject.SetActive(true); // 🔑 activate first
-        ui.StorageUI.SetupStorage(inventory, storage);
+        Debug.Log("[BlackSmith] Interact()");
+
+        // 🔑 1. Ensure player inventory is linked
+        if (inventory == null)
+            inventory = player.GetComponent<Inventory_Player>();
+
+        storage.SetInventory(inventory);
+
+        // 🔑 2. Open Storage first
+        if (ui.StorageUI != null)
+        {
+            if (!ui.StorageUI.gameObject.activeSelf)
+            {
+                ui.StorageUI.gameObject.SetActive(true);
+                Debug.Log("[BlackSmith] Activated StorageUI");
+            }
+
+            ui.StorageUI.SetupStorageUI(storage);
+        }
+
+        // 🔑 3. Open Craft next
+        if (ui.craftUI != null)
+        {
+            if (!ui.craftUI.gameObject.activeSelf)
+            {
+                ui.craftUI.gameObject.SetActive(true);
+                Debug.Log("[BlackSmith] Activated CraftUI");
+            }
+
+            ui.craftUI.SetupCraftUI(storage);
+        }
+
+        Debug.Log("[BlackSmith] Both Storage & Craft set up & visible!");
     }
+
+
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
@@ -43,6 +76,6 @@ public class Object_BlackSmith : Object_NPC, IInteractable
 
         // Same if you bring back crafting:
         // if (ui != null && ui.craftUI != null)
-        //     ui.craftUI.gameObject.SetActive(false);
+           ui.craftUI.gameObject.SetActive(false);
     }
 }
