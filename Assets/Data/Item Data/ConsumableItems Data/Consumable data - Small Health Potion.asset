@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e52321ba4934c83409e5b90fb1500206, type: 3}
+  m_Name: Consumable data - Small Health Potion
+  m_EditorClassIdentifier: 
+  itemPtice: 100
+  minStackSizeAtShop: 1
+  maxStackSizeAtShop: 2
+  itemRarity: 46
+  dropChance: 77.9
+  maxDropChance: 77.9
+  craftRecipe:
+  - itemData: {fileID: 11400000, guid: 05a516aa2ff7fe74080c6dda90cd355d, type: 2}
+    stackSize: 1
+    itemEffect: {fileID: 0}
+  itemName: Small Health Potion
+  itemIcon: {fileID: 176539489, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  itemType: 4
+  maxStackSize: 5
+  itemEffect: {fileID: 11400000, guid: 100c8cd3050e54e419457a9dbf3fcd26, type: 2}

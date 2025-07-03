@@ -1,10 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using Rewired;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Inventory_Storage : Inventory_Base
 {
     public Inventory_Player playerInventory { get; private set; }
     public List<Inventory_Item> materialStash = new List<Inventory_Item>();
+
+    public void CraftItem(Inventory_Item itemToCraft)
+    {
+        ConsumedMaterials(itemToCraft);
+        playerInventory.AddItem(itemToCraft);
+        Debug.Log($"[Craft] Added {itemToCraft.itemData.itemName} to Backpack");
+        //added = true;
+    }
+
+    public bool CanCraftItem(Inventory_Item itemToCraft)
+    {
+        return HasEnoughMatrials(itemToCraft) &&
+               playerInventory.CanAddItem(itemToCraft) &&
+               itemList.Count < maxInventorySize;
+    }
 
     public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
 
@@ -57,7 +74,7 @@ public class Inventory_Storage : Inventory_Base
 
 
 
-    public bool HasEnoughMatrials(Inventory_Item itemToCraft)
+    private bool HasEnoughMatrials(Inventory_Item itemToCraft)
     {
         foreach (var requiredMaterial in itemToCraft.itemData.craftRecipe)
         {

@@ -13,11 +13,18 @@ public class Inventory_Item
     public ItemModifier[] modifiers { get; private set; } // Array of modifiers that can be applied to the item
     public ItemEffect_DataSO itemEffect;
 
+    public int buyPrice { get; private set; }
+    public float sellPrice { get; private set; }
+
     public Inventory_Item(ItemDataSO itemData)
     {
         this.itemData = itemData; // the item data for this inventory item
 
         itemEffect = itemData.itemEffect;
+
+        buyPrice = itemData.itemPtice; // Price of the item in the merchant
+        sellPrice = itemData.itemPtice * .35f; // Sell price is 35% of the buy price
+
         modifiers = EquipmentData()?.modifiers; // if the item is an equptment, get its modifiers
 
         itemId = itemData.itemName + " - " + Guid.NewGuid();
@@ -73,13 +80,28 @@ public class Inventory_Item
 
     public string GetItemInfo()
     {
+        StringBuilder sb = new StringBuilder();
+        
+        
         if (itemData.itemType == ItemType.Material)
-            return "Used for crafting.";
+        {
+            sb.AppendLine("");
+            sb.AppendLine("used for crafting");
+            sb.AppendLine("");
+            sb.AppendLine("");
+            return sb.ToString();
+        }
 
         if (itemData.itemType == ItemType.Consumable && itemEffect != null)
-            return itemEffect.effectDescription;
+        { 
+            sb.AppendLine("");
+            sb.AppendLine(itemEffect.effectDescription);
+            sb.AppendLine("");
+            sb.AppendLine("");
+            return sb.ToString();
+            /*return itemEffect.effectDescription*/;
+        }
 
-        StringBuilder sb = new StringBuilder();
 
         foreach (var mod in modifiers)
         {
@@ -94,6 +116,9 @@ public class Inventory_Item
             sb.AppendLine("Unique Effect:");
             sb.AppendLine(itemEffect.effectDescription);
         }
+
+        sb.AppendLine("");
+        sb.AppendLine("");
 
         return sb.ToString();
     }

@@ -11,6 +11,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     private Entity entity;
     private Entity_VFX entityVfx;
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for health calculations
+    private Entity_DropManager dropManager; // Reference to the Entity_DropManager component for item drops
 
     [SerializeField] protected float currentHealth; // Current health points, initialized to maximum health
     [SerializeField] protected bool isDead;
@@ -34,6 +35,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
         entityVfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
         entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
         healthBar = GetComponentInChildren<Slider>(); // Get the Slider component for the health bar UI
+        dropManager = GetComponent<Entity_DropManager>(); // Get the Entity_DropManager component for item drops
 
         currentHealth = entityStats.GetMaxHealth(); // Initialize current health points to maximum health
         UpdateHealthBar(); // Update the health bar UI to reflect the initial health points
@@ -125,6 +127,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     {
         isDead = true; // Set the entity as dead
         entity.EntityDeath(); // Call the EntityDeath method from the Entity class
+        dropManager?.DropItems(); // Call the DropItems method from the Entity_DropManager component to drop items on death
     }
 
     public float GetHealthPercent() => currentHealth / entityStats.GetMaxHealth();
