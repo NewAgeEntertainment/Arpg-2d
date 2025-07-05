@@ -19,7 +19,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     protected virtual void Awake()
     {
-        ui = GetComponentInParent<UI>();
+        ui = ui = FindFirstObjectByType<UI>();
         rect = GetComponent<RectTransform>();
         inventory = FindAnyObjectByType<Inventory_Player>();
         

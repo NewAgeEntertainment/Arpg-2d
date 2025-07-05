@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Entity_Health : MonoBehaviour, IDamageable // Interface for entities that can take damage
 {
     public event Action OnTakingDamage;
+    public event Action OnHealthUpdate; // Event to notify when health is updated
 
     private Slider healthBar; // Reference to the health bar UI element
     private Entity entity;
@@ -38,6 +39,8 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
         dropManager = GetComponent<Entity_DropManager>(); // Get the Entity_DropManager component for item drops
 
         currentHealth = entityStats.GetMaxHealth(); // Initialize current health points to maximum health
+        OnHealthUpdate += UpdateHealthBar;
+        
         UpdateHealthBar(); // Update the health bar UI to reflect the initial health points
 
         InvokeRepeating(nameof(RegenerateHealth), 0, regenInterval); // Start the health regeneration process at regular intervals
@@ -102,7 +105,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
         // Ensure the new health does not exceed the maximum health
         currentHealth = Mathf.Min(newHealth, maxHealth); // Set the current health to the minimum of new health and maximum health
-        UpdateHealthBar(); // Update the health bar UI to reflect the new health points
+        OnHealthUpdate?.Invoke(); // Invoke the event to notify that health has been updated
         
         //if (newHealth > maxHealth) other version
         //    currentHealth = maxHealth; // If the new health exceeds maximum health, set it to maximum health
@@ -117,7 +120,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
         entityVfx?.PlayOnDamageVfx(); // Play the damage visual effect
         currentHealth = currentHealth - damage; // Reduce the health points by the damage amount
-        UpdateHealthBar(); // Update the health bar UI to reflect the new health points
+        OnHealthUpdate?.Invoke();
 
         if (currentHealth < 0)
             Die(); // If health points drop below 0, call the Die method
@@ -135,8 +138,10 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     public void SetHealthToPercent(float percent)
     {
         currentHealth = entityStats.GetMaxHealth() * Mathf.Clamp01(percent);
-        UpdateHealthBar();
+        OnHealthUpdate?.Invoke();
     }
+
+    public float GetCurrentHealth() => currentHealth; // Method to get the current health points of the entity
 
     private void UpdateHealthBar()
     {

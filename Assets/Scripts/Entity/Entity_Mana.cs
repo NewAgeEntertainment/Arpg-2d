@@ -1,4 +1,4 @@
-
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class Entity_Mana : MonoBehaviour
 {
     [SerializeField] private Slider manaBar; // Reference to the mana bar UI element  
+    public event Action OnManaUpdate; // Event to notify when health is updated
+
+
     private Entity entity;
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for mana calculations  
     private Skill_Base skill; // Reference to the Skill component for skill-related functionality
@@ -28,6 +31,8 @@ public class Entity_Mana : MonoBehaviour
         entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject  
         //manaBar = GetComponentInChildren<Slider>(); // Get the Slider component for the mana bar UI  
         currentMana = entityStats.GetMaxMana(); // Initialize current mana points to maximum mana  
+        OnManaUpdate += UpdateManaBar;
+        
         UpdateManaBar(); // Update the mana bar UI to reflect the initial mana points  
         InvokeRepeating(nameof(RegenerateMana), 0, manaRegenInterval); // Start the mana regeneration process at regular intervals  
     }
@@ -68,7 +73,7 @@ public class Entity_Mana : MonoBehaviour
 
         // Ensure the new health does not exceed the maximum health  
         currentMana = Mathf.Min(newMana, maxMana); // Set the current health to the minimum of new health and maximum health  
-        UpdateManaBar(); // Update the health bar UI to reflect the new health points  
+        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
     }
 
     public void ReduceMana(float manaCost) 
@@ -76,7 +81,7 @@ public class Entity_Mana : MonoBehaviour
         
 
         currentMana = currentMana - manaCost; // Reduce the mana points by the mana cost amount, ensuring it doesn't go below zero  
-        UpdateManaBar(); // Update the mana bar UI to reflect the new mana points  
+        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
 
         if (currentMana < 0)
             return; // If current mana is less than or equal to zero, do nothing  
@@ -97,8 +102,11 @@ public class Entity_Mana : MonoBehaviour
     public void SetManaToPercent(float percent)
     {
         currentMana = entityStats.GetMaxMana() * Mathf.Clamp01(percent);
-        UpdateManaBar();
+        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
+
     }
+
+    public float GetCurrentMana() => currentMana; // Method to get the current mana points
 
     private void UpdateManaBar()
     {
