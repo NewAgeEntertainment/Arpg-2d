@@ -32,12 +32,16 @@ public class Skill_Base : MonoBehaviour
     }
 
     // this connects the skill Manager
-    public virtual void SetSkillUpgrade(UpgradeData upgrade)
+    public virtual void SetSkillUpgrade(Skill_DataSO skillData)
     {
+        UpgradeData upgrade = skillData.upgradeData;
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
         manaCost = upgrade.manaCost;
         damageScaleData = upgrade.damageScale;
+
+        player.ui.inGameUI.GetSkillSlot(skillType).SetupSkillSlot(skillData);
+        ResetCoolDown();
     }
 
     public bool CanUseSkill()
@@ -66,7 +70,17 @@ public class Skill_Base : MonoBehaviour
 
 
     protected bool OnCooldown() => Time.time < lastTimeUsed + cooldown;
-    public void SetSkillOnCooldown() => lastTimeUsed = Time.time;
+    public void SetSkillOnCooldown() 
+    { 
+        player.ui.inGameUI.GetSkillSlot(skillType).StartCooldown(cooldown);
+        lastTimeUsed = Time.time;
+    } 
     public void ResetCoolDownBy(float cooldownReduction) => lastTimeUsed = lastTimeUsed + cooldownReduction;
     public void ResetCoolDown() => lastTimeUsed = Time.time;
+    
+    public void ResetCooldown()
+    {
+        player.ui.inGameUI.GetSkillSlot(skillType).ResetCooldown();
+        lastTimeUsed = Time.time - cooldown; // Reset the cooldown to allow immediate use
+    }
 }

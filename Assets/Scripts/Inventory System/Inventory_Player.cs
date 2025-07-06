@@ -1,19 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory_Player : Inventory_Base
 {
+    public event Action<int> OnQuickSlotUsed;
     public int gold = 10000;
 
     public Inventory_Equipment equipmentInventory;  // ✅ your equipment bag stays separate
     public List<Inventory_Equipped> equipList = new List<Inventory_Equipped>();
-    private Player player;
+    
     public Inventory_Storage storage { get; private set; }
+
+    [Header("Quick Item Sots")]
+    public Inventory_Item[] quickItems = new Inventory_Item[2];
 
     protected override void Awake()
     {
         base.Awake();
-        player = GetComponent<Player>();
+        
 
         if (equipmentInventory == null)
             equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
@@ -31,6 +36,32 @@ public class Inventory_Player : Inventory_Base
             if (storage == null)
                 Debug.LogError("[Inventory_Player] No Inventory_Storage found in scene!");
         } 
+    }
+
+    public void SetQuickItemInSlot(int slotNumber, Inventory_Item itemToSet)
+    {
+        quickItems[slotNumber - 1] = itemToSet;
+        TriggerUpdateUI();
+    }
+
+    public void TryUseQuickItemInSlot(int passedSlotNumber)
+    {
+        int slotNumber = passedSlotNumber - 1;
+        var itemToUse = quickItems[slotNumber];
+
+        if (itemToUse == null)
+            return;
+
+        TryUseItem(itemToUse);
+
+        // Fix for CS1503: Convert Inventory_Item to ItemDataSO for FindItem method
+        if (FindItem(itemToUse.itemData) == null)
+        {
+            quickItems[slotNumber] = FindSameItem(itemToUse);
+        }
+
+        TriggerUpdateUI();
+        OnQuickSlotUsed?.Invoke(slotNumber);
     }
 
     public override void AddItem(Inventory_Item itemToAdd)

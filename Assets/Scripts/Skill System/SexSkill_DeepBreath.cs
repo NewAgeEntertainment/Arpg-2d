@@ -42,16 +42,16 @@ public class SexSkill_DeepBreath : Skill_Base
     }
 
 
-    public override void SetSkillUpgrade(UpgradeData data)
+    public override void SetSkillUpgrade(Skill_DataSO skillData)
     {
-        base.SetSkillUpgrade(data);
+        base.SetSkillUpgrade(skillData);
 
-        if (data.upgradeType == SkillUpgradeType.DeepBreath)
-    {
-        //Unlock; // or apply cooldown/manaCost here too
-        Debug.Log("Deep Breath skill unlocked via upgrade.");
+        if (skillData.upgradeData != null && skillData.upgradeData.upgradeType == SkillUpgradeType.DeepBreath)
+        {
+            Unlock(); // Unlock the skill  
+            Debug.Log("Deep Breath skill unlocked via upgrade.");
+        }
     }
-}
 
     public void Unlock()
     {

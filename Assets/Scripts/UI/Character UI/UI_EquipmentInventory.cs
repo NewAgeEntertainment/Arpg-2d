@@ -4,18 +4,21 @@ using System.Collections.Generic;
 public class UI_EquipmentInventory : MonoBehaviour
 {
     [Header("Inventory References")]
-    [SerializeField] private Inventory_Equipment equipmentInventory; // Bag for unequipped
-    [SerializeField] private Inventory_Player playerInventory;       // So we can see equipped slots
+    [SerializeField] private Inventory_Equipment equipmentInventory;
+    [SerializeField] private Inventory_Player playerInventory;
 
     [Header("Unequipped Slots")]
     [SerializeField] private Transform slotContainer;
     [SerializeField] private UI_EquipmentSlot slotPrefab;
 
     [Header("Equipped Slots Parent")]
-    [SerializeField] private UI_EquipSlotParent equippedSlotsPanel; // ✅ NEW: add your equipped slots group here!
+    [SerializeField] private UI_EquipSlotParent equippedSlotsPanel;
 
     [Header("UI Toggle Root")]
     [SerializeField] private GameObject panelRoot;
+
+    [Header("Dedicated Equipment ToolTip")]
+    [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
 
     private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
     private bool isVisible = false;
@@ -34,6 +37,11 @@ public class UI_EquipmentInventory : MonoBehaviour
             return;
         }
 
+        if (equipmentToolTip == null)
+        {
+            Debug.LogError("[UI_EquipmentInventory] Missing EquipmentToolTip reference!");
+        }
+
         equipmentInventory.OnInventoryChange += UpdateUI;
         playerInventory.OnInventoryChange += UpdateUI;
 
@@ -44,6 +52,11 @@ public class UI_EquipmentInventory : MonoBehaviour
         }
 
         uiSlots.AddRange(slotContainer.GetComponentsInChildren<UI_EquipmentSlot>(true));
+        foreach (var slot in uiSlots)
+        {
+            slot.SetEquipmentToolTip(equipmentToolTip);
+        }
+
         Debug.Log($"[UI_EquipmentInventory] Initialized with {uiSlots.Count} slots.");
 
         if (panelRoot != null) panelRoot.SetActive(isVisible);
@@ -70,7 +83,6 @@ public class UI_EquipmentInventory : MonoBehaviour
     {
         Debug.Log("[UI_EquipmentInventory] UpdateUI()");
 
-        // ✅ Update unequipped slots
         var items = equipmentInventory.itemList;
 
         if (items.Count > uiSlots.Count)
@@ -78,7 +90,11 @@ public class UI_EquipmentInventory : MonoBehaviour
             int toAdd = items.Count - uiSlots.Count;
             Debug.Log($"[UI_EquipmentInventory] Adding {toAdd} new slots dynamically.");
             for (int i = 0; i < toAdd; i++)
-                uiSlots.Add(Instantiate(slotPrefab, slotContainer));
+            {
+                UI_EquipmentSlot newSlot = Instantiate(slotPrefab, slotContainer);
+                newSlot.SetEquipmentToolTip(equipmentToolTip);
+                uiSlots.Add(newSlot);
+            }
         }
 
         for (int i = 0; i < uiSlots.Count; i++)
@@ -89,7 +105,6 @@ public class UI_EquipmentInventory : MonoBehaviour
                 uiSlots[i].Clear();
         }
 
-        // ✅ Update equipped slots too!
         if (equippedSlotsPanel != null)
             equippedSlotsPanel.UpdateEquipmentSlots(playerInventory.equipList);
     }

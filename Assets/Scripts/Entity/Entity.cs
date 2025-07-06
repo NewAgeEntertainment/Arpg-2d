@@ -5,7 +5,7 @@ public class Entity : MonoBehaviour
 {
     public Animator anim { get; private set; }
     public Rigidbody2D rb { get; private set; }
-    public Entity_Stats stats { get; private set; } // Reference to the entity's stats
+    
     protected StateMachine stateMachine;
 
     [HideInInspector] public Vector2 currentDir;
@@ -22,7 +22,6 @@ public class Entity : MonoBehaviour
     {
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
 
         stateMachine = new StateMachine();
     }

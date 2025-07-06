@@ -12,17 +12,15 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     [Header("UI Slot Setup")]
     [SerializeField] private TextMeshProUGUI itemNameText;
-    [SerializeField] private Image itemIcon;
-    [SerializeField] private TextMeshProUGUI itemStackSize;
-    [SerializeField] private Sprite defaultIconSprite; // <-- This is the default UI sprite
-
+    [SerializeField] protected Image itemIcon;
+    [SerializeField] protected TextMeshProUGUI itemStackSize;
+    [SerializeField] protected Sprite defaultIconSprite; // <-- This is the default UI sprite  
 
     protected virtual void Awake()
     {
-        ui = ui = FindFirstObjectByType<UI>();
+        ui = FindFirstObjectByType<UI>();
         rect = GetComponent<RectTransform>();
         inventory = FindAnyObjectByType<Inventory_Player>();
-        
     }
 
     public virtual void OnPointerDown(PointerEventData eventData)
@@ -34,65 +32,52 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         if (alternativeInput)
         {
-            inventory.RemoveOneItem(itemInSlot); // Call the method to remove one item from the slot
+            inventory.RemoveOneItem(itemInSlot); // Call the method to remove one item from the slot  
         }
         else
         {
-
-
             if (itemInSlot.itemData.itemType == ItemType.Consumable)
             {
-                if (itemInSlot.itemEffect.CanBeUsed() == false)
-                {
-                    return;
-                }
-                inventory.TryUseItem(itemInSlot); // Call the method to try to use the item
+                inventory.TryUseItem(itemInSlot); // Call the method to try to use the item  
             }
             else
-                inventory.TryEquipItem(itemInSlot); // Call the method to try to equip the item
+                inventory.TryEquipItem(itemInSlot); // Call the method to try to equip the item  
         }
-            
 
         if (itemInSlot == null)
             ui.itemToolTip.ShowToolTip(false, null);
-        
-        //if (inventory != null && item != null)
-        //{
-            
-        //    inventory.TryUseItem(item, player);
-        //}
-
-
     }
 
-    public virtual void UpdateSlot(Inventory_Item item)
+    public virtual void UpdateSlot(Inventory_Item item) // Removed 'override' keyword  
     {
         itemInSlot = item;
 
         if (itemInSlot == null || itemInSlot.itemData == null)
         {
             itemIcon.sprite = defaultIconSprite;
+            itemIcon.enabled = defaultIconSprite != null;
             itemNameText.text = "";
             itemStackSize.text = "";
             return;
         }
 
         itemIcon.sprite = itemInSlot.itemData.itemIcon;
+        itemIcon.enabled = true; // ✅ force icon visible  
+
         itemNameText.text = itemInSlot.itemData.itemName;
         itemStackSize.text = itemInSlot.stackSize > 1 ? "x" + itemInSlot.stackSize : "";
     }
 
-
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        if(itemInSlot == null) return;
-
-        ui.itemToolTip.ShowToolTip(true, itemInSlot);
+        if (ui != null && ui.itemToolTip != null && itemInSlot != null)
+            ui.itemToolTip.ShowToolTip(true, itemInSlot);
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)
     {
-        ui.itemToolTip.ShowToolTip(false, null);
+        if (ui != null && ui.itemToolTip != null)
+            ui.itemToolTip.ShowToolTip(false, null);
     }
 
     public virtual void Clear()
@@ -101,6 +86,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         itemInSlot = null;
         itemStackSize.text = "";
         itemIcon.sprite = defaultIconSprite;
+        itemIcon.enabled = defaultIconSprite != null;
     }
 }
 

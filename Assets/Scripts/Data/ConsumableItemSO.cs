@@ -6,5 +6,8 @@ using UnityEngine;
 
 public class ConsumableItemSO : ItemDataSO
 {
-    
+    private void OnEnable()
+    {
+        itemType = ItemType.Consumable;
+    }
 }

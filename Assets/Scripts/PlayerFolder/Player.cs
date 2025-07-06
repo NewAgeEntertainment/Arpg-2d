@@ -10,7 +10,7 @@ public class Player : Entity
 {
     public static event Action OnPlayerDeath;
 
-    private UI ui;
+    public UI ui { get; private set; } // Reference to the UI manager for player-related UI interactions
 
     private float xInput; // Horizontal input value
     private float yInput; // Vertical input value
@@ -22,6 +22,9 @@ public class Player : Entity
     public Player_Combat combat { get; private set; } // Reference to the player's combat system for handling attacks and abilities
 
     public Vector2 lastMoveDirection = Vector2.down;
+
+    public Inventory_Player inventory { get; private set; }
+    public Player_Stats stats { get; private set; }
 
     public Player_VFX vfx { get; private set; }
 
@@ -69,6 +72,8 @@ public class Player : Entity
         skillManager = GetComponent<Player_SkillManager>();
         statusHandler = GetComponent<Entity_StatusHandler>();
         combat = GetComponent<Player_Combat>();
+        inventory = GetComponent<Inventory_Player>();
+        stats = GetComponent<Player_Stats>();
 
         input = new PlayerInputSet();
 

@@ -81,47 +81,50 @@ public class Inventory_Item
     public string GetItemInfo()
     {
         StringBuilder sb = new StringBuilder();
-        
-        
+
+        // --- If it’s a Material ---
         if (itemData.itemType == ItemType.Material)
         {
-            sb.AppendLine("");
-            sb.AppendLine("used for crafting");
-            sb.AppendLine("");
-            sb.AppendLine("");
+            sb.AppendLine("<color=#AAAAAA><i>Used for crafting.</i></color>");
             return sb.ToString();
         }
 
+        // --- If it’s a Consumable ---
         if (itemData.itemType == ItemType.Consumable && itemEffect != null)
-        { 
-            sb.AppendLine("");
-            sb.AppendLine(itemEffect.effectDescription);
-            sb.AppendLine("");
-            sb.AppendLine("");
-            return sb.ToString();
-            /*return itemEffect.effectDescription*/;
-        }
-
-
-        foreach (var mod in modifiers)
         {
-            string modType = mod.statType.ToString();
-            string modValue = mod.value > 0 ? $"+{mod.value}" : mod.value.ToString();
-            sb.AppendLine($"{modValue} {modType}");
+            sb.AppendLine($"<color=#00FF00>{itemEffect.effectDescription}</color>");
+            return sb.ToString();
         }
 
+        // --- If it’s an Equipment with modifiers ---
+        if (modifiers != null && modifiers.Length > 0)
+        {
+            sb.AppendLine("<b>Stats:</b>");
+            foreach (var mod in modifiers)
+            {
+                string modType = mod.statType.ToString();
+                string modValue = mod.value > 0 ? $"+{mod.value}" : mod.value.ToString();
+                sb.AppendLine($"<color=#FFD700>{modValue}</color> <color=#FFFFFF>{modType}</color>");
+            }
+        }
+
+        // --- Unique effect if present ---
         if (itemEffect != null)
         {
             sb.AppendLine();
-            sb.AppendLine("Unique Effect:");
-            sb.AppendLine(itemEffect.effectDescription);
+            sb.AppendLine("<b>Unique Effect:</b>");
+            sb.AppendLine($"<color=#00FFFF>{itemEffect.effectDescription}</color>");
         }
 
-        sb.AppendLine("");
-        sb.AppendLine("");
+        // --- Fallback ---
+        if (sb.Length == 0)
+        {
+            sb.AppendLine("<color=#888888><i>No special properties.</i></color>");
+        }
 
         return sb.ToString();
     }
+
 
 
 

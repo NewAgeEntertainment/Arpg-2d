@@ -4,7 +4,7 @@ using UnityEngine;
 public class Enemy : Entity
 {
     public EntityState previousState;
-
+    public Entity_Stats stats { get; private set; } // Reference to the entity's stats
     public Enemy_IdleState idleState;
     public Enemy_MoveState moveState;
     public Enemy_AttackState attackState;
@@ -100,6 +100,7 @@ public class Enemy : Entity
     {
         base.Awake();
         //target = patrolPoints[0].position // Initialize the target to the first patrol point
+        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
 
 
     }

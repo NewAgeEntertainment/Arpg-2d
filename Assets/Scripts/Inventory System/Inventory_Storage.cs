@@ -1,5 +1,6 @@
 ﻿using Rewired;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -126,9 +127,16 @@ public class Inventory_Storage : Inventory_Base
         if (stackableItem != null)
             stackableItem.AddStack();
         else
-            materialStash.Add(itemToAdd);
+        {
+
+            var newItemToAdd = new Inventory_Item(itemToAdd.itemData);
+
+            materialStash.Add(newItemToAdd);
+        }
 
         NotifyInventoryChanged();
+        materialStash = materialStash.OrderBy(item => item.itemData.name).ToList();
+
     }
 
     public Inventory_Item StackableInStash(Inventory_Item itemToAdd)

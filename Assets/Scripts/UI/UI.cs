@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class UI : MonoBehaviour
 {
+
+    #region Components
     public UI_SkillToolTip skillToolTip { get; private set; }
     public UI_ItemToolTip itemToolTip { get; private set; }
     public Inventory_Item hoveredItem;
@@ -21,6 +23,8 @@ public class UI : MonoBehaviour
     [SerializeField] private BookOpenManager bookOpenManager; // DRAG this!
     public UI_Craft craftUI { get; private set; }
     public UI_Merchant merchantUI;
+    public UI_InGame inGameUI; // ✅ This is the in-game UI with health, mana, etc.
+    #endregion
 
     [Header("Book / Main Menu")]
     [SerializeField] private GameObject bookUI;
@@ -43,6 +47,12 @@ public class UI : MonoBehaviour
     private Rewired.Player player;
     private Coroutine bookRoutine;
 
+    // ✅ Track panel states
+    private bool isInventoryOpen = false;
+    private bool isSkillTreeOpen = false;
+    private bool isEquipmentOpen = false;
+
+
     private void Awake()
     {
         itemToolTip = GetComponentInChildren<UI_ItemToolTip>();
@@ -50,92 +60,102 @@ public class UI : MonoBehaviour
         statToolTip = GetComponentInChildren<UI_StatToolTip>();
         craftUI = GetComponentInChildren<UI_Craft>(true);
         merchantUI = GetComponentInChildren<UI_Merchant>(true);
+        inGameUI = GetComponentInChildren<UI_InGame>(true);
 
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
 
-        //if (bookAnimator != null) bookAnimator.SetBool("Open", false);
-
-        bookUI.SetActive(false);
+        bookUI?.SetActive(false);
         bookAnimator?.SetBool("Open", false);
-
         mainMenuPanel?.SetActive(false);
     }
 
     private void Start()
     {
         player = ReInput.players.GetPlayer(playerID);
+        skillTreeUI.UnlockDefaultSkills();
     }
 
     private void Update()
     {
-        //if (player.GetButtonDown(toggleSkillTreeAction)) OpenSkillTreeUI();
-        //if (player.GetButtonDown(toggleInventoryAction)) OpenInventoryUI();
-        //if (player.GetButtonDown(toggleEquipmentAction)) OpenEquipmentUI();
-        if (player.GetButtonDown(toggleBookAction))
-            ToggleBookMenu();
-
-        if (player.GetButtonDown(closeAllAction))
-            CloseAllPanelsAndReturnToIdle(); ;
+        if (player.GetButtonDown(toggleSkillTreeAction)) ToggleSkillTree();
+        if (player.GetButtonDown(toggleInventoryAction)) ToggleInventory();
+        if (player.GetButtonDown(toggleEquipmentAction)) ToggleEquipment();
+        if (player.GetButtonDown(toggleBookAction)) ToggleBookMenu();
+        if (player.GetButtonDown(closeAllAction)) CloseAllPanelsAndReturnToIdle();
     }
 
-    public void ToggleBookMenu()
-    {
-        bool isOpen = bookUI.activeSelf;
+    #region Toggle Methods
 
-        // If the book is not shown at all → show it in closed idle state
-        if (!isOpen)
-        {
-            bookUI.SetActive(true);
-            bookAnimator.SetBool("Open", false); // force closed idle
-            mainMenuPanel?.SetActive(true);
-            Debug.Log("[UI] Book opened in idle closed state with menu.");
-        }
+    public void ToggleInventory()
+    {
+        if (isInventoryOpen)
+            CloseInventory();
         else
-        {
-            // Book is already visible.
-            // If any sub-panel is open → return to idle instead.
-            if (IsAnySubPanelOpen())
-            {
-                CloseAllPanelsAndReturnToIdle();
-            }
-            else
-            {
-                // If we’re ALREADY idle (no subpanel open) → fully close the Book UI
-                CloseFully();
-            }
-        }
+            OpenInventory();
     }
 
-    private void CloseFully()
+    public void ToggleSkillTree()
     {
-        Debug.Log("[UI] Closing Book completely.");
-        bookUI.SetActive(false);
-        mainMenuPanel?.SetActive(false);
-        CloseAllPanels();
+        if (isSkillTreeOpen)
+            CloseSkillTree();
+        else
+            OpenSkillTree();
     }
 
-
-    private bool IsAnySubPanelOpen()
+    public void ToggleEquipment()
     {
-        return (inventoryUI != null && inventoryUI.gameObject.activeSelf)
-            || (skillTreeUI != null && skillTreeUI.gameObject.activeSelf)
-            || (equipmentInventoryPanel != null && equipmentInventoryPanel.gameObject.activeSelf);
+        if (isEquipmentOpen)
+            CloseEquipment();
+        else
+            OpenEquipment();
     }
+
+    #endregion
+
+    #region Open / Close
 
     public void OpenInventory()
     {
-        OpenPanelWithBook("Inventory");
+        isInventoryOpen = true;
+        bookOpenManager.OpenBookIfNeeded(() =>
+        {
+            CloseAllPanels();
+            inventoryUI?.gameObject.SetActive(true);
+            inventoryUI?.UpdateUI();
+            Debug.Log("[UI] Inventory OPENED after book is open.");
+        });
+    }
+
+    public void CloseInventory()
+    {
+        isInventoryOpen = false;
+        inventoryUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] Inventory CLOSED.");
     }
 
     public void OpenSkillTree()
     {
-        OpenPanelWithBook("SkillTree");
+        isSkillTreeOpen = true;
+        bookOpenManager.OpenBookIfNeeded(() =>
+        {
+            CloseAllPanels();
+            skillTreeUI?.gameObject.SetActive(true);
+            Debug.Log("[UI] SkillTree OPENED after book is open.");
+        });
     }
 
-    public void OpenEquipmentUI()
+    public void CloseSkillTree()
     {
+        isSkillTreeOpen = false;
+        skillTreeUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] SkillTree CLOSED.");
+    }
+
+    public void OpenEquipment()
+    {
+        isEquipmentOpen = true;
         bookOpenManager.OpenBookIfNeeded(() =>
         {
             CloseAllPanels();
@@ -145,47 +165,57 @@ public class UI : MonoBehaviour
         });
     }
 
-    private void OpenPanelWithBook(string panel)
+    public void CloseEquipment()
     {
-        if (bookRoutine != null)
-            StopCoroutine(bookRoutine);
-
-        // Play open animation
-        bookAnimator.SetBool("Open", true);
-        mainMenuPanel?.SetActive(false);
-
-        CloseAllPanels();
-
-        bookRoutine = StartCoroutine(OpenPanelAfterBookAnim(panel));
+        isEquipmentOpen = false;
+        equipmentInventoryPanel?.gameObject.SetActive(false);
+        Debug.Log("[UI] Equipment UI CLOSED.");
     }
 
-    private IEnumerator OpenPanelAfterBookAnim(string panel)
-    {
-        yield return new WaitForSeconds(bookAnimDuration);
+    #endregion
 
-        switch (panel)
+    #region Book Menu
+
+    public void ToggleBookMenu()
+    {
+        bool isOpen = bookUI.activeSelf;
+
+        if (!isOpen)
         {
-            case "Inventory":
-                inventoryUI?.gameObject.SetActive(true);
-                inventoryUI?.UpdateUI();
-                break;
-            case "SkillTree":
-                skillTreeUI?.gameObject.SetActive(true);
-                break;
-            case "Equipment":
-                equipmentInventoryPanel?.gameObject.SetActive(true);
-                equipmentInventoryPanel?.UpdateUI();
-                break;
+            bookUI.SetActive(true);
+            bookAnimator.SetBool("Open", false);
+            mainMenuPanel?.SetActive(true);
+            Debug.Log("[UI] Book opened idle with menu.");
+        }
+        else
+        {
+            if (IsAnySubPanelOpen())
+                CloseAllPanelsAndReturnToIdle();
+            else
+                CloseFully();
         }
     }
 
-    public void CloseAllPanelsAndReturnToIdle()
+    private void CloseFully()
     {
-        Debug.Log("[UI] Closing panels + playing Close anim.");
+        Debug.Log("[UI] Closing Book completely.");
+        bookUI?.SetActive(false);
+        mainMenuPanel?.SetActive(false);
+        CloseAllPanels();
+        ResetStates();
+    }
 
+    private bool IsAnySubPanelOpen()
+    {
+        return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen;
+    }
+
+    private void CloseAllPanelsAndReturnToIdle()
+    {
+        Debug.Log("[UI] Closing panels + playing close anim.");
         CloseAllPanels();
 
-        bookAnimator.SetBool("Open", false); // play close anim
+        bookAnimator.SetBool("Open", false);
 
         if (bookRoutine != null)
             StopCoroutine(bookRoutine);
@@ -196,8 +226,8 @@ public class UI : MonoBehaviour
     private IEnumerator ReturnToMainIdleAfterClose()
     {
         yield return new WaitForSeconds(bookAnimDuration);
-
         mainMenuPanel?.SetActive(true);
+        ResetStates();
     }
 
     private void CloseAllPanels()
@@ -205,13 +235,26 @@ public class UI : MonoBehaviour
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
+        ResetStates();
     }
+
+    private void ResetStates()
+    {
+        isInventoryOpen = false;
+        isSkillTreeOpen = false;
+        isEquipmentOpen = false;
+    }
+
+    #endregion
+
+    #region Tooltips
 
     public void SwitchOffAllToolTips()
     {
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
     }
+    #endregion  
 
 
 

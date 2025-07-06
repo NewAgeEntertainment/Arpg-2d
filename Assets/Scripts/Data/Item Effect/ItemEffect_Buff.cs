@@ -7,20 +7,18 @@ using UnityEngine;
 
 public class ItemEffect_Buff : ItemEffect_DataSO
 {
-    [SerializeField] private BuffEffectData[] buffToApply;
+    [SerializeField] private BuffEffectData[] buffsToApply;
     [SerializeField] private float duration;
     [SerializeField] private string source = Guid.NewGuid().ToString();
 
-    private Player_Stats playerStats;
+    
 
-    public override bool CanBeUsed()
+    public override bool CanBeUsed(Player player)
     {
 
-        if (playerStats == null)
-            playerStats = FindFirstObjectByType<Player_Stats>();
-
-        if (playerStats.CanApplyBuffOf(source))
+        if (player.stats.CanApplyBuffOf(source))
         {
+            this.player = player;
             return true;
         }
         else
@@ -32,6 +30,7 @@ public class ItemEffect_Buff : ItemEffect_DataSO
 
     public override void ExecuteEffect()
     {
-        playerStats.ApplyBuff(buffToApply, duration, source);
+        player.stats.ApplyBuff(buffsToApply, duration, source);
+        player = null;
     }
 }
