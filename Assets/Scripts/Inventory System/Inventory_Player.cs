@@ -4,74 +4,140 @@ using UnityEngine;
 
 public class Inventory_Player : Inventory_Base
 {
-    public event Action<int> OnQuickSlotUsed;
     public int gold = 10000;
 
-    public Inventory_Equipment equipmentInventory;  // ✅ your equipment bag stays separate
-    public List<Inventory_Equipped> equipList = new List<Inventory_Equipped>();
-    
-    public Inventory_Storage storage { get; private set; }
+    public event Action<int> OnQuickSlotUsed;
 
-    [Header("Quick Item Sots")]
-    public Inventory_Item[] quickItems = new Inventory_Item[2];
+    public Inventory_Equipment equipmentInventory;
+    public Inventory_Storage storage;
+
+    public List<Inventory_Equipped> equipList = new List<Inventory_Equipped>();
+
+    [Serializable]
+    public struct QuickSlot
+    {
+        public Inventory_Item item;
+        public int slotStack;
+    }
+
+    public QuickSlot[] quickSlots = new QuickSlot[4];
 
     protected override void Awake()
     {
         base.Awake();
-        
 
-        if (equipmentInventory == null)
-            equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
-
-        if (equipList.Count == 0)
+        // ✅ Always ensure array is the correct size!
+        if (quickSlots == null || quickSlots.Length != 4)
         {
-            Debug.LogWarning("[Inventory_Player] equipList is EMPTY! Add equipped slots in the Inspector.");
-
-            Debug.Log("[Inventory_Player] equipmentInventory: " + (equipmentInventory != null));
-
-
-            if (storage == null)
-                storage = FindFirstObjectByType<Inventory_Storage>();
-
-            if (storage == null)
-                Debug.LogError("[Inventory_Player] No Inventory_Storage found in scene!");
-        } 
-    }
-
-    public void SetQuickItemInSlot(int slotNumber, Inventory_Item itemToSet)
-    {
-        quickItems[slotNumber - 1] = itemToSet;
-        TriggerUpdateUI();
-    }
-
-    public void TryUseQuickItemInSlot(int passedSlotNumber)
-    {
-        int slotNumber = passedSlotNumber - 1;
-        var itemToUse = quickItems[slotNumber];
-
-        if (itemToUse == null)
-            return;
-
-        TryUseItem(itemToUse);
-
-        // Fix for CS1503: Convert Inventory_Item to ItemDataSO for FindItem method
-        if (FindItem(itemToUse.itemData) == null)
-        {
-            quickItems[slotNumber] = FindSameItem(itemToUse);
+            quickSlots = new QuickSlot[4];
+            Debug.Log("[Inventory_Player] quickSlots auto-sized to 4 in Awake");
         }
 
-        TriggerUpdateUI();
-        OnQuickSlotUsed?.Invoke(slotNumber);
+        equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
+        storage = FindFirstObjectByType<Inventory_Storage>();
+    }
+
+    public void SetQuickItemInSlot(int slotNumber, Inventory_Item itemToSet, int amount)
+    {
+        if (slotNumber < 1 || slotNumber > quickSlots.Length)
+        {
+            Debug.LogWarning($"[Inventory_Player] Invalid quick slot number: {slotNumber}");
+            return;
+        }
+
+        // 🗝️ Count how many exist in backpack
+        int totalOwned = 0;
+        foreach (var item in itemList)
+        {
+            if (item.itemData == itemToSet.itemData)
+                totalOwned += item.stackSize;
+        }
+
+        if (totalOwned <= 0)
+        {
+            Debug.LogWarning($"[Inventory_Player] No {itemToSet.itemData.itemName} found in backpack!");
+            return;
+        }
+
+        // 🗝️ Count how many already assigned across ALL quick slots (except this slot)
+        int alreadyAssignedElsewhere = 0;
+        for (int i = 0; i < quickSlots.Length; i++)
+        {
+            if (i == slotNumber - 1) continue; // skip this slot
+
+            QuickSlot qs = quickSlots[i];
+            if (qs.item != null && qs.item.itemData == itemToSet.itemData)
+                alreadyAssignedElsewhere += qs.slotStack;
+        }
+
+        // 🗝️ Combine with what this slot currently has if same item
+        QuickSlot currentSlot = quickSlots[slotNumber - 1];
+        int newStack = amount;
+
+        if (currentSlot.item != null && currentSlot.item.itemData == itemToSet.itemData)
+        {
+            newStack = currentSlot.slotStack + amount;
+        }
+
+        // 🔒 Clamp: You can’t assign more than you actually own minus other slots
+        int maxPossible = totalOwned - alreadyAssignedElsewhere;
+        newStack = Mathf.Clamp(newStack, 1, maxPossible);
+
+        quickSlots[slotNumber - 1].item = itemToSet;
+        quickSlots[slotNumber - 1].slotStack = newStack;
+
+        Debug.Log($"[Inventory_Player] Assigned {itemToSet.itemData.itemName} → New Quick Slot {slotNumber} Stack: {newStack} (Owned: {totalOwned} | Assigned Elsewhere: {alreadyAssignedElsewhere})");
+
+        NotifyInventoryChanged();
+    }
+
+
+
+
+    public void TryUseQuickItemInSlot(int slotNumber)
+    {
+        int index = slotNumber - 1;
+
+        if (index < 0 || index >= quickSlots.Length)
+        {
+            Debug.LogWarning($"[Inventory_Player] Invalid quick slot index: {index}");
+            return;
+        }
+
+        var quickSlot = quickSlots[index];
+
+        if (quickSlot.item == null || quickSlot.slotStack <= 0)
+        {
+            Debug.Log($"[Inventory_Player] Quick Slot {slotNumber} is empty or out of uses");
+            return;
+        }
+
+        TryUseItem(quickSlot.item);
+
+        quickSlot.slotStack--;
+
+        if (quickSlot.slotStack <= 0)
+        {
+            quickSlot.item = null;
+            quickSlot.slotStack = 0;
+        }
+
+        quickSlots[index] = quickSlot;
+
+        NotifyInventoryChanged();
+        OnQuickSlotUsed?.Invoke(index);
+
+        Debug.Log($"[Inventory_Player] Used Quick Slot {slotNumber}. Remaining: {quickSlot.slotStack}");
     }
 
     public override void AddItem(Inventory_Item itemToAdd)
     {
-        Debug.Log($"[Inventory_Player] Adding {itemToAdd.itemData.itemName} to player inventory.");
+        Debug.Log($"[Inventory_Player] Adding {itemToAdd.itemData.itemName}");
 
         if (itemToAdd.itemData.itemType == ItemType.Material && storage != null)
         {
             storage.AddMaterialToStash(itemToAdd);
-            return; // ✅ we’re done — don’t also add to normal itemList!
+            return;
         }
 
         if (itemToAdd.itemData.itemType == ItemType.Weapon ||
@@ -85,49 +151,8 @@ public class Inventory_Player : Inventory_Base
             }
         }
 
-        // default fallback → normal backpack
         base.AddItem(itemToAdd);
     }
-
-
-    public bool IsEquipped(Inventory_Item item)
-    {
-        return equipList.Exists(slot => slot.equipedItem == item);
-    }
-
-
-    public void TryEquipItem(Inventory_Item item)
-    {
-        var inventoryItem = FindItem(item.itemData);
-        var matchingSlots = equipList.FindAll(slot => slot.slotType == item.itemData.itemType);
-
-        if (matchingSlots == null || matchingSlots.Count == 0)
-        {
-            Debug.LogError($"[Inventory_Player] No equip slots found for type: {item.itemData.itemType}!");
-            return;
-        }
-
-        foreach (var slot in matchingSlots)
-        {
-            if (!slot.HasItem())
-            {
-                EquipItem(inventoryItem, slot);
-                return;
-            }
-        }
-
-        var slotToReplace = matchingSlots[0];
-        if (slotToReplace == null)
-        {
-            Debug.LogError("[Inventory_Player] slotToReplace is null!");
-            return;
-        }
-
-        var itemToUnequip = slotToReplace.equipedItem;
-        UnequipItem(itemToUnequip, true);
-        EquipItem(inventoryItem, slotToReplace);
-    }
-
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
     {
@@ -154,29 +179,17 @@ public class Inventory_Player : Inventory_Base
 
     private void EquipItem(Inventory_Item itemToEquip, Inventory_Equipped slot)
     {
-        float savedHealth = player.health.GetHealthPercent();
-        float savedMana = player.mana.GetManaPercent();
-
         slot.equipedItem = itemToEquip;
         slot.equipedItem.AddModifiers(player.stats);
         slot.equipedItem.AddItemEffect(player);
 
-        // Remove from equipment bag if present
-        if (equipmentInventory.FindItem(itemToEquip.itemData) != null)
-            equipmentInventory.RemoveOneItem(itemToEquip);
-
-        player.health.SetHealthToPercent(savedHealth);
-        player.mana.SetManaToPercent(savedMana);
+        equipmentInventory.RemoveOneItem(itemToEquip);
 
         NotifyInventoryChanged();
     }
 
-
     public void UnequipItem(Inventory_Item itemToUnequip, bool replacing = false)
     {
-        float savedHealth = player.health.GetHealthPercent();
-        float savedMana = player.mana.GetManaPercent();
-
         var slot = equipList.Find(slot => slot.equipedItem == itemToUnequip);
         if (slot != null)
             slot.equipedItem = null;
@@ -184,10 +197,6 @@ public class Inventory_Player : Inventory_Base
         itemToUnequip.RemoveModifiers(player.stats);
         itemToUnequip.RemoveItemEffect();
 
-        player.health.SetHealthToPercent(savedHealth);
-        player.mana.SetManaToPercent(savedMana);
-
-        // Equipment goes back to equipment inventory!
         equipmentInventory.AddItem(itemToUnequip);
 
         NotifyInventoryChanged();

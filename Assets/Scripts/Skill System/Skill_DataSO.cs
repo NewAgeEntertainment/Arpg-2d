@@ -15,7 +15,6 @@ public class Skill_DataSO : ScriptableObject
     public bool unlockedByDefault;
     public SkillType skillType;
     public UpgradeData upgradeData;
-
 }
 
 [Serializable]

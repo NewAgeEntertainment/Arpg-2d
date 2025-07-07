@@ -1,10 +1,9 @@
 using UnityEngine;
 
-public class Skill_Base : MonoBehaviour 
+public class Skill_Base : MonoBehaviour
 {
     public Player_SkillManager skillManager { get; private set; }
     public Player player { get; private set; }
-
     public Entity_Mana mana { get; private set; }
 
     public DamageScaleData damageScaleData { get; private set; }
@@ -13,8 +12,8 @@ public class Skill_Base : MonoBehaviour
     [SerializeField] protected SkillType skillType;
     [SerializeField] protected SkillUpgradeType upgradeType;
     [SerializeField] protected float cooldown;
-    [SerializeField] protected float manaCost; // Placeholder for mana cost, can be set in individual skills if needed
-    // [SerializeField] protected float manaCost; // Placeholder for mana cost, can be set in individual skills if needed
+    [SerializeField] protected float manaCost;
+
     private float lastTimeUsed;
 
     protected virtual void Awake()
@@ -22,18 +21,22 @@ public class Skill_Base : MonoBehaviour
         mana = GetComponentInParent<Entity_Mana>();
         skillManager = GetComponentInParent<Player_SkillManager>();
         player = GetComponentInParent<Player>();
-        // Initialize lastTimeUsed to a negative value to allow immediate use of the skill
-        lastTimeUsed = lastTimeUsed - cooldown;
+
+        lastTimeUsed = -cooldown; // allow immediate use
     }
 
-    public virtual void TryUseSkill() // this is the method that will be called to use the skill
+    public virtual void TryUseSkill()
     {
-
+        // Custom skill logic goes here
     }
 
-    // this connects the skill Manager
     public virtual void SetSkillUpgrade(Skill_DataSO skillData)
     {
+        if (skillData.skillType != skillType)
+        {
+            Debug.LogWarning($"Mismatched SkillType! This Skill_Base is [{skillType}] but the SO is [{skillData.skillType}]");
+        }
+
         UpgradeData upgrade = skillData.upgradeData;
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
@@ -47,7 +50,7 @@ public class Skill_Base : MonoBehaviour
     public bool CanUseSkill()
     {
         if (upgradeType == SkillUpgradeType.None)
-            return false; // if skill is not Unlocked, it cannot be used  
+            return false;
 
         if (OnCooldown())
         {
@@ -55,7 +58,6 @@ public class Skill_Base : MonoBehaviour
             return false;
         }
 
-        //Corrected mana check
         if (mana == null || !mana.UseMana(manaCost))
         {
             Debug.Log("Not enough mana to use the skill.");
@@ -68,19 +70,21 @@ public class Skill_Base : MonoBehaviour
 
     public bool Unlocked(SkillUpgradeType upgradeToCheck) => upgradeType == upgradeToCheck;
 
-
     protected bool OnCooldown() => Time.time < lastTimeUsed + cooldown;
-    public void SetSkillOnCooldown() 
-    { 
+
+    public void SetSkillOnCooldown()
+    {
         player.ui.inGameUI.GetSkillSlot(skillType).StartCooldown(cooldown);
         lastTimeUsed = Time.time;
-    } 
-    public void ResetCoolDownBy(float cooldownReduction) => lastTimeUsed = lastTimeUsed + cooldownReduction;
+    }
+
+    public void ResetCoolDownBy(float cooldownReduction) => lastTimeUsed += cooldownReduction;
+
     public void ResetCoolDown() => lastTimeUsed = Time.time;
-    
+
     public void ResetCooldown()
     {
         player.ui.inGameUI.GetSkillSlot(skillType).ResetCooldown();
-        lastTimeUsed = Time.time - cooldown; // Reset the cooldown to allow immediate use
+        lastTimeUsed = Time.time - cooldown;
     }
 }

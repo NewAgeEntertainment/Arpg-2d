@@ -1,14 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Inventory_Merchant : Inventory_Base
 {
-    private Inventory_Player inventory;
+    private Inventory_Player playerInventory;
 
     [SerializeField] private ItemListDataSO shopData;
     [SerializeField] private int minItemsAmount = 4;
-    
 
     protected override void Awake()
     {
@@ -16,34 +13,41 @@ public class Inventory_Merchant : Inventory_Base
         FillShopList();
     }
 
+    public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
+
     public void TryBuyItem(Inventory_Item itemToBuy, bool buyFullStack)
     {
+        if (playerInventory == null)
+        {
+            Debug.LogError("[Merchant] No player inventory linked!");
+            return;
+        }
+
         int amountToBuy = buyFullStack ? itemToBuy.stackSize : 1;
 
         for (int i = 0; i < amountToBuy; i++)
         {
-            if (inventory.gold < itemToBuy.buyPrice)
+            if (playerInventory.gold < itemToBuy.buyPrice)
             {
                 Debug.Log("Not enough money!");
                 return;
-
             }
 
             if (itemToBuy.itemData.itemType == ItemType.Material)
             {
-                inventory.storage.AddMaterialToStash(itemToBuy);
+                playerInventory.storage.AddMaterialToStash(itemToBuy);
             }
             else
             {
-                if (inventory.CanAddItem(itemToBuy))
+                if (playerInventory.CanAddItem(itemToBuy))
                 {
                     var itemToAdd = new Inventory_Item(itemToBuy.itemData);
-                    inventory.AddItem(itemToAdd);
+                    playerInventory.AddItem(itemToAdd);
                 }
             }
 
-            inventory.gold = inventory.gold - itemToBuy.buyPrice;
-            RemoveOneItem(itemToBuy); // Remove the item from the merchant's inventory
+            playerInventory.gold -= itemToBuy.buyPrice;
+            RemoveOneItem(itemToBuy);
         }
 
         NotifyInventoryChanged();
@@ -56,84 +60,58 @@ public class Inventory_Merchant : Inventory_Base
         for (int i = 0; i < amountToSell; i++)
         {
             int sellPrice = Mathf.FloorToInt(itemToSell.sellPrice);
-            inventory.gold += sellPrice;
+            playerInventory.gold += sellPrice;
 
-            // 👇 If the item is equipped, unequip it first!
-            if (PlayerHasEquipped(itemToSell))
+            if (playerInventory.equipList.Exists(e => e.equipedItem == itemToSell))
             {
                 Debug.Log($"[Merchant] Unequipping {itemToSell.itemData.itemName} before selling");
-                PlayerUnequip(itemToSell);
+                playerInventory.UnequipItem(itemToSell, true);
             }
 
-            // Remove from backpack OR equipment inventory
-            if (inventory.FindItem(itemToSell.itemData) != null)
+            if (playerInventory.FindItem(itemToSell.itemData) != null)
             {
-                inventory.RemoveOneItem(itemToSell);
+                playerInventory.RemoveOneItem(itemToSell);
             }
-            else if (inventory.equipmentInventory.FindItem(itemToSell.itemData) != null)
+            else if (playerInventory.equipmentInventory.FindItem(itemToSell.itemData) != null)
             {
-                inventory.equipmentInventory.RemoveOneItem(itemToSell);
+                playerInventory.equipmentInventory.RemoveOneItem(itemToSell);
             }
             else
             {
                 Debug.LogWarning($"[Merchant] Tried to sell {itemToSell.itemData.itemName} but couldn't find it!");
             }
 
-            // Add to merchant
             AddItem(new Inventory_Item(itemToSell.itemData));
         }
 
         NotifyInventoryChanged();
-        inventory.NotifyInventoryChanged();
+        playerInventory.TriggerUpdateUI();
     }
-
 
     public void FillShopList()
     {
         itemList.Clear();
-        List<Inventory_Item> possibleItems = new List<Inventory_Item>();
+        var possibleItems = new System.Collections.Generic.List<Inventory_Item>();
 
         foreach (var itemData in shopData.itemList)
         {
-            int randmoziedStack = Random.Range(itemData.minStackSizeAtShop, itemData.maxStackSizeAtShop + 1);
-            int finalStack = Mathf.Clamp(randmoziedStack, 1, itemData.maxStackSize);
+            int stackSize = Random.Range(itemData.minStackSizeAtShop, itemData.maxStackSizeAtShop + 1);
+            stackSize = Mathf.Clamp(stackSize, 1, itemData.maxStackSize);
 
-            Inventory_Item itemToAdd = new Inventory_Item(itemData);
-            itemToAdd.stackSize = finalStack; // Set the randomized stack size
-
-            possibleItems.Add(itemToAdd);
+            var item = new Inventory_Item(itemData) { stackSize = stackSize };
+            possibleItems.Add(item);
         }
 
-        int randomItemAmount = Random.Range(minItemsAmount, maxInventorySize + 1);
-        int finalAmount = Mathf.Clamp(randomItemAmount, 1, possibleItems.Count);
-   
+        int randomAmount = Random.Range(minItemsAmount, maxInventorySize + 1);
+        int finalAmount = Mathf.Clamp(randomAmount, 1, possibleItems.Count);
+
         for (int i = 0; i < finalAmount; i++)
         {
-            var randomIndex = Random.Range(0, possibleItems.Count);
-            var item = possibleItems[randomIndex];
-
-            if (CanAddItem(item)) 
-            {
-                possibleItems.Remove(item);
-                AddItem(item);
-            }
+            int index = Random.Range(0, possibleItems.Count);
+            AddItem(possibleItems[index]);
+            possibleItems.RemoveAt(index);
         }
 
         NotifyInventoryChanged();
-        //TriggerUpdateUI();
     }
-
-    public void SetInventory(Inventory_Player inventory) => this.inventory = inventory;
-
-    public bool PlayerHasEquipped(Inventory_Item item)
-    {
-        return inventory.equipList.Exists(e => e.equipedItem == item);
-    }
-
-    public void PlayerUnequip(Inventory_Item item)
-    {
-        inventory.UnequipItem(item, true);
-    }
-
-
 }

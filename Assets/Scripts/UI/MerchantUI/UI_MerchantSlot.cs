@@ -6,6 +6,10 @@ public class UI_MerchantSlot : UI_ItemSlot
     private Inventory_Merchant merchant;
     private Inventory_Player inventory;
 
+    [Header("Optional Equip Confirm UI")]
+    [SerializeField] private GameObject equipConfirmPopup; // Drag your popup here!
+    private Inventory_Item pendingItemToEquip;
+
     public enum MerchantSlotType { MerchantSlot, PlayerSlot }
     public MerchantSlotType slotType;
 
@@ -31,15 +35,13 @@ public class UI_MerchantSlot : UI_ItemSlot
             }
             else if (leftClick)
             {
-                if (itemInSlot.itemData.itemType == ItemType.Weapon ||
-                    itemInSlot.itemData.itemType == ItemType.Armor ||
-                    itemInSlot.itemData.itemType == ItemType.trinket)
+                if (itemInSlot.itemData.itemType == ItemType.Consumable)
                 {
-                    inventory.TryEquipItem(itemInSlot);
+                    inventory.TryUseItem(itemInSlot);
                 }
                 else
                 {
-                    inventory.TryUseItem(itemInSlot);
+                    Debug.Log($"[{itemInSlot.itemData.itemType}] cannot be used here. Equip in equipment panel.");
                 }
             }
         }
@@ -49,10 +51,40 @@ public class UI_MerchantSlot : UI_ItemSlot
             {
                 bool buyFullStack = Input.GetKey(KeyCode.LeftControl);
                 merchant.TryBuyItem(itemInSlot, buyFullStack);
+
+                if (itemInSlot.itemData.itemType == ItemType.Weapon ||
+                    itemInSlot.itemData.itemType == ItemType.Armor ||
+                    itemInSlot.itemData.itemType == ItemType.trinket)
+                {
+                    // Gear → show confirm popup
+                    pendingItemToEquip = itemInSlot;
+                    if (equipConfirmPopup != null)
+                        equipConfirmPopup.SetActive(true);
+                }
             }
         }
 
         ui.itemToolTip.ShowToolTip(false, null);
+    }
+
+    public void ConfirmEquipYes()
+    {
+        if (pendingItemToEquip != null)
+        {
+            inventory.TryEquipFromEquipmentInventory(pendingItemToEquip);
+            pendingItemToEquip = null;
+        }
+
+        if (equipConfirmPopup != null)
+            equipConfirmPopup.SetActive(false);
+    }
+
+    public void ConfirmEquipNo()
+    {
+        pendingItemToEquip = null;
+
+        if (equipConfirmPopup != null)
+            equipConfirmPopup.SetActive(false);
     }
 
     public override void OnPointerEnter(PointerEventData eventData)

@@ -14,6 +14,7 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for health calculations
     private Entity_DropManager dropManager; // Reference to the Entity_DropManager component for item drops
 
+    private bool miniHealthBarActive;
     [SerializeField] protected float currentHealth; // Current health points, initialized to maximum health
     [SerializeField] protected bool isDead;
 
@@ -145,11 +146,14 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
     private void UpdateHealthBar()
     {
-        if (healthBar == null) 
+        if (healthBar == null && healthBar.transform.parent.gameObject.activeSelf == false) 
             return; // If the health bar is not assigned, do nothing
         
         healthBar.value = currentHealth / entityStats.GetMaxHealth(); // Update the health bar UI based on the current health points
     }
+
+    public void EnableHealthBar(bool enable) => healthBar?.transform.parent.gameObject.SetActive(enable); // Method to enable or disable the health bar UI
+
 
     private void TakeKnockback(Transform damageDealer, float finalDamage)
     {

@@ -13,6 +13,7 @@ public class Entity_Mana : MonoBehaviour
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for mana calculations  
     private Skill_Base skill; // Reference to the Skill component for skill-related functionality
 
+    private bool miniManaBarActive;
     [SerializeField] protected float currentMana; // Current mana points, initialized to maximum mana  
     [SerializeField] protected bool isDead; // Flag to indicate if the entity is dead and cannot use mana  
 
@@ -110,10 +111,12 @@ public class Entity_Mana : MonoBehaviour
 
     private void UpdateManaBar()
     {
-        if (manaBar == null)
+        if (manaBar == null && manaBar.transform.parent.gameObject.activeSelf == false)
             return; // If the mana bar is not assigned, do nothing  
 
         manaBar.value = currentMana / entityStats.GetMaxMana(); // Update the mana bar UI based on the current mana points  
     }
+
+    public void EnableManaBar(bool enable) => manaBar?.transform.parent.gameObject.SetActive(enable); // Method to enable or disable the health bar UI
 
 }
