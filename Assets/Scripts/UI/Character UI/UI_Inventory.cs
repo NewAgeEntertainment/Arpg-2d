@@ -5,10 +5,10 @@ using System.Collections.Generic;
 public class UI_Inventory : MonoBehaviour
 {
     [SerializeField] private Inventory_Player inventory;
-
     [SerializeField] private UI_ItemSlotParent backpackSlotsParent;
-
     [SerializeField] private TMP_InputField searchField;
+    [SerializeField] private TextMeshProUGUI goldText;
+
 
     private ItemType? currentFilter = null;
     private bool isOpen = false;
@@ -94,6 +94,8 @@ public class UI_Inventory : MonoBehaviour
     public void UpdateUI()
     {
         if (!isOpen) return;
+
+        goldText.text = inventory.gold.ToString("N0") + "g.";
 
         List<Inventory_Item> combined = new List<Inventory_Item>();
 

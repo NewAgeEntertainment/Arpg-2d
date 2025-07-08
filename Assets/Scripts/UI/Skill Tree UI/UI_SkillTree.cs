@@ -1,8 +1,12 @@
+using TMPro;
 using UnityEngine;
 
 public class UI_SkillTree : MonoBehaviour
 {
     [SerializeField] private int skillPoints;
+    [SerializeField] private int sexSkillPoints;
+    [SerializeField] private TextMeshProUGUI skillPointsText;
+    [SerializeField] private TextMeshProUGUI sexSkillPointsText;
     [SerializeField] private UI_TreeConnectHandler[] parentNodes;
     private UI_TreeNode[] allTreeNodes;
     public Player_SkillManager skillManager { get; private set; }
@@ -11,6 +15,18 @@ public class UI_SkillTree : MonoBehaviour
     private void Start()
     {
         UpdateAllConnections();
+        UpdateSkillPointsUI();
+        UpdateSexSkillPointsUI();
+    }
+
+    private void UpdateSkillPointsUI()
+    {
+        skillPointsText.text = skillPoints.ToString();
+        
+    }
+    private void UpdateSexSkillPointsUI()
+    {
+        sexSkillPointsText.text = sexSkillPoints.ToString();
     }
 
     public void UnlockDefaultSkills()
@@ -34,9 +50,29 @@ public class UI_SkillTree : MonoBehaviour
     }
 
     public bool EnoughSkillPoints(int cost) => skillPoints >= cost;
-    public void RemoveSkillPoints(int cost) => skillPoints = skillPoints - cost;
-    public void AddSkillPoints(int points) => skillPoints = skillPoints + points;
+    public void RemoveSkillPoints(int cost)
+    {
+        skillPoints = skillPoints - cost;
+        UpdateSkillPointsUI();
+    }
 
+    public void AddSkillPoints(int points) 
+    { 
+        skillPoints = skillPoints + points;
+        UpdateSkillPointsUI();
+    }
+    public bool EnoughSexSkillPoints(int cost) => sexSkillPoints >= cost;
+
+    public void RemoveSexSkillPoints(int cost)
+    {
+        sexSkillPoints = sexSkillPoints - cost;
+        UpdateSexSkillPointsUI();
+    }
+    public void AddSexSkillPoints(int points) 
+    { 
+        sexSkillPoints = sexSkillPoints + points;
+        UpdateSexSkillPointsUI();
+    }
 
 
     [ContextMenu("Update All Connections")]

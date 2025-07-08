@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,7 +11,6 @@ public class Object_Merchant : Object_NPC, IInteractable
     {
         base.Awake();
         merchant = GetComponent<Inventory_Merchant>();
-        
     }
 
     protected override void Update()
@@ -24,8 +23,11 @@ public class Object_Merchant : Object_NPC, IInteractable
 
     public void Interact()
     {
-        ui.merchantUI.SetUpMerchantUI(merchant, inventory);
-        ui.merchantUI.gameObject.SetActive(true);
+        // ✅ Setup slots
+        ui.MerchantUI.SetUpMerchantUI(merchant, inventory);
+
+        // ✅ Always open using your UI manager → handles isMerchantOpen + input!
+        ui.OpenMerchant();
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
@@ -39,8 +41,8 @@ public class Object_Merchant : Object_NPC, IInteractable
     {
         base.OnTriggerExit2D(collision);
         ui.SwitchOffAllToolTips();
-        ui.merchantUI.gameObject.SetActive(false);
+
+        // ✅ Use the UI manager to close properly
+        ui.CloseMerchant();
     }
-
-
 }

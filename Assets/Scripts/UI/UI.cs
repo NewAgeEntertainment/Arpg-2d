@@ -1,5 +1,6 @@
 ﻿using Rewired;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class UI : MonoBehaviour
@@ -10,6 +11,8 @@ public class UI : MonoBehaviour
     public Inventory_Item hoveredItem;
     public UI_StatToolTip statToolTip { get; private set; }
 
+    [SerializeField] private TextMeshProUGUI goldText;
+
     [Header("Main UI Panels")]
     [SerializeField] private UI_Inventory inventoryUI;
     [SerializeField] private UI_SkillTree skillTreeUI;
@@ -18,11 +21,16 @@ public class UI : MonoBehaviour
     [SerializeField] private UI_Storage storageUI;
     public UI_Storage StorageUI => storageUI;
 
+    [SerializeField] private UI_Merchant merchantUI;
+    public UI_Merchant MerchantUI => merchantUI;
+
+    [SerializeField] private UI_Craft craftUI;
+    public UI_Craft CraftUI => craftUI;
+
     [SerializeField] private UI_EquipmentInventory equipmentInventoryPanel;
     [SerializeField] private BookOpenManager bookOpenManager;
-    public UI_Craft craftUI { get; private set; }
-    public UI_Merchant merchantUI;
     public UI_InGame inGameUI;
+    public UI_Options optionsUI { get; private set; }
 
     [Header("Book / Main Menu")]
     [SerializeField] private GameObject bookUI;
@@ -38,7 +46,10 @@ public class UI : MonoBehaviour
     [SerializeField] private string toggleInventoryAction = "OpenInventory";
     [SerializeField] private string toggleEquipmentAction = "OpenEquipmentInventory";
     [SerializeField] private string toggleBookAction = "OpenMainMenu";
+    [SerializeField] private string toggleOptionsAction = "OpenOptions";
     [SerializeField] private string closeAllAction = "CloseMainMenu";
+
+    #endregion
 
     private Rewired.Player player;
     private Coroutine bookRoutine;
@@ -46,7 +57,10 @@ public class UI : MonoBehaviour
     private bool isInventoryOpen = false;
     private bool isSkillTreeOpen = false;
     private bool isEquipmentOpen = false;
-    #endregion
+    private bool isOptionsOpen = false;
+    private bool isStorageOpen = false;
+    private bool isMerchantOpen = false;
+    private bool isCraftOpen = false;
 
     private void Awake()
     {
@@ -55,11 +69,17 @@ public class UI : MonoBehaviour
         statToolTip = GetComponentInChildren<UI_StatToolTip>();
         craftUI = GetComponentInChildren<UI_Craft>(true);
         merchantUI = GetComponentInChildren<UI_Merchant>(true);
+        storageUI = GetComponentInChildren<UI_Storage>(true);
         inGameUI = GetComponentInChildren<UI_InGame>(true);
+        optionsUI = GetComponentInChildren<UI_Options>(true);
 
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
+        optionsUI?.gameObject.SetActive(false);
+        storageUI?.gameObject.SetActive(false);
+        merchantUI?.gameObject.SetActive(false);
+        craftUI?.gameObject.SetActive(false);
 
         bookUI?.SetActive(false);
         bookAnimator?.SetBool("Open", false);
@@ -77,38 +97,21 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(toggleSkillTreeAction)) ToggleSkillTree();
         if (player.GetButtonDown(toggleInventoryAction)) ToggleInventory();
         if (player.GetButtonDown(toggleEquipmentAction)) ToggleEquipment();
+        if (player.GetButtonDown(toggleOptionsAction)) ToggleOptions();
         if (player.GetButtonDown(toggleBookAction)) ToggleBookMenu();
         if (player.GetButtonDown(closeAllAction)) CloseAllPanelsAndReturnToIdle();
     }
 
-    #region Toggle Methods  
+    #region Toggle Methods
 
-    public void ToggleInventory()
-    {
-        if (isInventoryOpen)
-            CloseInventory();
-        else
-            OpenInventory();
-    }
+    public void ToggleInventory() { if (isInventoryOpen) CloseInventory(); else OpenInventory(); }
+    public void ToggleSkillTree() { if (isSkillTreeOpen) CloseSkillTree(); else OpenSkillTree(); }
+    public void ToggleEquipment() { if (isEquipmentOpen) CloseEquipment(); else OpenEquipment(); }
+    public void ToggleOptions() { if (isOptionsOpen) CloseOptions(); else OpenOptions(); }
 
-    public void ToggleSkillTree()
-    {
-        if (isSkillTreeOpen)
-            CloseSkillTree();
-        else
-            OpenSkillTree();
-    }
-
-    public void ToggleEquipment()
-    {
-        if (isEquipmentOpen)
-            CloseEquipment();
-        else
-            OpenEquipment();
-    }
     #endregion
 
-    #region Open / Close  
+    #region Open/Close Standard Panels
 
     public void OpenInventory()
     {
@@ -171,9 +174,79 @@ public class UI : MonoBehaviour
         Debug.Log("[UI] Equipment CLOSED.");
         CheckStopPlayerControls();
     }
+
+    public void OpenOptions()
+    {
+        isOptionsOpen = true;
+        CloseAllPanels();
+        StopPlayerControls(true);
+        optionsUI?.gameObject.SetActive(true);
+        Debug.Log("[UI] Options OPENED.");
+    }
+
+    public void CloseOptions()
+    {
+        isOptionsOpen = false;
+        optionsUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] Options CLOSED.");
+        CheckStopPlayerControls();
+    }
+
     #endregion
 
-    #region Book Menu  
+    #region Open/Close Storage / Merchant / Craft
+
+    public void OpenStorage()
+    {
+        isStorageOpen = true;
+        CloseAllPanels();
+        storageUI?.gameObject.SetActive(true);
+        storageUI?.UpdateUI();
+        Debug.Log("[UI] Storage OPENED.");
+    }
+
+    public void CloseStorage()
+    {
+        isStorageOpen = false;
+        storageUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] Storage CLOSED.");
+    }
+
+    public void OpenMerchant()
+    {
+        isMerchantOpen = true;
+        StopPlayerControls(true);
+        CloseAllPanels();
+        merchantUI?.gameObject.SetActive(true);
+        Debug.Log("[UI] Merchant OPENED.");
+    }
+
+    public void CloseMerchant()
+    {
+        isMerchantOpen = false;
+        merchantUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] Merchant CLOSED.");
+        CheckStopPlayerControls();
+    }
+
+    public void OpenCraft()
+    {
+        isCraftOpen = true;
+        CloseAllPanels();
+        craftUI?.gameObject.SetActive(true);
+        Debug.Log("[UI] Crafting OPENED.");
+    }
+
+    public void CloseCraft()
+    {
+        isCraftOpen = false;
+        craftUI?.gameObject.SetActive(false);
+        Debug.Log("[UI] Crafting CLOSED.");
+    }
+
+    #endregion
+
+    #region Book
 
     public void ToggleBookMenu()
     {
@@ -208,7 +281,7 @@ public class UI : MonoBehaviour
 
     private bool IsAnySubPanelOpen()
     {
-        return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen;
+        return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen || isOptionsOpen || isStorageOpen || isMerchantOpen || isCraftOpen;
     }
 
     private void CloseAllPanelsAndReturnToIdle()
@@ -237,6 +310,10 @@ public class UI : MonoBehaviour
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
+        optionsUI?.gameObject.SetActive(false);
+        storageUI?.gameObject.SetActive(false);
+        merchantUI?.gameObject.SetActive(false);
+        craftUI?.gameObject.SetActive(false);
         ResetStates();
     }
 
@@ -245,15 +322,20 @@ public class UI : MonoBehaviour
         isInventoryOpen = false;
         isSkillTreeOpen = false;
         isEquipmentOpen = false;
+        isOptionsOpen = false;
+        isStorageOpen = false;
+        isMerchantOpen = false;
+        isCraftOpen = false;
     }
+
     #endregion
 
-    #region Player Control Logic  
+    #region Input Control
 
-    private void StopPlayerControls(bool stopControls)
+    public void StopPlayerControls(bool stopGameplay)
     {
-        player.controllers.maps.SetAllMapsEnabled(!stopControls);
-        Debug.Log("[UI] Player controls: " + (stopControls ? "DISABLED" : "ENABLED"));
+        player.controllers.maps.SetMapsEnabled(!stopGameplay, "Default");
+        Debug.Log("[UI] Player GAMEPLAY maps: " + (stopGameplay ? "DISABLED" : "ENABLED"));
     }
 
     private void CheckStopPlayerControls()
@@ -263,6 +345,7 @@ public class UI : MonoBehaviour
             StopPlayerControls(false);
         }
     }
+
     #endregion
 
     public void SwitchOffAllToolTips()
@@ -271,4 +354,3 @@ public class UI : MonoBehaviour
         statToolTip?.ShowToolTip(false, null);
     }
 }
-

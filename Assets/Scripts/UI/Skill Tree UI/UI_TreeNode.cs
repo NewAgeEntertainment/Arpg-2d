@@ -28,7 +28,8 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void Start()
     {
-        UpdateIconColor(GetColorByHex(lockedColorHex));
+        if (isUnlocked == false)
+            UpdateIconColor(GetColorByHex(lockedColorHex));
 
         UnlockDefaultSkills();
 
@@ -61,7 +62,11 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         isLocked = false;
         UpdateIconColor(GetColorByHex(lockedColorHex));
 
-        skillTree.AddSkillPoints(skillData.cost);
+        if (skillData.category == SkillCategory.Combat)
+            skillTree.AddSkillPoints(skillData.cost);
+        else
+            skillTree.AddSexSkillPoints(skillData.cost);
+
         connectHandler.UnlockConnectionImage(false);
 
         // skill manager and reset skill
@@ -78,7 +83,11 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         UpdateIconColor(Color.white);
         LockConflictNodes();
 
-        skillTree.RemoveSkillPoints(skillData.cost);
+        if (skillData.category == SkillCategory.Combat)
+            skillTree.RemoveSkillPoints(skillData.cost);
+        else
+            skillTree.RemoveSexSkillPoints(skillData.cost);
+
         connectHandler.UnlockConnectionImage(true);
 
         var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
@@ -111,8 +120,13 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (isLocked || isUnlocked)
             return false;
 
-        if (skillTree.EnoughSkillPoints(skillData.cost) == false)
+        bool enoughPoints = skillData.category == SkillCategory.Combat
+        ? skillTree.EnoughSkillPoints(skillData.cost)
+        : skillTree.EnoughSexSkillPoints(skillData.cost);
+
+        if (!enoughPoints)
             return false;
+
 
         foreach (var node in neededNodes)
         {
@@ -177,6 +191,7 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void OnPointerExit(PointerEventData eventData)
     {
         ui.skillToolTip.ShowToolTip(false, rect);
+        ui.skillToolTip.StopLockedSkillEffect();
 
         if (isUnlocked || isLocked)
             return;

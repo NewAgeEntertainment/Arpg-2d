@@ -1,5 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
+
+public enum SkillCategory
+{
+    Combat,
+    Sex
+}
 
 [CreateAssetMenu(menuName = "RPG Setup/Skill Data", fileName = "Skill data - ")]
 public class Skill_DataSO : ScriptableObject
@@ -14,6 +20,9 @@ public class Skill_DataSO : ScriptableObject
     public int cost;
     public bool unlockedByDefault;
     public SkillType skillType;
+
+    public SkillCategory category; // ✅ Add this
+
     public UpgradeData upgradeData;
 }
 
