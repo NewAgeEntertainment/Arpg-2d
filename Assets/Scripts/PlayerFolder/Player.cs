@@ -93,6 +93,10 @@ public class Player : Entity
         stateMachine.Initialize(idleState);
         rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
 
+
+        // ✅ Subscribe to health updates
+        health.OnHealthUpdate += UpdateMainUIHealth;
+        UpdateMainUIHealth();
     }
 
     protected override void Update()
@@ -103,6 +107,14 @@ public class Player : Entity
         {
 
             TryInteract();
+        }
+    }
+
+    private void UpdateMainUIHealth()
+    {
+        if (ui != null && ui.playerHealthBar != null)
+        {
+            ui.playerHealthBar.UpdateHealth(health.GetCurrentHealth(), stats.GetMaxHealth());
         }
     }
 

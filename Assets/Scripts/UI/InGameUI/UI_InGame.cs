@@ -29,6 +29,9 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private string quickSlot3Action = "QuickSlot3";
     [SerializeField] private string quickSlot4Action = "QuickSlot4";
 
+    [Header("Character Selector Popup")]
+    [SerializeField] private UI_CharacterProfilePopup profilePopup;
+
     [Header("Skill Slots")]
     [SerializeField] private List<UI_SkillSlot> skillSlots = new();
 
@@ -140,6 +143,10 @@ public class UI_InGame : MonoBehaviour
         quickSlotAssignPopup.SetActive(false);
     }
 
+    public void OpenCharacterProfilePopup(Inventory_Item item)
+    {
+        profilePopup.Open(item, player);
+    }
     private int GetAmountInput()
     {
         if (amountInputField == null) return 0;

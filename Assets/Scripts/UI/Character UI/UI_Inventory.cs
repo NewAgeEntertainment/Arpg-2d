@@ -9,6 +9,9 @@ public class UI_Inventory : MonoBehaviour
     [SerializeField] private TMP_InputField searchField;
     [SerializeField] private TextMeshProUGUI goldText;
 
+    [Header("Panels")]
+    [SerializeField] private GameObject buttonSelectionPanel;
+    [SerializeField] private GameObject itemsPanel;
 
     private ItemType? currentFilter = null;
     private bool isOpen = false;
@@ -37,7 +40,13 @@ public class UI_Inventory : MonoBehaviour
     {
         isOpen = true;
         gameObject.SetActive(true);
+
+        // ✅ Always show selection buttons by default
+        buttonSelectionPanel?.SetActive(true);
+        itemsPanel?.SetActive(false);
+
         UpdateUI();
+        Debug.Log("[UI_Inventory] Inventory OPENED — showing selection panel.");
     }
 
     public void CloseInventory()
@@ -56,38 +65,23 @@ public class UI_Inventory : MonoBehaviour
     {
         switch (filterName)
         {
-            case "All":
-                currentFilter = null;
-                break;
-            case "Items":
-                currentFilter = ItemType.Consumable;
-                break;
-            case "Materials":
-                currentFilter = ItemType.Material;
-                break;
-            case "Weapons":
-                currentFilter = ItemType.Weapon;
-                break;
-            case "Armor":
-                currentFilter = ItemType.Armor;
-                break;
-            case "Trinkets":
-                currentFilter = ItemType.trinket;
-                break;
-            case "KeyItems": // ✅ new
-                currentFilter = ItemType.Key;
-                break;
-            default:
-                currentFilter = null;
-                break;
+            case "All": currentFilter = null; break;
+            case "Items": currentFilter = ItemType.Consumable; break;
+            case "Materials": currentFilter = ItemType.Material; break;
+            case "Weapons": currentFilter = ItemType.Weapon; break;
+            case "Armor": currentFilter = ItemType.Armor; break;
+            case "Trinkets": currentFilter = ItemType.trinket; break;
+            case "KeyItems": currentFilter = ItemType.Key; break;
+            default: currentFilter = null; break;
         }
 
-        if (!isOpen)
-            OpenInventory();
+        // ✅ Hide selection buttons, show items grid
+        buttonSelectionPanel?.SetActive(false);
+        itemsPanel?.SetActive(true);
 
         UpdateUI();
+        Debug.Log($"[UI_Inventory] Filter set: {filterName} → showing Items panel.");
     }
-
 
     public void OnSearchInputChanged() => UpdateUI();
 
@@ -97,13 +91,12 @@ public class UI_Inventory : MonoBehaviour
 
         goldText.text = inventory.gold.ToString("N0") + "g.";
 
-        List<Inventory_Item> combined = new List<Inventory_Item>();
+        List<Inventory_Item> combined = new();
+        combined.AddRange(inventory.itemList);
+        combined.AddRange(inventory.equipmentInventory.itemList);
+        combined.AddRange(inventory.storage.materialStash);
 
-        combined.AddRange(inventory.itemList); // real backpack → consumables
-        combined.AddRange(inventory.equipmentInventory.itemList); // unequipped gear
-        combined.AddRange(inventory.storage.materialStash); // materials live here only
-
-        List<Inventory_Item> filtered = new List<Inventory_Item>();
+        List<Inventory_Item> filtered = new();
 
         foreach (var item in combined)
         {
@@ -126,5 +119,4 @@ public class UI_Inventory : MonoBehaviour
 
         backpackSlotsParent.UpdateSlots(filtered);
     }
-
 }

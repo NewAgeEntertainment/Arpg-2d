@@ -1,17 +1,19 @@
 ﻿using Rewired;
-using System.Collections;
 using TMPro;
 using UnityEngine;
 
 public class UI : MonoBehaviour
 {
-    #region Components  
+    #region Components
     public UI_SkillToolTip skillToolTip { get; private set; }
     public UI_ItemToolTip itemToolTip { get; private set; }
     public Inventory_Item hoveredItem;
     public UI_StatToolTip statToolTip { get; private set; }
 
     [SerializeField] private TextMeshProUGUI goldText;
+
+    [Header("Root container for ALL UI")]
+    [SerializeField] private GameObject uiRoot;
 
     [Header("Main UI Panels")]
     [SerializeField] private UI_Inventory inventoryUI;
@@ -28,16 +30,13 @@ public class UI : MonoBehaviour
     public UI_Craft CraftUI => craftUI;
 
     [SerializeField] private UI_EquipmentInventory equipmentInventoryPanel;
-    [SerializeField] private BookOpenManager bookOpenManager;
     public UI_InGame inGameUI;
     public UI_Options optionsUI { get; private set; }
 
-    [Header("Book / Main Menu")]
-    [SerializeField] private GameObject bookUI;
-    [SerializeField] private Animator bookAnimator;
-    [SerializeField] private float bookAnimDuration = 1.0f;
+    public UI_HealthBar playerHealthBar;
+    public UI_ManaBar playerManaBar;
 
-    [Header("Main Menu Panel inside Book")]
+    [Header("Main Menu Panel")]
     [SerializeField] private GameObject mainMenuPanel;
 
     [Header("Rewired Input")]
@@ -45,14 +44,13 @@ public class UI : MonoBehaviour
     [SerializeField] private string toggleSkillTreeAction = "OpenSkillTree";
     [SerializeField] private string toggleInventoryAction = "OpenInventory";
     [SerializeField] private string toggleEquipmentAction = "OpenEquipmentInventory";
-    [SerializeField] private string toggleBookAction = "OpenMainMenu";
     [SerializeField] private string toggleOptionsAction = "OpenOptions";
+    [SerializeField] private string toggleMainMenuAction = "OpenMainMenu";
     [SerializeField] private string closeAllAction = "CloseMainMenu";
 
     #endregion
 
     private Rewired.Player player;
-    private Coroutine bookRoutine;
 
     private bool isInventoryOpen = false;
     private bool isSkillTreeOpen = false;
@@ -81,9 +79,15 @@ public class UI : MonoBehaviour
         merchantUI?.gameObject.SetActive(false);
         craftUI?.gameObject.SetActive(false);
 
-        bookUI?.SetActive(false);
-        bookAnimator?.SetBool("Open", false);
         mainMenuPanel?.SetActive(false);
+        uiRoot?.SetActive(false);
+
+        if (inGameUI == null)
+            inGameUI = GetComponentInChildren<UI_InGame>(true);
+
+        Debug.Log($"[UI] Found InGameUI: {inGameUI}");
+
+        if (inGameUI == null) Debug.LogError("[UI] inGameUI is NOT assigned!");
     }
 
     private void Start()
@@ -98,8 +102,8 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(toggleInventoryAction)) ToggleInventory();
         if (player.GetButtonDown(toggleEquipmentAction)) ToggleEquipment();
         if (player.GetButtonDown(toggleOptionsAction)) ToggleOptions();
-        if (player.GetButtonDown(toggleBookAction)) ToggleBookMenu();
-        if (player.GetButtonDown(closeAllAction)) CloseAllPanelsAndReturnToIdle();
+        if (player.GetButtonDown(toggleMainMenuAction)) ToggleMainMenu();
+        if (player.GetButtonDown(closeAllAction)) CloseAllPanelsAndReset();
     }
 
     #region Toggle Methods
@@ -109,27 +113,44 @@ public class UI : MonoBehaviour
     public void ToggleEquipment() { if (isEquipmentOpen) CloseEquipment(); else OpenEquipment(); }
     public void ToggleOptions() { if (isOptionsOpen) CloseOptions(); else OpenOptions(); }
 
+    public void ToggleMainMenu()
+    {
+        bool isOpen = mainMenuPanel.activeSelf;
+
+        if (!isOpen)
+        {
+            EnsureUIRootIsActive();
+            mainMenuPanel?.SetActive(true);
+            StopPlayerControls(true);
+            Debug.Log("[UI] Main Menu OPENED.");
+        }
+        else
+        {
+            CloseAllPanelsAndReset();
+            Debug.Log("[UI] Main Menu CLOSED.");
+        }
+    }
+
     #endregion
 
-    #region Open/Close Standard Panels
+    #region Open/Close Panels
 
     public void OpenInventory()
     {
         isInventoryOpen = true;
-        StopPlayerControls(true);
-        bookOpenManager.OpenBookIfNeeded(() =>
-        {
-            CloseAllPanels();
-            inventoryUI?.gameObject.SetActive(true);
-            inventoryUI?.UpdateUI();
-            Debug.Log("[UI] Inventory OPENED.");
-        });
+        EnsureUIRootIsActive();
+
+        CloseAllPanels();  // ✅ First close any other panels
+
+        inventoryUI?.gameObject.SetActive(true);  // ✅ FORCE IT ACTIVE
+        inventoryUI?.OpenInventory();  // ✅ Then open the Inventory (and it stays ON)
+        Debug.Log("[UI] Inventory OPENED.");
     }
 
     public void CloseInventory()
     {
         isInventoryOpen = false;
-        inventoryUI?.gameObject.SetActive(false);
+        inventoryUI?.CloseInventory();
         Debug.Log("[UI] Inventory CLOSED.");
         CheckStopPlayerControls();
     }
@@ -137,13 +158,10 @@ public class UI : MonoBehaviour
     public void OpenSkillTree()
     {
         isSkillTreeOpen = true;
-        StopPlayerControls(true);
-        bookOpenManager.OpenBookIfNeeded(() =>
-        {
-            CloseAllPanels();
-            skillTreeUI?.gameObject.SetActive(true);
-            Debug.Log("[UI] SkillTree OPENED.");
-        });
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+        skillTreeUI?.gameObject.SetActive(true);
+        Debug.Log("[UI] SkillTree OPENED.");
     }
 
     public void CloseSkillTree()
@@ -157,14 +175,11 @@ public class UI : MonoBehaviour
     public void OpenEquipment()
     {
         isEquipmentOpen = true;
-        StopPlayerControls(true);
-        bookOpenManager.OpenBookIfNeeded(() =>
-        {
-            CloseAllPanels();
-            equipmentInventoryPanel?.gameObject.SetActive(true);
-            equipmentInventoryPanel?.UpdateUI();
-            Debug.Log("[UI] Equipment OPENED.");
-        });
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+        equipmentInventoryPanel?.gameObject.SetActive(true);
+        equipmentInventoryPanel?.UpdateUI();
+        Debug.Log("[UI] Equipment OPENED.");
     }
 
     public void CloseEquipment()
@@ -178,8 +193,8 @@ public class UI : MonoBehaviour
     public void OpenOptions()
     {
         isOptionsOpen = true;
+        EnsureUIRootIsActive();
         CloseAllPanels();
-        StopPlayerControls(true);
         optionsUI?.gameObject.SetActive(true);
         Debug.Log("[UI] Options OPENED.");
     }
@@ -192,13 +207,10 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
-    #endregion
-
-    #region Open/Close Storage / Merchant / Craft
-
     public void OpenStorage()
     {
         isStorageOpen = true;
+        EnsureUIRootIsActive();
         CloseAllPanels();
         storageUI?.gameObject.SetActive(true);
         storageUI?.UpdateUI();
@@ -215,7 +227,7 @@ public class UI : MonoBehaviour
     public void OpenMerchant()
     {
         isMerchantOpen = true;
-        StopPlayerControls(true);
+        EnsureUIRootIsActive();
         CloseAllPanels();
         merchantUI?.gameObject.SetActive(true);
         Debug.Log("[UI] Merchant OPENED.");
@@ -232,6 +244,7 @@ public class UI : MonoBehaviour
     public void OpenCraft()
     {
         isCraftOpen = true;
+        EnsureUIRootIsActive();
         CloseAllPanels();
         craftUI?.gameObject.SetActive(true);
         Debug.Log("[UI] Crafting OPENED.");
@@ -244,69 +257,26 @@ public class UI : MonoBehaviour
         Debug.Log("[UI] Crafting CLOSED.");
     }
 
-    #endregion
-
-    #region Book
-
-    public void ToggleBookMenu()
+    public void CloseAllPanelsAndReset()
     {
-        bool isOpen = bookUI.activeSelf;
-
-        if (!isOpen)
-        {
-            bookUI.SetActive(true);
-            bookAnimator.SetBool("Open", false);
-            mainMenuPanel?.SetActive(true);
-            StopPlayerControls(true);
-            Debug.Log("[UI] Book opened.");
-        }
-        else
-        {
-            if (IsAnySubPanelOpen())
-                CloseAllPanelsAndReturnToIdle();
-            else
-                CloseFully();
-        }
-    }
-
-    private void CloseFully()
-    {
-        Debug.Log("[UI] Book closed completely.");
-        bookUI?.SetActive(false);
+        CloseAllPanels();
         mainMenuPanel?.SetActive(false);
-        CloseAllPanels();
         ResetStates();
         StopPlayerControls(false);
+        Debug.Log("[UI] All Panels CLOSED.");
     }
 
-    private bool IsAnySubPanelOpen()
+    private void EnsureUIRootIsActive()
     {
-        return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen || isOptionsOpen || isStorageOpen || isMerchantOpen || isCraftOpen;
+        // ✅ Do NOT toggle the root itself.
+        // If your root is called `UI_ROOT`, it should always be active.
+        StopPlayerControls(true);
     }
 
-    private void CloseAllPanelsAndReturnToIdle()
+    public void CloseAllPanels()
     {
-        Debug.Log("[UI] Closing all panels, returning idle.");
-        CloseAllPanels();
-
-        bookAnimator.SetBool("Open", false);
-
-        if (bookRoutine != null)
-            StopCoroutine(bookRoutine);
-
-        StartCoroutine(ReturnToMainIdleAfterClose());
-    }
-
-    private IEnumerator ReturnToMainIdleAfterClose()
-    {
-        yield return new WaitForSeconds(bookAnimDuration);
-        mainMenuPanel?.SetActive(true);
-        ResetStates();
-        StopPlayerControls(false);
-    }
-
-    private void CloseAllPanels()
-    {
+        // ✅ ONLY deactivate child panels, not the root
+        mainMenuPanel?.SetActive(false);
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
@@ -314,6 +284,7 @@ public class UI : MonoBehaviour
         storageUI?.gameObject.SetActive(false);
         merchantUI?.gameObject.SetActive(false);
         craftUI?.gameObject.SetActive(false);
+
         ResetStates();
     }
 
@@ -340,10 +311,15 @@ public class UI : MonoBehaviour
 
     private void CheckStopPlayerControls()
     {
-        if (!IsAnySubPanelOpen() && !bookUI.activeSelf)
+        if (!IsAnySubPanelOpen() && !mainMenuPanel.activeSelf)
         {
             StopPlayerControls(false);
         }
+    }
+
+    private bool IsAnySubPanelOpen()
+    {
+        return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen || isOptionsOpen || isStorageOpen || isMerchantOpen || isCraftOpen;
     }
 
     #endregion

@@ -41,13 +41,12 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         if (itemInSlot.itemData.itemType == ItemType.Consumable)
         {
-            // ✅ Instead of immediately opening assign:
-            // open the in-game UI's new **action popup**:
-            ui.inGameUI.OpenUseOrAssignPopup(itemInSlot);
+            // ✅ Open the new character selector popup
+            ui.inGameUI.OpenCharacterProfilePopup(itemInSlot);
         }
         else
         {
-            Debug.Log($"[{itemInSlot.itemData.itemType}] cannot be used or assigned here.");
+            Debug.Log($"[{itemInSlot.itemData.itemType}] cannot be used here.");
         }
 
         ui.itemToolTip.ShowToolTip(false, null);
