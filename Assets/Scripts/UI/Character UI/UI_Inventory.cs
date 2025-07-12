@@ -19,6 +19,9 @@ public class UI_Inventory : MonoBehaviour
     [Header("Assign Popup UI")]
     [SerializeField] private TMP_InputField assignAmountInput;
 
+    [Header("Actor Buttons")]
+    [SerializeField] private List<UI_CharacterProfileButton> actorButtons;
+
     private ItemType? currentFilter = null;
     private bool isOpen = false;
 
@@ -33,7 +36,6 @@ public class UI_Inventory : MonoBehaviour
             inventory = FindFirstObjectByType<Inventory_Player>();
 
         inventory.OnInventoryChange += UpdateUI;
-
         CloseInventory();
     }
 
@@ -75,20 +77,16 @@ public class UI_Inventory : MonoBehaviour
                 CloseActorSelectPanel();
                 OpenItemListPanel();
                 break;
-
             case PanelState.AssignPopup:
                 CloseAssignPopup();
                 OpenItemListPanel();
                 break;
-
             case PanelState.ItemList:
                 CloseItemListPanel();
                 OpenCategoryPanel();
                 break;
-
             case PanelState.Category:
                 CloseInventory();
-                Debug.Log("[Inventory] Closed entire Inventory.");
                 break;
         }
     }
@@ -131,6 +129,23 @@ public class UI_Inventory : MonoBehaviour
         actorSelectPanel.SetActive(true);
         currentState = PanelState.ActorSelect;
 
+        itemBeingAssigned = item;
+
+        foreach (var button in actorButtons)
+        {
+            if (button != null && button.gameObject.activeSelf)
+            {
+                if (button.linkedPlayer != null)
+                {
+                    button.Setup((p) => OnPlayerSelectedFromActorPanel(p));
+                }
+                else
+                {
+                    Debug.LogWarning($"[Inventory] Button {button.name} is missing a linked player reference.");
+                }
+            }
+        }
+
         Debug.Log($"[Inventory] Opened Actor Select for {item.itemData.itemName}");
     }
 
@@ -158,7 +173,6 @@ public class UI_Inventory : MonoBehaviour
         itemListPanel?.SetActive(false);
         actorSelectPanel?.SetActive(false);
         assignPopupPanel?.SetActive(false);
-
         currentState = PanelState.None;
     }
 
@@ -197,6 +211,40 @@ public class UI_Inventory : MonoBehaviour
         }
 
         backpackSlotsParent.UpdateSlots(filtered);
+    }
+
+    public void OnPlayerSelectedFromActorPanel(Player targetPlayer)
+    {
+        if (itemBeingAssigned == null) return;
+
+        Inventory_Item matchedItem = inventory.FindSameItem(itemBeingAssigned);
+        if (matchedItem == null) return;
+
+        if (matchedItem.itemEffect != null && matchedItem.itemEffect.CanBeUsed(targetPlayer))
+        {
+            matchedItem.itemEffect.Subscribe(targetPlayer);
+            matchedItem.itemEffect.ExecuteEffect(targetPlayer);
+
+            Debug.Log($"[Inventory] Used {matchedItem.itemData.itemName} on {targetPlayer.name}");
+
+            inventory.RemoveOneItem(matchedItem);
+            inventory.TriggerUpdateUI();
+
+            UpdateActorSelectButtons();
+        }
+        else
+        {
+            Debug.Log($"[Inventory] {matchedItem.itemData.itemName} cannot be used on {targetPlayer.name}");
+        }
+    }
+
+    private void UpdateActorSelectButtons()
+    {
+        var buttons = actorSelectPanel.GetComponentsInChildren<UI_CharacterProfileButton>(true);
+        foreach (var button in buttons)
+        {
+            button.RefreshBars();
+        }
     }
 
     // ------------------------------
@@ -245,9 +293,7 @@ public class UI_Inventory : MonoBehaviour
         }
 
         int maxAssignable = totalOwned;
-
-        if (current > maxAssignable)
-            current = maxAssignable;
+        if (current > maxAssignable) current = maxAssignable;
 
         assignAmountInput.text = current.ToString();
     }
@@ -262,7 +308,6 @@ public class UI_Inventory : MonoBehaviour
         assignAmountInput.text = current.ToString();
     }
 
-
     private int GetAssignAmount()
     {
         if (assignAmountInput == null) return 1;
@@ -272,4 +317,6 @@ public class UI_Inventory : MonoBehaviour
 
         return 1;
     }
+
+
 }

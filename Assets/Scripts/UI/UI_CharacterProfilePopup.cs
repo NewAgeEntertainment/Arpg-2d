@@ -18,7 +18,7 @@ public class UI_CharacterProfilePopup : MonoBehaviour
         gameObject.SetActive(true);
 
         // Setup the single reusable profile slot
-        profileButton.Setup(player, () => GiveItemToPlayer(player));
+        profileButton.Setup(player, (p) => GiveItemToPlayer(p));
     }
 
     private void GiveItemToPlayer(Player player)
@@ -27,7 +27,9 @@ public class UI_CharacterProfilePopup : MonoBehaviour
 
         if (itemToUse.stackSize > 0)
         {
-            player.inventory.TryUseItem(itemToUse);
+            player.inventory.TryUseItem(itemToUse, player);
+
+            Debug.Log($"[Popup] Used {itemToUse.itemData.itemName} on {player.name}");
 
             if (itemToUse.stackSize <= 0)
             {

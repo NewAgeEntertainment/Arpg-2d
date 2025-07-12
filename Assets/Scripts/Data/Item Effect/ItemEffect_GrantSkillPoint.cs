@@ -7,18 +7,13 @@ public class ItemEffect_GrantSkillPoint : ItemEffect_DataSO
 {
     [SerializeField] private int pointsToAdd;
 
-    public override void ExecuteEffect()
+    public override void ExecuteEffect(Player target)
     {
         UI ui = Object.FindFirstObjectByType<UI>();
-
         if (ui != null && ui.SkillTreeUI != null)
         {
             ui.SkillTreeUI.AddSkillPoints(pointsToAdd);
             Debug.Log($"[ItemEffect_GrantSkillPoint] Added {pointsToAdd} skill points!");
-        }
-        else
-        {
-            Debug.LogWarning("[ItemEffect_GrantSkillPoint] UI or SkillTreeUI is missing!");
         }
     }
 }

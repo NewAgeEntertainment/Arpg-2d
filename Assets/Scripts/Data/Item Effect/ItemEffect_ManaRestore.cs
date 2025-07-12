@@ -1,24 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
 
 [CreateAssetMenu(menuName = "RPG Setup/Item Data/Item effect/ManaHeal effect", fileName = "Item effect data - manaheal")]
 public class ItemEffect_ManaRestore : ItemEffect_DataSO
 {
     [SerializeField] private float restorePercent = .1f;
 
-
-
-    public override void ExecuteEffect()
+    public override void ExecuteEffect(Player target)
     {
+        if (target == null) return;
 
-        Player player = FindFirstObjectByType<Player>();
+        float restoreAmount = target.stats.GetMaxMana() * restorePercent;
+        target.mana.IncreaseMana(restoreAmount);
 
-        float restoreAmount = player.stats.GetMaxMana() * restorePercent;
-
-        player.mana.IncreaseMana(restoreAmount);
-
-        
+        Debug.Log($"[ManaRestore] Restored {restoreAmount} mana to {target.name}");
     }
 }

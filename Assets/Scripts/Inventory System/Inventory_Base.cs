@@ -76,19 +76,15 @@ public class Inventory_Base : MonoBehaviour
         return itemList.Find(item => item.itemData == itemToFind.itemData);
     }
 
-    public void TryUseItem(Inventory_Item itemToUse)
+    public void TryUseItem(Inventory_Item itemToUse, Player targetPlayer)
     {
-
-        Inventory_Item consumable = itemList.Find(item => item == itemToUse);
-
         if (itemToUse == null || !itemList.Contains(itemToUse)) return;
 
         if (itemToUse.itemEffect != null)
         {
-            if (consumable.itemEffect.CanBeUsed(player) == false)
-                return;
+            if (!itemToUse.itemEffect.CanBeUsed(targetPlayer)) return;
 
-            itemToUse.itemEffect.ExecuteEffect();
+            itemToUse.itemEffect.ExecuteEffect(targetPlayer); // ✅ Use on the selected player
 
             if (itemToUse.stackSize > 1)
                 itemToUse.RemoveStack();

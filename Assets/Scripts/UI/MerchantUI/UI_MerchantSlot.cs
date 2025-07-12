@@ -37,7 +37,7 @@ public class UI_MerchantSlot : UI_ItemSlot
             {
                 if (itemInSlot.itemData.itemType == ItemType.Consumable)
                 {
-                    inventory.TryUseItem(itemInSlot);
+                    inventory.TryUseItem(itemInSlot, inventory.GetComponent<Player>());
                 }
                 else
                 {

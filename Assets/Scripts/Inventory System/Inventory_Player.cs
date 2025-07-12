@@ -112,7 +112,7 @@ public class Inventory_Player : Inventory_Base
             return;
         }
 
-        TryUseItem(quickSlot.item);
+        TryUseItem(quickSlot.item, this.player);
 
         quickSlot.slotStack--;
 
