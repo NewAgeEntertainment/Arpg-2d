@@ -17,6 +17,7 @@ public class UI : MonoBehaviour
 
     [Header("Main UI Panels")]
     [SerializeField] private UI_Inventory inventoryUI;
+    public UI_Inventory InventoryUI => inventoryUI;
     [SerializeField] private UI_SkillTree skillTreeUI;
     public UI_SkillTree SkillTreeUI => skillTreeUI;
 
@@ -104,6 +105,18 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(toggleOptionsAction)) ToggleOptions();
         if (player.GetButtonDown(toggleMainMenuAction)) ToggleMainMenu();
         if (player.GetButtonDown(closeAllAction)) CloseAllPanelsAndReset();
+
+        if (player.GetButtonDown(closeAllAction))
+        {
+            if (inventoryUI != null && inventoryUI.IsOpen())
+            {
+                inventoryUI.HandleCancel();
+            }
+            else
+            {
+                CloseAllPanelsAndReset();
+            }
+        }
     }
 
     #region Toggle Methods

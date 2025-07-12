@@ -39,17 +39,18 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     {
         if (itemInSlot == null) return;
 
-        if (itemInSlot.itemData.itemType == ItemType.Consumable)
+        if (eventData.button == PointerEventData.InputButton.Right)
         {
-            // ✅ Open the new character selector popup
-            ui.inGameUI.OpenCharacterProfilePopup(itemInSlot);
-        }
-        else
-        {
-            Debug.Log($"[{itemInSlot.itemData.itemType}] cannot be used here.");
+            ui.InventoryUI.OpenAssignPopup(itemInSlot);
+            ui.itemToolTip.ShowToolTip(false, null);
+            return;
         }
 
-        ui.itemToolTip.ShowToolTip(false, null);
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            ui.InventoryUI.OpenActorSelectPanel(itemInSlot);
+            ui.itemToolTip.ShowToolTip(false, null);
+        }
     }
 
     public virtual void OnPointerEnter(PointerEventData eventData)

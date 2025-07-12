@@ -6,7 +6,7 @@ using Rewired;
 
 public class UI_InGame : MonoBehaviour
 {
-    private Player player; // Reference to Player MonoBehaviour (your RPG Player, not Rewired!)
+    private Player player; // RPG Player MonoBehaviour
     private Rewired.Player rplayer; // Rewired player input
 
     [Header("Quick Slots")]
@@ -15,12 +15,15 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private UI_QuickItemSlot quickSlot3;
     [SerializeField] private UI_QuickItemSlot quickSlot4;
 
-    [Header("Assign Popup")]
-    [SerializeField] private GameObject quickSlotAssignPopup;
-    [SerializeField] private TMP_InputField amountInputField;
+    [Header("Skill Slots")]
+    [SerializeField] private List<UI_SkillSlot> skillSlots = new();
 
-    [Header("Use or Assign Popup")]
-    [SerializeField] private GameObject useOrAssignPopup;
+    [Header("Health & Mana")]
+    [SerializeField] private Slider healthSlider;
+    [SerializeField] private TextMeshProUGUI healthText;
+
+    [SerializeField] private Slider manaSlider;
+    [SerializeField] private TextMeshProUGUI manaText;
 
     [Header("Rewired")]
     [SerializeField] private int playerID = 0;
@@ -29,25 +32,8 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private string quickSlot3Action = "QuickSlot3";
     [SerializeField] private string quickSlot4Action = "QuickSlot4";
 
-    [Header("Character Selector Popup")]
-    [SerializeField] private UI_CharacterProfilePopup profilePopup;
-
-    [Header("Skill Slots")]
-    [SerializeField] private List<UI_SkillSlot> skillSlots = new();
-
-    [Header("Health & Mana")]
-    [SerializeField] private RectTransform healthRect;
-    [SerializeField] private Slider healthSlider;
-    [SerializeField] private TextMeshProUGUI healthText;
-
-    [SerializeField] private RectTransform manaRect;
-    [SerializeField] private Slider manaSlider;
-    [SerializeField] private TextMeshProUGUI manaText;
-
     [HideInInspector] public Inventory_Player playerInventory;
 
-    private Inventory_Item itemToAssign;
-    private Inventory_Item actionPopupItem; // New!
     private void Awake()
     {
         rplayer = ReInput.players.GetPlayer(playerID);
@@ -55,25 +41,17 @@ public class UI_InGame : MonoBehaviour
 
         if (playerInventory != null)
             playerInventory.OnInventoryChange += UpdateQuickSlots;
-
-        if (quickSlotAssignPopup != null)
-            quickSlotAssignPopup.SetActive(false);
-
-        if (useOrAssignPopup != null)
-            useOrAssignPopup.SetActive(false);
     }
 
     private void Start()
     {
         player = FindFirstObjectByType<Player>();
-        
-            player.health.OnHealthUpdate += UpdateHealthBar;
-            player.mana.OnManaUpdate += UpdateManaBar;
 
-            UpdateHealthBar();
-            UpdateManaBar();
-        
+        player.health.OnHealthUpdate += UpdateHealthBar;
+        player.mana.OnManaUpdate += UpdateManaBar;
 
+        UpdateHealthBar();
+        UpdateManaBar();
         UpdateQuickSlots();
     }
 
@@ -95,140 +73,8 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 ASSIGN QUICK SLOT POPUP
-    // ------------------------------
-
-    public void OpenAssignQuickSlotPopup(Inventory_Item item)
-    {
-        itemToAssign = item;
-
-        int currentAmount = 1;
-        foreach (var slot in playerInventory.quickSlots)
-        {
-            if (slot.item == item)
-            {
-                currentAmount = slot.slotStack;
-                break;
-            }
-        }
-
-        if (amountInputField != null)
-            amountInputField.text = currentAmount.ToString();
-
-        quickSlotAssignPopup.SetActive(true);
-        Debug.Log($"[UI_InGame] OpenAssignQuickSlotPopup for {item.itemData.itemName}");
-    }
-
-    public void AssignSlot1() => AssignSlot(1);
-    public void AssignSlot2() => AssignSlot(2);
-    public void AssignSlot3() => AssignSlot(3);
-    public void AssignSlot4() => AssignSlot(4);
-
-    private void AssignSlot(int slotNumber)
-    {
-        int amount = GetAmountInput();
-        if (amount > 0)
-            AssignToQuickSlot(slotNumber, amount);
-    }
-
-    private void AssignToQuickSlot(int slotNumber, int amount)
-    {
-        if (itemToAssign != null && itemToAssign.itemData.itemType == ItemType.Consumable)
-        {
-            playerInventory.SetQuickItemInSlot(slotNumber, itemToAssign, amount);
-            UpdateQuickSlots();
-        }
-
-        itemToAssign = null;
-        quickSlotAssignPopup.SetActive(false);
-    }
-
-    public void OpenCharacterProfilePopup(Inventory_Item item)
-    {
-        profilePopup.Open(item, player);
-    }
-    private int GetAmountInput()
-    {
-        if (amountInputField == null) return 0;
-
-        if (int.TryParse(amountInputField.text, out int amount))
-            return amount;
-
-        return 0;
-    }
-
-    public void IncreaseAssignAmount()
-    {
-        if (itemToAssign == null || amountInputField == null) return;
-
-        int current = GetAmountInput();
-        current++;
-
-        int totalOwned = 0;
-        foreach (var item in playerInventory.itemList)
-        {
-            if (item.itemData == itemToAssign.itemData)
-                totalOwned += item.stackSize;
-        }
-
-        int assignedElsewhere = 0;
-        foreach (var slot in playerInventory.quickSlots)
-        {
-            if (slot.item != null && slot.item.itemData == itemToAssign.itemData)
-                assignedElsewhere += slot.slotStack;
-        }
-
-        int maxPossible = totalOwned;
-
-        if (current > maxPossible) current = maxPossible;
-
-        amountInputField.text = current.ToString();
-    }
-
-    public void DecreaseAssignAmount()
-    {
-        if (itemToAssign == null || amountInputField == null) return;
-
-        int current = GetAmountInput();
-        current = Mathf.Max(1, current - 1);
-
-        amountInputField.text = current.ToString();
-    }
-
-    // ------------------------------
-    // 📌 USE OR ASSIGN POPUP
-    // ------------------------------
-
-    public void OpenUseOrAssignPopup(Inventory_Item item)
-    {
-        actionPopupItem = item;
-        useOrAssignPopup.SetActive(true);
-    }
-
-    public void ClickUseItem()
-    {
-        if (actionPopupItem != null)
-        {
-            playerInventory.TryUseItem(actionPopupItem);
-        }
-        useOrAssignPopup.SetActive(false);
-        actionPopupItem = null;
-    }
-
-    public void ClickAssignItem()
-    {
-        if (actionPopupItem != null)
-        {
-            OpenAssignQuickSlotPopup(actionPopupItem);
-        }
-        useOrAssignPopup.SetActive(false);
-        actionPopupItem = null;
-    }
-
-    // ------------------------------
     // 📌 HEALTH & MANA
     // ------------------------------
-
     private void UpdateHealthBar()
     {
         float currentHealth = Mathf.RoundToInt(player.health.GetCurrentHealth());
@@ -238,7 +84,7 @@ public class UI_InGame : MonoBehaviour
         healthSlider.value = player.health.GetHealthPercent();
     }
 
-    public void UpdateManaBar()
+    private void UpdateManaBar()
     {
         float currentMana = Mathf.RoundToInt(player.mana.GetCurrentMana());
         float maxMana = player.stats.GetMaxMana();
@@ -250,7 +96,6 @@ public class UI_InGame : MonoBehaviour
     // ------------------------------
     // 📌 QUICK SLOT UI
     // ------------------------------
-
     public void UpdateQuickSlots()
     {
         if (playerInventory.quickSlots.Length < 4)
@@ -268,7 +113,6 @@ public class UI_InGame : MonoBehaviour
     // ------------------------------
     // 📌 SKILL SLOT ACCESS
     // ------------------------------
-
     public UI_SkillSlot GetSkillSlot(SkillType type)
     {
         foreach (var slot in skillSlots)

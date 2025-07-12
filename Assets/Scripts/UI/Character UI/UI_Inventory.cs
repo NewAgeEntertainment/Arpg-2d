@@ -4,17 +4,28 @@ using System.Collections.Generic;
 
 public class UI_Inventory : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Inventory_Player inventory;
     [SerializeField] private UI_ItemSlotParent backpackSlotsParent;
     [SerializeField] private TMP_InputField searchField;
     [SerializeField] private TextMeshProUGUI goldText;
 
     [Header("Panels")]
-    [SerializeField] private GameObject buttonSelectionPanel;
-    [SerializeField] private GameObject itemsPanel;
+    [SerializeField] private GameObject categoryPanel;
+    [SerializeField] private GameObject itemListPanel;
+    [SerializeField] private GameObject actorSelectPanel;
+    [SerializeField] private GameObject assignPopupPanel;
+
+    [Header("Assign Popup UI")]
+    [SerializeField] private TMP_InputField assignAmountInput;
 
     private ItemType? currentFilter = null;
     private bool isOpen = false;
+
+    private Inventory_Item itemBeingAssigned;
+
+    private enum PanelState { None, Category, ItemList, ActorSelect, AssignPopup }
+    private PanelState currentState = PanelState.None;
 
     private void Awake()
     {
@@ -22,7 +33,6 @@ public class UI_Inventory : MonoBehaviour
             inventory = FindFirstObjectByType<Inventory_Player>();
 
         inventory.OnInventoryChange += UpdateUI;
-        inventory.equipmentInventory.OnInventoryChange += UpdateUI;
 
         CloseInventory();
     }
@@ -31,34 +41,56 @@ public class UI_Inventory : MonoBehaviour
     {
         if (inventory != null)
             inventory.OnInventoryChange -= UpdateUI;
+    }
 
-        if (inventory?.equipmentInventory != null)
-            inventory.equipmentInventory.OnInventoryChange -= UpdateUI;
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            HandleCancel();
+        }
     }
 
     public void OpenInventory()
     {
         isOpen = true;
         gameObject.SetActive(true);
-
-        // ✅ Always show selection buttons by default
-        buttonSelectionPanel?.SetActive(true);
-        itemsPanel?.SetActive(false);
-
-        UpdateUI();
-        Debug.Log("[UI_Inventory] Inventory OPENED — showing selection panel.");
+        OpenCategoryPanel();
     }
 
     public void CloseInventory()
     {
         isOpen = false;
+        CloseAll();
         gameObject.SetActive(false);
     }
 
-    public void ToggleInventory()
+    public bool IsOpen() => isOpen;
+
+    public void HandleCancel()
     {
-        if (isOpen) CloseInventory();
-        else OpenInventory();
+        switch (currentState)
+        {
+            case PanelState.ActorSelect:
+                CloseActorSelectPanel();
+                OpenItemListPanel();
+                break;
+
+            case PanelState.AssignPopup:
+                CloseAssignPopup();
+                OpenItemListPanel();
+                break;
+
+            case PanelState.ItemList:
+                CloseItemListPanel();
+                OpenCategoryPanel();
+                break;
+
+            case PanelState.Category:
+                CloseInventory();
+                Debug.Log("[Inventory] Closed entire Inventory.");
+                break;
+        }
     }
 
     public void SetFilter(string filterName)
@@ -75,12 +107,59 @@ public class UI_Inventory : MonoBehaviour
             default: currentFilter = null; break;
         }
 
-        // ✅ Hide selection buttons, show items grid
-        buttonSelectionPanel?.SetActive(false);
-        itemsPanel?.SetActive(true);
-
+        OpenItemListPanel();
         UpdateUI();
-        Debug.Log($"[UI_Inventory] Filter set: {filterName} → showing Items panel.");
+    }
+
+    public void OpenCategoryPanel()
+    {
+        CloseAll();
+        categoryPanel.SetActive(true);
+        currentState = PanelState.Category;
+    }
+
+    public void OpenItemListPanel()
+    {
+        CloseAll();
+        itemListPanel.SetActive(true);
+        currentState = PanelState.ItemList;
+    }
+
+    public void OpenActorSelectPanel(Inventory_Item item)
+    {
+        CloseAll();
+        actorSelectPanel.SetActive(true);
+        currentState = PanelState.ActorSelect;
+
+        Debug.Log($"[Inventory] Opened Actor Select for {item.itemData.itemName}");
+    }
+
+    public void OpenAssignPopup(Inventory_Item item)
+    {
+        CloseAll();
+        assignPopupPanel.SetActive(true);
+        currentState = PanelState.AssignPopup;
+
+        itemBeingAssigned = item;
+
+        if (assignAmountInput != null)
+            assignAmountInput.text = "1";
+
+        Debug.Log($"[Inventory] Opened Assign Popup for {item.itemData.itemName}");
+    }
+
+    private void CloseItemListPanel() => itemListPanel?.SetActive(false);
+    private void CloseActorSelectPanel() => actorSelectPanel?.SetActive(false);
+    private void CloseAssignPopup() => assignPopupPanel?.SetActive(false);
+
+    private void CloseAll()
+    {
+        categoryPanel?.SetActive(false);
+        itemListPanel?.SetActive(false);
+        actorSelectPanel?.SetActive(false);
+        assignPopupPanel?.SetActive(false);
+
+        currentState = PanelState.None;
     }
 
     public void OnSearchInputChanged() => UpdateUI();
@@ -89,14 +168,14 @@ public class UI_Inventory : MonoBehaviour
     {
         if (!isOpen) return;
 
-        goldText.text = inventory.gold.ToString("N0") + "g.";
+        goldText.text = $"{inventory.gold:N0}g.";
 
-        List<Inventory_Item> combined = new();
+        var combined = new List<Inventory_Item>();
         combined.AddRange(inventory.itemList);
         combined.AddRange(inventory.equipmentInventory.itemList);
         combined.AddRange(inventory.storage.materialStash);
 
-        List<Inventory_Item> filtered = new();
+        var filtered = new List<Inventory_Item>();
 
         foreach (var item in combined)
         {
@@ -118,5 +197,79 @@ public class UI_Inventory : MonoBehaviour
         }
 
         backpackSlotsParent.UpdateSlots(filtered);
+    }
+
+    // ------------------------------
+    // 🔹 Assign to Quick Slot
+    // ------------------------------
+
+    public void AssignSlot1() => AssignToQuickSlot(1);
+    public void AssignSlot2() => AssignToQuickSlot(2);
+    public void AssignSlot3() => AssignToQuickSlot(3);
+    public void AssignSlot4() => AssignToQuickSlot(4);
+
+    private void AssignToQuickSlot(int slotNumber)
+    {
+        if (itemBeingAssigned == null) return;
+
+        int amount = GetAssignAmount();
+        if (amount <= 0) return;
+
+        inventory.SetQuickItemInSlot(slotNumber, itemBeingAssigned, amount);
+        Debug.Log($"[Inventory] Assigned {amount}x {itemBeingAssigned.itemData.itemName} to Slot {slotNumber}");
+
+        itemBeingAssigned = null;
+        assignPopupPanel.SetActive(false);
+        OpenItemListPanel();
+    }
+
+    public void IncreaseAssignAmount()
+    {
+        if (itemBeingAssigned == null || assignAmountInput == null) return;
+
+        int current = GetAssignAmount();
+        current++;
+
+        int totalOwned = 0;
+        foreach (var item in inventory.itemList)
+        {
+            if (item.itemData == itemBeingAssigned.itemData)
+                totalOwned += item.stackSize;
+        }
+
+        int assignedElsewhere = 0;
+        foreach (var slot in inventory.quickSlots)
+        {
+            if (slot.item != null && slot.item.itemData == itemBeingAssigned.itemData)
+                assignedElsewhere += slot.slotStack;
+        }
+
+        int maxAssignable = totalOwned;
+
+        if (current > maxAssignable)
+            current = maxAssignable;
+
+        assignAmountInput.text = current.ToString();
+    }
+
+    public void DecreaseAssignAmount()
+    {
+        if (itemBeingAssigned == null || assignAmountInput == null) return;
+
+        int current = GetAssignAmount();
+        current = Mathf.Max(1, current - 1);
+
+        assignAmountInput.text = current.ToString();
+    }
+
+
+    private int GetAssignAmount()
+    {
+        if (assignAmountInput == null) return 1;
+
+        if (int.TryParse(assignAmountInput.text, out int result))
+            return Mathf.Max(1, result);
+
+        return 1;
     }
 }
