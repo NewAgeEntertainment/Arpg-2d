@@ -173,9 +173,21 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void OnPointerDown(PointerEventData eventData)
     {
         if (CanBeUnlocked())
-            Unlock();
+        {
+            if (skillTree != null)
+            {
+                skillTree.ShowSkillUnlockConfirmation(this);
+            }
+        }
         else if (isLocked)
+        {
             ui.skillToolTip.LockedSkillEffect();
+        }
+    }
+
+    public void ForceUnlock()
+    {
+        Unlock();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

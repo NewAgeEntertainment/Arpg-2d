@@ -2,7 +2,7 @@
 using TMPro;
 using System.Collections.Generic;
 
-public class UI_Inventory : MonoBehaviour
+public class UI_Inventory : UI_Panel
 {
     [Header("References")]
     [SerializeField] private Inventory_Player inventory;
@@ -69,27 +69,39 @@ public class UI_Inventory : MonoBehaviour
 
     public bool IsOpen() => isOpen;
 
-    public void HandleCancel()
+    public override bool HandleCancel()
     {
         switch (currentState)
         {
             case PanelState.ActorSelect:
                 CloseActorSelectPanel();
                 OpenItemListPanel();
-                break;
+                return true;
             case PanelState.AssignPopup:
                 CloseAssignPopup();
                 OpenItemListPanel();
-                break;
+                return true;
             case PanelState.ItemList:
                 CloseItemListPanel();
                 OpenCategoryPanel();
-                break;
+                return true;
             case PanelState.Category:
                 CloseInventory();
-                break;
+
+                var ui = FindObjectOfType<UI>();
+                if (ui != null)
+                {
+                    ui.OpenMainMenuDirect();
+                }
+                return true;
+
+            default:
+                return false;
         }
     }
+
+
+
 
     public void SetFilter(string filterName)
     {
@@ -318,5 +330,14 @@ public class UI_Inventory : MonoBehaviour
         return 1;
     }
 
+    public void GoToMainMenuPanel()
+    {
+        var ui = FindObjectOfType<UI>();
+        if (ui != null)
+        {
+            ui.CloseAllPanels();
+            ui.OpenMainMenuDirect();
+        }
+    }
 
 }

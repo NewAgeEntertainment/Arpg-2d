@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class UI_EquipmentInventory : MonoBehaviour
+public class UI_EquipmentInventory : UI_Panel
 {
     [Header("Inventory References")]
     [SerializeField] private Inventory_Equipment equipmentInventory;
@@ -63,10 +63,19 @@ public class UI_EquipmentInventory : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (inSelectionMode)
+            {
                 ExitSelectionMode();
+            }
             else
-                Close();
+            {
+                GoToMainMenuPanel();
+            }
         }
+    }
+
+    public void OnBackToMainMenuButton()
+    {
+        GoToMainMenuPanel();
     }
 
     public void Open()
@@ -213,5 +222,29 @@ public class UI_EquipmentInventory : MonoBehaviour
         }
 
         ResetAllHighlights();
+    }
+
+    public override bool HandleCancel()
+    {
+        if (IsInSelectionMode())
+        {
+            ExitSelectionMode();
+            return true;
+        }
+        else
+        {
+            GoToMainMenuPanel();
+            return true;
+        }
+    }
+
+    public void GoToMainMenuPanel()
+    {
+        var ui = FindObjectOfType<UI>();
+        if (ui != null)
+        {
+            ui.CloseAllPanels();
+            ui.OpenMainMenuDirect();
+        }
     }
 }

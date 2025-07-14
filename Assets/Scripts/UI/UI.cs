@@ -108,26 +108,15 @@ public class UI : MonoBehaviour
 
         if (player.GetButtonDown(closeAllAction))
         {
-            if (inventoryUI != null && inventoryUI.IsOpen())
-            {
-                inventoryUI.HandleCancel();
-            }
-            else if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen)
-            {
-                equipmentInventoryPanel.Close();
-            }
-            else if (skillTreeUI != null && isSkillTreeOpen)
-            {
-                CloseSkillTree();
-            }
-            else if (optionsUI != null && isOptionsOpen)
-            {
-                CloseOptions();
-            }
-            else
-            {
-                CloseAllPanelsAndReset();
-            }
+            if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
+            if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel()) return;
+            if (skillTreeUI != null && isSkillTreeOpen && skillTreeUI.HandleCancel()) return;
+            //if (storageUI != null && isStorageOpen && storageUI.HandleCancel()) return;
+            //if (merchantUI != null && isMerchantOpen && merchantUI.HandleCancel()) return;
+            //if (craftUI != null && isCraftOpen && craftUI.HandleCancel()) return;
+            //if (optionsUI != null && isOptionsOpen && optionsUI.HandleCancel()) return;
+
+            CloseAllPanelsAndReset();
         }
     }
 
@@ -354,4 +343,31 @@ public class UI : MonoBehaviour
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
     }
+
+    public void OpenMainMenuDirect()
+    {
+        EnsureUIRootIsActive();
+        mainMenuPanel?.SetActive(true);
+        StopPlayerControls(true);
+        Debug.Log("[UI] Main Menu opened directly.");
+    }
+
+    public void HandleBackAction()
+    {
+        if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
+        if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel()) return;
+        if (skillTreeUI != null && isSkillTreeOpen && skillTreeUI.HandleCancel())
+        {
+            return;
+        }
+        if (skillTreeUI != null && isSkillTreeOpen && skillTreeUI.HandleCancel()) return;
+        if (optionsUI != null && isOptionsOpen) { CloseOptions(); return; }
+        if (storageUI != null && isStorageOpen) { CloseStorage(); return; }
+        if (merchantUI != null && isMerchantOpen) { CloseMerchant(); return; }
+        if (craftUI != null && isCraftOpen) { CloseCraft(); return; }
+
+        CloseAllPanelsAndReset();
+    }
+
+
 }
