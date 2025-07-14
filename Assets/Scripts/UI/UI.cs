@@ -112,6 +112,18 @@ public class UI : MonoBehaviour
             {
                 inventoryUI.HandleCancel();
             }
+            else if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen)
+            {
+                equipmentInventoryPanel.Close();
+            }
+            else if (skillTreeUI != null && isSkillTreeOpen)
+            {
+                CloseSkillTree();
+            }
+            else if (optionsUI != null && isOptionsOpen)
+            {
+                CloseOptions();
+            }
             else
             {
                 CloseAllPanelsAndReset();

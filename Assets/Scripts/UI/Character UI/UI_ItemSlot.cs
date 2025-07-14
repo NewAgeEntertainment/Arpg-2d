@@ -12,6 +12,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     [SerializeField] protected UnityEngine.UI.Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
+    [SerializeField] protected GameObject highlighter; // For visual highlight
 
     protected virtual void Awake()
     {
@@ -28,40 +29,25 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         {
             itemIcon.sprite = defaultIconSprite;
             itemStackSize.text = "";
+            HighlightOff();
             return;
         }
 
         itemIcon.sprite = itemInSlot.itemData.itemIcon;
         itemStackSize.text = itemInSlot.stackSize > 1 ? $"x{itemInSlot.stackSize}" : "";
+        HighlightOff();
     }
 
-    public virtual void OnPointerDown(PointerEventData eventData)
-    {
-        if (itemInSlot == null) return;
-
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            ui.InventoryUI.OpenAssignPopup(itemInSlot);
-            ui.itemToolTip.ShowToolTip(false, null);
-            return;
-        }
-
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            ui.InventoryUI.OpenActorSelectPanel(itemInSlot);
-            ui.itemToolTip.ShowToolTip(false, null);
-        }
-    }
+    public virtual void OnPointerDown(PointerEventData eventData) { }
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        if (itemInSlot == null) return;
-        ui.itemToolTip.ShowToolTip(true, itemInSlot);
+        HighlightOn();
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)
     {
-        ui.itemToolTip.ShowToolTip(false, null);
+        HighlightOff();
     }
 
     public virtual void Clear()
@@ -69,5 +55,18 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         itemInSlot = null;
         itemIcon.sprite = defaultIconSprite;
         itemStackSize.text = "";
+        HighlightOff();
+    }
+
+    public virtual void HighlightOn()
+    {
+        if (highlighter != null)
+            highlighter.SetActive(true);
+    }
+
+    public virtual void HighlightOff()
+    {
+        if (highlighter != null)
+            highlighter.SetActive(false);
     }
 }

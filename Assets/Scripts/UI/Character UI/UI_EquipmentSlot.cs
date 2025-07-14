@@ -4,39 +4,68 @@ using UnityEngine.EventSystems;
 public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
+    [SerializeField] private UnityEngine.UI.Button button;
 
-    /// ✅ Equipment inventory calls this to update the slot
+    private bool isSelectable = false;
+
+    private void Awake()
+    {
+        SetSelectable(false); // Default to not selectable until explicitly enabled
+    }
+
     public void SetItem(Inventory_Item item)
     {
         UpdateSlot(item);
     }
 
-    /// ✅ Equipment inventory injects this!
     public void SetEquipmentToolTip(UI_EquipmentToolTip toolTip)
     {
         equipmentToolTip = toolTip;
     }
 
+    public void SetSelectable(bool selectable)
+    {
+        isSelectable = selectable;
+        if (button != null)
+            button.interactable = selectable;
+
+        Debug.Log($"[UI_EquipmentSlot] SetSelectable: {selectable} on {gameObject.name}");
+    }
+
     public override void OnPointerDown(PointerEventData eventData)
     {
-        if (itemInSlot == null) return;
+        if (!isSelectable) return;
 
-        // Equip it
-        inventory.TryEquipFromEquipmentInventory(itemInSlot);
+        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
+        if (equipmentUI == null) return;
 
-        // Hide both tooltips for safety
-        equipmentToolTip?.ShowEquipmentToolTip(false, null);
-        ui?.itemToolTip?.ShowToolTip(false, null);
+        Debug.Log($"[UI_EquipmentSlot] Attempting to equip: {itemInSlot?.itemData?.itemName}");
+
+        if (equipmentUI.IsInSelectionMode() && equipmentUI.IsSelectionEnabled())
+        {
+            Debug.Log($"[UI_EquipmentSlot] Equipping: {itemInSlot.itemData.itemName}");
+            equipmentUI.SwapEquippedItem(itemInSlot);
+        }
+        else
+        {
+            Debug.Log("[UI_EquipmentSlot] Not in selection mode or selection not enabled.");
+        }
     }
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
+        if (!isSelectable) return;
+
         if (itemInSlot != null && equipmentToolTip != null)
+        {
             equipmentToolTip.ShowEquipmentToolTip(true, itemInSlot);
+        }
     }
 
     public override void OnPointerExit(PointerEventData eventData)
     {
+        if (!isSelectable) return;
+
         equipmentToolTip?.ShowEquipmentToolTip(false, null);
     }
 }

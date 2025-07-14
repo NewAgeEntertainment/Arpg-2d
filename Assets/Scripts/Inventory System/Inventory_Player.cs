@@ -201,4 +201,25 @@ public class Inventory_Player : Inventory_Base
 
         NotifyInventoryChanged();
     }
+
+    public void SwapEquippedItem(Inventory_Item oldEquippedItem, Inventory_Item newInventoryItem)
+    {
+        var equippedSlot = equipList.Find(slot => slot.equipedItem == oldEquippedItem);
+        if (equippedSlot == null)
+        {
+            Debug.LogWarning("[Inventory_Player] No equipped slot found for item.");
+            return;
+        }
+
+        // Unequip current
+        UnequipItem(oldEquippedItem, replacing: true);
+
+        // Equip new item
+        EquipItem(newInventoryItem, equippedSlot);
+
+        // Remove one of the new item from equipment inventory
+        equipmentInventory.RemoveOneItem(newInventoryItem);
+
+        Debug.Log($"[Inventory_Player] Swapped {oldEquippedItem.itemData.itemName} with {newInventoryItem.itemData.itemName}.");
+    }
 }
