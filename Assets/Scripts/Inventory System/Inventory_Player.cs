@@ -222,4 +222,18 @@ public class Inventory_Player : Inventory_Base
 
         Debug.Log($"[Inventory_Player] Swapped {oldEquippedItem.itemData.itemName} with {newInventoryItem.itemData.itemName}.");
     }
+
+    public void UnequipItemByType(ItemType slotType)
+    {
+        var equippedSlot = equipList.Find(slot => slot.slotType == slotType && slot.HasItem());
+        if (equippedSlot != null)
+        {
+            UnequipItem(equippedSlot.equipedItem);
+            Debug.Log($"[Inventory_Player] Unequipped item from slot type: {slotType}");
+        }
+        else
+        {
+            Debug.Log($"[Inventory_Player] No item equipped in slot type: {slotType}");
+        }
+    }
 }

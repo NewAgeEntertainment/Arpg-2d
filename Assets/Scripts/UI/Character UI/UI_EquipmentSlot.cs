@@ -4,14 +4,9 @@ using UnityEngine.EventSystems;
 public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
-    [SerializeField] private UnityEngine.UI.Button button;
 
     private bool isSelectable = false;
-
-    private void Awake()
-    {
-        SetSelectable(false); // Default to not selectable until explicitly enabled
-    }
+    private Coroutine blinkCoroutine;
 
     public void SetItem(Inventory_Item item)
     {
@@ -26,10 +21,6 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
     public void SetSelectable(bool selectable)
     {
         isSelectable = selectable;
-        if (button != null)
-            button.interactable = selectable;
-
-        Debug.Log($"[UI_EquipmentSlot] SetSelectable: {selectable} on {gameObject.name}");
     }
 
     public override void OnPointerDown(PointerEventData eventData)
@@ -43,28 +34,25 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
 
         if (equipmentUI.IsInSelectionMode() && equipmentUI.IsSelectionEnabled())
         {
-            Debug.Log($"[UI_EquipmentSlot] Equipping: {itemInSlot.itemData.itemName}");
             equipmentUI.SwapEquippedItem(itemInSlot);
         }
         else
         {
             Debug.Log("[UI_EquipmentSlot] Not in selection mode or selection not enabled.");
         }
+
+        StopBlinkingHighlight();
+        SetHighlightSolid(true);
     }
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
         if (!isSelectable) return;
+        StartBlinkingHighlight();
 
         if (itemInSlot != null && equipmentToolTip != null)
         {
             equipmentToolTip.ShowEquipmentToolTip(true, itemInSlot);
-        }
-
-        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
-        if (equipmentUI != null)
-        {
-            equipmentUI.PlayerStatsPanel?.PreviewItem(itemInSlot);
         }
     }
 
@@ -72,13 +60,50 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
     {
         if (!isSelectable) return;
 
-        equipmentToolTip?.ShowEquipmentToolTip(false, null);
+        StopBlinkingHighlight();
+        SetHighlightSolid(false);
 
-        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
-        if (equipmentUI != null)
+        equipmentToolTip?.ShowEquipmentToolTip(false, null);
+    }
+
+    private void StartBlinkingHighlight()
+    {
+        if (highlighter == null) return;
+
+        if (blinkCoroutine != null)
+            StopCoroutine(blinkCoroutine);
+
+        blinkCoroutine = StartCoroutine(BlinkHighlight());
+    }
+
+    private void StopBlinkingHighlight()
+    {
+        if (highlighter == null) return;
+
+        if (blinkCoroutine != null)
+            StopCoroutine(blinkCoroutine);
+
+        blinkCoroutine = null;
+    }
+
+    private void SetHighlightSolid(bool on)
+    {
+        if (highlighter != null)
+            highlighter.SetActive(on);
+    }
+
+    private System.Collections.IEnumerator BlinkHighlight()
+    {
+        while (true)
         {
-            equipmentUI.PlayerStatsPanel?.ClearPreview();
+            highlighter.SetActive(!highlighter.activeSelf);
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
+    public void ResetHighlight()
+    {
+        StopBlinkingHighlight();
+        SetHighlightSolid(false);
+    }
 }

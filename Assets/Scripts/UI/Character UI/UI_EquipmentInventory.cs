@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting.Antlr3.Runtime;
+using UnityEngine.UI;
 
 public class UI_EquipmentInventory : MonoBehaviour
 {
@@ -21,7 +21,14 @@ public class UI_EquipmentInventory : MonoBehaviour
     [Header("Dedicated Equipment ToolTip")]
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
     [SerializeField] private UI_PlayerStats playerStatsPanel;
+    [SerializeField] private Button removeButton;
+
+    [SerializeField] private AudioClip equipSound;
+    [SerializeField] private AudioClip unequipSound;
+    [SerializeField] private AudioSource audioSource;
+
     public UI_PlayerStats PlayerStatsPanel => playerStatsPanel;
+
     private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
 
     private bool isOpen = false;
@@ -103,24 +110,49 @@ public class UI_EquipmentInventory : MonoBehaviour
     public void EnterSelectionMode(ItemType slotType)
     {
         inSelectionMode = true;
+        currentFilter = slotType;
         FilterBySlotType(slotType);
+        if (removeButton != null)
+            removeButton.interactable = false;
         Debug.Log($"[EquipmentInventory] Entered selection mode for slot type: {slotType}");
     }
 
     public void SwapEquippedItem(Inventory_Item newItem)
     {
-        if (newItem == null)
-        {
-            Debug.LogWarning("[EquipmentInventory] Attempted to swap with null item.");
-            return;
-        }
+        if (newItem == null) return;
 
         playerInventory.TryEquipFromEquipmentInventory(newItem);
+        PlaySound(equipSound);
+
         Debug.Log($"[EquipmentInventory] Equipped new item: {newItem.itemData.itemName}");
 
         ExitSelectionMode();
-        EnableEquippedSlotInteraction(true);   // ✅ Re-enable equipped slots after equip
+        EnableEquippedSlotInteraction(true);
+        ResetAllHighlights();
         UpdateUI();
+    }
+
+    public void RemoveCurrentlyEquipped()
+    {
+        if (!inSelectionMode || currentFilter == null) return;
+
+        playerInventory.UnequipItemByType(currentFilter.Value);
+        PlaySound(unequipSound);
+
+        Debug.Log($"[EquipmentInventory] Removed equipped item of type: {currentFilter.Value}");
+
+        ExitSelectionMode();
+        EnableEquippedSlotInteraction(true);
+        ResetAllHighlights();
+        UpdateUI();
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 
     public void FilterBySlotType(ItemType slotType)
@@ -136,7 +168,6 @@ public class UI_EquipmentInventory : MonoBehaviour
     }
 
     public bool IsSelectionEnabled() => selectionEnabled;
-
     public bool IsInSelectionMode() => inSelectionMode;
 
     public void EnableEquipmentSlotSelection(bool enable)
@@ -144,7 +175,6 @@ public class UI_EquipmentInventory : MonoBehaviour
         foreach (var slot in uiSlots)
         {
             slot.SetSelectable(enable);
-            Debug.Log("is working");
         }
         Debug.Log($"[EquipmentInventory] Equipment slot selection set to: {enable}");
     }
@@ -158,13 +188,30 @@ public class UI_EquipmentInventory : MonoBehaviour
         Debug.Log($"[EquipmentInventory] Equipped slot interaction set to: {enable}");
     }
 
+    public void ResetAllHighlights()
+    {
+        foreach (var equipSlot in equippedSlotsPanel.GetComponentsInChildren<UI_EquippedSlot>())
+        {
+            equipSlot.ResetHighlight();
+        }
+
+        foreach (var slot in uiSlots)
+        {
+            slot.ResetHighlight();
+        }
+    }
+
     public void ExitSelectionMode()
     {
         inSelectionMode = false;
+        if (removeButton != null)
+            removeButton.interactable = false;
 
         foreach (var slot in uiSlots)
         {
             slot.SetSelectable(false);
         }
+
+        ResetAllHighlights();
     }
 }

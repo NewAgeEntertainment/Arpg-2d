@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections;
 
 public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -13,6 +14,8 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
     [SerializeField] protected GameObject highlighter; // For visual highlight
+
+    private Coroutine blinkCoroutine;
 
     protected virtual void Awake()
     {
@@ -29,25 +32,25 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         {
             itemIcon.sprite = defaultIconSprite;
             itemStackSize.text = "";
-            HighlightOff();
+            StopBlinkingHighlight();
             return;
         }
 
         itemIcon.sprite = itemInSlot.itemData.itemIcon;
         itemStackSize.text = itemInSlot.stackSize > 1 ? $"x{itemInSlot.stackSize}" : "";
-        HighlightOff();
+        StopBlinkingHighlight();
     }
 
     public virtual void OnPointerDown(PointerEventData eventData) { }
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        HighlightOn();
+        StartBlinkingHighlight();
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)
     {
-        HighlightOff();
+        StopBlinkingHighlight();
     }
 
     public virtual void Clear()
@@ -55,18 +58,46 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         itemInSlot = null;
         itemIcon.sprite = defaultIconSprite;
         itemStackSize.text = "";
-        HighlightOff();
+        StopBlinkingHighlight();
+    }
+
+    private void StartBlinkingHighlight()
+    {
+        if (highlighter == null) return;
+
+        if (blinkCoroutine != null)
+            StopCoroutine(blinkCoroutine);
+
+        blinkCoroutine = StartCoroutine(BlinkHighlight());
+    }
+
+    private void StopBlinkingHighlight()
+    {
+        if (highlighter == null) return;
+
+        if (blinkCoroutine != null)
+            StopCoroutine(blinkCoroutine);
+
+        blinkCoroutine = null;
+        highlighter.SetActive(false);
+    }
+
+    private IEnumerator BlinkHighlight()
+    {
+        while (true)
+        {
+            highlighter.SetActive(!highlighter.activeSelf);
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 
     public virtual void HighlightOn()
     {
-        if (highlighter != null)
-            highlighter.SetActive(true);
+        StartBlinkingHighlight();
     }
 
     public virtual void HighlightOff()
     {
-        if (highlighter != null)
-            highlighter.SetActive(false);
+        StopBlinkingHighlight();
     }
 }
