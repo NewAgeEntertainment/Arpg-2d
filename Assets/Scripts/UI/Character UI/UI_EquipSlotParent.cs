@@ -30,6 +30,11 @@ public class UI_EquipSlotParent : MonoBehaviour
         }
     }
 
+    public UI_EquippedSlot[] GetEquippedSlots()
+    {
+        return equipSlots;
+    }
+
     public void SetEquippedSlotInteractable(UI_EquippedSlot selectedSlot)
     {
         foreach (var slot in GetComponentsInChildren<UI_EquippedSlot>())

@@ -60,6 +60,12 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
         {
             equipmentToolTip.ShowEquipmentToolTip(true, itemInSlot);
         }
+
+        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
+        if (equipmentUI != null)
+        {
+            equipmentUI.PlayerStatsPanel?.PreviewItem(itemInSlot);
+        }
     }
 
     public override void OnPointerExit(PointerEventData eventData)
@@ -67,5 +73,12 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
         if (!isSelectable) return;
 
         equipmentToolTip?.ShowEquipmentToolTip(false, null);
+
+        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
+        if (equipmentUI != null)
+        {
+            equipmentUI.PlayerStatsPanel?.ClearPreview();
+        }
     }
+
 }

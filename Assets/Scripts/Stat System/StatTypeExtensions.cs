@@ -23,7 +23,7 @@ public static class StatTypeExtensions
             case StatType.IceDamage: return "Ice Damage";
             case StatType.PoisonDamage: return "Poison Damage";
             case StatType.LightningDamage: return "Lightning Damage";
-            case StatType.Armor: return "Armor";
+            case StatType.Defense: return "Armor";
             case StatType.Evasion: return "Evasion";
             case StatType.IceResistance: return "Ice Resistance";
             case StatType.FireResistance: return "Fire Resistance";

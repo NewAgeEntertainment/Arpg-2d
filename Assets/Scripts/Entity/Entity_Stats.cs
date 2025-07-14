@@ -286,7 +286,7 @@ public class Entity_Stats : MonoBehaviour
             case StatType.PoisonDamage:
                 return offense.poisonDamage;
             
-            case StatType.Armor:
+            case StatType.Defense:
                 return defense.armor;
             case StatType.Evasion:
                 return defense.evasion;

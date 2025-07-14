@@ -20,7 +20,8 @@ public class UI_EquipmentInventory : MonoBehaviour
 
     [Header("Dedicated Equipment ToolTip")]
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
-
+    [SerializeField] private UI_PlayerStats playerStatsPanel;
+    public UI_PlayerStats PlayerStatsPanel => playerStatsPanel;
     private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
 
     private bool isOpen = false;
@@ -118,6 +119,7 @@ public class UI_EquipmentInventory : MonoBehaviour
         Debug.Log($"[EquipmentInventory] Equipped new item: {newItem.itemData.itemName}");
 
         ExitSelectionMode();
+        EnableEquippedSlotInteraction(true);   // ✅ Re-enable equipped slots after equip
         UpdateUI();
     }
 
@@ -145,6 +147,15 @@ public class UI_EquipmentInventory : MonoBehaviour
             Debug.Log("is working");
         }
         Debug.Log($"[EquipmentInventory] Equipment slot selection set to: {enable}");
+    }
+
+    public void EnableEquippedSlotInteraction(bool enable)
+    {
+        foreach (var slot in equippedSlotsPanel.GetEquippedSlots())
+        {
+            slot.SetInteractable(enable);
+        }
+        Debug.Log($"[EquipmentInventory] Equipped slot interaction set to: {enable}");
     }
 
     public void ExitSelectionMode()

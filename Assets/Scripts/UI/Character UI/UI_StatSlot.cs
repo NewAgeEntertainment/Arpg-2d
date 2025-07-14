@@ -9,6 +9,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private UI ui;
 
     [SerializeField] private StatType statSlotType;
+    public StatType StatType => statSlotType;
     [SerializeField] private TextMeshProUGUI statName;
     [SerializeField] private TextMeshProUGUI statValue;
 
@@ -43,7 +44,10 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
     }
 
-
+    public void UpdateStatDisplay(string text)
+    {
+        statValue.text = text;
+    }
 
     public void UpdateStatValue()
     {
@@ -108,7 +112,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case StatType.Evasion:
                 value = playerStats.GetEvasion();
                 break;
-            case StatType.Armor:
+            case StatType.Defense:
                 value = playerStats.GetBaseArmor();
                 break;
 
@@ -199,7 +203,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case StatType.PoisonDamage: return "Poison Damage";
             case StatType.LightningDamage: return "Lightning Damage";
             case StatType.ElementalDamage: return "Elemental Damage";
-            case StatType.Armor: return "Armor";
+            case StatType.Defense: return "Armor";
             case StatType.Evasion: return "Evasion";
             case StatType.IceResistance: return "Ice Resistance";
             case StatType.FireResistance: return "Fire Resistance";
