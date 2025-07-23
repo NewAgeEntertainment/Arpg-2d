@@ -29,6 +29,15 @@ public class UI_Inventory : UI_Panel
     [Header("Actor Buttons")]
     [SerializeField] private List<UI_CharacterProfileButton> actorButtons;
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip panelOpenSound;
+    [SerializeField] private AudioClip panelCloseSound;
+    [SerializeField] private AudioClip assignSound;
+    [SerializeField] private AudioSource audioSource;
+    
+
+
+
     private bool isOpen = false;
     private ItemType? currentFilter = null;
     private Inventory_Item itemBeingAssigned;
@@ -76,17 +85,22 @@ public class UI_Inventory : UI_Panel
         {
             if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
             {
-                OpenAssignPopup(selected);
+                if (selected.itemData.itemType == ItemType.Consumable && !selected.itemData.isUsable)
+                    OpenAssignPopup(selected);
             }
         }
+
 
         if (rPlayer.GetButtonDown(useOnPlayerAction) && currentState == PanelState.ItemList)
         {
             if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
             {
-                OpenActorSelectPanel(selected);
+                if (selected.itemData.itemType == ItemType.Consumable && selected.itemData.isUsable)
+                    OpenActorSelectPanel(selected);
             }
         }
+
+
     }
 
     public void OpenInventory()
@@ -101,7 +115,12 @@ public class UI_Inventory : UI_Panel
         isOpen = false;
         CloseAllPanels();
         gameObject.SetActive(false);
+        PlayCloseSound();
+
+        // 🟩 Open main menu directly
+        FindObjectOfType<UI>()?.OpenMainMenuDirect();
     }
+
 
     public bool IsOpen() => isOpen;
 
@@ -112,23 +131,26 @@ public class UI_Inventory : UI_Panel
             case PanelState.ActorSelect:
                 actorSelectPanel.SetActive(false);
                 OpenItemListPanel();
+                PlayCloseSound();
                 return true;
             case PanelState.AssignPopup:
                 assignPopupPanel.SetActive(false);
                 OpenItemListPanel();
+                PlayCloseSound();
                 return true;
             case PanelState.ItemList:
                 itemListPanel.SetActive(false);
                 OpenCategoryPanel();
+                PlayCloseSound();
                 return true;
             case PanelState.Category:
                 CloseInventory();
-                FindObjectOfType<UI>()?.OpenMainMenuDirect();
                 return true;
             default:
                 return false;
         }
     }
+
 
     public void SetFilter(string filterName)
     {
@@ -148,11 +170,25 @@ public class UI_Inventory : UI_Panel
         UpdateUI();
     }
 
+    private void PlayOpenSound()
+    {
+        if (audioSource != null && panelOpenSound != null)
+            audioSource.PlayOneShot(panelOpenSound);
+    }
+
+    private void PlayCloseSound()
+    {
+        if (audioSource != null && panelCloseSound != null)
+            audioSource.PlayOneShot(panelCloseSound);
+    }
+
+
     public void OpenCategoryPanel()
     {
         CloseAllPanels();
         categoryPanel.SetActive(true);
         currentState = PanelState.Category;
+        PlayOpenSound();
     }
 
     public void OpenItemListPanel()
@@ -161,6 +197,7 @@ public class UI_Inventory : UI_Panel
         itemListPanel.SetActive(true);
         currentState = PanelState.ItemList;
         UpdateUI();
+        PlayOpenSound();
     }
 
     public void OpenActorSelectPanel(Inventory_Item item)
@@ -169,28 +206,20 @@ public class UI_Inventory : UI_Panel
         actorSelectPanel.SetActive(true);
         currentState = PanelState.ActorSelect;
         itemBeingAssigned = item;
-
-        foreach (var button in actorButtons)
-        {
-            if (button != null && button.gameObject.activeSelf && button.linkedPlayer != null)
-            {
-                button.Setup((p) => OnPlayerSelectedFromActorPanel(p));
-            }
-        }
-    }
+        PlayOpenSound();
+        
+}
 
     public void OpenAssignPopup(Inventory_Item item)
     {
         CloseAllPanels();
-        assignPopupPanel?.SetActive(true);
+        assignPopupPanel.SetActive(true);
         currentState = PanelState.AssignPopup;
         itemBeingAssigned = item;
-
-        if (assignAmountInput != null)
-            assignAmountInput.text = "1";
-
-        Debug.Log($"[Inventory] Assign Popup opened for {item.itemData.itemName}");
+        assignAmountInput.text = "1";
+        PlayOpenSound();
     }
+
 
 
     private void CloseAllPanels()
@@ -265,12 +294,29 @@ public class UI_Inventory : UI_Panel
         int amount = GetAssignAmount();
         if (amount <= 0) return;
 
+        // Assign to quick slot
         inventory.SetQuickItemInSlot(slotNumber, itemBeingAssigned, amount);
 
+        // 🔻 Reduce stack size
+        Inventory_Item itemInInventory = inventory.FindSameItem(itemBeingAssigned);
+        if (itemInInventory != null)
+        {
+            itemInInventory.stackSize -= amount;
+            if (itemInInventory.stackSize <= 0)
+                inventory.itemList.Remove(itemInInventory);
+        }
+
+        // ✅ Play sound
+        if (audioSource != null && assignSound != null)
+            audioSource.PlayOneShot(assignSound);
+
+        inventory.TriggerUpdateUI();
         itemBeingAssigned = null;
-        assignPopupPanel.SetActive(false);
+        assignPopupPanel?.SetActive(false);
         OpenItemListPanel();
     }
+
+
 
     public void IncreaseAssignAmount()
     {
@@ -307,15 +353,21 @@ public class UI_Inventory : UI_Panel
 
     private void OnItemSlotSubmit(Inventory_Item item)
     {
-        if (item == null) return;
+        if (item == null || item.itemData == null) return;
 
+        // Only allow AssignPopup or ActorSelect for Consumables
+        if (item.itemData.itemType != ItemType.Consumable)
+        {
+            Debug.Log($"[Inventory] {item.itemData.itemName} is not a consumable and cannot be used.");
+            return;
+        }
+
+        // Now decide based on isUsable
         if (item.itemData.isUsable)
-        {
             OpenActorSelectPanel(item);
-        }
         else
-        {
             OpenAssignPopup(item);
-        }
     }
+
+
 }

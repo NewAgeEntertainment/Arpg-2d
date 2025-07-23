@@ -14,6 +14,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     public event Action<Inventory_Item> OnRightClick;     // Right click
 
     [Header("UI Slot Setup")]
+    [SerializeField] private TMPro.TextMeshProUGUI itemNameText; // Add this field
     [SerializeField] protected UnityEngine.UI.Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
@@ -36,12 +37,16 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         {
             itemIcon.sprite = defaultIconSprite;
             itemStackSize.text = "";
+            if (itemNameText != null)
+                itemNameText.text = "";
             StopBlinkingHighlight();
             return;
         }
 
         itemIcon.sprite = itemInSlot.itemData.itemIcon;
         itemStackSize.text = itemInSlot.stackSize > 1 ? $"x{itemInSlot.stackSize}" : "";
+        if (itemNameText != null)
+            itemNameText.text = itemInSlot.itemData.itemName;
         StopBlinkingHighlight();
     }
 
@@ -55,26 +60,35 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
     public virtual void OnPointerDown(PointerEventData eventData)
     {
-        if (itemInSlot == null) return;
+        if (itemInSlot == null || itemInSlot.itemData == null) return;
 
-        // Left click → Use OnSubmit event
+        var data = itemInSlot.itemData;
+
+        // Left click → Use item (e.g., open Actor Select Panel if usable)
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             OnSubmit?.Invoke(itemInSlot);
         }
 
-        // Right click → Open Assign Popup
+        // Right click → Open Assign Popup (only if item is a Consumable)
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            var uiInventory = FindObjectOfType<UI_Inventory>();
-            if (uiInventory != null)
+            if (data.itemType == ItemType.Consumable)
             {
-                uiInventory.OpenAssignPopup(itemInSlot);
+                var uiInventory = FindObjectOfType<UI_Inventory>();
+                uiInventory?.OpenAssignPopup(itemInSlot);
+            }
+            else
+            {
+                Debug.Log($"[ItemSlot] {data.itemName} cannot be assigned. Only consumables are assignable.");
             }
         }
 
-        SetSelected(true); // Optional: Mark this slot as selected
+        SetSelected(true); // Optional: mark slot as selected
     }
+
+
+
 
 
     public virtual void OnPointerEnter(PointerEventData eventData)
