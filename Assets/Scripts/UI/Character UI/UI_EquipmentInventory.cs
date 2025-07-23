@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Rewired;
 
 public class UI_EquipmentInventory : UI_Panel
 {
@@ -23,12 +24,16 @@ public class UI_EquipmentInventory : UI_Panel
     [SerializeField] private UI_PlayerStats playerStatsPanel;
     [SerializeField] private Button removeButton;
 
+    [Header("Audio")]
     [SerializeField] private AudioClip equipSound;
     [SerializeField] private AudioClip unequipSound;
     [SerializeField] private AudioSource audioSource;
 
-    public UI_PlayerStats PlayerStatsPanel => playerStatsPanel;
+    [Header("Rewired Input")]
+    [SerializeField] private int playerID = 0;
+    [SerializeField] private string cancelAction = "UICancel";
 
+    private Rewired.Player rPlayer;
     private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
 
     private bool isOpen = false;
@@ -41,6 +46,7 @@ public class UI_EquipmentInventory : UI_Panel
 
     private void Awake()
     {
+        rPlayer = ReInput.players.GetPlayer(playerID);
         equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
         playerInventory = FindFirstObjectByType<Inventory_Player>();
 
@@ -60,22 +66,10 @@ public class UI_EquipmentInventory : UI_Panel
     {
         if (!isOpen) return;
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (rPlayer.GetButtonDown(cancelAction))
         {
-            if (inSelectionMode)
-            {
-                ExitSelectionMode();
-            }
-            else
-            {
-                GoToMainMenuPanel();
-            }
+            HandleCancel();
         }
-    }
-
-    public void OnBackToMainMenuButton()
-    {
-        GoToMainMenuPanel();
     }
 
     public void Open()
@@ -122,92 +116,7 @@ public class UI_EquipmentInventory : UI_Panel
         currentFilter = slotType;
         FilterBySlotType(slotType);
         if (removeButton != null)
-            removeButton.interactable = false;
-        Debug.Log($"[EquipmentInventory] Entered selection mode for slot type: {slotType}");
-    }
-
-    public void SwapEquippedItem(Inventory_Item newItem)
-    {
-        if (newItem == null) return;
-
-        playerInventory.TryEquipFromEquipmentInventory(newItem);
-        PlaySound(equipSound);
-
-        Debug.Log($"[EquipmentInventory] Equipped new item: {newItem.itemData.itemName}");
-
-        ExitSelectionMode();
-        EnableEquippedSlotInteraction(true);
-        ResetAllHighlights();
-        UpdateUI();
-    }
-
-    public void RemoveCurrentlyEquipped()
-    {
-        if (!inSelectionMode || currentFilter == null) return;
-
-        playerInventory.UnequipItemByType(currentFilter.Value);
-        PlaySound(unequipSound);
-
-        Debug.Log($"[EquipmentInventory] Removed equipped item of type: {currentFilter.Value}");
-
-        ExitSelectionMode();
-        EnableEquippedSlotInteraction(true);
-        ResetAllHighlights();
-        UpdateUI();
-    }
-
-    private void PlaySound(AudioClip clip)
-    {
-        if (audioSource != null && clip != null)
-        {
-            audioSource.PlayOneShot(clip);
-        }
-    }
-
-    public void FilterBySlotType(ItemType slotType)
-    {
-        currentFilter = slotType;
-        UpdateUI();
-    }
-
-    public void SetSelectionEnabled(bool enabled)
-    {
-        selectionEnabled = enabled;
-        Debug.Log($"[EquipmentInventory] Selection enabled set to: {enabled}");
-    }
-
-    public bool IsSelectionEnabled() => selectionEnabled;
-    public bool IsInSelectionMode() => inSelectionMode;
-
-    public void EnableEquipmentSlotSelection(bool enable)
-    {
-        foreach (var slot in uiSlots)
-        {
-            slot.SetSelectable(enable);
-        }
-        Debug.Log($"[EquipmentInventory] Equipment slot selection set to: {enable}");
-    }
-
-    public void EnableEquippedSlotInteraction(bool enable)
-    {
-        foreach (var slot in equippedSlotsPanel.GetEquippedSlots())
-        {
-            slot.SetInteractable(enable);
-        }
-        Debug.Log($"[EquipmentInventory] Equipped slot interaction set to: {enable}");
-    }
-
-    public void ResetAllHighlights()
-    {
-        foreach (var equipSlot in equippedSlotsPanel.GetComponentsInChildren<UI_EquippedSlot>())
-        {
-            equipSlot.ResetHighlight();
-        }
-
-        foreach (var slot in uiSlots)
-        {
-            slot.ResetHighlight();
-        }
+            removeButton.interactable = true;
     }
 
     public void ExitSelectionMode()
@@ -224,6 +133,83 @@ public class UI_EquipmentInventory : UI_Panel
         ResetAllHighlights();
     }
 
+    public void RemoveCurrentlyEquipped()
+    {
+        if (!inSelectionMode || currentFilter == null) return;
+
+        playerInventory.UnequipItemByType(currentFilter.Value);
+        PlaySound(unequipSound);
+
+        ExitSelectionMode();
+        EnableEquippedSlotInteraction(true);
+        ResetAllHighlights();
+        UpdateUI();
+    }
+
+    public void SwapEquippedItem(Inventory_Item newItem)
+    {
+        if (newItem == null) return;
+
+        playerInventory.TryEquipFromEquipmentInventory(newItem);
+        PlaySound(equipSound);
+
+        ExitSelectionMode();
+        EnableEquippedSlotInteraction(true);
+        ResetAllHighlights();
+        UpdateUI();
+    }
+
+    public void FilterBySlotType(ItemType slotType)
+    {
+        currentFilter = slotType;
+        UpdateUI();
+    }
+
+    public void SetSelectionEnabled(bool enabled)
+    {
+        selectionEnabled = enabled;
+    }
+
+    public bool IsSelectionEnabled() => selectionEnabled;
+    public bool IsInSelectionMode() => inSelectionMode;
+
+    public void EnableEquipmentSlotSelection(bool enable)
+    {
+        foreach (var slot in uiSlots)
+        {
+            slot.SetSelectable(enable);
+        }
+    }
+
+    public void EnableEquippedSlotInteraction(bool enable)
+    {
+        foreach (var slot in equippedSlotsPanel.GetEquippedSlots())
+        {
+            slot.SetInteractable(enable);
+        }
+    }
+
+    public void ResetAllHighlights()
+    {
+        foreach (var equipSlot in equippedSlotsPanel.GetComponentsInChildren<UI_EquippedSlot>())
+        {
+            equipSlot.ResetHighlight();
+        }
+
+        foreach (var slot in uiSlots)
+        {
+            slot.ResetHighlight();
+        }
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+
     public override bool HandleCancel()
     {
         if (IsInSelectionMode())
@@ -231,20 +217,17 @@ public class UI_EquipmentInventory : UI_Panel
             ExitSelectionMode();
             return true;
         }
-        else
-        {
-            GoToMainMenuPanel();
-            return true;
-        }
+
+        Close();
+        var ui = FindObjectOfType<UI>();
+        ui?.OpenMainMenuDirect();
+        return true;
     }
 
     public void GoToMainMenuPanel()
     {
+        Close();
         var ui = FindObjectOfType<UI>();
-        if (ui != null)
-        {
-            ui.CloseAllPanels();
-            ui.OpenMainMenuDirect();
-        }
+        ui?.OpenMainMenuDirect();
     }
 }

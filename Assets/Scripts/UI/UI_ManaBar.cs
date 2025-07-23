@@ -8,7 +8,7 @@ public class UI_ManaBar : MonoBehaviour
     [SerializeField] private Slider manaSlider;
     [SerializeField] private TextMeshProUGUI manaText;
 
-    public void UpdateHealth(float current, float max)
+    public void UpdateMana(float current, float max)
     {
         if (manaSlider != null)
         {

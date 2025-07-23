@@ -27,7 +27,7 @@ public class Object_Merchant : Object_NPC, IInteractable
         ui.MerchantUI.SetUpMerchantUI(merchant, inventory);
 
         // ✅ Always open using your UI manager → handles isMerchantOpen + input!
-        ui.OpenMerchant();
+        //ui.OpenMerchant();
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
@@ -43,6 +43,6 @@ public class Object_Merchant : Object_NPC, IInteractable
         ui.SwitchOffAllToolTips();
 
         // ✅ Use the UI manager to close properly
-        ui.CloseMerchant();
+        //ui.CloseMerchant();
     }
 }

@@ -14,6 +14,9 @@ public class Player : Entity
 
     private float xInput; // Horizontal input value
     private float yInput; // Vertical input value
+    public int Level => stats.CurrentLevel;
+    public float CurrentExp => stats.CurrentEXP;
+    public float NextLevelExp => stats.GetNextLevelRequirement();
 
     public Player_SkillManager skillManager { get; private set; }
     public Entity_Mana mana { get; private set; } // Reference to the player's mana system
@@ -49,7 +52,11 @@ public class Player : Entity
     public float comboResetTime = 1;
     private Coroutine queuedAttackCo;
 
-    
+    [Header("Player Info")]
+    public Sprite Portrait;
+    [ TextArea(3, 10)]
+    public string Bio; // optional if you want bio too
+
     [Header("Movement details")]
     public float moveSpeed;
     public float jumpForce = 5;
@@ -108,6 +115,12 @@ public class Player : Entity
 
             TryInteract();
         }
+
+        if (rPlayer.GetButtonDown("TestEXP"))  // Assuming you have an input mapped to "TestEXP"
+        {
+            GainEXP(50);
+        }
+
     }
 
     private void UpdateMainUIHealth()
@@ -117,6 +130,22 @@ public class Player : Entity
             ui.playerHealthBar.UpdateHealth(health.GetCurrentHealth(), stats.GetMaxHealth());
         }
     }
+
+    private void UpdateMainUIMana()
+    {
+        if (ui != null && ui.playerManaBar != null)
+        {
+            ui.playerManaBar.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
+        }
+    }
+
+    //private void UpdateMainUIExp()
+    //{
+    //    if (ui != null && ui.playerExpBar != null)
+    //    {
+    //        ui.playerExpBar.UpdateExp(exp.GetCurrentMana(), stats.GetMaxExp());
+    //    }
+    //}
 
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
@@ -198,6 +227,20 @@ public class Player : Entity
 
         closest.GetComponent<IInteractable>().Interact(); // Call the Interact method on the closest interactable object
     }
+
+    public void GainEXP(float amount)
+    {
+        stats.AddEXP(amount);
+
+        if (ui != null)
+        {
+            ui.StatusPanel?.UpdateStatus(this);
+            ui.inGameUI?.UpdateExpBar();
+        }
+    }
+
+
+
 
     private void OnEnable()
     {

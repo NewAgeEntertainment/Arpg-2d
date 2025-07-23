@@ -16,7 +16,7 @@ public class Object_Blacksmith : Object_NPC, IInteractable
         storage.SetInventory(player.GetComponent<Inventory_Player>());
         ui.CraftUI.SetupCraftUI(storage);
 
-        ui.OpenCraft();
+        //ui.OpenCraft();
         ui.StopPlayerControls(true); // ✅ Freeze player input
     }
 
@@ -31,7 +31,7 @@ public class Object_Blacksmith : Object_NPC, IInteractable
     {
         base.OnTriggerExit2D(collision);
         ui.SwitchOffAllToolTips();
-        ui.CloseCraft();
+        //ui.CloseCraft();
         ui.StopPlayerControls(false); // ✅ Resume player input
     }
 }

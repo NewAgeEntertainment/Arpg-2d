@@ -4,12 +4,10 @@ public abstract class ItemEffect_DataSO : ScriptableObject
 {
     [TextArea] public string effectDescription;
 
-    // TEMPORARY reference if needed (used by Subscribe/Unsubscribe systems)
     protected Player player;
 
     public virtual bool CanBeUsed(Player player) => true;
 
-    // ✳️ NEW: Use this for most item usage
     public virtual void ExecuteEffect(Player target)
     {
         this.player = target;
@@ -17,4 +15,9 @@ public abstract class ItemEffect_DataSO : ScriptableObject
 
     public virtual void Subscribe(Player player) => this.player = player;
     public virtual void Unsubscribe() => player = null;
+
+    // ✅ NEW: Indicates if the effect needs a target (like a player) to function
+    public virtual bool RequiresTarget => true;
 }
+//public override bool RequiresTarget => false;
+

@@ -1,13 +1,20 @@
 ﻿using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using Rewired;
 
 public class UI_Inventory : UI_Panel
 {
+    [Header("Rewired Input")]
+    [SerializeField] private int playerID = 0;
+    [SerializeField] private string cancelAction = "Cancel";
+    [SerializeField] private string assignPopupAction = "AssignPopup";
+    [SerializeField] private string useOnPlayerAction = "UseOnPlayer";
+    private Rewired.Player rPlayer;
+
     [Header("References")]
     [SerializeField] private Inventory_Player inventory;
     [SerializeField] private UI_ItemSlotParent backpackSlotsParent;
-    [SerializeField] private TMP_InputField searchField;
     [SerializeField] private TextMeshProUGUI goldText;
 
     [Header("Panels")]
@@ -22,9 +29,8 @@ public class UI_Inventory : UI_Panel
     [Header("Actor Buttons")]
     [SerializeField] private List<UI_CharacterProfileButton> actorButtons;
 
-    private ItemType? currentFilter = null;
     private bool isOpen = false;
-
+    private ItemType? currentFilter = null;
     private Inventory_Item itemBeingAssigned;
 
     private enum PanelState { None, Category, ItemList, ActorSelect, AssignPopup }
@@ -36,20 +42,50 @@ public class UI_Inventory : UI_Panel
             inventory = FindFirstObjectByType<Inventory_Player>();
 
         inventory.OnInventoryChange += UpdateUI;
+
+        if (backpackSlotsParent != null)
+            backpackSlotsParent.OnSlotSubmit += OnItemSlotSubmit;
+
         CloseInventory();
+    }
+
+    private void Start()
+    {
+        rPlayer = ReInput.players.GetPlayer(playerID);
     }
 
     private void OnDestroy()
     {
         if (inventory != null)
             inventory.OnInventoryChange -= UpdateUI;
+
+        if (backpackSlotsParent != null)
+            backpackSlotsParent.OnSlotSubmit -= OnItemSlotSubmit;
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (rPlayer == null || !isOpen) return;
+
+        if (rPlayer.GetButtonDown(cancelAction))
         {
             HandleCancel();
+        }
+
+        if (rPlayer.GetButtonDown(assignPopupAction) && currentState == PanelState.ItemList)
+        {
+            if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
+            {
+                OpenAssignPopup(selected);
+            }
+        }
+
+        if (rPlayer.GetButtonDown(useOnPlayerAction) && currentState == PanelState.ItemList)
+        {
+            if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
+            {
+                OpenActorSelectPanel(selected);
+            }
         }
     }
 
@@ -63,7 +99,7 @@ public class UI_Inventory : UI_Panel
     public void CloseInventory()
     {
         isOpen = false;
-        CloseAll();
+        CloseAllPanels();
         gameObject.SetActive(false);
     }
 
@@ -74,48 +110,39 @@ public class UI_Inventory : UI_Panel
         switch (currentState)
         {
             case PanelState.ActorSelect:
-                CloseActorSelectPanel();
+                actorSelectPanel.SetActive(false);
                 OpenItemListPanel();
                 return true;
             case PanelState.AssignPopup:
-                CloseAssignPopup();
+                assignPopupPanel.SetActive(false);
                 OpenItemListPanel();
                 return true;
             case PanelState.ItemList:
-                CloseItemListPanel();
+                itemListPanel.SetActive(false);
                 OpenCategoryPanel();
                 return true;
             case PanelState.Category:
                 CloseInventory();
-
-                var ui = FindObjectOfType<UI>();
-                if (ui != null)
-                {
-                    ui.OpenMainMenuDirect();
-                }
+                FindObjectOfType<UI>()?.OpenMainMenuDirect();
                 return true;
-
             default:
                 return false;
         }
     }
 
-
-
-
     public void SetFilter(string filterName)
     {
-        switch (filterName)
+        currentFilter = filterName switch
         {
-            case "All": currentFilter = null; break;
-            case "Items": currentFilter = ItemType.Consumable; break;
-            case "Materials": currentFilter = ItemType.Material; break;
-            case "Weapons": currentFilter = ItemType.Weapon; break;
-            case "Armor": currentFilter = ItemType.Armor; break;
-            case "Trinkets": currentFilter = ItemType.trinket; break;
-            case "KeyItems": currentFilter = ItemType.Key; break;
-            default: currentFilter = null; break;
-        }
+            "All" => null,
+            "Items" => ItemType.Consumable,
+            "Materials" => ItemType.Material,
+            "Weapons" => ItemType.Weapon,
+            "Armor" => ItemType.Armor,
+            "Trinkets" => ItemType.trinket,
+            "KeyItems" => ItemType.Key,
+            _ => null
+        };
 
         OpenItemListPanel();
         UpdateUI();
@@ -123,63 +150,50 @@ public class UI_Inventory : UI_Panel
 
     public void OpenCategoryPanel()
     {
-        CloseAll();
+        CloseAllPanels();
         categoryPanel.SetActive(true);
         currentState = PanelState.Category;
     }
 
     public void OpenItemListPanel()
     {
-        CloseAll();
+        CloseAllPanels();
         itemListPanel.SetActive(true);
         currentState = PanelState.ItemList;
+        UpdateUI();
     }
 
     public void OpenActorSelectPanel(Inventory_Item item)
     {
-        CloseAll();
+        CloseAllPanels();
         actorSelectPanel.SetActive(true);
         currentState = PanelState.ActorSelect;
-
         itemBeingAssigned = item;
 
         foreach (var button in actorButtons)
         {
-            if (button != null && button.gameObject.activeSelf)
+            if (button != null && button.gameObject.activeSelf && button.linkedPlayer != null)
             {
-                if (button.linkedPlayer != null)
-                {
-                    button.Setup((p) => OnPlayerSelectedFromActorPanel(p));
-                }
-                else
-                {
-                    Debug.LogWarning($"[Inventory] Button {button.name} is missing a linked player reference.");
-                }
+                button.Setup((p) => OnPlayerSelectedFromActorPanel(p));
             }
         }
-
-        Debug.Log($"[Inventory] Opened Actor Select for {item.itemData.itemName}");
     }
 
     public void OpenAssignPopup(Inventory_Item item)
     {
-        CloseAll();
-        assignPopupPanel.SetActive(true);
+        CloseAllPanels();
+        assignPopupPanel?.SetActive(true);
         currentState = PanelState.AssignPopup;
-
         itemBeingAssigned = item;
 
         if (assignAmountInput != null)
             assignAmountInput.text = "1";
 
-        Debug.Log($"[Inventory] Opened Assign Popup for {item.itemData.itemName}");
+        Debug.Log($"[Inventory] Assign Popup opened for {item.itemData.itemName}");
     }
 
-    private void CloseItemListPanel() => itemListPanel?.SetActive(false);
-    private void CloseActorSelectPanel() => actorSelectPanel?.SetActive(false);
-    private void CloseAssignPopup() => assignPopupPanel?.SetActive(false);
 
-    private void CloseAll()
+    private void CloseAllPanels()
     {
         categoryPanel?.SetActive(false);
         itemListPanel?.SetActive(false);
@@ -187,8 +201,6 @@ public class UI_Inventory : UI_Panel
         assignPopupPanel?.SetActive(false);
         currentState = PanelState.None;
     }
-
-    public void OnSearchInputChanged() => UpdateUI();
 
     public void UpdateUI()
     {
@@ -202,66 +214,44 @@ public class UI_Inventory : UI_Panel
         combined.AddRange(inventory.storage.materialStash);
 
         var filtered = new List<Inventory_Item>();
-
         foreach (var item in combined)
         {
-            if (currentFilter.HasValue)
-            {
-                if (item.itemData.itemType == currentFilter.Value)
-                    filtered.Add(item);
-            }
-            else
-            {
+            if (!currentFilter.HasValue || item.itemData.itemType == currentFilter.Value)
                 filtered.Add(item);
-            }
         }
 
-        if (searchField != null && !string.IsNullOrEmpty(searchField.text))
+        if (backpackSlotsParent == null)
         {
-            string query = searchField.text.ToLower();
-            filtered = filtered.FindAll(i => i.itemData.itemName.ToLower().Contains(query));
+            Debug.LogError("[UI_Inventory] backpackSlotsParent is null!");
+            return;
         }
 
         backpackSlotsParent.UpdateSlots(filtered);
     }
 
-    public void OnPlayerSelectedFromActorPanel(Player targetPlayer)
+    public void OnPlayerSelectedFromActorPanel(Player player)
     {
         if (itemBeingAssigned == null) return;
 
-        Inventory_Item matchedItem = inventory.FindSameItem(itemBeingAssigned);
+        var matchedItem = inventory.FindSameItem(itemBeingAssigned);
         if (matchedItem == null) return;
 
-        if (matchedItem.itemEffect != null && matchedItem.itemEffect.CanBeUsed(targetPlayer))
+        if (matchedItem.itemEffect != null && matchedItem.itemEffect.CanBeUsed(player))
         {
-            matchedItem.itemEffect.Subscribe(targetPlayer);
-            matchedItem.itemEffect.ExecuteEffect(targetPlayer);
-
-            Debug.Log($"[Inventory] Used {matchedItem.itemData.itemName} on {targetPlayer.name}");
+            matchedItem.itemEffect.Subscribe(player);
+            matchedItem.itemEffect.ExecuteEffect(player);
 
             inventory.RemoveOneItem(matchedItem);
             inventory.TriggerUpdateUI();
-
             UpdateActorSelectButtons();
-        }
-        else
-        {
-            Debug.Log($"[Inventory] {matchedItem.itemData.itemName} cannot be used on {targetPlayer.name}");
         }
     }
 
     private void UpdateActorSelectButtons()
     {
-        var buttons = actorSelectPanel.GetComponentsInChildren<UI_CharacterProfileButton>(true);
-        foreach (var button in buttons)
-        {
+        foreach (var button in actorButtons)
             button.RefreshBars();
-        }
     }
-
-    // ------------------------------
-    // 🔹 Assign to Quick Slot
-    // ------------------------------
 
     public void AssignSlot1() => AssignToQuickSlot(1);
     public void AssignSlot2() => AssignToQuickSlot(2);
@@ -276,7 +266,6 @@ public class UI_Inventory : UI_Panel
         if (amount <= 0) return;
 
         inventory.SetQuickItemInSlot(slotNumber, itemBeingAssigned, amount);
-        Debug.Log($"[Inventory] Assigned {amount}x {itemBeingAssigned.itemData.itemName} to Slot {slotNumber}");
 
         itemBeingAssigned = null;
         assignPopupPanel.SetActive(false);
@@ -287,57 +276,46 @@ public class UI_Inventory : UI_Panel
     {
         if (itemBeingAssigned == null || assignAmountInput == null) return;
 
-        int current = GetAssignAmount();
-        current++;
+        int current = GetAssignAmount() + 1;
+        int totalOwned = inventory.CountItem(itemBeingAssigned.itemData);
+        int assignedElsewhere = inventory.CountAssigned(itemBeingAssigned.itemData);
 
-        int totalOwned = 0;
-        foreach (var item in inventory.itemList)
-        {
-            if (item.itemData == itemBeingAssigned.itemData)
-                totalOwned += item.stackSize;
-        }
-
-        int assignedElsewhere = 0;
-        foreach (var slot in inventory.quickSlots)
-        {
-            if (slot.item != null && slot.item.itemData == itemBeingAssigned.itemData)
-                assignedElsewhere += slot.slotStack;
-        }
-
-        int maxAssignable = totalOwned;
+        int maxAssignable = totalOwned - assignedElsewhere;
         if (current > maxAssignable) current = maxAssignable;
 
-        assignAmountInput.text = current.ToString();
+        assignAmountInput.text = Mathf.Max(1, current).ToString();
     }
 
     public void DecreaseAssignAmount()
     {
         if (itemBeingAssigned == null || assignAmountInput == null) return;
 
-        int current = GetAssignAmount();
-        current = Mathf.Max(1, current - 1);
-
+        int current = Mathf.Max(1, GetAssignAmount() - 1);
         assignAmountInput.text = current.ToString();
     }
 
     private int GetAssignAmount()
     {
         if (assignAmountInput == null) return 1;
-
-        if (int.TryParse(assignAmountInput.text, out int result))
-            return Mathf.Max(1, result);
-
-        return 1;
+        return int.TryParse(assignAmountInput.text, out int result) ? Mathf.Max(1, result) : 1;
     }
 
     public void GoToMainMenuPanel()
     {
-        var ui = FindObjectOfType<UI>();
-        if (ui != null)
-        {
-            ui.CloseAllPanels();
-            ui.OpenMainMenuDirect();
-        }
+        FindObjectOfType<UI>()?.OpenMainMenuDirect();
     }
 
+    private void OnItemSlotSubmit(Inventory_Item item)
+    {
+        if (item == null) return;
+
+        if (item.itemData.isUsable)
+        {
+            OpenActorSelectPanel(item);
+        }
+        else
+        {
+            OpenAssignPopup(item);
+        }
+    }
 }

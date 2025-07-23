@@ -236,4 +236,34 @@ public class Inventory_Player : Inventory_Base
             Debug.Log($"[Inventory_Player] No item equipped in slot type: {slotType}");
         }
     }
+
+    public int CountItem(ItemDataSO targetData)
+    {
+        int count = 0;
+        foreach (var item in itemList)
+        {
+            if (item.itemData == targetData)
+            {
+                count += item.stackSize;
+            }
+        }
+        return count;
+    }
+
+    public int CountAssigned(ItemDataSO targetData)
+    {
+        int assigned = 0;
+
+        foreach (var slot in quickSlots)
+        {
+            if (slot.item != null && slot.item.itemData == targetData)
+            {
+                assigned += slot.slotStack;
+            }
+        }
+
+        return assigned;
+    }
+
+
 }

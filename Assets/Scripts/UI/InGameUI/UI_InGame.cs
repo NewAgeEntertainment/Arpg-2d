@@ -6,8 +6,8 @@ using Rewired;
 
 public class UI_InGame : MonoBehaviour
 {
-    private Player player; // RPG Player MonoBehaviour
-    private Rewired.Player rplayer; // Rewired player input
+    private Player player;
+    private Rewired.Player rplayer;
 
     [Header("Quick Slots")]
     [SerializeField] private UI_QuickItemSlot quickSlot1;
@@ -21,9 +21,12 @@ public class UI_InGame : MonoBehaviour
     [Header("Health & Mana")]
     [SerializeField] private Slider healthSlider;
     [SerializeField] private TextMeshProUGUI healthText;
-
     [SerializeField] private Slider manaSlider;
     [SerializeField] private TextMeshProUGUI manaText;
+
+    [Header("EXP Bar")]
+    [SerializeField] private Slider expSlider;
+    [SerializeField] private TextMeshProUGUI expText;
 
     [Header("Rewired")]
     [SerializeField] private int playerID = 0;
@@ -53,6 +56,7 @@ public class UI_InGame : MonoBehaviour
         UpdateHealthBar();
         UpdateManaBar();
         UpdateQuickSlots();
+        UpdateExpBar();
     }
 
     private void Update()
@@ -91,6 +95,18 @@ public class UI_InGame : MonoBehaviour
 
         manaText.text = $"{currentMana}/{maxMana}";
         manaSlider.value = player.mana.GetManaPercent();
+    }
+
+    // ------------------------------
+    // 📌 EXP BAR
+    // ------------------------------
+    public void UpdateExpBar()
+    {
+        float currentExp = player.CurrentExp;
+        float nextLevelExp = player.NextLevelExp;
+
+        expSlider.value = currentExp / nextLevelExp;
+        expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
     }
 
     // ------------------------------

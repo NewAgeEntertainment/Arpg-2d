@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using System;
 using System.Collections;
 
 public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
@@ -9,11 +10,14 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     protected UI ui;
     protected RectTransform rect;
 
+    public event Action<Inventory_Item> OnSubmit;         // Left click
+    public event Action<Inventory_Item> OnRightClick;     // Right click
+
     [Header("UI Slot Setup")]
     [SerializeField] protected UnityEngine.UI.Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
-    [SerializeField] protected GameObject highlighter; // For visual highlight
+    [SerializeField] protected GameObject highlighter;
 
     private Coroutine blinkCoroutine;
 
@@ -41,7 +45,37 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         StopBlinkingHighlight();
     }
 
-    public virtual void OnPointerDown(PointerEventData eventData) { }
+    public virtual void Clear()
+    {
+        itemInSlot = null;
+        itemIcon.sprite = defaultIconSprite;
+        itemStackSize.text = "";
+        StopBlinkingHighlight();
+    }
+
+    public virtual void OnPointerDown(PointerEventData eventData)
+    {
+        if (itemInSlot == null) return;
+
+        // Left click → Use OnSubmit event
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            OnSubmit?.Invoke(itemInSlot);
+        }
+
+        // Right click → Open Assign Popup
+        else if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            var uiInventory = FindObjectOfType<UI_Inventory>();
+            if (uiInventory != null)
+            {
+                uiInventory.OpenAssignPopup(itemInSlot);
+            }
+        }
+
+        SetSelected(true); // Optional: Mark this slot as selected
+    }
+
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
@@ -53,15 +87,17 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         StopBlinkingHighlight();
     }
 
-    public virtual void Clear()
+    public virtual void HighlightOn()
     {
-        itemInSlot = null;
-        itemIcon.sprite = defaultIconSprite;
-        itemStackSize.text = "";
+        StartBlinkingHighlight();
+    }
+
+    public virtual void HighlightOff()
+    {
         StopBlinkingHighlight();
     }
 
-    private void StartBlinkingHighlight()
+    protected void StartBlinkingHighlight()
     {
         if (highlighter == null) return;
 
@@ -71,7 +107,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         blinkCoroutine = StartCoroutine(BlinkHighlight());
     }
 
-    private void StopBlinkingHighlight()
+    protected void StopBlinkingHighlight()
     {
         if (highlighter == null) return;
 
@@ -82,7 +118,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         highlighter.SetActive(false);
     }
 
-    private IEnumerator BlinkHighlight()
+    protected IEnumerator BlinkHighlight()
     {
         while (true)
         {
@@ -91,13 +127,15 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         }
     }
 
-    public virtual void HighlightOn()
+    private bool isSelected = false;
+
+    public bool IsSelected() => isSelected;
+
+    public void SetSelected(bool selected)
     {
-        StartBlinkingHighlight();
+        isSelected = selected;
+        if (highlighter != null)
+            highlighter.SetActive(selected);
     }
 
-    public virtual void HighlightOff()
-    {
-        StopBlinkingHighlight();
-    }
 }

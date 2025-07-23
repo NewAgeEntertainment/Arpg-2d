@@ -33,7 +33,9 @@ public class ItemDataSO : ScriptableObject
     public ItemEffect_DataSO itemEffect;
 
     [Header("Item stat modifiers")]
-    public List<ItemStatModifier> itemModifiers; // ✅ Add this!
+    public List<ItemStatModifier> itemModifiers;
+
+
 
     private void OnValidate()
     {
@@ -44,15 +46,12 @@ public class ItemDataSO : ScriptableObject
     {
         float maxRarity = 1000;
         float chance = (maxRarity - itemRarity + 1) / maxRarity * 100f;
-
         return Mathf.Min(chance, maxDropChance);
     }
-    
+
+    // ✅ Add this property to safely check if item is usable
+    public bool isUsable => itemEffect != null;
 }
-
-
-// Removed duplicate [Serializable] attribute  
-
 
 public class ItemStatModifier
 {
