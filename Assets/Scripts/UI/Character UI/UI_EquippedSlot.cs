@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.UI;
 
 public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHandler
 {
@@ -31,10 +31,7 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
         var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
         if (equipmentUI != null)
         {
-            equipmentUI.EnterSelectionMode(slotType);
-            equipmentUI.SetSelectionEnabled(true);
-            equipmentUI.EnableEquipmentSlotSelection(true);
-            equipmentUI.EquippedSlotsPanel.SetEquippedSlotInteractable(this);
+            equipmentUI.ShowEquipmentInventoryPanel(slotType);
         }
 
         StopBlinkingHighlight();
@@ -46,14 +43,6 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
         if (!isInteractable) return;
 
         StartBlinkingHighlight();
-
-        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
-        if (equipmentUI != null && !equipmentUI.IsInSelectionMode())
-        {
-            equipmentUI.Open();
-            equipmentUI.FilterBySlotType(slotType);
-            equipmentUI.EnableEquipmentSlotSelection(false);
-        }
     }
 
     public override void OnPointerExit(PointerEventData eventData)
@@ -116,5 +105,14 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
     {
         StopBlinkingHighlight();
         SetHighlightSolid(false);
+    }
+
+    private void Update()
+    {
+        var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
+        if (equipmentUI != null && equipmentUI.IsOpen && Rewired.ReInput.players.GetPlayer(0).GetButtonDown("UICancel"))
+        {
+            equipmentUI.HandleCancel();
+        }
     }
 }

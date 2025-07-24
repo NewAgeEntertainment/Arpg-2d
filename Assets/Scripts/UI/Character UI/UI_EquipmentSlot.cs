@@ -5,7 +5,7 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
 {
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
 
-    private bool isSelectable = false;
+    private bool isSelectable = true;
     private Coroutine blinkCoroutine;
 
     public void SetItem(Inventory_Item item)
@@ -31,15 +31,7 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
         if (equipmentUI == null) return;
 
         Debug.Log($"[UI_EquipmentSlot] Attempting to equip: {itemInSlot?.itemData?.itemName}");
-
-        if (equipmentUI.IsInSelectionMode() && equipmentUI.IsSelectionEnabled())
-        {
-            equipmentUI.SwapEquippedItem(itemInSlot);
-        }
-        else
-        {
-            Debug.Log("[UI_EquipmentSlot] Not in selection mode or selection not enabled.");
-        }
+        equipmentUI.SwapEquippedItem(itemInSlot);
 
         StopBlinkingHighlight();
         SetHighlightSolid(true);

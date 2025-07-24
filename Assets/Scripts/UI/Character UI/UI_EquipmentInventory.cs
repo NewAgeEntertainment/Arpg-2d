@@ -10,7 +10,7 @@ public class UI_EquipmentInventory : UI_Panel
     [SerializeField] private Inventory_Player playerInventory;
 
     [Header("Unequipped Slots")]
-    [SerializeField] private Transform slotContainer;
+    [SerializeField] private Transform equipmentSlotPanel;
     [SerializeField] private UI_EquipmentSlot slotPrefab;
 
     [Header("Equipped Slots Parent")]
@@ -40,8 +40,12 @@ public class UI_EquipmentInventory : UI_Panel
     public bool IsOpen => isOpen;
     public UI_EquipSlotParent EquippedSlotsPanel => equippedSlotsPanel;
 
-    private bool selectionEnabled = false;
-    private bool inSelectionMode = false;
+    private float cancelCooldown = 0f;
+    private const float cancelCooldownDuration = 0.2f; // 200 ms debounce
+
+    private enum PanelState { None, EquippedPanel, ItemList }
+    private PanelState currentState = PanelState.None;
+
     private ItemType? currentFilter = null;
 
     private void Awake()
@@ -53,29 +57,24 @@ public class UI_EquipmentInventory : UI_Panel
         equipmentInventory.OnInventoryChange += UpdateUI;
         playerInventory.OnInventoryChange += UpdateUI;
 
-        uiSlots.AddRange(slotContainer.GetComponentsInChildren<UI_EquipmentSlot>(true));
+        uiSlots.AddRange(equipmentSlotPanel.GetComponentsInChildren<UI_EquipmentSlot>(true));
         foreach (var slot in uiSlots)
         {
             slot.SetEquipmentToolTip(equipmentToolTip);
+            slot.SetSelectable(true);
         }
 
         Close();
     }
 
-    private void Update()
-    {
-        if (!isOpen) return;
+    
 
-        if (rPlayer.GetButtonDown(cancelAction))
-        {
-            HandleCancel();
-        }
-    }
 
     public void Open()
     {
         isOpen = true;
         panelRoot?.SetActive(true);
+        ShowEquippedPanel();
         UpdateUI();
     }
 
@@ -84,6 +83,7 @@ public class UI_EquipmentInventory : UI_Panel
         isOpen = false;
         panelRoot?.SetActive(false);
         equipmentToolTip?.ShowEquipmentToolTip(false, null);
+        currentState = PanelState.None;
     }
 
     public void UpdateUI()
@@ -110,39 +110,24 @@ public class UI_EquipmentInventory : UI_Panel
         equippedSlotsPanel?.UpdateEquipmentSlots(playerInventory.equipList);
     }
 
-    public void EnterSelectionMode(ItemType slotType)
+    public void ShowEquipmentInventoryPanel(ItemType filterType)
     {
-        inSelectionMode = true;
-        currentFilter = slotType;
-        FilterBySlotType(slotType);
-        if (removeButton != null)
-            removeButton.interactable = true;
-    }
-
-    public void ExitSelectionMode()
-    {
-        inSelectionMode = false;
-        if (removeButton != null)
-            removeButton.interactable = false;
-
-        foreach (var slot in uiSlots)
-        {
-            slot.SetSelectable(false);
-        }
-
-        ResetAllHighlights();
+        currentFilter = filterType;
+        equippedSlotsPanel?.gameObject.SetActive(false);
+        equipmentSlotPanel?.gameObject.SetActive(true);
+        removeButton?.gameObject.SetActive(true);
+        currentState = PanelState.ItemList;
+        UpdateUI();
     }
 
     public void RemoveCurrentlyEquipped()
     {
-        if (!inSelectionMode || currentFilter == null) return;
+        if (currentFilter == null) return;
 
         playerInventory.UnequipItemByType(currentFilter.Value);
         PlaySound(unequipSound);
 
-        ExitSelectionMode();
-        EnableEquippedSlotInteraction(true);
-        ResetAllHighlights();
+        ShowEquippedPanel();
         UpdateUI();
     }
 
@@ -153,40 +138,17 @@ public class UI_EquipmentInventory : UI_Panel
         playerInventory.TryEquipFromEquipmentInventory(newItem);
         PlaySound(equipSound);
 
-        ExitSelectionMode();
-        EnableEquippedSlotInteraction(true);
+        ShowEquippedPanel();
+        UpdateUI();
+    }
+
+    private void ShowEquippedPanel()
+    {
+        equipmentSlotPanel?.gameObject.SetActive(false);
+        equippedSlotsPanel?.gameObject.SetActive(true);
+        removeButton?.gameObject.SetActive(false);
         ResetAllHighlights();
-        UpdateUI();
-    }
-
-    public void FilterBySlotType(ItemType slotType)
-    {
-        currentFilter = slotType;
-        UpdateUI();
-    }
-
-    public void SetSelectionEnabled(bool enabled)
-    {
-        selectionEnabled = enabled;
-    }
-
-    public bool IsSelectionEnabled() => selectionEnabled;
-    public bool IsInSelectionMode() => inSelectionMode;
-
-    public void EnableEquipmentSlotSelection(bool enable)
-    {
-        foreach (var slot in uiSlots)
-        {
-            slot.SetSelectable(enable);
-        }
-    }
-
-    public void EnableEquippedSlotInteraction(bool enable)
-    {
-        foreach (var slot in equippedSlotsPanel.GetEquippedSlots())
-        {
-            slot.SetInteractable(enable);
-        }
+        currentState = PanelState.EquippedPanel;
     }
 
     public void ResetAllHighlights()
@@ -210,17 +172,26 @@ public class UI_EquipmentInventory : UI_Panel
         }
     }
 
+    private bool IsOnItemListPanel()
+    {
+        return equipmentSlotPanel.gameObject.activeSelf && !equippedSlotsPanel.gameObject.activeSelf;
+    }
+
+
     public override bool HandleCancel()
     {
-        if (IsInSelectionMode())
+        Debug.Log("[UI_EquipmentInventory] HandleCancel() called. Current state: " + currentState);
+
+        if (IsOnItemListPanel() || currentState == PanelState.ItemList)
         {
-            ExitSelectionMode();
+            Debug.Log("[UI_EquipmentInventory] Returning to Equipped Slot Panel");
+            ShowEquippedPanel();
             return true;
         }
 
+        Debug.Log("[UI_EquipmentInventory] Closing Equipment UI");
         Close();
-        var ui = FindObjectOfType<UI>();
-        ui?.OpenMainMenuDirect();
+        FindObjectOfType<UI>()?.OpenMainMenuDirect();
         return true;
     }
 

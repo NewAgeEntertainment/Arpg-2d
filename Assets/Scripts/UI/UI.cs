@@ -257,10 +257,22 @@ public class UI : MonoBehaviour
     public void HandleBackAction()
     {
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
-        if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel()) return;
+
+        // ✅ Prevents Equipment UI from closing completely when returning to EquippedPanel
+        if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel())
+        {
+            Debug.Log("[UI] Equipment panel handled cancel.");
+            return;
+        }
+
         if (skillTreeUI != null && isSkillTreeOpen && skillTreeUI.HandleCancel()) return;
         if (statusPanel != null && isStatusPanelOpen && statusPanel.HandleCancel()) return;
-        if (optionsUI != null && isOptionsOpen) { CloseOptions(); return; }
+
+        if (optionsUI != null && isOptionsOpen)
+        {
+            CloseOptions();
+            return;
+        }
 
         if (mainMenuPanel.activeSelf)
         {
@@ -268,7 +280,10 @@ public class UI : MonoBehaviour
             CheckStopPlayerControls();
             return;
         }
+
+        Debug.Log("[UI] No panels handled cancel.");
     }
+
 
     #endregion
 
