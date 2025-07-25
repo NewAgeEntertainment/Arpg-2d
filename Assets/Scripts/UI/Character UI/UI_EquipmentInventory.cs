@@ -67,9 +67,6 @@ public class UI_EquipmentInventory : UI_Panel
         Close();
     }
 
-    
-
-
     public void Open()
     {
         isOpen = true;
@@ -120,19 +117,6 @@ public class UI_EquipmentInventory : UI_Panel
         UpdateUI();
     }
 
-    public void SwapEquippedItem(Inventory_Item newItem)
-    {
-        if (newItem == null) return;
-
-        playerInventory.TryEquipFromEquipmentInventory(newItem);
-        PlaySound(equipSound);
-
-        ShowEquippedPanel();
-        UpdateUI();
-
-        equipmentToolTip?.ShowBaseStats(); // ← reset
-    }
-
     public void RemoveCurrentlyEquipped()
     {
         if (currentFilter == null) return;
@@ -142,11 +126,18 @@ public class UI_EquipmentInventory : UI_Panel
 
         ShowEquippedPanel();
         UpdateUI();
-
-        equipmentToolTip?.ShowBaseStats(); // ← reset
     }
 
+    public void SwapEquippedItem(Inventory_Item newItem)
+    {
+        if (newItem == null) return;
 
+        playerInventory.TryEquipFromEquipmentInventory(newItem);
+        PlaySound(equipSound);
+
+        ShowEquippedPanel();
+        UpdateUI();
+    }
 
     private void ShowEquippedPanel()
     {
@@ -182,7 +173,6 @@ public class UI_EquipmentInventory : UI_Panel
     {
         return equipmentSlotPanel.gameObject.activeSelf && !equippedSlotsPanel.gameObject.activeSelf;
     }
-
 
     public override bool HandleCancel()
     {

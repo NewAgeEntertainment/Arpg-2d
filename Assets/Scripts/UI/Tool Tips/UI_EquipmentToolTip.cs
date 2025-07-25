@@ -4,29 +4,32 @@ using UnityEngine;
 
 public class UI_EquipmentToolTip : MonoBehaviour
 {
-    [Header("Main Panel")]
+    [Header("Root")]
     [SerializeField] private GameObject tooltipPanel;
 
-    [Header("Text References")]
+    [Header("Header Texts")]
     [SerializeField] private TextMeshProUGUI itemName;
     [SerializeField] private TextMeshProUGUI itemType;
-    [SerializeField] private TextMeshProUGUI statInfo;
+
+    [Header("Stat Texts")]
+    [SerializeField] private TextMeshProUGUI strengthText;
+    [SerializeField] private TextMeshProUGUI defenseText;
+    [SerializeField] private TextMeshProUGUI intelligenceText;
+    [SerializeField] private TextMeshProUGUI luckText;
+    [SerializeField] private TextMeshProUGUI strokeText;
+    [SerializeField] private TextMeshProUGUI resilienceText;
+
+    [Header("Crit Stat Texts")]
+    [SerializeField] private TextMeshProUGUI critChanceText;
+    [SerializeField] private TextMeshProUGUI critPowerText;
+
+    [Header("Optional: Unique Effect Text")]
+    [SerializeField] private TextMeshProUGUI uniqueEffectText;
 
     private Player_Stats playerStats;
     private Inventory_Player playerInventory;
 
     private const float EPSILON = 0.0001f;
-
-    // Only these will be compared/shown
-    private static readonly StatType[] MajorStats =
-    {
-        StatType.Strength,
-        StatType.Defense,
-        StatType.Intelligence,
-        StatType.Luck,
-        StatType.Stroke,
-        StatType.Resilience
-    };
 
     private void Awake()
     {
@@ -35,7 +38,7 @@ public class UI_EquipmentToolTip : MonoBehaviour
 
         if (tooltipPanel != null)
         {
-            tooltipPanel.SetActive(true);   // Always visible
+            tooltipPanel.SetActive(true);
             ShowBaseStats();
         }
         else
@@ -44,22 +47,38 @@ public class UI_EquipmentToolTip : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// When show == true and item is valid equipment -> show comparison.
-    /// Otherwise, show base player stats.
-    /// </summary>
     public void ShowEquipmentToolTip(bool show, Inventory_Item item)
     {
         if (tooltipPanel == null) return;
 
-        if (show && item != null && item.itemData != null &&
+        bool validEquip =
+            show &&
+            item != null &&
+            item.itemData != null &&
             (item.itemData.itemType == ItemType.Weapon ||
              item.itemData.itemType == ItemType.Armor ||
-             item.itemData.itemType == ItemType.trinket))
+             item.itemData.itemType == ItemType.trinket);
+
+        if (validEquip)
         {
             if (itemName) itemName.text = item.itemData.itemName;
             if (itemType) itemType.text = item.itemData.itemType.ToString();
-            if (statInfo) statInfo.text = GetEquipmentInfo(item);
+
+            SetEquipmentStatComparison(item);
+
+            if (uniqueEffectText != null)
+            {
+                if (item.itemEffect != null)
+                {
+                    uniqueEffectText.gameObject.SetActive(true);
+                    uniqueEffectText.text = $"<b>Unique Effect:</b>\n<color=#00FFFF>{item.itemEffect.effectDescription}</color>";
+                }
+                else
+                {
+                    uniqueEffectText.gameObject.SetActive(false);
+                    uniqueEffectText.text = "";
+                }
+            }
         }
         else
         {
@@ -67,73 +86,75 @@ public class UI_EquipmentToolTip : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Show current player values for the major stats, with blank title/type.
-    /// </summary>
     public void ShowBaseStats()
     {
         if (itemName) itemName.text = "";
         if (itemType) itemType.text = "";
 
-        if (statInfo)
-            statInfo.text = GetBaseStatDisplay();
+        SetBaseStat(strengthText, StatType.Strength);
+        SetBaseStat(defenseText, StatType.Defense);
+        SetBaseStat(intelligenceText, StatType.Intelligence);
+        SetBaseStat(luckText, StatType.Luck);
+        SetBaseStat(strokeText, StatType.Stroke);
+        SetBaseStat(resilienceText, StatType.Resilience);
+
+        SetBaseStat(critChanceText, StatType.CritChance, true);
+        SetBaseStat(critPowerText, StatType.CritPower, true);
+
+        if (uniqueEffectText != null)
+        {
+            uniqueEffectText.gameObject.SetActive(false);
+            uniqueEffectText.text = "";
+        }
     }
 
-    private string GetBaseStatDisplay()
+    #region Base Stat Helpers
+    private void SetBaseStat(TextMeshProUGUI field, StatType type, bool asPercent = false)
     {
-        var sb = new StringBuilder();
-        if (playerStats == null)
-        {
-            sb.AppendLine("<i>No player stats found.</i>");
-            return sb.ToString();
-        }
+        if (field == null) return;
 
-        foreach (var s in MajorStats)
-        {
-            float value = playerStats.GetStatByType(s)?.GetValue() ?? 0f;
-            sb.AppendLine($"{s}: {value:0.##}");
-        }
+        float value = playerStats != null
+            ? playerStats.GetStatByType(type)?.GetValue() ?? 0f
+            : 0f;
 
-        return sb.ToString();
+        string formattedValue = asPercent ? $"{value:0.##}%" : $"{value:0.##}";
+        field.text = $"{type}: {formattedValue}";
+    }
+    #endregion
+
+    #region Comparison Helpers
+    private void SetEquipmentStatComparison(Inventory_Item newItem)
+    {
+        SetStatComparison(strengthText, StatType.Strength, newItem);
+        SetStatComparison(defenseText, StatType.Defense, newItem);
+        SetStatComparison(intelligenceText, StatType.Intelligence, newItem);
+        SetStatComparison(luckText, StatType.Luck, newItem);
+        SetStatComparison(strokeText, StatType.Stroke, newItem);
+        SetStatComparison(resilienceText, StatType.Resilience, newItem);
+
+        SetStatComparison(critChanceText, StatType.CritChance, newItem, true);
+        SetStatComparison(critPowerText, StatType.CritPower, newItem, true);
     }
 
-    private string GetEquipmentInfo(Inventory_Item newItem)
+    private void SetStatComparison(TextMeshProUGUI field, StatType statType, Inventory_Item newItem, bool asPercent = false)
     {
-        var sb = new StringBuilder();
+        if (field == null) return;
 
-        foreach (var s in MajorStats)
-            AppendMajorStatComparison(sb, s, newItem);
+        float currentWithAllGear = playerStats != null
+            ? playerStats.GetStatByType(statType)?.GetValue() ?? 0f
+            : 0f;
 
-        if (newItem.itemEffect != null)
-        {
-            sb.AppendLine();
-            sb.AppendLine("<b>Unique Effect:</b>");
-            sb.AppendLine($"<color=#00FFFF>{newItem.itemEffect.effectDescription}</color>");
-        }
-
-        return sb.ToString();
-    }
-
-    /// <summary>
-    /// Compares: (player stat WITHOUT currently equipped item of this slot) vs (with new item).
-    /// This guarantees we see red ▼ when the new gear is weaker.
-    /// </summary>
-    private void AppendMajorStatComparison(StringBuilder sb, StatType statType, Inventory_Item newItem)
-    {
-        float currentWithAllGear = playerStats != null ? playerStats.GetStatByType(statType)?.GetValue() ?? 0f : 0f;
-
-        // Currently equipped item of this same slot type
         Inventory_Item equippedItem = FindEquippedItemOfSameType(newItem.itemData.itemType);
 
-        // Remove the currently equipped item's contribution for this stat
-        float equippedModifier = equippedItem != null ? GetTotalModifierFor(equippedItem, statType) : 0f;
+        float equippedModifier = equippedItem != null
+            ? GetTotalModifierFor(equippedItem, statType)
+            : 0f;
+
         float baselineWithoutThisSlot = currentWithAllGear - equippedModifier;
 
-        // New item contribution
         float newItemModifier = GetTotalModifierFor(newItem, statType);
         float projectedWithNew = baselineWithoutThisSlot + newItemModifier;
 
-        // Delta vs current (i.e., new - equipped)
         float delta = newItemModifier - equippedModifier;
 
         string arrow = "-";
@@ -142,27 +163,28 @@ public class UI_EquipmentToolTip : MonoBehaviour
         if (delta > EPSILON)
         {
             arrow = "<color=green>▲</color>";
-            deltaTxt = $" <color=green>(+{delta:0.##})</color>";
+            deltaTxt = asPercent
+                ? $" <color=green>(+{delta:0.##}%)</color>"
+                : $" <color=green>(+{delta:0.##})</color>";
         }
         else if (delta < -EPSILON)
         {
             arrow = "<color=red>▼</color>";
-            deltaTxt = $" <color=red>({delta:0.##})</color>";
+            deltaTxt = asPercent
+                ? $" <color=red>({delta:0.##}%)</color>"
+                : $" <color=red>({delta:0.##})</color>";
         }
 
-        sb.AppendLine($"{statType}: {currentWithAllGear:0.##} → {projectedWithNew:0.##} {arrow}{deltaTxt}");
+        string currentStr = asPercent ? $"{currentWithAllGear:0.##}%" : $"{currentWithAllGear:0.##}";
+        string projectedStr = asPercent ? $"{projectedWithNew:0.##}%" : $"{projectedWithNew:0.##}";
+
+        field.text = $"{statType}: {currentStr} → {projectedStr} {arrow}{deltaTxt}";
     }
 
-    /// <summary>
-    /// Sums modifiers that affect the given stat, from BOTH:
-    /// - Inventory_Item.modifiers (EquipmentDataSO)
-    /// - ItemDataSO.itemModifiers (List<ItemStatModifier>)
-    /// </summary>
     private float GetTotalModifierFor(Inventory_Item item, StatType statType)
     {
         float total = 0f;
 
-        // EquipmentDataSO path (array)
         if (item?.modifiers != null)
         {
             foreach (var mod in item.modifiers)
@@ -172,7 +194,6 @@ public class UI_EquipmentToolTip : MonoBehaviour
             }
         }
 
-        // ItemDataSO path (list)
         if (item?.itemData?.itemModifiers != null)
         {
             foreach (var mod in item.itemData.itemModifiers)
@@ -190,5 +211,5 @@ public class UI_EquipmentToolTip : MonoBehaviour
         if (playerInventory == null) return null;
         return playerInventory.GetEquippedItemByType(type);
     }
-
+    #endregion
 }

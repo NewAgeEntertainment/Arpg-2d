@@ -14,6 +14,7 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
 
     [Header("Slot Type Label")]
     [SerializeField] private TextMeshProUGUI slotTypeLabel; // ✅ Assign this in the inspector
+    [SerializeField] private TextMeshProUGUI itemNameText;
 
     private bool isInteractable = true;
     private Coroutine blinkCoroutine;
@@ -51,7 +52,15 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
     public override void UpdateSlot(Inventory_Item item)
     {
         base.UpdateSlot(item);
+
+        // If the slot is empty (no item), show "Empty"
+        if (item == null || item.itemData == null)
+        {
+            if (itemNameText != null) // Assuming you have a TextMeshProUGUI or UI label for the item name
+                itemNameText.text = "Empty";
+        }
     }
+
 
     public override void OnPointerDown(PointerEventData eventData)
     {
