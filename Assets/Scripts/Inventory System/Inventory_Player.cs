@@ -92,6 +92,23 @@ public class Inventory_Player : Inventory_Base
     }
 
 
+    public Inventory_Item GetEquippedItemByType(ItemType type)
+    {
+        if (equipList == null) return null;
+
+        foreach (var eq in equipList)
+        {
+            if (eq == null) continue;
+
+            // Your Inventory_Equipped uses 'equipedItem'
+            Inventory_Item item = eq.equipedItem;
+            if (item != null && item.itemData != null && item.itemData.itemType == type)
+                return item;
+        }
+
+        return null;
+    }
+
 
 
     public void TryUseQuickItemInSlot(int slotNumber)

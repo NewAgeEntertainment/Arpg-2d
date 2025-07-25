@@ -120,17 +120,6 @@ public class UI_EquipmentInventory : UI_Panel
         UpdateUI();
     }
 
-    public void RemoveCurrentlyEquipped()
-    {
-        if (currentFilter == null) return;
-
-        playerInventory.UnequipItemByType(currentFilter.Value);
-        PlaySound(unequipSound);
-
-        ShowEquippedPanel();
-        UpdateUI();
-    }
-
     public void SwapEquippedItem(Inventory_Item newItem)
     {
         if (newItem == null) return;
@@ -140,7 +129,24 @@ public class UI_EquipmentInventory : UI_Panel
 
         ShowEquippedPanel();
         UpdateUI();
+
+        equipmentToolTip?.ShowBaseStats(); // ← reset
     }
+
+    public void RemoveCurrentlyEquipped()
+    {
+        if (currentFilter == null) return;
+
+        playerInventory.UnequipItemByType(currentFilter.Value);
+        PlaySound(unequipSound);
+
+        ShowEquippedPanel();
+        UpdateUI();
+
+        equipmentToolTip?.ShowBaseStats(); // ← reset
+    }
+
+
 
     private void ShowEquippedPanel()
     {

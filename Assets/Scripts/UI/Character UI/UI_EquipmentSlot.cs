@@ -55,8 +55,9 @@ public class UI_EquipmentSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitH
         StopBlinkingHighlight();
         SetHighlightSolid(false);
 
-        equipmentToolTip?.ShowEquipmentToolTip(false, null);
+        equipmentToolTip?.ShowEquipmentToolTip(false, null); // Will show base stats instead of hiding
     }
+
 
     private void StartBlinkingHighlight()
     {

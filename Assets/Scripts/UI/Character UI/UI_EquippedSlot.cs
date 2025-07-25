@@ -2,6 +2,7 @@
 using UnityEngine.EventSystems;
 using System.Collections;
 using UnityEngine.UI;
+using TMPro;
 
 public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHandler
 {
@@ -11,12 +12,40 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
     [SerializeField] private Button button;
 
+    [Header("Slot Type Label")]
+    [SerializeField] private TextMeshProUGUI slotTypeLabel; // ✅ Assign this in the inspector
+
     private bool isInteractable = true;
     private Coroutine blinkCoroutine;
 
     private void OnValidate()
     {
         gameObject.name = "UI_EquippedSlot - " + slotType.ToString();
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying && slotTypeLabel != null)
+        {
+            slotTypeLabel.text = slotType.ToString();
+        }
+#endif
+    }
+
+    private void Start()
+    {
+        UpdateSlotTypeLabel();
+    }
+
+    private void OnEnable()
+    {
+        UpdateSlotTypeLabel();
+    }
+
+    private void UpdateSlotTypeLabel()
+    {
+        if (slotTypeLabel != null)
+        {
+            slotTypeLabel.text = slotType.ToString();
+        }
     }
 
     public override void UpdateSlot(Inventory_Item item)
@@ -51,8 +80,10 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
 
         StopBlinkingHighlight();
         SetHighlightSolid(false);
-        equipmentToolTip?.ShowEquipmentToolTip(false, null);
+        equipmentToolTip?.ShowEquipmentToolTip(false, null); // This will call ShowBaseStats()
     }
+
+
 
     public void SetInteractable(bool interactable)
     {
