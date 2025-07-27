@@ -14,13 +14,14 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     public event Action<Inventory_Item> OnRightClick;     // Right click
 
     [Header("UI Slot Setup")]
-    [SerializeField] private TMPro.TextMeshProUGUI itemNameText; // Add this field
+    [SerializeField] private TMPro.TextMeshProUGUI itemNameText;
     [SerializeField] protected UnityEngine.UI.Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
     [SerializeField] protected GameObject highlighter;
 
     private Coroutine blinkCoroutine;
+    private bool isSelected = false;
 
     protected virtual void Awake()
     {
@@ -35,27 +36,54 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         if (itemInSlot == null || itemInSlot.itemData == null)
         {
-            itemIcon.sprite = defaultIconSprite;
-            itemStackSize.text = "";
-            if (itemNameText != null)
-                itemNameText.text = "";
+            if (itemIcon) itemIcon.sprite = defaultIconSprite;
+            if (itemNameText) itemNameText.text = "";
+            ApplyStackSizeText();
             StopBlinkingHighlight();
             return;
         }
 
-        itemIcon.sprite = itemInSlot.itemData.itemIcon;
-        itemStackSize.text = itemInSlot.stackSize > 1 ? $"x{itemInSlot.stackSize}" : "";
-        if (itemNameText != null)
+        if (itemIcon)
+        {
+            itemIcon.enabled = true;
+            itemIcon.sprite = itemInSlot.itemData.itemIcon;
+        }
+
+        if (itemNameText)
             itemNameText.text = itemInSlot.itemData.itemName;
+
+        ApplyStackSizeText();
         StopBlinkingHighlight();
     }
 
     public virtual void Clear()
     {
         itemInSlot = null;
-        itemIcon.sprite = defaultIconSprite;
-        itemStackSize.text = "";
+        if (itemIcon)
+        {
+            itemIcon.sprite = defaultIconSprite;
+            itemIcon.enabled = defaultIconSprite != null;
+        }
+
+        if (itemNameText)
+            itemNameText.text = "";
+
+        ApplyStackSizeText(); // will clear it by default
         StopBlinkingHighlight();
+        SetSelected(false);
+    }
+
+    /// <summary>
+    /// Override this in derived classes (e.g., Merchant) to suppress stack display.
+    /// </summary>
+    protected virtual void ApplyStackSizeText()
+    {
+        if (!itemStackSize) return;
+
+        if (itemInSlot != null && itemInSlot.itemData != null && itemInSlot.stackSize > 1)
+            itemStackSize.text = $"x{itemInSlot.stackSize}";
+        else
+            itemStackSize.text = "";
     }
 
     public virtual void OnPointerDown(PointerEventData eventData)
@@ -64,15 +92,14 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         var data = itemInSlot.itemData;
 
-        // Left click → Use item (e.g., open Actor Select Panel if usable)
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             OnSubmit?.Invoke(itemInSlot);
         }
-
-        // Right click → Open Assign Popup (only if item is a Consumable)
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
+            OnRightClick?.Invoke(itemInSlot);
+
             if (data.itemType == ItemType.Consumable)
             {
                 var uiInventory = FindObjectOfType<UI_Inventory>();
@@ -84,12 +111,8 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
             }
         }
 
-        SetSelected(true); // Optional: mark slot as selected
+        SetSelected(true);
     }
-
-
-
-
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
@@ -101,15 +124,8 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         StopBlinkingHighlight();
     }
 
-    public virtual void HighlightOn()
-    {
-        StartBlinkingHighlight();
-    }
-
-    public virtual void HighlightOff()
-    {
-        StopBlinkingHighlight();
-    }
+    public virtual void HighlightOn() => StartBlinkingHighlight();
+    public virtual void HighlightOff() => StopBlinkingHighlight();
 
     protected void StartBlinkingHighlight()
     {
@@ -141,8 +157,6 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         }
     }
 
-    private bool isSelected = false;
-
     public bool IsSelected() => isSelected;
 
     public void SetSelected(bool selected)
@@ -151,5 +165,4 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
         if (highlighter != null)
             highlighter.SetActive(selected);
     }
-
 }

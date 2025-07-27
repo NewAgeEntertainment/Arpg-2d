@@ -26,7 +26,6 @@ public class UI_ItemSlotParent : MonoBehaviour
 
     private void HandleSlotRightClick(Inventory_Item item)
     {
-        // Right click opens Assign Popup by default
         OnSlotSubmit?.Invoke(item);
     }
 
@@ -51,7 +50,6 @@ public class UI_ItemSlotParent : MonoBehaviour
                 return item != null;
             }
         }
-
         item = null;
         return false;
     }

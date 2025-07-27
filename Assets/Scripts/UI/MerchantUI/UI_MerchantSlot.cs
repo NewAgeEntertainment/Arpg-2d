@@ -1,17 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class UI_MerchantSlot : UI_ItemSlot
 {
     private Inventory_Merchant merchant;
     private Inventory_Player inventory;
 
-    [Header("Optional Equip Confirm UI")]
-    [SerializeField] private GameObject equipConfirmPopup; // Drag your popup here!
-    private Inventory_Item pendingItemToEquip;
+    [Header("Merchant-Specific UI")]
+    [SerializeField] private TextMeshProUGUI priceText; // Assign in Inspector
 
     public enum MerchantSlotType { MerchantSlot, PlayerSlot }
-    public MerchantSlotType slotType;
+    public MerchantSlotType slotType = MerchantSlotType.MerchantSlot;
+
+    public event System.Action<Inventory_Item> onClick;
+    public event System.Action<Inventory_Item> onHover;
+    public event System.Action onExit;
 
     public void SetUpMerchantUI(Inventory_Merchant merchant, Inventory_Player inventory)
     {
@@ -19,77 +23,59 @@ public class UI_MerchantSlot : UI_ItemSlot
         this.inventory = inventory;
     }
 
+    public override void UpdateSlot(Inventory_Item item)
+    {
+        base.UpdateSlot(item);
+
+        if (priceText != null)
+        {
+            if (item == null || item.itemData == null)
+            {
+                priceText.text = "";
+                return;
+            }
+
+            if (slotType == MerchantSlotType.MerchantSlot)
+            {
+                // Show BUY price (per item)
+                priceText.text = $"{item.buyPrice}g";
+            }
+            else if (slotType == MerchantSlotType.PlayerSlot)
+            {
+                // Show SELL price with stack size
+                int totalSellPrice = Mathf.FloorToInt(item.sellPrice * item.stackSize);
+                priceText.text = $"x{item.stackSize} - {totalSellPrice}g";
+            }
+        }
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        if (priceText != null)
+            priceText.text = "";
+    }
+
     public override void OnPointerDown(PointerEventData eventData)
     {
         if (itemInSlot == null) return;
 
-        bool rightClick = eventData.button == PointerEventData.InputButton.Right;
-        bool leftClick = eventData.button == PointerEventData.InputButton.Left;
-
-        if (slotType == MerchantSlotType.PlayerSlot)
+        if (eventData.button == PointerEventData.InputButton.Left)
         {
-            if (rightClick)
-            {
-                bool sellFullStack = Input.GetKey(KeyCode.LeftControl);
-                merchant.TrySellItem(itemInSlot, sellFullStack);
-            }
-            else if (leftClick)
-            {
-                if (itemInSlot.itemData.itemType == ItemType.Consumable)
-                {
-                    inventory.TryUseItem(itemInSlot, inventory.GetComponent<Player>());
-                }
-                else
-                {
-                    Debug.Log($"[{itemInSlot.itemData.itemType}] cannot be used here. Equip in equipment panel.");
-                }
-            }
+            onClick?.Invoke(itemInSlot);
         }
-        else if (slotType == MerchantSlotType.MerchantSlot)
-        {
-            if (leftClick)
-            {
-                bool buyFullStack = Input.GetKey(KeyCode.LeftControl);
-                merchant.TryBuyItem(itemInSlot, buyFullStack);
-
-                if (itemInSlot.itemData.itemType == ItemType.Weapon ||
-                    itemInSlot.itemData.itemType == ItemType.Armor ||
-                    itemInSlot.itemData.itemType == ItemType.trinket)
-                {
-                    // Gear → show confirm popup
-                    pendingItemToEquip = itemInSlot;
-                    if (equipConfirmPopup != null)
-                        equipConfirmPopup.SetActive(true);
-                }
-            }
-        }
-
-        ui.itemToolTip.ShowToolTip(false, null);
-    }
-
-    public void ConfirmEquipYes()
-    {
-        if (pendingItemToEquip != null)
-        {
-            inventory.TryEquipFromEquipmentInventory(pendingItemToEquip);
-            pendingItemToEquip = null;
-        }
-
-        if (equipConfirmPopup != null)
-            equipConfirmPopup.SetActive(false);
-    }
-
-    public void ConfirmEquipNo()
-    {
-        pendingItemToEquip = null;
-
-        if (equipConfirmPopup != null)
-            equipConfirmPopup.SetActive(false);
     }
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
-        if (itemInSlot == null) return;
-        ui.itemToolTip.ShowToolTip(true, itemInSlot);
+        if (itemInSlot != null)
+        {
+            onHover?.Invoke(itemInSlot);
+        }
+    }
+
+    public override void OnPointerExit(PointerEventData eventData)
+    {
+        onExit?.Invoke();
     }
 }

@@ -18,8 +18,10 @@ public class UI : MonoBehaviour
     [Header("Main UI Panels")]
     [SerializeField] private UI_Inventory inventoryUI;
     public UI_Inventory InventoryUI => inventoryUI;
+
     [SerializeField] private UI_SkillTree skillTreeUI;
     public UI_SkillTree SkillTreeUI => skillTreeUI;
+
     [SerializeField] private UI_StatusPanel statusPanel;
     public UI_StatusPanel StatusPanel => statusPanel;
 
@@ -33,6 +35,7 @@ public class UI : MonoBehaviour
     public UI_Craft CraftUI => craftUI;
 
     [SerializeField] private UI_EquipmentInventory equipmentInventoryPanel;
+
     public UI_InGame inGameUI;
     public UI_Options optionsUI { get; private set; }
 
@@ -62,7 +65,6 @@ public class UI : MonoBehaviour
     private bool isStorageOpen = false;
     private bool isMerchantOpen = false;
     private bool isCraftOpen = false;
-
     #endregion
 
     private void Awake()
@@ -159,16 +161,17 @@ public class UI : MonoBehaviour
 
         if (optionsUI != null)
         {
-            optionsUI.OpenOptions();  // 💡 Always call OpenOptions directly
+            isOptionsOpen = true;
+            EnsureUIRootIsActive();
+            optionsUI.OpenOptions();
             Debug.Log("[UI] Opening Options Panel");
         }
     }
 
-
     public void CloseOptions()
     {
         isOptionsOpen = false;
-        optionsUI.ClosePanel();
+        optionsUI?.ClosePanel();
         CheckStopPlayerControls();
     }
 
@@ -191,6 +194,71 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
+    public void OpenCraft()
+    {
+        isCraftOpen = true;
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        // 🔒 Ensure Main Menu & Storage stay closed
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
+        if (storageUI != null)
+        {
+            storageUI.gameObject.SetActive(false);
+            isStorageOpen = false;
+        }
+
+        if (craftUI != null)
+        {
+            craftUI.gameObject.SetActive(true);
+            Debug.Log("[UI] Craft UI opened");
+        }
+    }
+
+    public void CloseCraft()
+    {
+        isCraftOpen = false;
+
+        if (craftUI != null)
+        {
+            craftUI.gameObject.SetActive(false);
+            Debug.Log("[UI] Craft UI closed");
+        }
+
+        CheckStopPlayerControls();
+    }
+
+    public void OpenMerchant(Inventory_Merchant merchant, Inventory_Player playerInv)
+    {
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        if (MerchantUI != null)
+        {
+            MerchantUI.gameObject.SetActive(true);
+            MerchantUI.SetUpMerchantUI(merchant, playerInv);
+        }
+
+        StopPlayerControls(true);
+        Debug.Log("[UI] Merchant UI opened");
+    }
+
+
+
+    public void CloseMerchant()
+    {
+        isMerchantOpen = false;
+
+        if (merchantUI != null)
+        {
+            merchantUI.gameObject.SetActive(false);
+            Debug.Log("[UI] Merchant UI closed");
+        }
+
+        CheckStopPlayerControls();
+    }
+
+
     public void OpenMainMenuDirect()
     {
         EnsureUIRootIsActive();
@@ -210,7 +278,7 @@ public class UI : MonoBehaviour
 
     private void CheckStopPlayerControls()
     {
-        if (!IsAnySubPanelOpen() && !mainMenuPanel.activeSelf)
+        if (!IsAnySubPanelOpen() && (mainMenuPanel == null || !mainMenuPanel.activeSelf))
         {
             StopPlayerControls(false);
         }
@@ -219,12 +287,17 @@ public class UI : MonoBehaviour
     private bool IsAnySubPanelOpen()
     {
         return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen || isOptionsOpen
-               || isStorageOpen || isMerchantOpen || isCraftOpen;
+               || isStorageOpen || isMerchantOpen || isCraftOpen || isStatusPanelOpen;
     }
 
     private void EnsureUIRootIsActive()
     {
         uiRoot?.SetActive(true);
+
+        // 🔒 Make sure main menu doesn't pop up when opening other panels
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
         StopPlayerControls(true);
     }
 
@@ -238,6 +311,7 @@ public class UI : MonoBehaviour
         storageUI?.gameObject.SetActive(false);
         merchantUI?.gameObject.SetActive(false);
         craftUI?.gameObject.SetActive(false);
+        mainMenuPanel?.SetActive(false);   // <- ensure MM is closed too
 
         ResetStates();
     }
@@ -258,10 +332,23 @@ public class UI : MonoBehaviour
     {
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
 
-        // ✅ Prevents Equipment UI from closing completely when returning to EquippedPanel
+        // ✅ Prevent Equipment UI from closing completely when returning to EquippedPanel
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel())
         {
             Debug.Log("[UI] Equipment panel handled cancel.");
+            return;
+        }
+
+        if (craftUI != null && isCraftOpen && craftUI.HandleCancel())
+        {
+            Debug.Log("[UI] Craft panel handled cancel.");
+            return;
+        }
+
+        // ✅ ADD THIS
+        if (merchantUI != null && merchantUI.IsOpen && merchantUI.HandleCancel())
+        {
+            Debug.Log("[UI] Merchant panel handled cancel.");
             return;
         }
 
@@ -274,7 +361,14 @@ public class UI : MonoBehaviour
             return;
         }
 
-        if (mainMenuPanel.activeSelf)
+        if (merchantUI != null && isMerchantOpen)
+        {
+            CloseMerchant();
+            return;
+        }
+
+
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
             mainMenuPanel.SetActive(false);
             CheckStopPlayerControls();
@@ -283,7 +377,6 @@ public class UI : MonoBehaviour
 
         Debug.Log("[UI] No panels handled cancel.");
     }
-
 
     #endregion
 

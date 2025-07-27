@@ -254,6 +254,43 @@ public class Inventory_Player : Inventory_Base
         }
     }
 
+    public int CountEverywhere(ItemDataSO targetData)
+    {
+        int total = 0;
+
+        // backpack
+        total += CountItem(targetData);
+
+        // equipment bag
+        if (equipmentInventory != null)
+        {
+            foreach (var it in equipmentInventory.itemList)
+                if (it.itemData == targetData)
+                    total += it.stackSize;
+        }
+
+        // equipped
+        if (equipList != null)
+        {
+            foreach (var eq in equipList)
+            {
+                if (eq != null && eq.HasItem() && eq.equipedItem.itemData == targetData)
+                    total += 1; // equipped items are single
+            }
+        }
+
+        // storage (optional, if you want to include it)
+        if (storage != null)
+        {
+            foreach (var it in storage.itemList)
+                if (it.itemData == targetData)
+                    total += it.stackSize;
+        }
+
+        return total;
+    }
+
+
     public int CountItem(ItemDataSO targetData)
     {
         int count = 0;

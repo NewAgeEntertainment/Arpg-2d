@@ -1,7 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public enum MerchantType
+{
+    All,
+    Weapons,
+    Armor,
+    Items,
+    Trinkets
+}
 
 public class Inventory_Merchant : Inventory_Base
 {
+    [Header("Merchant Settings")]
+    public MerchantType merchantType = MerchantType.All;
+
     private Inventory_Player playerInventory;
 
     [SerializeField] private ItemListDataSO shopData;
@@ -14,6 +27,12 @@ public class Inventory_Merchant : Inventory_Base
     }
 
     public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
+
+    public int GetItemPrice(Inventory_Item item, bool isBuying)
+    {
+        if (item == null) return 0;
+        return isBuying ? item.buyPrice : Mathf.FloorToInt(item.sellPrice);
+    }
 
     public void TryBuyItem(Inventory_Item itemToBuy, bool buyFullStack)
     {
@@ -55,6 +74,8 @@ public class Inventory_Merchant : Inventory_Base
 
     public void TrySellItem(Inventory_Item itemToSell, bool sellFullStack)
     {
+        if (playerInventory == null) return;
+
         int amountToSell = sellFullStack ? itemToSell.stackSize : 1;
 
         for (int i = 0; i < amountToSell; i++)
@@ -91,10 +112,14 @@ public class Inventory_Merchant : Inventory_Base
     public void FillShopList()
     {
         itemList.Clear();
-        var possibleItems = new System.Collections.Generic.List<Inventory_Item>();
+        var possibleItems = new List<Inventory_Item>();
 
         foreach (var itemData in shopData.itemList)
         {
+            // Filter by merchant type
+            if (!IsItemAllowed(itemData.itemType))
+                continue;
+
             int stackSize = Random.Range(itemData.minStackSizeAtShop, itemData.maxStackSizeAtShop + 1);
             stackSize = Mathf.Clamp(stackSize, 1, itemData.maxStackSize);
 
@@ -113,5 +138,22 @@ public class Inventory_Merchant : Inventory_Base
         }
 
         NotifyInventoryChanged();
+    }
+
+    private bool IsItemAllowed(ItemType itemType)
+    {
+        switch (merchantType)
+        {
+            case MerchantType.Weapons:
+                return itemType == ItemType.Weapon;
+            case MerchantType.Armor:
+                return itemType == ItemType.Armor;
+            case MerchantType.Items:
+                return itemType == ItemType.Consumable || itemType == ItemType.Material;
+            case MerchantType.Trinkets:
+                return itemType == ItemType.trinket;
+            default:
+                return true;
+        }
     }
 }
