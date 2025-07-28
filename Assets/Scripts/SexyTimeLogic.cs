@@ -4,12 +4,12 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-
+using Rewired;
 
 public class SexyTimeLogic : MonoBehaviour
 {
     [SerializeField] private SexyTimeStateMachine stateMachine;
-    Entity_Stats stats;
+    private Entity_Stats stats;
     [SerializeField] private Player_SkillManager skillManager;
 
     [Header("Camera Control")]
@@ -22,6 +22,7 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Tooltip("Id is from GalleryItemHolder SO")]
     [SerializeField] private int animID;
+
     [Header("Background & Settings")]
     [SerializeField] private GameObject canvasBackground;
     [SerializeField] private bool autoStart = false;
@@ -30,10 +31,18 @@ public class SexyTimeLogic : MonoBehaviour
     [Tooltip("The offset that will be used to move the sexy time a bit from its centering (player/camera).")]
     [SerializeField] private Vector3 offsetForPosition = new Vector3(0f, -4f, 0f);
 
+    [Header("Entities")]
     public Entity_Stats playerStats;
     public Entity_Stats partnerStats;
+
+    [Header("FX / Feedback")]
     [SerializeField] private TextMeshProUGUI critText;
     [SerializeField] private ParticleSystem strokeEffect;
+    [Header("Stroke Sound")]
+    [SerializeField] private AudioClip strokeSound;
+    [Header("Cumming Sound")]
+    [SerializeField] private AudioClip cummingSound;
+
     public Animator anim { get; private set; }
 
     [Header("Bars")]
@@ -54,6 +63,7 @@ public class SexyTimeLogic : MonoBehaviour
     public TextMeshProUGUI partnerBarFillText;
     [SerializeField] private TextMeshProUGUI playerPowerText;
     [SerializeField] private TextMeshProUGUI partnerPowerText;
+
     private bool npcAttackApplied = false;
 
     public float deepBreatheCooldown { get; set; } = 5f;
@@ -68,9 +78,17 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Climax Reach")]
     public float cumDuration = 5f;
 
-    [Header("Sex Exp")]
-    [SerializeField] private float sexExpToGive = 5f;
-    private GameObject target;
+    [Header("Sex EXP Rewards")]
+    [SerializeField] private int blueBarExp = 50;   // Player (blue) reaches max first
+    [SerializeField] private int pinkBarExp = 100;  // Partner (pink) reaches max first
+
+    private enum FinishWinner { None, PlayerBlue, PartnerPink }
+    private FinishWinner winner = FinishWinner.None;
+    private bool expGranted = false;
+
+    [Header("Quest System")]
+    [SerializeField] public UnityEvent OnPlayerBarFull = new UnityEvent();
+    [SerializeField] public UnityEvent OnPartnerBarFull = new UnityEvent();
 
     [Header("Player")]
     [SerializeField] private int playerID = 0;
@@ -80,15 +98,6 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private KeyCode strokeKey = KeyCode.P;
     [SerializeField] private KeyCode deepBreatheKey = KeyCode.T;
     [SerializeField] private KeyCode startSexyTimeKey = KeyCode.Y;
-
-    [Header("Stroke Sound")]
-    [SerializeField] private AudioClip strokeSound;
-    [Header("Cumming Sound")]
-    [SerializeField] private AudioClip cummingSound;
-
-    [Header("Quest System")]
-    [SerializeField] public UnityEvent OnPlayerBarFull = new UnityEvent();
-    [SerializeField] public UnityEvent OnPartnerBarFull = new UnityEvent();
 
     public static bool isSexyTimeGoingOn = false;
     public bool playerBarReachedOnce = false;
@@ -111,8 +120,11 @@ public class SexyTimeLogic : MonoBehaviour
 
     private bool isCoroutineRunning = false;
 
+    #region Unity
+
     private void OnEnable()
     {
+        // Cameras
         if (!isSexyTimeGoingOn)
         {
             if (sexyTimeCamera != null) sexyTimeCamera.enabled = false;
@@ -129,18 +141,30 @@ public class SexyTimeLogic : MonoBehaviour
             if (sexyTimeVirtualCam != null) sexyTimeVirtualCam.Priority = 10;
             if (mainVirtualCam != null) mainVirtualCam.Priority = 0;
         }
+
+        // ensure single subscription
+        OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
+        OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
+        OnPlayerBarFull.AddListener(OnBlueWinsFirst);
+        OnPartnerBarFull.AddListener(OnPinkWinsFirst);
     }
 
-    void Start()
+    private void OnDisable()
     {
-        player = Rewired.ReInput.players.GetPlayer(playerID);
+        OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
+        OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
+    }
+
+    private void Start()
+    {
+        player = ReInput.players.GetPlayer(playerID);
         anim = GetComponent<Animator>();
 
         if (autoStart)
             StartSexyTime();
     }
 
-    void Update()
+    private void Update()
     {
         if (shouldPause)
             return;
@@ -161,45 +185,25 @@ public class SexyTimeLogic : MonoBehaviour
         }
     }
 
-    //public void SetPlayerData(Entity_Stats playerStats, Slider playerBar, TextMeshProUGUI playerBarFillText)
-    //{
-    //    this.playerStats = playerStats;
-    //    this.playerBar = playerBar;
-    //    this.playerBarFillText = playerBarFillText;
+    #endregion
 
-    //    if (playerStats != null)
-    //    {
-    //        float maxArousal = playerStats.sex.maxArousal.GetValue();
-    //        if (playerBar != null)
-    //        {
-    //            playerBar.maxValue = maxArousal;
-    //            playerBar.value = 0f;
-    //        }
-    //        if (playerBarFillText != null)
-    //        {
-    //            playerBarFillText.text = $"0 / {Mathf.FloorToInt(maxArousal)}";
-    //        }
-    //    }
-    //}
+    #region Winner detection
 
-    //public void SetPartnerData(Entity_Stats partnerStats, Slider partnerBar, TextMeshProUGUI partnerBarFillText, float partnerMaxArousal)
-    //{
-    //    this.partnerStats = partnerStats;
-    //    this.partnerBar = partnerBar;
-    //    this.partnerBarFillText = partnerBarFillText;
-    //    this.partnerMaxArousalValue = partnerMaxArousal;
+    private void OnBlueWinsFirst()
+    {
+        if (winner == FinishWinner.None)
+            winner = FinishWinner.PlayerBlue;
+    }
 
-    //    if (partnerBar != null)
-    //    {
-    //        partnerBar.maxValue = partnerMaxArousal;
-    //        partnerBar.value = 0f;
-    //    }
-    //    if (partnerBarFillText != null)
-    //    {
-    //        partnerBarFillText.text = $"0 / {Mathf.FloorToInt(partnerMaxArousal)}";
-    //    }
-    //}
+    private void OnPinkWinsFirst()
+    {
+        if (winner == FinishWinner.None)
+            winner = FinishWinner.PartnerPink;
+    }
 
+    #endregion
+
+    #region Helpers / UI
 
     private float GetPlayerMaxArousal()
     {
@@ -209,16 +213,13 @@ public class SexyTimeLogic : MonoBehaviour
     public void UpdateBarText()
     {
         if (playerBarFillText != null)
-        {
             playerBarFillText.text = $"{Mathf.FloorToInt(playerBar.value)} / {Mathf.FloorToInt(GetPlayerMaxArousal())}";
-        }
 
         if (partnerBarFillText != null)
         {
             float maxPartner = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : partnerBar.maxValue;
             partnerBarFillText.text = $"{Mathf.FloorToInt(partnerBar.value)} / {Mathf.FloorToInt(maxPartner)}";
         }
-
     }
 
     private void HandleInput()
@@ -233,21 +234,15 @@ public class SexyTimeLogic : MonoBehaviour
     private void UpdateAttackBarCooldown()
     {
         CastNPCAttackBarFill();
-        float remainingCooldown = Mathf.Max(0, npcAttackBarFillTimestamp - Time.time);
-        pussySqueezeCooldownText.text = remainingCooldown.ToString("F1");
+        if (pussySqueezeCooldownText != null)
+        {
+            float remainingCooldown = Mathf.Max(0, npcAttackBarFillTimestamp - Time.time);
+            pussySqueezeCooldownText.text = remainingCooldown.ToString("F1");
+        }
     }
 
     private void UpdateBarUI()
     {
-        playerBarFillText.text = $"{playerBar.value:F0}/{GetPlayerMaxArousal():F0}";
-        partnerBarFillText.text = $"{partnerBar.value:F0}/{partnerBar.maxValue:F0}";
-
-        playerPowerText.text = $"+{arouselPerStroke:F0}";
-        partnerPowerText.text = $"+{arouselPerStroke:F0}";
-
-        //blueBarFillPowerText.text = $"+{playerStats.GetBlueBarStrokeValue():F0}";
-        //pinkBarFillPowerText.text = $"+{playerStats.GetPinkBarStrokeValue():F0}";
-
         if (playerBar != null && playerBarFillText != null)
             playerBarFillText.text = $"{playerBar.value:F0}/{GetPlayerMaxArousal():F0}";
 
@@ -256,6 +251,9 @@ public class SexyTimeLogic : MonoBehaviour
             float maxPartner = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : partnerBar.maxValue;
             partnerBarFillText.text = $"{Mathf.FloorToInt(partnerBar.value)} / {Mathf.FloorToInt(maxPartner)}";
         }
+
+        if (playerPowerText != null) playerPowerText.text = $"+{arouselPerStroke:F0}";
+        if (partnerPowerText != null) partnerPowerText.text = $"+{arouselPerStroke:F0}";
     }
 
     private void HandleClimaxTimer()
@@ -274,7 +272,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isFucking || !Input.GetKeyDown(KeyCode.Space)) return;
 
         bool isCrit = false;
-        float resilienceReduction = 0f; // Define resilienceReduction variable  
+        float resilienceReduction = 0f;
         float strokePower = playerStats?.GetSexualDamage(out isCrit) ?? 10f;
         float resilience = Mathf.Clamp(partnerStats != null ? partnerStats.GetResilienceMitigation(resilienceReduction) : 0f, 0f, 50f);
         float adjustedStroke = strokePower * (1f - (resilience / 100f));
@@ -291,11 +289,6 @@ public class SexyTimeLogic : MonoBehaviour
         Debug.Log($"StrokePower: {strokePower} | Resilience: {resilience}% | Final Gain: {adjustedStroke}");
     }
 
-
-
-    //sexyTimeLogic.PauseSexyTimeForDialogue();
-    // dialogue runs...
-    //sexyTimeLogic.ResumeSexyTimeAfterDialogue();
     public void PauseSexyTimeForDialogue()
     {
         stateMachine.PauseForDialogue();
@@ -304,14 +297,7 @@ public class SexyTimeLogic : MonoBehaviour
     public void ResumeSexyTimeAfterDialogue()
     {
         stateMachine.ResumeAfterDialogue();
-
     }
-
-    //public void SetBlueBarFill(float value)
-    //{
-    //    blueBarArousalPerStroke = value;
-    //}
-
 
     public void UpdateStrokeMultiplier(float multiplier)
     {
@@ -335,8 +321,6 @@ public class SexyTimeLogic : MonoBehaviour
         critText.gameObject.SetActive(false);
     }
 
-
-
     private void DepleteBars()
     {
         if (!cumReached && !isFucking)
@@ -344,30 +328,31 @@ public class SexyTimeLogic : MonoBehaviour
             float oldPlayer = playerBar.value;
             playerBar.value -= barDecayPerSecond * Time.deltaTime;
 
-            // Clamp to 0
             if (playerBar.value < 0f)
                 playerBar.value = 0f;
 
-            // Debug
             if (playerBar.value < oldPlayer)
                 Debug.Log($"[DECAY] Decreased PlayerBar from {oldPlayer:F1} → {playerBar.value:F1}");
         }
     }
 
-
     public void SetIsFuckingFalse()
     {
         isFucking = false;
-
-
     }
 
+    #endregion
 
-    //bool isCoroutineRunning = false;
+    #region Flow
+
     public void StartSexyTime()
     {
+        // reset winner/xp
+        winner = FinishWinner.None;
+        expGranted = false;
+
         isSexyTimeGoingOn = true;
-        this.gameObject.SetActive(true);
+        gameObject.SetActive(true);
 
         if (sexyTimeCamera != null) sexyTimeCamera.enabled = true;
         if (mainGameplayCamera != null) mainGameplayCamera.enabled = false;
@@ -391,11 +376,6 @@ public class SexyTimeLogic : MonoBehaviour
         if (isCoroutineRunning)
             return;
 
-        this.gameObject.SetActive(true);
-        isSexyTimeGoingOn = true;
-
-        
-
         // ✅ Set up bars AFTER playerStats is valid
         if (playerStats == null)
         {
@@ -404,8 +384,6 @@ public class SexyTimeLogic : MonoBehaviour
         else
         {
             float playerArousalMax = playerStats.sex.maxArousal.GetValue();
-            Debug.Log($"✅ Setting playerBar.maxValue to {playerArousalMax}");
-
             playerBar.maxValue = playerArousalMax;
             playerBar.value = 0f;
 
@@ -420,84 +398,56 @@ public class SexyTimeLogic : MonoBehaviour
         else
         {
             float partnerArousalMax = partnerStats.sex.maxArousal.GetValue();
-            Debug.Log($"✅ Setting partnerBar.maxValue to {partnerArousalMax}");
 
-            // ✅ Only overwrite if null
             if (partnerBar != null)
             {
                 partnerBar.maxValue = partnerArousalMax;
                 partnerBar.value = 0f;
-            }
-            else
-            {
-                Debug.LogWarning("⚠️ partnerBar is NULL during StartSexyTime.");
             }
 
             partnerMaxArousalValue = partnerArousalMax;
 
             if (partnerBarFillText != null)
                 partnerBarFillText.text = $"0 / {Mathf.FloorToInt(partnerArousalMax)}";
-            else
-                Debug.LogWarning("⚠️ partnerBarFillText is NULL.");
         }
 
-        bool isCrit; // We don’t need to use this now, but it's required by the method
-        float partnerSexualDamage = partnerStats.GetSexualDamage(out isCrit);
+        bool isCrit;
+        float partnerSexualDamage = partnerStats != null ? partnerStats.GetSexualDamage(out isCrit) : 5f;
 
-        // Scale down if needed (to avoid huge bursts), e.g., base it on 25% of sexual damage
-        pussySqueeze = pussySqueeze = Mathf.Clamp(partnerSexualDamage * 0.25f, 2f, 15f);
+        pussySqueeze = Mathf.Clamp(partnerSexualDamage * 0.25f, 2f, 15f);
         originalPussySqueeze = pussySqueeze;
         originalPussySqueezeCooldown = pussySqueezeCooldown;
-        Debug.Log($"[INIT] pussySqueeze set from partner sexual damage: {pussySqueeze}");
-
 
         StartCoroutine(StartSexyTimeCoroutine());
         isCoroutineRunning = true;
     }
 
-
-
     private IEnumerator StartSexyTimeCoroutine()
     {
         yield return new WaitForSeconds(0.75f);
 
-        // 🎥 Enable sexy time camera and disable main camera
         if (sexyTimeCamera != null)
         {
             sexyTimeCamera.enabled = true;
 
             if (autoPositionSexyCamera)
             {
-                sexyTimeCamera.transform.position = this.transform.position + sexyCameraOffset;
-                sexyTimeCamera.transform.LookAt(this.transform.position);
+                sexyTimeCamera.transform.position = transform.position + sexyCameraOffset;
+                sexyTimeCamera.transform.LookAt(transform.position);
             }
         }
-
 
         if (mainGameplayCamera != null)
         {
             mainGameplayCamera.enabled = false;
         }
 
-        
-
         if (goToPlayerPosition)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
             if (playerObj != null)
             {
-                this.transform.position = playerObj.transform.position + offsetForPosition;
-
-                //Player playerComponent = playerObj.GetComponent<Player>();
-                //if (playerComponent != null)
-                //{
-                //    if (playerBar == null)
-                //        playerBar = playerComponent.playerBar;
-                //}
-                //else
-                //{
-                //    Debug.LogError("Player component not found on Player GameObject.");
-                //}
+                transform.position = playerObj.transform.position + offsetForPosition;
             }
             else
             {
@@ -511,12 +461,9 @@ public class SexyTimeLogic : MonoBehaviour
             canvasBackground.transform.localPosition = new Vector3(0, 0, 1f);
             canvasBackground.transform.localRotation = Quaternion.identity;
             canvasBackground.transform.localScale = Vector3.one;
-            canvasBackground.SetActive(true); // ✅ Enable UI canvas
+            canvasBackground.SetActive(true);
         }
     }
-
-
-
 
     private void OnEndDialogue()
     {
@@ -537,7 +484,6 @@ public class SexyTimeLogic : MonoBehaviour
             return;
         }
 
-        // Call TryUseSkill() to handle cooldown, blue bar drain, etc.
         skillManager.deepBreath.TryUseSkill();
     }
 
@@ -545,28 +491,19 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (Time.time >= npcAttackBarFillTimestamp && !shouldPause)
         {
-            float reduction = playerStats.GetResilienceReductionMultiplier(); // Based on player's defense
+            float reduction = playerStats != null ? playerStats.GetResilienceReductionMultiplier() : 1f;
             playerBar.value += pussySqueeze * reduction;
-            currentArousal = playerBar.value; // Ensure currentArousal is in sync
+            currentArousal = playerBar.value;
             npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
-            // Update text if applicable
-            if (playerBarFillText != null)
+            if (playerBarFillText != null && playerStats != null)
             {
                 float maxArousal = playerStats.sex.maxArousal.GetValue();
                 playerBarFillText.text = $"{Mathf.FloorToInt(playerBar.value)} / {Mathf.FloorToInt(maxArousal)}";
             }
 
-            // ✅ Check for climax
-            float maxPlayerArousal = playerStats.sex.maxArousal.GetValue();
-            if (playerBar.value >= maxPlayerArousal || partnerBar.value >= partnerMaxArousalValue)
-            {
-                cumReached = true;
-                cumTimeElapsed = 0f;
-                stateMachine.ChangeState(new Sex_ClimaxState(this, stateMachine));
-            }
+            float maxPlayerArousal = playerStats != null ? playerStats.sex.maxArousal.GetValue() : playerBar.maxValue;
 
-            // Optional: trigger OnPlayerBarFull if this is the first time hitting full
             if (playerBar.value >= maxPlayerArousal && !playerBarReachedOnce)
             {
                 playerBarReachedOnce = true;
@@ -578,71 +515,113 @@ public class SexyTimeLogic : MonoBehaviour
                 partnerBarReachedOnce = true;
                 OnPartnerBarFull?.Invoke();
             }
+
+            // ✅ Check for climax
+            if (playerBar.value >= maxPlayerArousal || partnerBar.value >= partnerMaxArousalValue)
+            {
+                cumReached = true;
+                cumTimeElapsed = 0f;
+                stateMachine.ChangeState(new Sex_ClimaxState(this, stateMachine));
+            }
         }
     }
+
     public void ResetNPCAttack()
     {
         npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
-        npcAttackApplied = false;         // Or your default
-
-        Debug.Log($"[RESET] NPC Attack reset. pussySqueeze restored to: {pussySqueeze}");
+        npcAttackApplied = false;
     }
-
-
 
     public void ResetSexyTime()
     {
+        // Award Sex EXP
+        GrantSexExpIfNeeded();
+
+        if (canvasBackground != null)
             canvasBackground.SetActive(false);
 
-        // 🎬 Switch back to normal camera
         if (sexyTimeCamera != null)
             sexyTimeCamera.enabled = false;
 
         if (mainGameplayCamera != null)
             mainGameplayCamera.enabled = true;
 
-        if (canvasBackground != null)
-
-
-
-        // Reset bars
-        playerBar.value = 0f;
-        partnerBar.value = 0f;
+        if (playerBar != null) playerBar.value = 0f;
+        if (partnerBar != null) partnerBar.value = 0f;
 
         npcAttackBarFillTimestamp = 0f;
-        // Restore NPC attack values to original
+
         pussySqueeze = originalPussySqueeze;
         pussySqueezeCooldown = originalPussySqueezeCooldown;
-        // Reset flags
+
         cumReached = false;
         cumTimeElapsed = 0f;
         isFucking = false;
         isCoroutineRunning = false;
         isSexyTimeGoingOn = false;
 
-
         playerBarReachedOnce = false;
         partnerBarReachedOnce = false;
 
-        ResetNPCAttack(); // 🔁 Reset NPC attack system
+        ResetNPCAttack();
 
-        // Reset animation or state
-        anim.Play("idle"); // Or whatever your default anim is
-
-
-
-        this.gameObject.SetActive(false);
-        isSexyTimeGoingOn = false;
-
-        // Optional: Reset animation
         if (anim != null)
             anim.Play("idle", 0, 0f);
 
-        Debug.Log("SexyTime Reset Complete");
+        gameObject.SetActive(false);
+    }
 
+    #endregion
 
+    #region EXP
+
+    private void GrantSexExpIfNeeded()
+    {
+        if (expGranted) return;
+
+        int amount = 0;
+        switch (winner)
+        {
+            case FinishWinner.PlayerBlue: amount = blueBarExp; break;
+            case FinishWinner.PartnerPink: amount = pinkBarExp; break;
+            default: amount = 0; break;
+        }
+
+        if (amount > 0)
+        {
+            // Prefer going through Player so it can centralize UI updates, events, etc.
+            var playerComponent = FindFirstObjectByType<Player>();
+            if (playerComponent != null)
+            {
+                playerComponent.GainSexEXP(amount);
+                Debug.Log($"[SexyTime] Granted {amount} Sex EXP to Player via Player.GainSexEXP ({winner})");
+            }
+            else
+            {
+                // Fallback: write directly to stats if for some reason Player isn't around
+                Player_Stats pStats = null;
+
+                if (playerStats != null)
+                    pStats = playerStats as Player_Stats ?? playerStats.GetComponent<Player_Stats>();
+
+                if (pStats == null)
+                    pStats = FindFirstObjectByType<Player_Stats>();
+
+                if (pStats != null)
+                {
+                    pStats.AddSexEXP(amount);
+                    Debug.Log($"[SexyTime] Granted {amount} Sex EXP directly to Player_Stats ({winner})");
+                }
+                else
+                {
+                    Debug.LogWarning($"[SexyTime] Could not find Player or Player_Stats to give Sex EXP ({amount}).");
+                }
+            }
+        }
+
+        expGranted = true;
     }
 
 
+    #endregion
 }
-

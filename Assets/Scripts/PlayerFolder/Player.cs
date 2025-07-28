@@ -1,34 +1,38 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 using Rewired;
-using Unity.VisualScripting;
-using UnityEditor;
 
 public class Player : Entity
 {
     public static event Action OnPlayerDeath;
 
-    public UI ui { get; private set; } // Reference to the UI manager for player-related UI interactions
+    public UI ui { get; private set; }
 
-    private float xInput; // Horizontal input value
-    private float yInput; // Vertical input value
+    // ---------- Normal EXP exposed (still owned by Player_Stats) ----------
     public int Level => stats.CurrentLevel;
     public float CurrentExp => stats.CurrentEXP;
     public float NextLevelExp => stats.GetNextLevelRequirement();
 
+    // ---------- Sex EXP (NOW OWNED BY PLAYER) ----------
+    public int SexLevel { get; private set; } = 1;
+    public float CurrentSexExp { get; private set; } = 0f;
+
+    public float NextSexLevelSexExp => GetNextSexLevelRequirementSex();
+
+    [SerializeField] private float BASE_SEX_EXP_REQUIREMENT = 50f;
+    [SerializeField] private float SEX_EXP_GROWTH_RATE = 1.35f;
+
     public Player_SkillManager skillManager { get; private set; }
-    public Entity_Mana mana { get; private set; } // Reference to the player's mana system
-    public Entity_Health health { get; private set; } // Reference to the player's health system
-    public Entity_StatusHandler statusHandler { get; private set; } // Reference to the player's status handler for managing buffs and debuffs
-    public Player_Combat combat { get; private set; } // Reference to the player's combat system for handling attacks and abilities
+    public Entity_Mana mana { get; private set; }
+    public Entity_Health health { get; private set; }
+    public Entity_StatusHandler statusHandler { get; private set; }
+    public Player_Combat combat { get; private set; }
 
     public Vector2 lastMoveDirection = Vector2.down;
 
     public Inventory_Player inventory { get; private set; }
     public Player_Stats stats { get; private set; }
-
     public Player_VFX vfx { get; private set; }
 
     #region State Variables
@@ -42,9 +46,8 @@ public class Player : Entity
     public Player_CounterAttackState counterAttackState { get; private set; }
     #endregion
 
-
-    [SerializeField] private int playerID = 0; // Player ID for multiplayer support
-    [SerializeField] private Rewired.Player rPlayer; // Rewired player instance for input handling
+    [SerializeField] private int playerID = 0;
+    [SerializeField] private Rewired.Player rPlayer;
 
     [Header("Attack details")]
     public float[] attackMovement;
@@ -54,15 +57,12 @@ public class Player : Entity
 
     [Header("Player Info")]
     public Sprite Portrait;
-    [ TextArea(3, 10)]
-    public string Bio; // optional if you want bio too
+    [TextArea(3, 10)] public string Bio;
 
     [Header("Movement details")]
     public float moveSpeed;
     public float jumpForce = 5;
-    [Range(0, 1)]
-    [Space]
-    public float dashDuration = .25f;
+    [Range(0, 1)] public float dashDuration = .25f;
     public float dashSpeed = 20;
     public float ThrustDuration;
     public float ThrustSpeed;
@@ -87,107 +87,89 @@ public class Player : Entity
         idleState = new Player_IdleState(this, stateMachine, "idle");
         moveState = new Player_MoveState(this, stateMachine, "move");
         dashState = new Player_DashState(this, stateMachine, "dash");
-        thrustState = new Player_ThrustState(this, stateMachine,"thrust");
+        thrustState = new Player_ThrustState(this, stateMachine, "thrust");
         basicAttackState = new Player_BasicAttackState(this, stateMachine, "basicAttack");
         deadState = new Player_DeadState(this, stateMachine, "dead");
         counterAttackState = new Player_CounterAttackState(this, stateMachine, "counterAttack");
-        
     }
 
     protected override void Start()
     {
         base.Start();
         stateMachine.Initialize(idleState);
-        rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
+        rPlayer = ReInput.players.GetPlayer(playerID);
 
-
-        // ✅ Subscribe to health updates
         health.OnHealthUpdate += UpdateMainUIHealth;
         UpdateMainUIHealth();
+        UpdateMainUIMana();
     }
 
     protected override void Update()
     {
         base.Update();
-        // ✅ Rewired Interact input check
+
         if (rPlayer.GetButtonDown("Interact"))
-        {
-
             TryInteract();
-        }
 
-        if (rPlayer.GetButtonDown("TestEXP"))  // Assuming you have an input mapped to "TestEXP"
-        {
+        // Debug/testing inputs (optional)
+        if (rPlayer.GetButtonDown("TestEXP"))
             GainEXP(50);
-        }
 
+        if (rPlayer.GetButtonDown("TestSexEXP"))
+            GainSexEXP(25);
     }
+
+    #region UI Updates
 
     private void UpdateMainUIHealth()
     {
         if (ui != null && ui.playerHealthBar != null)
-        {
             ui.playerHealthBar.UpdateHealth(health.GetCurrentHealth(), stats.GetMaxHealth());
-        }
     }
 
     private void UpdateMainUIMana()
     {
         if (ui != null && ui.playerManaBar != null)
-        {
             ui.playerManaBar.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
-        }
     }
 
-    //private void UpdateMainUIExp()
-    //{
-    //    if (ui != null && ui.playerExpBar != null)
-    //    {
-    //        ui.playerExpBar.UpdateExp(exp.GetCurrentMana(), stats.GetMaxExp());
-    //    }
-    //}
-
+    #endregion
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
 
     protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
     {
-        float originalMoveSpeed = moveSpeed; // Store the original move speed
-        float originalJumpForce = jumpForce; // Store the original jump force
-        float originalAnimSpeed = anim.speed; // Store the original animation speed
-        float originalAttackMovenment = attackMovement[0]; // Store the original attack movement speed  
+        float originalMoveSpeed = moveSpeed;
+        float originalJumpForce = jumpForce;
+        float originalAnimSpeed = anim.speed;
+        float originalAttackMovement = attackMovement[0];
 
-        float speedMultiplier = 1 - slowMultiplier; // Calculate the speed multiplier
+        float speedMultiplier = 1 - slowMultiplier;
 
-        moveSpeed = moveSpeed * speedMultiplier; // Apply the slowdown to move speed
-        jumpForce = jumpForce * speedMultiplier; // Apply the slowdown to jump force
-        anim.speed = anim.speed * speedMultiplier; // Apply the slowdown to animation speed
-        dashSpeed = dashSpeed * speedMultiplier; // Apply the slowdown to dash speed
+        moveSpeed *= speedMultiplier;
+        jumpForce *= speedMultiplier;
+        anim.speed *= speedMultiplier;
+        dashSpeed *= speedMultiplier;
 
-        for (int  i = 0;  i < attackMovement.Length;  i++)
-        {
-            attackMovement[i] = attackMovement[i] * speedMultiplier;
-        }
-
-        yield return new WaitForSeconds(duration); // Wait for the slowdown duration
-
-        moveSpeed = originalMoveSpeed; // Restore the original move speed
-        jumpForce = originalJumpForce; // Restore the original jump force
-        anim.speed = originalAnimSpeed; // Restore the original animation speed
-       
         for (int i = 0; i < attackMovement.Length; i++)
-        {
-            attackMovement[i] = originalAttackMovenment; // Restore the original attack movement speed
-        }
+            attackMovement[i] *= speedMultiplier;
+
+        yield return new WaitForSeconds(duration);
+
+        moveSpeed = originalMoveSpeed;
+        jumpForce = originalJumpForce;
+        anim.speed = originalAnimSpeed;
+
+        for (int i = 0; i < attackMovement.Length; i++)
+            attackMovement[i] = originalAttackMovement;
     }
 
     public override void EntityDeath()
     {
         base.EntityDeath();
-        OnPlayerDeath?.Invoke(); // Notify subscribers about player death
+        OnPlayerDeath?.Invoke();
         stateMachine.ChangeState(deadState);
     }
-
 
     public void EnterAttackStateWithDelay()
     {
@@ -215,7 +197,6 @@ public class Player : Entity
             if (interactable == null) continue;
 
             float distance = Vector2.Distance(transform.position, target.transform.position);
-
             if (distance < closestDistance)
             {
                 closestDistance = distance;
@@ -224,10 +205,12 @@ public class Player : Entity
         }
 
         if (closest == null) return;
-
-        closest.GetComponent<IInteractable>().Interact(); // Call the Interact method on the closest interactable object
+        closest.GetComponent<IInteractable>()?.Interact();
     }
 
+    #region EXP APIs
+
+    // Normal EXP still lives in Player_Stats
     public void GainEXP(float amount)
     {
         stats.AddEXP(amount);
@@ -239,31 +222,37 @@ public class Player : Entity
         }
     }
 
-
-
-
-    private void OnEnable()
+    // Sex EXP is owned by Player
+    public void GainSexEXP(float amount)
     {
-        input.Enable();
+        CurrentSexExp += amount;
+        Debug.Log($"[Player] Gained Sex EXP: {amount} | Total Sex EXP: {CurrentSexExp}");
 
-        //input.Player.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        //input.Player.Movement.canceled += ctx => moveInput = Vector2.zero;
+        while (CurrentSexExp >= GetNextSexLevelRequirementSex())
+            LevelUpSex();
 
-        //input.Player.ToggleSkillTreeUI.performed += ctx => ui.ToggleSkillTreeUI();
-        //input.Player.Spell.performed += ctx => skillManager.shard.TryUseSkill();
-        //input.Player.SwordThrow.performed += ctx => skillManager.swordSpin.TryUseSkill();
-        //input.Player.ToggleInventoryUI.performed += ctx => ui.ToggleInventoryUI();
-        // The most likely reason for a NullReferenceException in the selected code:  
-
-
-
+        if (ui != null)
+        {
+            ui.StatusPanel?.UpdateStatus(this);
+            ui.inGameUI?.UpdateSexExpBar();
+        }
     }
 
-    private void OnDisable()
+    private void LevelUpSex()
     {
-        input.Disable();
+        CurrentSexExp -= GetNextSexLevelRequirementSex();
+        SexLevel++;
+        Debug.Log($"[Player] Sex Level Up! New Sex Level: {SexLevel}");
+        // TODO: grant bonuses, popups, etc.
     }
 
+    public float GetNextSexLevelRequirementSex()
+    {
+        return BASE_SEX_EXP_REQUIREMENT * Mathf.Pow(SEX_EXP_GROWTH_RATE, SexLevel - 1);
+    }
 
+    #endregion
 
+    private void OnEnable() => input.Enable();
+    private void OnDisable() => input.Disable();
 }

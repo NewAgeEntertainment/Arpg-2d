@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UI_Merchant : MonoBehaviour
 {
@@ -21,25 +22,75 @@ public class UI_Merchant : MonoBehaviour
     [SerializeField] private GameObject buyListPanel;   // Merchant item list
     [SerializeField] private GameObject sellListPanel;  // Player item list
     [SerializeField] private GameObject shopStatPanel;  // Stat panel (optional)
-    [SerializeField] private UI_MerchantQuantityPanel quantityPanel;  // Quantity panel
 
     [Header("Slot Parents")]
-    [SerializeField] private UI_ItemSlotParent buySlotsParent;   // Merchant slots
-    [SerializeField] private UI_ItemSlotParent sellSlotsParent;  // Player slots
+    [SerializeField] private UI_ItemSlotParent buySlotsParent;   // merchant list
+    [SerializeField] private UI_ItemSlotParent sellSlotsParent;  // player list
     [SerializeField] private UI_EquipSlotParent equippedSlotsParent;
 
     [Header("Right Stat Panel")]
     [SerializeField] private UI_MerchantStatsPanel statsPanel;
 
+    // --------------------------
+    //  Simple Category Buttons (optional – you can also wire calls via Inspector)
+    // --------------------------
+    [Header("Buy Category Buttons (optional)")]
+    [SerializeField] private Button buyAllBtn;
+    [SerializeField] private Button buyWeaponsBtn;
+    [SerializeField] private Button buyArmorBtn;
+    [SerializeField] private Button buyAccessoryBtn;   // trinket
+    [SerializeField] private Button buyMaterialsBtn;
+    [SerializeField] private Button buyConsumablesBtn;
+
+    [Header("Sell Category Buttons (optional)")]
+    [SerializeField] private Button sellAllBtn;
+    [SerializeField] private Button sellWeaponsBtn;
+    [SerializeField] private Button sellArmorBtn;
+    [SerializeField] private Button sellAccessoryBtn;  // trinket
+    [SerializeField] private Button sellMaterialsBtn;
+    [SerializeField] private Button sellConsumablesBtn;
+
+    // current active filter (null/empty => All)
+    private ItemType[] currentFilterTypes = null;
+
     private readonly List<UI_MerchantSlot> cachedMerchantSlots = new();
     private readonly List<UI_MerchantSlot> cachedPlayerSlots = new();
 
-    private enum MerchantState { None, BuySell, ShopList, Quantity }
+    private enum MerchantState { None, BuySell, List }
     private MerchantState state = MerchantState.None;
-    private bool isBuying = true; // true = Buy flow, false = Sell flow
 
+    private bool isBuying = true; // true = Buy flow, false = Sell flow
     private bool isOpen = false;
     public bool IsOpen => isOpen;
+
+    #region Unity
+    private void Awake()
+    {
+        // Optional auto‑wiring of category buttons
+        // BUY
+        if (buyAllBtn) buyAllBtn.onClick.AddListener(OnClickBuyCategory_All);
+        if (buyWeaponsBtn) buyWeaponsBtn.onClick.AddListener(OnClickBuyCategory_Weapons);
+        if (buyArmorBtn) buyArmorBtn.onClick.AddListener(OnClickBuyCategory_Armor);
+        if (buyAccessoryBtn) buyAccessoryBtn.onClick.AddListener(OnClickBuyCategory_Accessory);
+        if (buyMaterialsBtn) buyMaterialsBtn.onClick.AddListener(OnClickBuyCategory_Materials);
+        if (buyConsumablesBtn) buyConsumablesBtn.onClick.AddListener(OnClickBuyCategory_Consumables);
+
+        // SELL
+        if (sellAllBtn) sellAllBtn.onClick.AddListener(OnClickSellCategory_All);
+        if (sellWeaponsBtn) sellWeaponsBtn.onClick.AddListener(OnClickSellCategory_Weapons);
+        if (sellArmorBtn) sellArmorBtn.onClick.AddListener(OnClickSellCategory_Armor);
+        if (sellAccessoryBtn) sellAccessoryBtn.onClick.AddListener(OnClickSellCategory_Accessory);
+        if (sellMaterialsBtn) sellMaterialsBtn.onClick.AddListener(OnClickSellCategory_Materials);
+        if (sellConsumablesBtn) sellConsumablesBtn.onClick.AddListener(OnClickSellCategory_Consumables);
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeInventories();
+        ClearSlotEvents(cachedMerchantSlots);
+        ClearSlotEvents(cachedPlayerSlots);
+    }
+    #endregion
 
     // ------------------------------------------------------------------
     //  Setup & Closing
@@ -56,6 +107,10 @@ public class UI_Merchant : MonoBehaviour
 
         UpdateMoney();
         ShowPlayerStats();
+
+        // default to All
+        currentFilterTypes = null;
+
         state = MerchantState.BuySell;
         isOpen = true;
 
@@ -83,7 +138,6 @@ public class UI_Merchant : MonoBehaviour
         SetActiveSafe(buyListPanel, false);
         SetActiveSafe(sellListPanel, false);
         SetActiveSafe(shopStatPanel, false);
-        SetActiveSafe(quantityPanel != null ? quantityPanel.gameObject : null, false);
     }
 
     // ------------------------------------------------------------------
@@ -92,69 +146,61 @@ public class UI_Merchant : MonoBehaviour
     public void OnClickBuy()
     {
         isBuying = true;
+        currentFilterTypes = null; // default "All"
 
         SetActiveSafe(buySellPanel, false);
         SetActiveSafe(buyListPanel, true);
         SetActiveSafe(sellListPanel, false);
         SetActiveSafe(shopStatPanel, true);
-        SetActiveSafe(quantityPanel != null ? quantityPanel.gameObject : null, false);
 
-        buySlotsParent.UpdateSlots(merchant.itemList);
-        FixSlotTypes(buySlotsParent, UI_MerchantSlot.MerchantSlotType.MerchantSlot);
-        WireMerchantSlots(buySlotsParent, true);
+        RefreshBuyList();
 
-        UpdateMoney();
-        ShowPlayerStats();
-
-        state = MerchantState.ShopList;
+        state = MerchantState.List;
     }
-
-    private void FixSlotTypes(UI_ItemSlotParent parent, UI_MerchantSlot.MerchantSlotType type)
-    {
-        if (parent == null) return;
-
-        var slots = parent.GetComponentsInChildren<UI_MerchantSlot>(true);
-        for (int i = 0; i < slots.Length; i++)
-            slots[i].slotType = type;
-    }
-
 
     public void OnClickSell()
     {
         isBuying = false;
+        currentFilterTypes = null; // default "All"
 
         SetActiveSafe(buySellPanel, false);
         SetActiveSafe(buyListPanel, false);
         SetActiveSafe(sellListPanel, true);
         SetActiveSafe(shopStatPanel, true);
-        SetActiveSafe(quantityPanel != null ? quantityPanel.gameObject : null, false);
 
-        var items = GetPlayerAllItems();
-        sellSlotsParent.UpdateSlots(items);
-        FixSlotTypes(sellSlotsParent, UI_MerchantSlot.MerchantSlotType.PlayerSlot);
-        WirePlayerSlots(sellSlotsParent, false);
+        RefreshSellList();
 
-        UpdateMoney();
-        ShowPlayerStats();
-
-        state = MerchantState.ShopList;
+        state = MerchantState.List;
     }
 
     // ------------------------------------------------------------------
-    //  Cancel Stack
+    //  BUY Category Buttons
+    // ------------------------------------------------------------------
+    public void OnClickBuyCategory_All() { currentFilterTypes = null; RefreshBuyList(); }
+    public void OnClickBuyCategory_Weapons() { currentFilterTypes = new[] { ItemType.Weapon }; RefreshBuyList(); }
+    public void OnClickBuyCategory_Armor() { currentFilterTypes = new[] { ItemType.Armor }; RefreshBuyList(); }
+    public void OnClickBuyCategory_Accessory() { currentFilterTypes = new[] { ItemType.trinket }; RefreshBuyList(); }
+    public void OnClickBuyCategory_Materials() { currentFilterTypes = new[] { ItemType.Material }; RefreshBuyList(); }
+    public void OnClickBuyCategory_Consumables() { currentFilterTypes = new[] { ItemType.Consumable }; RefreshBuyList(); }
+
+    // ------------------------------------------------------------------
+    //  SELL Category Buttons
+    // ------------------------------------------------------------------
+    public void OnClickSellCategory_All() { currentFilterTypes = null; RefreshSellList(); }
+    public void OnClickSellCategory_Weapons() { currentFilterTypes = new[] { ItemType.Weapon }; RefreshSellList(); }
+    public void OnClickSellCategory_Armor() { currentFilterTypes = new[] { ItemType.Armor }; RefreshSellList(); }
+    public void OnClickSellCategory_Accessory() { currentFilterTypes = new[] { ItemType.trinket }; RefreshSellList(); }
+    public void OnClickSellCategory_Materials() { currentFilterTypes = new[] { ItemType.Material }; RefreshSellList(); }
+    public void OnClickSellCategory_Consumables() { currentFilterTypes = new[] { ItemType.Consumable }; RefreshSellList(); }
+
+    // ------------------------------------------------------------------
+    //  Cancel stack
     // ------------------------------------------------------------------
     public bool HandleCancel()
     {
         switch (state)
         {
-            case MerchantState.Quantity:
-                quantityPanel.gameObject.SetActive(false);
-                if (isBuying) buyListPanel.SetActive(true);
-                else sellListPanel.SetActive(true);
-                state = MerchantState.ShopList;
-                return true;
-
-            case MerchantState.ShopList:
+            case MerchantState.List:
                 buyListPanel.SetActive(false);
                 sellListPanel.SetActive(false);
                 shopStatPanel.SetActive(false);
@@ -166,72 +212,12 @@ public class UI_Merchant : MonoBehaviour
                 CloseMerchant();
                 return true;
         }
-
         return false;
     }
 
     // ------------------------------------------------------------------
-    //  Hover & Quantity
+    //  Hover -> stats
     // ------------------------------------------------------------------
-    private void OnItemClicked_OpenQuantity(Inventory_Item item, bool isBuyFlow)
-    {
-        if (item == null || quantityPanel == null) return;
-
-        if (isBuyFlow)
-        {
-            // Hide the buy list while quantity panel is open
-            if (buyListPanel) buyListPanel.SetActive(false);
-            if (quantityPanel) quantityPanel.gameObject.SetActive(true);
-
-            quantityPanel.Open(item, merchant, playerInventory, OnConfirmBuy, OnCancelBuy, selling: false);
-        }
-        else
-        {
-            // Hide the sell list while quantity panel is open
-            if (sellListPanel) sellListPanel.SetActive(false);
-            if (quantityPanel) quantityPanel.gameObject.SetActive(true);
-
-            quantityPanel.Open(item, merchant, playerInventory, OnConfirmSell, OnCancelSell, selling: true);
-        }
-
-        state = MerchantState.Quantity;
-    }
-
-
-    private void OnConfirmBuy(Inventory_Item item, int qty)
-    {
-        for (int i = 0; i < qty; i++)
-            merchant.TryBuyItem(item, false);
-
-        RefreshAfterTransaction();
-        buyListPanel.SetActive(true);
-        state = MerchantState.ShopList;
-    }
-
-    private void OnCancelBuy()
-    {
-        quantityPanel.gameObject.SetActive(false);
-        buyListPanel.SetActive(true);
-        state = MerchantState.ShopList;
-    }
-
-    private void OnConfirmSell(Inventory_Item item, int qty)
-    {
-        for (int i = 0; i < qty; i++)
-            merchant.TrySellItem(item, false);
-
-        RefreshAfterTransaction();
-        sellListPanel.SetActive(true);
-        state = MerchantState.ShopList;
-    }
-
-    private void OnCancelSell()
-    {
-        quantityPanel.gameObject.SetActive(false);
-        sellListPanel.SetActive(true);
-        state = MerchantState.ShopList;
-    }
-
     private void OnItemHovered(Inventory_Item item)
     {
         if (statsPanel == null) return;
@@ -252,19 +238,43 @@ public class UI_Merchant : MonoBehaviour
     // ------------------------------------------------------------------
     //  Refresh & Wiring
     // ------------------------------------------------------------------
-    private void RefreshAfterTransaction()
+    private void RefreshBuyList()
     {
-        UpdateSlotUI();
-        quantityPanel.gameObject.SetActive(false);
+        FixSlotTypes(buySlotsParent, UI_MerchantSlot.MerchantSlotType.MerchantSlot);
+        PreWireSlots(buySlotsParent, isBuyingFlow: true);
 
-        buySlotsParent.UpdateSlots(merchant.itemList);
-        sellSlotsParent.UpdateSlots(GetPlayerAllItems());
+        var filtered = FilterItems(merchant.itemList, currentFilterTypes);
+        buySlotsParent.UpdateSlots(filtered);
 
         WireMerchantSlots(buySlotsParent, true);
+
+        UpdateMoney();
+        ShowPlayerStats();
+    }
+
+    private void RefreshSellList()
+    {
+        FixSlotTypes(sellSlotsParent, UI_MerchantSlot.MerchantSlotType.PlayerSlot);
+        PreWireSlots(sellSlotsParent, isBuyingFlow: false);
+
+        var items = GetPlayerAllItems();
+        var filtered = FilterItems(items, currentFilterTypes);
+        sellSlotsParent.UpdateSlots(filtered);
+
         WirePlayerSlots(sellSlotsParent, false);
 
         UpdateMoney();
         ShowPlayerStats();
+    }
+
+    private void RefreshAllListsAfterTransaction()
+    {
+        UpdateSlotUI();
+
+        if (isBuying)
+            RefreshBuyList();
+        else
+            RefreshSellList();
     }
 
     private void UpdateSlotUI()
@@ -272,6 +282,7 @@ public class UI_Merchant : MonoBehaviour
         if (playerInventory == null || merchant == null) return;
 
         UpdateMoney();
+
         if (equippedSlotsParent != null)
             equippedSlotsParent.UpdateEquipmentSlots(playerInventory.equipList);
     }
@@ -287,35 +298,60 @@ public class UI_Merchant : MonoBehaviour
         var combined = new List<Inventory_Item>();
         combined.AddRange(playerInventory.itemList);
         combined.AddRange(playerInventory.equipmentInventory.itemList);
+
         foreach (var slot in playerInventory.equipList)
             if (slot.HasItem()) combined.Add(slot.equipedItem);
+
         return combined;
     }
 
-    private void WireMerchantSlots(UI_ItemSlotParent parent, bool buyFlow)
+    private List<Inventory_Item> FilterItems(List<Inventory_Item> source, ItemType[] filter)
+    {
+        if (source == null) return new List<Inventory_Item>();
+        if (filter == null || filter.Length == 0)   // All
+            return new List<Inventory_Item>(source);
+
+        var set = new HashSet<ItemType>(filter);
+        var res = new List<Inventory_Item>(source.Count);
+        foreach (var it in source)
+        {
+            if (it == null || it.itemData == null) continue;
+            if (set.Contains(it.itemData.itemType))
+                res.Add(it);
+        }
+        return res;
+    }
+
+    private void PreWireSlots(UI_ItemSlotParent parent, bool isBuyingFlow)
+    {
+        foreach (var slot in parent.GetComponentsInChildren<UI_MerchantSlot>(true))
+            slot.SetUpMerchantUI(merchant, playerInventory, isBuyingFlow);
+    }
+
+    private void WireMerchantSlots(UI_ItemSlotParent parent, bool buyingFlow)
     {
         ClearSlotEvents(cachedMerchantSlots);
 
         foreach (var slot in parent.GetComponentsInChildren<UI_MerchantSlot>(true))
         {
-            slot.SetUpMerchantUI(merchant, playerInventory);
             slot.onHover += OnItemHovered;
             slot.onExit += OnItemExit;
-            slot.onClick += (item) => OnItemClicked_OpenQuantity(item, buyFlow);
+            slot.OnTransactionFinished = RefreshAllListsAfterTransaction;
+
             cachedMerchantSlots.Add(slot);
         }
     }
 
-    private void WirePlayerSlots(UI_ItemSlotParent parent, bool buyFlow)
+    private void WirePlayerSlots(UI_ItemSlotParent parent, bool buyingFlow)
     {
         ClearSlotEvents(cachedPlayerSlots);
 
         foreach (var slot in parent.GetComponentsInChildren<UI_MerchantSlot>(true))
         {
-            slot.SetUpMerchantUI(merchant, playerInventory);
             slot.onHover += OnItemHovered;
             slot.onExit += OnItemExit;
-            slot.onClick += (item) => OnItemClicked_OpenQuantity(item, buyFlow);
+            slot.OnTransactionFinished = RefreshAllListsAfterTransaction;
+
             cachedPlayerSlots.Add(slot);
         }
     }
@@ -324,10 +360,18 @@ public class UI_Merchant : MonoBehaviour
     {
         foreach (var slot in cache)
         {
+            if (slot == null) continue;
             slot.onHover -= OnItemHovered;
             slot.onExit -= OnItemExit;
+            slot.OnTransactionFinished = null;
         }
         cache.Clear();
+    }
+
+    private void FixSlotTypes(UI_ItemSlotParent parent, UI_MerchantSlot.MerchantSlotType type)
+    {
+        var slots = parent.GetComponentsInChildren<UI_MerchantSlot>(true);
+        foreach (var s in slots) s.slotType = type;
     }
 
     private void SubscribeInventories()

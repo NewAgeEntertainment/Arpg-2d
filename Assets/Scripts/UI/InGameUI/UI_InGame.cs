@@ -24,9 +24,13 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private Slider manaSlider;
     [SerializeField] private TextMeshProUGUI manaText;
 
-    [Header("EXP Bar")]
+    [Header("EXP Bar (Normal Level)")]
     [SerializeField] private Slider expSlider;
     [SerializeField] private TextMeshProUGUI expText;
+
+    [Header("Sex EXP Bar")]
+    [SerializeField] private Slider sexExpSlider;
+    [SerializeField] private TextMeshProUGUI sexExpText;
 
     [Header("Rewired")]
     [SerializeField] private int playerID = 0;
@@ -50,13 +54,16 @@ public class UI_InGame : MonoBehaviour
     {
         player = FindFirstObjectByType<Player>();
 
-        player.health.OnHealthUpdate += UpdateHealthBar;
-        player.mana.OnManaUpdate += UpdateManaBar;
+        if (player != null)
+        {
+            player.health.OnHealthUpdate += UpdateHealthBar;
+        }
 
         UpdateHealthBar();
         UpdateManaBar();
         UpdateQuickSlots();
         UpdateExpBar();
+        UpdateSexExpBar();
     }
 
     private void Update()
@@ -65,13 +72,10 @@ public class UI_InGame : MonoBehaviour
 
         if (rplayer.GetButtonDown(quickSlot1Action))
             playerInventory.TryUseQuickItemInSlot(1);
-
         if (rplayer.GetButtonDown(quickSlot2Action))
             playerInventory.TryUseQuickItemInSlot(2);
-
         if (rplayer.GetButtonDown(quickSlot3Action))
             playerInventory.TryUseQuickItemInSlot(3);
-
         if (rplayer.GetButtonDown(quickSlot4Action))
             playerInventory.TryUseQuickItemInSlot(4);
     }
@@ -81,32 +85,60 @@ public class UI_InGame : MonoBehaviour
     // ------------------------------
     private void UpdateHealthBar()
     {
+        if (player == null) return;
+
         float currentHealth = Mathf.RoundToInt(player.health.GetCurrentHealth());
         float maxHealth = player.stats.GetMaxHealth();
 
-        healthText.text = $"{currentHealth}/{maxHealth}";
-        healthSlider.value = player.health.GetHealthPercent();
+        if (healthText != null) healthText.text = $"{currentHealth}/{maxHealth}";
+        if (healthSlider != null) healthSlider.value = player.health.GetHealthPercent();
     }
 
     private void UpdateManaBar()
     {
+        if (player == null) return;
+
         float currentMana = Mathf.RoundToInt(player.mana.GetCurrentMana());
         float maxMana = player.stats.GetMaxMana();
 
-        manaText.text = $"{currentMana}/{maxMana}";
-        manaSlider.value = player.mana.GetManaPercent();
+        if (manaText != null) manaText.text = $"{currentMana}/{maxMana}";
+        if (manaSlider != null) manaSlider.value = player.mana.GetManaPercent();
     }
 
     // ------------------------------
-    // 📌 EXP BAR
+    // 📌 EXP BAR (NORMAL)
     // ------------------------------
     public void UpdateExpBar()
     {
+        if (player == null) return;
+
         float currentExp = player.CurrentExp;
         float nextLevelExp = player.NextLevelExp;
 
-        expSlider.value = currentExp / nextLevelExp;
-        expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
+        if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
+        if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
+    }
+
+    // ------------------------------
+    // 📌 SEX EXP BAR (FROM PLAYER)
+    // ------------------------------
+    public void UpdateSexExpBar()
+    {
+        if (player == null)
+        {
+            player = FindFirstObjectByType<Player>();
+            if (player == null) return;
+        }
+
+        float currentSexExp = player.CurrentSexExp;
+        float nextSexExp = player.NextSexLevelSexExp;
+        int sexLevel = player.SexLevel;
+
+        if (sexExpSlider != null)
+            sexExpSlider.value = nextSexExp > 0 ? currentSexExp / nextSexExp : 0f;
+
+        if (sexExpText != null)
+            sexExpText.text = $"Sex Lv {sexLevel}  {currentSexExp:F0}/{nextSexExp:F0}";
     }
 
     // ------------------------------
@@ -114,6 +146,8 @@ public class UI_InGame : MonoBehaviour
     // ------------------------------
     public void UpdateQuickSlots()
     {
+        if (playerInventory == null) return;
+
         if (playerInventory.quickSlots.Length < 4)
         {
             Debug.LogError("[UI_InGame] quickSlots does not have length 4!");

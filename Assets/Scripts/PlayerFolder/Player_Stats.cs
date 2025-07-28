@@ -19,6 +19,8 @@ public class Player_Stats : Entity_Stats
         inventory = GetComponent<Inventory_Player>();
     }
 
+    #region Normal EXP
+
     public void AddEXP(float amount)
     {
         CurrentEXP += amount;
@@ -35,14 +37,15 @@ public class Player_Stats : Entity_Stats
         CurrentEXP -= GetNextLevelRequirement();
         CurrentLevel++;
         Debug.Log($"[Player_Stats] Leveled Up! New Level: {CurrentLevel}");
-
-        // Optionally notify UI or other systems of level up
+        // Optionally notify UI or other systems
     }
 
     public float GetNextLevelRequirement()
     {
         return BASE_EXP_REQUIREMENT * Mathf.Pow(EXP_GROWTH_RATE, CurrentLevel - 1);
     }
+
+    #endregion
 
     public bool CanApplyBuffOf(string source)
     {
@@ -59,16 +62,12 @@ public class Player_Stats : Entity_Stats
         activeBuff.Add(source);
 
         foreach (var buff in buffToApply)
-        {
             GetStatByType(buff.type).AddModifier(buff.value, source);
-        }
 
         yield return new WaitForSeconds(duration);
 
         foreach (var buff in buffToApply)
-        {
             GetStatByType(buff.type).RemoveModifier(source);
-        }
 
         inventory.NotifyInventoryChanged();
         activeBuff.Remove(source);
