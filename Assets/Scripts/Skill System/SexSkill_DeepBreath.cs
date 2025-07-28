@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 public class SexSkill_DeepBreath : Skill_Base
 {
     [SerializeField] private SexyTimeLogic sexyTimeLogic;
@@ -10,7 +9,7 @@ public class SexSkill_DeepBreath : Skill_Base
     {
         base.Awake();
         if (sexyTimeLogic == null)
-            sexyTimeLogic = FindObjectOfType<SexyTimeLogic>();
+            sexyTimeLogic = FindFirstObjectByType<SexyTimeLogic>();
     }
 
     public override void TryUseSkill()
@@ -18,45 +17,55 @@ public class SexSkill_DeepBreath : Skill_Base
         if (!CanUseSkill())
             return;
 
-        if (sexyTimeLogic == null)
-        {
-            Debug.LogWarning("Deep Breath skill failed: SexyTimeLogic is not assigned.");
-            return;
-        }
-
         if (!Unlocked(SkillUpgradeType.DeepBreath))
             return;
 
-        if (Time.time >= sexyTimeLogic.deepBreatheTimestamp)
-        {
-            // ✅ Blue bar logic directly here
-            sexyTimeLogic.playerBar.value -= sexyTimeLogic.playerBarValueDeplete;
-            sexyTimeLogic.deepBreatheTimestamp = Time.time + sexyTimeLogic.deepBreatheCooldown;
+        if (sexyTimeLogic == null || !SexyTimeLogic.isSexyTimeGoingOn)
+            return;
 
-            Debug.Log("Deep Breath used. Blue bar reduced.");
-        }
-        else
-        {
-            Debug.Log("Deep Breath is on cooldown.");
-        }
+        var ui = sexyTimeLogic.UI;
+        if (ui == null)
+            return;
+
+        if (Time.time < sexyTimeLogic.deepBreatheTimestamp)
+            return;
+
+        // Apply bar drain
+        float newPlayerVal = Mathf.Max(
+            0f,
+            ui.PlayerBarValue - sexyTimeLogic.DeepBreathDepleteAmount
+        );
+        ui.UpdateBars(newPlayerVal, ui.PlayerBarMax, ui.PartnerBarValue, ui.PartnerBarMax);
+
+        sexyTimeLogic.deepBreatheTimestamp = Time.time + sexyTimeLogic.deepBreatheCooldown;
+        ui.StartDeepBreathCooldown(sexyTimeLogic.deepBreatheCooldown);  // ✅ Start mini-game cooldown visual
     }
 
 
     public override void SetSkillUpgrade(Skill_DataSO skillData)
     {
+        if (skillData == null)
+        {
+            Debug.LogError("[DeepBreath] SetSkillUpgrade called with NULL skillData.");
+            return;
+        }
+
         base.SetSkillUpgrade(skillData);
 
         if (skillData.upgradeData != null && skillData.upgradeData.upgradeType == SkillUpgradeType.DeepBreath)
         {
-            Unlock(); // Unlock the skill  
+            Unlock();
             Debug.Log("Deep Breath skill unlocked via upgrade.");
+        }
+        else
+        {
+            Debug.LogWarning("[DeepBreath] upgradeData is null or not DeepBreath.");
         }
     }
 
     public void Unlock()
     {
         unlocked = true;
-        Debug.Log("✅ SexSkill_DeepBreath -> Unlock() called. Skill is now unlocked.");
+        Debug.Log("✅ SexSkill_DeepBreath unlocked.");
     }
 }
-

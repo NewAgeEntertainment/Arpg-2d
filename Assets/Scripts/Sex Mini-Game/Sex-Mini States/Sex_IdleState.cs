@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Sex_IdleState : SexyTimeState
@@ -9,19 +7,16 @@ public class Sex_IdleState : SexyTimeState
     public override void EnterState()
     {
         if (logic.anim != null)
-            logic.anim.Play("fuck");
+            logic.anim.Play("fuck", 0, 0f);
         else
-            Debug.LogWarning("Animator is null on logic.");
+            Debug.LogWarning("[Sex_IdleState] Animator is null on logic.");
     }
 
     public override void UpdateState()
     {
-        base.UpdateState();
+        // Immediately switch to stroking (same behavior you had)
         stateMachine.ChangeState(new Sex_StrokingState(logic, stateMachine));
     }
 
-    public override void HandleStroke()
-    {
-        
-    }
+    public override void HandleStroke() { }
 }

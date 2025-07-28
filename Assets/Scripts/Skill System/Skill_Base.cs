@@ -32,20 +32,70 @@ public class Skill_Base : MonoBehaviour
 
     public virtual void SetSkillUpgrade(Skill_DataSO skillData)
     {
+        // 1) Basic null checks
+        if (skillData == null)
+        {
+            Debug.LogError($"[{name}] SetSkillUpgrade received NULL skillData.");
+            return;
+        }
+
         if (skillData.skillType != skillType)
         {
-            Debug.LogWarning($"Mismatched SkillType! This Skill_Base is [{skillType}] but the SO is [{skillData.skillType}]");
+            Debug.LogWarning(
+                $"[{name}] Mismatched SkillType! This Skill_Base is [{skillType}] but the SO is [{skillData.skillType}]");
+        }
+
+        // 2) UpgradeData null check
+        if (skillData.upgradeData == null)
+        {
+            Debug.LogError($"[{name}] skillData.upgradeData is NULL on {skillData.name}. Aborting SetSkillUpgrade.");
+            return;
         }
 
         UpgradeData upgrade = skillData.upgradeData;
+
+        // 3) Assign fields (guard against nulls if needed)
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
         manaCost = upgrade.manaCost;
-        damageScaleData = upgrade.damageScale;
+        damageScaleData = upgrade.damageScale != null ? upgrade.damageScale : damageScaleData; // don't overwrite with null
 
-        player.ui.inGameUI.GetSkillSlot(skillType).SetupSkillSlot(skillData);
+        // 4) UI binding can be optional at this point
+        //    If you call SetSkillUpgrade very early (before UI has spawned), skip this gracefully.
+        try
+        {
+            // Ensure we have a valid player reference if Skill_Base expects one
+            if (player == null)
+                player = FindFirstObjectByType<Player>();
+
+            var ui = player?.ui?.inGameUI;
+            if (ui == null)
+            {
+                // No UI yet -> just warn and safely continue.
+                Debug.LogWarning($"[{name}] UI not ready while setting skill upgrade ({skillData.name}). " +
+                                 $"Will skip slot setup.");
+            }
+            else
+            {
+                var slot = ui.GetSkillSlot(skillType);
+                if (slot != null)
+                {
+                    slot.SetupSkillSlot(skillData);
+                }
+                else
+                {
+                    Debug.LogWarning($"[{name}] No UI skill slot found for {skillType} while setting {skillData.name}.");
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[{name}] Exception while wiring UI in SetSkillUpgrade: {ex}");
+        }
+
         ResetCoolDown();
     }
+
 
     public bool CanUseSkill()
     {

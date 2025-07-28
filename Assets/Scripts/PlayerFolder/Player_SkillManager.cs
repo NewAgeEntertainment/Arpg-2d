@@ -17,6 +17,27 @@ public class Player_SkillManager : MonoBehaviour
         deepBreath = GetComponentInChildren<SexSkill_DeepBreath>();
     }
 
+    private void Start()
+    {
+        // You should have a way to load Skill_DataSO for DeepBreath
+        Skill_DataSO deepBreathData = LoadDeepBreathSkill();
+
+        if (deepBreathData != null)
+        {
+            deepBreath.SetSkillUpgrade(deepBreathData);
+        }
+        else
+        {
+            Debug.LogError("[SkillManager] Deep Breath Skill_DataSO not found.");
+        }
+    }
+
+    private Skill_DataSO LoadDeepBreathSkill()
+    {
+        return Resources.Load<Skill_DataSO>("Skill Data/Sex Skills/Skill data - Deep Breath");
+    }
+
+
     public Skill_Base GetSkillByType(SkillType skillType)
     {
         switch (skillType)
