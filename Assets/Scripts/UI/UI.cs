@@ -8,6 +8,10 @@ public class UI : MonoBehaviour
     public UI_SkillToolTip skillToolTip { get; private set; }
     public UI_ItemToolTip itemToolTip { get; private set; }
     public Inventory_Item hoveredItem;
+
+    [Header("Popup References")]
+    public UI_LevelUpPopup levelUpPopup; // ✅ Add this
+
     public UI_StatToolTip statToolTip { get; private set; }
 
     [SerializeField] private TextMeshProUGUI goldText;
@@ -77,6 +81,10 @@ public class UI : MonoBehaviour
         storageUI = GetComponentInChildren<UI_Storage>(true);
         inGameUI = GetComponentInChildren<UI_InGame>(true);
         optionsUI = GetComponentInChildren<UI_Options>(true);
+
+        // ✅ Auto-disable popup at start
+        if (levelUpPopup != null)
+            levelUpPopup.gameObject.SetActive(false);
 
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);

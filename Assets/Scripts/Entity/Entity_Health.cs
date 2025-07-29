@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +14,12 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
     private Entity_Stats entityStats; // Reference to the Entity_Stats component for health calculations
     private Entity_DropManager dropManager; // Reference to the Entity_DropManager component for item drops
 
+    [Header("EXP Reward")]
+    [SerializeField] private float expReward = 25f;
+
+    private float GetEXPReward() => expReward;
+
+    private Transform _lastDamageDealer;
     private bool miniHealthBarActive;
     [SerializeField] protected float currentHealth; // Current health points, initialized to maximum health
     [SerializeField] protected bool isDead;
@@ -61,6 +67,8 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
             Debug.Log("Attack Evaded!"); // Log the evasion for debugging purposes
             return false; // If evaded, do not apply damage or knockback
         }
+
+        _lastDamageDealer = damageDealer; // ✅ Track last attacker
 
         Entity_Stats attackerStats = damageDealer.GetComponent<Entity_Stats>(); // Get the Entity_Stats component from the damage dealer
         float armorReduction = attackerStats != null ? attackerStats.GetArmorReduction() : 0; // Get the armor reduction value from the attacker's stats, if available
@@ -129,10 +137,30 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
     private void Die()
     {
-        isDead = true; // Set the entity as dead
-        entity.EntityDeath(); // Call the EntityDeath method from the Entity class
-        dropManager?.DropItems(); // Call the DropItems method from the Entity_DropManager component to drop items on death
+        isDead = true;
+        entity.EntityDeath();
+
+        TryGrantEXPToPlayer();
+
+        dropManager?.DropItems();
     }
+
+
+    private void TryGrantEXPToPlayer()
+    {
+        // You’ll need to store the last attacker
+        if (_lastDamageDealer == null) return;
+
+        Player player = _lastDamageDealer.GetComponent<Player>();
+        if (player != null)
+        {
+            float expReward = GetEXPReward(); // You can customize this
+            player.GainEXP(expReward);
+            Debug.Log($"[Entity_Health] Granted {expReward} EXP to Player.");
+        }
+    }
+
+
 
     public float GetHealthPercent() => currentHealth / entityStats.GetMaxHealth();
 

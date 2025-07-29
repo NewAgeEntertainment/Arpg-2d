@@ -8,6 +8,9 @@ public class Player_SkillManager : MonoBehaviour
     public Skill_Shard shard { get; private set; }
     public Skill_Sword swordSpin { get; private set; }
 
+    [Header("Skill Data References")]
+    [SerializeField] private Skill_DataSO deepBreathData;
+
     private void Awake()
     {
         dash = GetComponentInChildren<Skill_Dash>();
@@ -19,24 +22,15 @@ public class Player_SkillManager : MonoBehaviour
 
     private void Start()
     {
-        // You should have a way to load Skill_DataSO for DeepBreath
-        Skill_DataSO deepBreathData = LoadDeepBreathSkill();
-
         if (deepBreathData != null)
         {
             deepBreath.SetSkillUpgrade(deepBreathData);
         }
         else
         {
-            Debug.LogError("[SkillManager] Deep Breath Skill_DataSO not found.");
+            Debug.LogError("[SkillManager] Deep Breath Skill_DataSO not assigned.");
         }
     }
-
-    private Skill_DataSO LoadDeepBreathSkill()
-    {
-        return Resources.Load<Skill_DataSO>("Skill Data/Sex Skills/Skill data - Deep Breath");
-    }
-
 
     public Skill_Base GetSkillByType(SkillType skillType)
     {

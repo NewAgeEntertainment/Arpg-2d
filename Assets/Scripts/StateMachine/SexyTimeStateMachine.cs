@@ -8,6 +8,7 @@ public class SexyTimeStateMachine : MonoBehaviour
     public SexyTimeLogic logic;
     private SexyTimeState currentState;
 
+
     public void ChangeState(SexyTimeState newState)
     {
         currentState?.ExitState();

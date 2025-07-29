@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Rewired;
@@ -20,7 +20,16 @@ public class UI_StatusPanel : UI_Panel
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI classText;
     public Image portraitImage;
-    public TextMeshProUGUI levelText, currentExpText, nextLevelExpText;
+
+    [Header("Normal EXP")]
+    public TextMeshProUGUI levelText;
+    public TextMeshProUGUI currentExpText;
+    public TextMeshProUGUI nextLevelExpText;
+
+    [Header("Sex EXP")]
+    public TextMeshProUGUI sexLevelText;
+    public TextMeshProUGUI currentSexExpText;
+    public TextMeshProUGUI nextSexExpText;
 
     [Header("Stats")]
     public TextMeshProUGUI hpText, mpText;
@@ -78,17 +87,27 @@ public class UI_StatusPanel : UI_Panel
         portraitImage.sprite = player.Portrait;
         levelText.text = "Lv " + player.stats.CurrentLevel;
 
+        // Normal EXP
         int curExp = Mathf.FloorToInt(player.stats.CurrentEXP);
         int nextReq = Mathf.CeilToInt(player.stats.GetNextLevelRequirement());
+        currentExpText.text = curExp.ToString("N0");
+        nextLevelExpText.text = nextReq.ToString("N0");
 
-        currentExpText.text = curExp.ToString("N0");     // whole numbers (with thousands sep)
-        nextLevelExpText.text = nextReq.ToString("N0");    // whole numbers (with thousands sep)
+        // Sex EXP
+        // Sex EXP
+        int sexLevel = player.SexLevel;
+        int curSexExp = Mathf.FloorToInt(player.CurrentSexExp);
+        int nextSexReq = Mathf.CeilToInt(player.GetNextSexLevelRequirementSex());
 
+        sexLevelText.text = "Sex Lv " + sexLevel;
+        currentSexExpText.text = curSexExp.ToString("N0");
+        nextSexExpText.text = nextSexReq.ToString("N0");
+
+        // Other stats
         hpText.text = $"{player.health.GetCurrentHealth()} / {player.stats.GetMaxHealth()}";
         mpText.text = $"{player.mana.GetCurrentMana()} / {player.stats.GetMaxMana()}";
         bioText.text = player.Bio;
     }
-
 
     public override bool HandleCancel()
     {

@@ -7,15 +7,15 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private Player_SkillManager skillManager;
 
     [Header("Core")]
-    [SerializeField] private SexyTimeUIController ui;          // Drag SexMiniGamePanel controller here
-    [SerializeField] private SexyTimeInputRouter inputRouter;  // Drag the router here (or on same GO)
+    [SerializeField] private SexyTimeUIController ui;
+    [SerializeField] private SexyTimeInputRouter inputRouter;
 
     [Header("Config")]
     [SerializeField] private bool autoStart = false;
     [SerializeField] private float barDecayPerSecond = 0f;
     [SerializeField] private float arousalPerStroke = 3f;
     [SerializeField] private float strokeMultiplier = 1f;
-    [SerializeField] private float playerBarValueDeplete = 10f;   // Used by Deep Breath
+    [SerializeField] private float playerBarValueDeplete = 10f;
 
     [Header("Entities")]
     public Entity_Stats playerStats;
@@ -41,7 +41,6 @@ public class SexyTimeLogic : MonoBehaviour
     public UnityEvent OnPlayerBarFull = new UnityEvent();
     public UnityEvent OnPartnerBarFull = new UnityEvent();
 
-    // Public runtime flags / props
     public static bool isSexyTimeGoingOn = false;
     public bool playerBarReachedOnce = false;
     public bool partnerBarReachedOnce = false;
@@ -52,12 +51,10 @@ public class SexyTimeLogic : MonoBehaviour
     public float deepBreatheTimestamp { get; set; } = 0f;
     public float lastStrokeTimestamp { get; private set; } = 0f;
 
-    // Accessors used by states/skills
     public SexyTimeUIController UI => ui;
     public float ArousalPerStroke => arousalPerStroke;
     public float DeepBreathDepleteAmount => playerBarValueDeplete;
 
-    // Internals
     private SexyTimeStateMachine stateMachine;
     public Animator anim { get; private set; }
     private bool isCoroutineRunning = false;
@@ -66,8 +63,6 @@ public class SexyTimeLogic : MonoBehaviour
     private enum FinishWinner { None, PlayerBlue, PartnerPink }
     private FinishWinner winner = FinishWinner.None;
     private bool expGranted = false;
-
-    #region Unity
 
     private void OnEnable()
     {
@@ -92,7 +87,7 @@ public class SexyTimeLogic : MonoBehaviour
             inputRouter = GetComponent<SexyTimeInputRouter>();
 
         if (inputRouter != null)
-            inputRouter.Init(); // grabs rewired player
+            inputRouter.Init();
 
         if (skillManager == null)
             skillManager = FindFirstObjectByType<Player_SkillManager>();
@@ -110,7 +105,6 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (shouldPause) return;
 
-        // Not in mini-game yet, listen for Start
         if (!isSexyTimeGoingOn && inputRouter != null && inputRouter.StartPressed())
             StartSexyTime();
 
@@ -123,10 +117,6 @@ public class SexyTimeLogic : MonoBehaviour
         DepletePlayerBar();
     }
 
-    #endregion
-
-    #region Flow
-
     public void StartSexyTime()
     {
         if (ui == null)
@@ -135,24 +125,19 @@ public class SexyTimeLogic : MonoBehaviour
             return;
         }
 
-        // Swap Rewired maps
         inputRouter?.EnableSexyTimeMaps();
 
-        // Reset winner/xp
         winner = FinishWinner.None;
         expGranted = false;
-
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
-        // Init bars
         float playerMax = playerStats != null ? playerStats.sex.maxArousal.GetValue() : 100f;
         float partnerMax = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : 100f;
         ui.InitBars(playerMax, partnerMax);
         ui.UpdatePower(arousalPerStroke, arousalPerStroke);
         ui.Show();
 
-        // setup state machine
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
 
@@ -171,15 +156,12 @@ public class SexyTimeLogic : MonoBehaviour
             ResetNPCAttack();
             isCoroutineRunning = true;
         }
-
-
     }
 
     public void ResetSexyTime()
     {
         GrantSexExpIfNeeded();
 
-        // Rewired maps back to gameplay
         inputRouter?.DisableSexyTimeMaps();
 
         isSexyTimeGoingOn = false;
@@ -203,10 +185,6 @@ public class SexyTimeLogic : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    #endregion
-
-    #region Input & Update
-
     private void HandleInput()
     {
         if (inputRouter == null) return;
@@ -218,7 +196,7 @@ public class SexyTimeLogic : MonoBehaviour
             CastDeepBreathe();
 
         if (inputRouter.PausePressed())
-            stateMachine.PauseForDialogue();  // if you implemented a pause state
+            stateMachine.PauseForDialogue();
     }
 
     private void UpdateNPCAttack()
@@ -232,7 +210,6 @@ public class SexyTimeLogic : MonoBehaviour
 
         npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
-        // Check for climax/winner
         CheckBarsForClimaxAndEvents();
     }
 
@@ -248,7 +225,10 @@ public class SexyTimeLogic : MonoBehaviour
 
         cumTimeElapsed += Time.deltaTime;
         if (cumTimeElapsed >= cumDuration)
+        {
+            stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
             ResetSexyTime();
+        }
     }
 
     private void DepletePlayerBar()
@@ -260,10 +240,6 @@ public class SexyTimeLogic : MonoBehaviour
         if (Mathf.Abs(newVal - oldVal) > Mathf.Epsilon)
             ui.UpdateBars(newVal, ui.PlayerBarMax, ui.PartnerBarValue, ui.PartnerBarMax);
     }
-
-    #endregion
-
-    #region Events & Helpers
 
     private void CheckBarsForClimaxAndEvents()
     {
@@ -299,20 +275,11 @@ public class SexyTimeLogic : MonoBehaviour
             winner = FinishWinner.PartnerPink;
     }
 
-    public void ShowCritFeedback()
-    {
-        ui.ShowCrit();
-    }
-
+    public void ShowCritFeedback() => ui.ShowCrit();
     public void PauseSexyTimeForDialogue() => stateMachine.PauseForDialogue();
     public void ResumeSexyTimeAfterDialogue() => stateMachine.ResumeAfterDialogue();
-
     public void SetIsFuckingFalse() => isFucking = false;
-
-    public void ResetNPCAttack()
-    {
-        npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
-    }
+    public void ResetNPCAttack() => npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
     public bool IsDeepBreathUnlocked()
     {
@@ -330,11 +297,6 @@ public class SexyTimeLogic : MonoBehaviour
         skillManager.deepBreath.TryUseSkill();
     }
 
-
-    #endregion
-
-    #region EXP
-
     private void GrantSexExpIfNeeded()
     {
         if (expGranted) return;
@@ -344,7 +306,6 @@ public class SexyTimeLogic : MonoBehaviour
         {
             case FinishWinner.PlayerBlue: amount = blueBarExp; break;
             case FinishWinner.PartnerPink: amount = pinkBarExp; break;
-            default: amount = 0; break;
         }
 
         if (amount > 0)
@@ -364,6 +325,4 @@ public class SexyTimeLogic : MonoBehaviour
 
         expGranted = true;
     }
-
-    #endregion
 }

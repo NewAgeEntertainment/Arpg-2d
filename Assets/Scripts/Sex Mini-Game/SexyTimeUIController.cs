@@ -118,4 +118,12 @@ public class SexyTimeUIController : MonoBehaviour
         if (deepBreathSlot != null)
             deepBreathSlot.StartCooldown(cooldown);
     }
+
+    public void ResetAll()
+    {
+        UpdateBars(0f, PlayerBarMax, 0f, PartnerBarMax);
+        UpdatePower(0f, 0f);
+        UpdateCooldown(0f);
+        HideCrit();
+    }
 }

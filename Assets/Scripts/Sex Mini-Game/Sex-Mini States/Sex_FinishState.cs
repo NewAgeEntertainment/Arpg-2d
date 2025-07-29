@@ -1,15 +1,26 @@
-//using System.Collections;
-//using System.Collections.Generic;
-//using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
-//public class Sex_FinishState : SexyTimeState
-//{
-//    public Sex_FinishState(SexyTimeLogic context) : base(context) { }
+public class Sex_FinishState : SexyTimeState
+{
+    public Sex_FinishState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine) : base(logic, stateMachine) { }
 
-//    //public override void Enter()
-//    //{
-//    //    context.canvasBackground?.SetActive(false);
-//    //    context.gameObject.SetActive(false);
-//    //    context.isSexyTimeGoingOn = false;
-//    //}
-//}
+    public override void EnterState()
+    {
+        logic.StartCoroutine(FinishRoutine());
+    }
+
+    private IEnumerator FinishRoutine()
+    {
+        yield return new WaitForSeconds(0.75f);
+
+        logic.ResetSexyTime();
+    }
+
+
+
+    public override void UpdateState() { }
+    public override void ExitState() { }
+    public override void HandleStroke() { }
+    public override void HandleDeepBreathe() { }
+}
