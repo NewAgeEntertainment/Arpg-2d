@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player_SkillManager : MonoBehaviour
 {
@@ -10,6 +10,7 @@ public class Player_SkillManager : MonoBehaviour
 
     [Header("Skill Data References")]
     [SerializeField] private Skill_DataSO deepBreathData;
+    [SerializeField] private Player_Stats stats; // 🔹 Reference to player stats
 
     private void Awake()
     {
@@ -50,5 +51,23 @@ public class Player_SkillManager : MonoBehaviour
                 Debug.LogError($"[SkillManager] Unknown skill type: {skillType}");
                 return null;
         }
+    }
+
+    public float CalculateSkillDamage(Skill_DataSO skillData)
+    {
+        if (skillData == null || skillData.upgradeData == null)
+        {
+            Debug.LogWarning("[SkillManager] Skill data is null or missing upgrade data.");
+            return 0f;
+        }
+
+        float basePower = skillData.upgradeData.damageScale.basePower;
+        float scalingMultiplier = skillData.upgradeData.damageScale.scalingMultiplier;
+        StatType scalingStat = skillData.upgradeData.damageScale.scalingStat;
+        float statValue = stats.GetStatByType(scalingStat).GetValue();
+        float levelBonus = 1 + (stats.CurrentLevel * 0.05f);
+
+        float damage = (basePower + statValue * scalingMultiplier) * levelBonus;
+        return Mathf.Floor(damage);
     }
 }

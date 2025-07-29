@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Skill_Base : MonoBehaviour
 {
@@ -27,12 +27,17 @@ public class Skill_Base : MonoBehaviour
 
     public virtual void TryUseSkill()
     {
-        // Custom skill logic goes here
+        if (!CanUseSkill())
+            return;
+
+        // ✅ Skill logic should be added in child class override
+        Debug.Log($"[Skill_Base] {name} skill used. Mana spent: {manaCost}");
+
+        // Child classes will do the actual effect (e.g. damage, VFX, etc.)
     }
 
     public virtual void SetSkillUpgrade(Skill_DataSO skillData)
     {
-        // 1) Basic null checks
         if (skillData == null)
         {
             Debug.LogError($"[{name}] SetSkillUpgrade received NULL skillData.");
@@ -45,7 +50,6 @@ public class Skill_Base : MonoBehaviour
                 $"[{name}] Mismatched SkillType! This Skill_Base is [{skillType}] but the SO is [{skillData.skillType}]");
         }
 
-        // 2) UpgradeData null check
         if (skillData.upgradeData == null)
         {
             Debug.LogError($"[{name}] skillData.upgradeData is NULL on {skillData.name}. Aborting SetSkillUpgrade.");
@@ -54,26 +58,20 @@ public class Skill_Base : MonoBehaviour
 
         UpgradeData upgrade = skillData.upgradeData;
 
-        // 3) Assign fields (guard against nulls if needed)
         upgradeType = upgrade.upgradeType;
         cooldown = upgrade.cooldown;
         manaCost = upgrade.manaCost;
-        damageScaleData = upgrade.damageScale != null ? upgrade.damageScale : damageScaleData; // don't overwrite with null
+        damageScaleData = upgrade.damageScale != null ? upgrade.damageScale : damageScaleData;
 
-        // 4) UI binding can be optional at this point
-        //    If you call SetSkillUpgrade very early (before UI has spawned), skip this gracefully.
         try
         {
-            // Ensure we have a valid player reference if Skill_Base expects one
             if (player == null)
                 player = FindFirstObjectByType<Player>();
 
             var ui = player?.ui?.inGameUI;
             if (ui == null)
             {
-                // No UI yet -> just warn and safely continue.
-                Debug.LogWarning($"[{name}] UI not ready while setting skill upgrade ({skillData.name}). " +
-                                 $"Will skip slot setup.");
+                Debug.LogWarning($"[{name}] UI not ready while setting skill upgrade ({skillData.name}). Skipping UI binding.");
             }
             else
             {
@@ -96,7 +94,6 @@ public class Skill_Base : MonoBehaviour
         ResetCoolDown();
     }
 
-
     public bool CanUseSkill()
     {
         if (upgradeType == SkillUpgradeType.None)
@@ -104,13 +101,13 @@ public class Skill_Base : MonoBehaviour
 
         if (OnCooldown())
         {
-            Debug.Log("Skill is on cooldown.");
+            Debug.Log($"[Skill_Base] {name} is on cooldown.");
             return false;
         }
 
         if (mana == null || !mana.UseMana(manaCost))
         {
-            Debug.Log("Not enough mana to use the skill.");
+            Debug.Log($"[Skill_Base] Not enough mana to use {name}. Required: {manaCost}");
             return false;
         }
 
@@ -124,7 +121,12 @@ public class Skill_Base : MonoBehaviour
 
     public void SetSkillOnCooldown()
     {
-        player.ui.inGameUI.GetSkillSlot(skillType).StartCooldown(cooldown);
+        if (player?.ui?.inGameUI != null)
+        {
+            var slot = player.ui.inGameUI.GetSkillSlot(skillType);
+            slot?.StartCooldown(cooldown);
+        }
+
         lastTimeUsed = Time.time;
     }
 
@@ -134,7 +136,12 @@ public class Skill_Base : MonoBehaviour
 
     public void ResetCooldown()
     {
-        player.ui.inGameUI.GetSkillSlot(skillType).ResetCooldown();
+        if (player?.ui?.inGameUI != null)
+        {
+            var slot = player.ui.inGameUI.GetSkillSlot(skillType);
+            slot?.ResetCooldown();
+        }
+
         lastTimeUsed = Time.time - cooldown;
     }
 }

@@ -59,22 +59,26 @@ public class Player_Stats : Entity_Stats
     {
         var statGains = new Dictionary<string, float>();
 
-        if (levelScalingData == null)
-        {
-            Debug.LogWarning("[Player_Stats] No LevelScalingSO assigned.");
-            return statGains;
-        }
+        int level = CurrentLevel;
 
-        float hpGain = levelScalingData.Evaluate(levelScalingData.healthCurve, CurrentLevel);
-        float mpGain = levelScalingData.Evaluate(levelScalingData.manaCurve, CurrentLevel);
-        float strGain = levelScalingData.Evaluate(levelScalingData.strengthCurve, CurrentLevel);
-        float defGain = levelScalingData.Evaluate(levelScalingData.defenseCurve, CurrentLevel);
-        float intGain = levelScalingData.Evaluate(levelScalingData.intelligenceCurve, CurrentLevel);
-        float luckGain = levelScalingData.Evaluate(levelScalingData.luckCurve, CurrentLevel);
-        float vitGain = levelScalingData.Evaluate(levelScalingData.vitalityCurve, CurrentLevel);
+        float hpGain = StatGrowthCalculator.GetMaxHealth(level);
+        float mpGain = StatGrowthCalculator.GetMaxMana(level);
+        float strGain = StatGrowthCalculator.GetStrength(level);
+        float defGain = StatGrowthCalculator.GetDefense(level);
+        float intGain = StatGrowthCalculator.GetIntelligence(level);
+        float luckGain = StatGrowthCalculator.GetLuck(level);
+        float vitGain = StatGrowthCalculator.GetVitality(level);
 
-        string tag = $"{LEVEL_UP_TAG_PREFIX}{CurrentLevel}";
+        //float strokeGain = StatGrowthCalculator.GetStroke(level);
+        //float resilienceGain = StatGrowthCalculator.GetResilience(level);
+        //float sexDamageGain = StatGrowthCalculator.GetSexualDamage(level);
+        //float maxArousalGain = StatGrowthCalculator.GetMaxArousal(level);
+        //float restraintGain = StatGrowthCalculator.GetSexualRestraint(level);
 
+
+        string tag = $"{LEVEL_UP_TAG_PREFIX}{level}";
+
+        // Apply to stats
         resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
         resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
         major.strength.AddModifier(strGain, StatModType.Flat, tag);
@@ -83,6 +87,14 @@ public class Player_Stats : Entity_Stats
         major.luck.AddModifier(luckGain, StatModType.Flat, tag);
         major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
 
+        //sex.stroke.AddModifier(strokeGain, StatModType.Flat, tag);
+        //sex.resilience.AddModifier(resilienceGain, StatModType.Flat, tag);
+        //sex.sexualDamage.AddModifier(sexDamageGain, StatModType.Flat, tag);
+        //sex.maxArousal.AddModifier(maxArousalGain, StatModType.Flat, tag);
+        //sex.sexualRestraint.AddModifier(restraintGain, StatModType.Flat, tag);
+
+
+        // For popup
         statGains["Max Health"] = hpGain;
         statGains["Max Mana"] = mpGain;
         statGains["Strength"] = strGain;
@@ -91,8 +103,10 @@ public class Player_Stats : Entity_Stats
         statGains["Luck"] = luckGain;
         statGains["Vitality"] = vitGain;
 
+
         return statGains;
     }
+
 
     #endregion
 

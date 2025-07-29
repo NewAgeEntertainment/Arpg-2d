@@ -1,10 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using UnityEditor;
 using UnityEngine;
 
 public abstract class Entity_Combat : MonoBehaviour
 {
+    protected Entity_Mana mana; // ✅ New: for restoring mana on hit
+
+
     public event Action<float> OnDoingPhysicalDamage;
     protected Entity _entity;
     private Entity_VFX vfx;
@@ -19,23 +23,22 @@ public abstract class Entity_Combat : MonoBehaviour
     private void Awake()
     {
         _entity = GetComponent<Entity>();
-        vfx = GetComponent<Entity_VFX>(); // Replaced TryGetComponent with GetComponent to avoid allocation when no component is found  
-        stats = GetComponent<Entity_Stats>(); // Replaced TryGetComponent with GetComponent to avoid allocation when no component is found  
+        vfx = GetComponent<Entity_VFX>();
+        stats = GetComponent<Entity_Stats>();
+        mana = GetComponent<Entity_Mana>(); // ✅ Get mana if available
     }
+
 
     public void PerformAttack()
     {
-
         foreach (var target in GetDetectedCollider())
         {
-            IDamageable damageable = target.GetComponent<IDamageable>();// If the target does not have an IDamagable component, skip to the next target  
-
+            IDamageable damageable = target.GetComponent<IDamageable>();
             if (damageable == null)
                 continue;
 
-            AttackData attackData = stats.GetAttackData(basicAttackScale);
+            AttackData attackData = new AttackData(stats, basicAttackScale);
             Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
-
 
             float physicalDamage = attackData.physicalDamage;
             float elementalDamage = attackData.elementalDamage;
@@ -48,14 +51,22 @@ public abstract class Entity_Combat : MonoBehaviour
 
             if (targetGotHit)
             {
-                OnDoingPhysicalDamage?.Invoke(physicalDamage); // Notify subscribers about the physical damage dealt
+                OnDoingPhysicalDamage?.Invoke(physicalDamage);
                 vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
-            }
 
+                // ✅ Restore mana on hit
+                if (mana != null && _entity is Player)
+                {
+                    float manaGain = Mathf.Max(1, stats.major.intelligence.GetValue() * 0.2f);
+                    mana.IncreaseMana(manaGain);
+                }
+            }
         }
     }
 
-    
+
+
+
 
     public abstract Collider2D[] GetDetectedCollider();
 

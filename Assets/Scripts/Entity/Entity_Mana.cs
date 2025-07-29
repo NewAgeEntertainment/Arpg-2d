@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,6 +25,8 @@ public class Entity_Mana : MonoBehaviour
     [SerializeField] private float manaRegenInterval = 1f; // Amount of mana to regenerate per second  
     [SerializeField] private bool canRegenerateMana = true; // Flag to enable or disable mana regeneration  
 
+
+
     protected virtual void Awake()
     {
         skill = GetComponent<Skill_Base>(); // Get the Skill component attached to the same GameObject
@@ -35,7 +37,7 @@ public class Entity_Mana : MonoBehaviour
         OnManaUpdate += UpdateManaBar;
         
         UpdateManaBar(); // Update the mana bar UI to reflect the initial mana points  
-        InvokeRepeating(nameof(RegenerateMana), 0, manaRegenInterval); // Start the mana regeneration process at regular intervals  
+        Debug.Log("🧠 Mana script instance: " + GetComponent<Entity_Mana>().gameObject.name);
     }
 
 
@@ -48,21 +50,21 @@ public class Entity_Mana : MonoBehaviour
         if (currentMana >= manaCost) // Check if there is enough mana to use  
         {
             currentMana -= manaCost; // Deduct the mana cost from current mana  
-            UpdateManaBar(); // Update the mana bar UI  
+            Debug.Log("🟣 Mana used: " + manaCost); // ✅ Add this
+            OnManaUpdate?.Invoke(); // ✅ Make sure this is here  
             return true; // Mana usage was successful  
         }
 
         return false; // Not enough mana to use  
     }
 
-    private void RegenerateMana()
+    public void RestoreManaOnHit(float amount)
     {
-        if (canRegenerateMana == false)
-            return; // If health regeneration is disabled, do nothing  
+        if (isDead) return;
 
-        float manaRegenAmount = entityStats.resources.manaRegen.GetValue(); // Get the health regeneration amount from the Entity_Stats component  
-        IncreaseMana(manaRegenAmount); // Call the method to increase health points by the regeneration amount  
+        IncreaseMana(amount);
     }
+
 
     public void IncreaseMana(float manaRecoveredAmount)
     {

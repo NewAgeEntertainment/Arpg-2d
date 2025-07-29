@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 [Serializable]
@@ -14,9 +14,10 @@ public class AttackData
 
     public AttackData(Entity_Stats entityStats, DamageScaleData scaleData)
     {
-        physicalDamage = entityStats.GetPhysicalDamage(out isCrit, scaleData.phyiscal);
+        physicalDamage = entityStats.GetPhysicalDamage(out isCrit, scaleData.physical);  // ✅ fixed spelling
         elementalDamage = entityStats.GetElementalDamage(out element, scaleData.elemental);
 
         effectData = new ElementalEffectData(entityStats, scaleData);
     }
+
 }

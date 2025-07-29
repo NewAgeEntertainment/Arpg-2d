@@ -64006,7 +64006,7 @@ Transform:
   m_GameObject: {fileID: 1013944280}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.972345, y: -0.7882788, z: 20.512577}
+  m_LocalPosition: {x: -3.972345, y: -0.7882788, z: 21.692577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -74841,10 +74841,10 @@ PrefabInstance:
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: levelScalingData
       value: 
-      objectReference: {fileID: 11400000, guid: c83d651ba6e634745b1e77b6ee9785ee, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.stroke.baseValue
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.maxArousal.baseValue
@@ -74852,11 +74852,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.resilience.baseValue
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.sexualDamage.baseValue
-      value: 3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: resources.maxMana.baseValue
@@ -74864,10 +74864,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.sexualRestraint.baseValue
-      value: 3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sex.stroke.modifiers.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: resources.maxHealth.modifiers.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
@@ -74880,15 +74884,31 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 11feb41ddca36f14b97f77b541a2eaf3, type: 3}
     - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: SEX_EXP_GROWTH_RATE
-      value: 26.6
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: sexLevelScalingData
       value: 
-      objectReference: {fileID: 11400000, guid: 1174156b6997ae04fb7704c26cabf31d, type: 2}
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: sexBonus_StrokePerLevel
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: BASE_SEX_EXP_REQUIREMENT
-      value: 200
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: sexBonus_ResiliencePerLevel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: sexBonus_SexualDamagePerLevel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: sexBonus_SexualRestraintPerLevel
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2669684057944700641, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_RaycastTarget
@@ -74934,6 +74954,10 @@ PrefabInstance:
       propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5843875191212425359, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: stats
+      value: 
+      objectReference: {fileID: 1468730669}
     - target: {fileID: 5843875191212425359, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: deepBreathData
       value: 
@@ -74982,6 +75006,10 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6972770920434634234, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: basicAttackScale.scalingStat
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -74989,6 +75017,10 @@ PrefabInstance:
     - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7563797542631961709, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: manaCost
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: player
@@ -94917,17 +94949,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5510462054552448366, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
   m_PrefabInstance: {fileID: 1633998999}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1530223320 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8527505050682111766, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
-  m_PrefabInstance: {fileID: 1633998999}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530223307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 691647f7eb53e894d845afdccc87c72d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1530223328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94944,6 +94965,121 @@ MonoBehaviour:
   dropData: {fileID: 11400000, guid: 369c2085f99c1614e9186361fa8c045f, type: 2}
   maxRarityAmount: 1200
   mixItemsToDrop: 3
+--- !u!114 &1530223336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530223307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 797e47765417e5240bc7b10d1b93ffe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultStatSetup: {fileID: 11400000, guid: f946a537d5502ee4fa6f27077322270a, type: 2}
+  resources:
+    maxHealth:
+      baseValue: 0
+      modifiers:
+      - value: 0
+        source: EnemyLevelScale
+        type: 0
+    healthRegen:
+      baseValue: 0
+      modifiers: []
+    maxMana:
+      baseValue: 0
+      modifiers: []
+    manaRegen:
+      baseValue: 0
+      modifiers: []
+  offense:
+    attackSpeed:
+      baseValue: 0
+      modifiers: []
+    damage:
+      baseValue: 0
+      modifiers:
+      - value: 1
+        source: EnemyLevelScale
+        type: 0
+    critPower:
+      baseValue: 0
+      modifiers: []
+    critChance:
+      baseValue: 0
+      modifiers: []
+    armorReduction:
+      baseValue: 0
+      modifiers: []
+    fireDamage:
+      baseValue: 0
+      modifiers: []
+    iceDamage:
+      baseValue: 0
+      modifiers: []
+    lightningDamage:
+      baseValue: 0
+      modifiers: []
+    poisonDamage:
+      baseValue: 0
+      modifiers: []
+  defense:
+    armor:
+      baseValue: 0
+      modifiers:
+      - value: 0
+        source: EnemyLevelScale
+        type: 0
+    evasion:
+      baseValue: 0
+      modifiers: []
+    fireRes:
+      baseValue: 0
+      modifiers: []
+    iceRes:
+      baseValue: 0
+      modifiers: []
+    lightningRes:
+      baseValue: 0
+      modifiers: []
+    poisonRes:
+      baseValue: 0
+      modifiers: []
+  major:
+    strength:
+      baseValue: 0
+      modifiers: []
+    luck:
+      baseValue: 0
+      modifiers: []
+    intelligence:
+      baseValue: 0
+      modifiers: []
+    vitality:
+      baseValue: 0
+      modifiers: []
+  sex:
+    maxArousal:
+      baseValue: 0
+      modifiers: []
+    stroke:
+      baseValue: 0
+      modifiers: []
+    sexualDamage:
+      baseValue: 0
+      modifiers: []
+    resilience:
+      baseValue: 0
+      modifiers: []
+    sexualRestraint:
+      baseValue: 0
+      modifiers: []
+  enemyLevel: 5
+  growthRate: 1
+  applyScaling: 1
+  showLevelInName: 1
 --- !u!1 &1532030285
 GameObject:
   m_ObjectHideFlags: 0
@@ -102099,7 +102235,8 @@ PrefabInstance:
       propertyPath: offense.StrokeDamage.baseValue
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8527505050682111766, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
     m_RemovedGameObjects:
     - {fileID: 464045282774249207, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
     - {fileID: 4985280553146406205, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
@@ -102115,6 +102252,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2891903424803747257, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       insertIndex: 6
       addedObject: {fileID: 1530223311}
+    - targetCorrespondingSourceObject: {fileID: 2891903424803747257, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
+      insertIndex: 7
+      addedObject: {fileID: 1530223336}
     - targetCorrespondingSourceObject: {fileID: 2891903424803747257, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1530223328}
@@ -114915,11 +115055,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basicAttackScale:
-    phyiscal: 1
+    physical: 1
     elemental: 1
+    basePower: 10
+    scalingMultiplier: 1
+    scalingStat: 4
     chillDuration: 3
-    chillSlowMulitplier: 0.2
-    burnDuratin: 3
+    chillSlowMultiplier: 0.2
+    burnDuration: 3
     burnDamageScale: 1
     poisonDuration: 3
     poisonDamageScale: 1
@@ -115002,7 +115145,6 @@ MonoBehaviour:
   sexBonus_StrokePerLevel: 1
   sexBonus_ResiliencePerLevel: 0.5
   sexBonus_SexualRestraintPerLevel: 0.5
-  sexLevelScalingData: {fileID: 0}
   BASE_SEX_EXP_REQUIREMENT: 50
   SEX_EXP_GROWTH_RATE: 1.35
   lastMoveDirection: {x: 0, y: -1}
@@ -117725,7 +117867,7 @@ Transform:
   m_GameObject: {fileID: 1845696775}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.972345, y: -0.7882788, z: 20.512577}
+  m_LocalPosition: {x: -3.972345, y: -0.7882788, z: 21.692577}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -119816,7 +119958,7 @@ MonoBehaviour:
   strokeMultiplier: 0
   playerBarValueDeplete: 10
   playerStats: {fileID: 1468730669}
-  partnerStats: {fileID: 1530223320}
+  partnerStats: {fileID: 0}
   pussySqueeze: 0
   pussySqueezeCooldown: 5
   cumDuration: 5
@@ -148295,9 +148437,9 @@ RectTransform:
   m_Children:
   - {fileID: 1684562421031295414}
   - {fileID: 8284253470680112458}
+  - {fileID: 6349159948793588198}
   - {fileID: 2688616684028883184}
   - {fileID: 4138353167905094737}
-  - {fileID: 6349159948793588198}
   m_Father: {fileID: 8809121504286972178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -173596,10 +173738,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9006114770406755727}
-  - {fileID: 7294003258958518385}
-  - {fileID: 8327658853993817752}
   - {fileID: 5462667690203601880}
   - {fileID: 5847075788449403437}
+  - {fileID: 7294003258958518385}
+  - {fileID: 8327658853993817752}
   m_Father: {fileID: 8809121504286972178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -196652,10 +196794,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1567401321864059367}
-  - {fileID: 3073516285443655713}
-  - {fileID: 2690352432290946723}
   - {fileID: 4863533328644977399}
   - {fileID: 6762288915578649901}
+  - {fileID: 2690352432290946723}
+  - {fileID: 3073516285443655713}
   m_Father: {fileID: 8809121504286972178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}

@@ -24,9 +24,6 @@ public class Player : Entity
     [SerializeField] private float sexBonus_ResiliencePerLevel = 0.5f;
     [SerializeField] private float sexBonus_SexualRestraintPerLevel = 0.5f;
 
-    [Header("Sex Level Stat Curves")]
-    [SerializeField] private SexLevelScalingSO sexLevelScalingData;
-
     private const string SEX_LEVEL_BONUS_SOURCE = "SexLevelBonus";
     [SerializeField] private float BASE_SEX_EXP_REQUIREMENT = 50f;
     [SerializeField] private float SEX_EXP_GROWTH_RATE = 1.35f;
@@ -106,6 +103,8 @@ public class Player : Entity
         rPlayer = ReInput.players.GetPlayer(playerID);
 
         health.OnHealthUpdate += UpdateMainUIHealth;
+        mana.OnManaUpdate += UpdateMainUIMana;
+
         UpdateMainUIHealth();
         UpdateMainUIMana();
 
@@ -133,8 +132,10 @@ public class Player : Entity
 
     private void UpdateMainUIMana()
     {
+        Debug.Log("🔵 Updating Main Mana Bar");
         ui?.playerManaBar?.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
     }
+
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
 
@@ -236,7 +237,6 @@ public class Player : Entity
         Debug.Log($"[Player] Sex Level Up! New Sex Level: {SexLevel}");
 
         ApplySexLevelBonuses();
-        // Optional: add popup or FX here
     }
 
     public float GetNextSexLevelRequirementSex()
@@ -250,23 +250,17 @@ public class Player : Entity
     {
         RemoveSexLevelBonuses();
 
-        if (stats == null || sexLevelScalingData == null)
+        if (stats == null)
         {
-            Debug.LogWarning("[Player] Missing stats or SexLevelScalingSO, cannot apply Sex Level bonuses.");
+            Debug.LogWarning("[Player] Missing stats, cannot apply Sex Level bonuses.");
             return;
         }
 
-        float maxArousalBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.maxArousalCurve, SexLevel);
-        float sexualDamageBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.sexualDamageCurve, SexLevel);
-        float strokeBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.strokeCurve, SexLevel);
-        float resilienceBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.resilienceCurve, SexLevel);
-        float sexualRestraintBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.sexualRestraintCurve, SexLevel);
-
-        stats.sex.maxArousal.AddModifier(maxArousalBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.sexualDamage.AddModifier(sexualDamageBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.stroke.AddModifier(strokeBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.resilience.AddModifier(resilienceBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.sexualRestraint.AddModifier(sexualRestraintBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.maxArousal.AddModifier(sexBonus_MaxArousalPerLevel * SexLevel, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.sexualDamage.AddModifier(sexBonus_SexualDamagePerLevel * SexLevel, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.stroke.AddModifier(sexBonus_StrokePerLevel * SexLevel, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.resilience.AddModifier(sexBonus_ResiliencePerLevel * SexLevel, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.sexualRestraint.AddModifier(sexBonus_SexualRestraintPerLevel * SexLevel, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
     }
 
     private void RemoveSexLevelBonuses()

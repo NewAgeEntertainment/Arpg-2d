@@ -57,6 +57,7 @@ public class UI_InGame : MonoBehaviour
         if (player != null)
         {
             player.health.OnHealthUpdate += UpdateHealthBar;
+            player.mana.OnManaUpdate += UpdateManaBar; // ✅ THIS LINE IS NEEDED
         }
 
         UpdateHealthBar();
@@ -96,14 +97,17 @@ public class UI_InGame : MonoBehaviour
 
     private void UpdateManaBar()
     {
-        if (player == null) return;
+        Debug.Log($"🔴 ManaBar Updating: {player.mana.GetCurrentMana()} / {player.stats.GetMaxMana()}");
 
-        float currentMana = Mathf.RoundToInt(player.mana.GetCurrentMana());
-        float maxMana = player.stats.GetMaxMana();
+        if (manaText != null)
+            manaText.text = $"{Mathf.RoundToInt(player.mana.GetCurrentMana())}/{player.stats.GetMaxMana()}";
 
-        if (manaText != null) manaText.text = $"{currentMana}/{maxMana}";
-        if (manaSlider != null) manaSlider.value = player.mana.GetManaPercent();
+        if (manaSlider != null)
+            manaSlider.value = player.mana.GetManaPercent();
+        else
+            Debug.LogWarning("⚠️ ManaSlider is NULL");
     }
+
 
     // ------------------------------
     // 📌 EXP BAR (NORMAL)

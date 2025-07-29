@@ -14,6 +14,7 @@ public class Entity_Stats : MonoBehaviour
 
     public AttackData GetAttackData(DamageScaleData scaleData) => new AttackData(this, scaleData);
 
+
     public float GetElementalDamage(out ElementType element, float scaleFactor = 1)
     {
         float fireDamage = offense.fireDamage.GetValue();

@@ -21,9 +21,9 @@ public class ElementalEffectData
     public ElementalEffectData(Entity_Stats entityStats, DamageScaleData damageScale)
     {
         chillDuration = damageScale.chillDuration;
-        chillSlowMultiplier = damageScale.chillSlowMulitplier;
+        chillSlowMultiplier = damageScale.chillSlowMultiplier;
 
-        burnDuration = damageScale.burnDuratin;
+        burnDuration = damageScale.burnDuration;
         totalBurnDamage = entityStats.offense.fireDamage.GetValue() * damageScale.burnDamageScale;
 
         poisonDuration = damageScale.poisonDuration;
