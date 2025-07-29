@@ -1,16 +1,16 @@
-﻿using System;
+﻿// Inventory_Item.cs
+using System;
 using System.Text;
 using UnityEngine;
 
 [Serializable]
-public class Inventory_Item 
+public class Inventory_Item
 {
     private string itemId;
 
     public ItemDataSO itemData;
-    public int stackSize = 1; // The current stack size of the item in the inventory
-
-    public ItemModifier[] modifiers { get; private set; } // Array of modifiers that can be applied to the item
+    public int stackSize = 1;
+    public ItemModifier[] modifiers { get; private set; }
     public ItemEffect_DataSO itemEffect;
 
     public int buyPrice { get; private set; }
@@ -18,24 +18,20 @@ public class Inventory_Item
 
     public Inventory_Item(ItemDataSO itemData)
     {
-        this.itemData = itemData; // the item data for this inventory item
-
+        this.itemData = itemData;
         itemEffect = itemData.itemEffect;
-
-        buyPrice = itemData.itemPtice; // Price of the item in the merchant
-        sellPrice = itemData.itemPtice * .35f; // Sell price is 35% of the buy price
-
-        modifiers = EquipmentData()?.modifiers; // if the item is an equptment, get its modifiers
-
+        buyPrice = itemData.itemPtice;
+        sellPrice = itemData.itemPtice * 0.35f;
+        modifiers = EquipmentData()?.modifiers;
         itemId = itemData.itemName + " - " + Guid.NewGuid();
     }
 
     public void AddModifiers(Entity_Stats playerStats)
     {
-        foreach (var mod in modifiers) 
+        foreach (var mod in modifiers)
         {
             Stat statToModify = playerStats.GetStatByType(mod.statType);
-            statToModify.AddModifier(mod.value, itemId);
+            statToModify.AddModifier(mod.value, StatModType.Flat, itemId);
         }
     }
 
@@ -53,11 +49,7 @@ public class Inventory_Item
 
     private EquipmentDataSO EquipmentData()
     {
-        if (itemData is EquipmentDataSO equipment)
-        {
-            return equipment;
-        }
-        return null; // Ensure all code paths return a value  
+        return itemData as EquipmentDataSO;
     }
 
     public float GetStatValue(StatType type)
@@ -74,7 +66,6 @@ public class Inventory_Item
     }
 
     public bool CanAddStack() => stackSize < itemData.maxStackSize;
-
     public void AddStack() => stackSize++;
     public void RemoveStack() => stackSize--;
 
@@ -82,21 +73,18 @@ public class Inventory_Item
     {
         StringBuilder sb = new StringBuilder();
 
-        // --- If it’s a Material ---
         if (itemData.itemType == ItemType.Material)
         {
             sb.AppendLine("<color=#AAAAAA><i>Used for crafting.</i></color>");
             return sb.ToString();
         }
 
-        // --- If it’s a Consumable ---
         if (itemData.itemType == ItemType.Consumable && itemEffect != null)
         {
             sb.AppendLine($"<color=#00FF00>{itemEffect.effectDescription}</color>");
             return sb.ToString();
         }
 
-        // --- If it’s an Equipment with modifiers ---
         if (modifiers != null && modifiers.Length > 0)
         {
             sb.AppendLine("<b>Stats:</b>");
@@ -108,7 +96,6 @@ public class Inventory_Item
             }
         }
 
-        // --- Unique effect if present ---
         if (itemEffect != null)
         {
             sb.AppendLine();
@@ -116,44 +103,11 @@ public class Inventory_Item
             sb.AppendLine($"<color=#00FFFF>{itemEffect.effectDescription}</color>");
         }
 
-        // --- Fallback ---
         if (sb.Length == 0)
         {
             sb.AppendLine("<color=#888888><i>No special properties.</i></color>");
         }
 
         return sb.ToString();
-    }
-
-
-
-
-    private string GetStatNameByType(StatType type)
-    {
-        switch (type)
-        {
-            case StatType.MaxHealth: return "Max Health";
-            case StatType.HealthRegen: return "Health Regen";
-            // ➜ keep your other cases here
-            default: return "Unknown Stat";
-        }
-    }
-
-    private bool IsPercentageStat(StatType type)
-    {
-        switch (type)
-        {
-            case StatType.CritChance:
-            case StatType.CritPower:
-            case StatType.ArmorReduction:
-            case StatType.FireResistance:
-            case StatType.IceResistance:
-            case StatType.PoisonResistance:
-            case StatType.LightningResistance:
-            case StatType.Evasion:
-                return true;
-            default:
-                return false;
-        }
     }
 }

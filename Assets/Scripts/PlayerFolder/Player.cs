@@ -9,18 +9,14 @@ public class Player : Entity
 
     public UI ui { get; private set; }
 
-    // ---------- Normal EXP exposed (still owned by Player_Stats) ----------
     public int Level => stats.CurrentLevel;
     public float CurrentExp => stats.CurrentEXP;
     public float NextLevelExp => stats.GetNextLevelRequirement();
 
-    // ---------- Sex EXP (NOW OWNED BY PLAYER) ----------
     public int SexLevel { get; private set; } = 1;
     public float CurrentSexExp { get; private set; } = 0f;
-
     public float NextSexLevelSexExp => GetNextSexLevelRequirementSex();
 
-    // ---- Sex Level → Stat bonuses (per level) ----
     [Header("Sex Level Stat Bonuses (per level)")]
     [SerializeField] private float sexBonus_MaxArousalPerLevel = 5f;
     [SerializeField] private float sexBonus_SexualDamagePerLevel = 1f;
@@ -32,7 +28,6 @@ public class Player : Entity
     [SerializeField] private SexLevelScalingSO sexLevelScalingData;
 
     private const string SEX_LEVEL_BONUS_SOURCE = "SexLevelBonus";
-
     [SerializeField] private float BASE_SEX_EXP_REQUIREMENT = 50f;
     [SerializeField] private float SEX_EXP_GROWTH_RATE = 1.35f;
 
@@ -41,15 +36,14 @@ public class Player : Entity
     public Entity_Health health { get; private set; }
     public Entity_StatusHandler statusHandler { get; private set; }
     public Player_Combat combat { get; private set; }
-
-    public Vector2 lastMoveDirection = Vector2.down;
-
     public Inventory_Player inventory { get; private set; }
     public Player_Stats stats { get; private set; }
     public Player_VFX vfx { get; private set; }
 
-    #region State Variables
+    public Vector2 lastMoveDirection = Vector2.down;
+
     public PlayerInputSet input { get; private set; }
+
     public Player_IdleState idleState { get; private set; }
     public Player_MoveState moveState { get; private set; }
     public Player_DashState dashState { get; private set; }
@@ -57,7 +51,6 @@ public class Player : Entity
     public Player_BasicAttackState basicAttackState { get; private set; }
     public Player_DeadState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
-    #endregion
 
     [SerializeField] private int playerID = 0;
     [SerializeField] private Rewired.Player rPlayer;
@@ -126,7 +119,6 @@ public class Player : Entity
         if (rPlayer.GetButtonDown("Interact"))
             TryInteract();
 
-        // Debug/testing inputs (optional)
         if (rPlayer.GetButtonDown("TestEXP"))
             GainEXP(50);
 
@@ -134,21 +126,15 @@ public class Player : Entity
             GainSexEXP(25);
     }
 
-    #region UI Updates
-
     private void UpdateMainUIHealth()
     {
-        if (ui != null && ui.playerHealthBar != null)
-            ui.playerHealthBar.UpdateHealth(health.GetCurrentHealth(), stats.GetMaxHealth());
+        ui?.playerHealthBar?.UpdateHealth(health.GetCurrentHealth(), stats.GetMaxHealth());
     }
 
     private void UpdateMainUIMana()
     {
-        if (ui != null && ui.playerManaBar != null)
-            ui.playerManaBar.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
+        ui?.playerManaBar?.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
     }
-
-    #endregion
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
 
@@ -158,7 +144,6 @@ public class Player : Entity
         float originalJumpForce = jumpForce;
         float originalAnimSpeed = anim.speed;
         float originalAttackMovement = attackMovement[0];
-
         float speedMultiplier = 1 - slowMultiplier;
 
         moveSpeed *= speedMultiplier;
@@ -225,19 +210,13 @@ public class Player : Entity
 
     #region EXP APIs
 
-    // Normal EXP still lives in Player_Stats
     public void GainEXP(float amount)
     {
         stats.AddEXP(amount);
-
-        if (ui != null)
-        {
-            ui.StatusPanel?.UpdateStatus(this);
-            ui.inGameUI?.UpdateExpBar();
-        }
+        ui?.StatusPanel?.UpdateStatus(this);
+        ui?.inGameUI?.UpdateExpBar();
     }
 
-    // Sex EXP is owned by Player
     public void GainSexEXP(float amount)
     {
         CurrentSexExp += amount;
@@ -246,11 +225,8 @@ public class Player : Entity
         while (CurrentSexExp >= GetNextSexLevelRequirementSex())
             LevelUpSex();
 
-        if (ui != null)
-        {
-            ui.StatusPanel?.UpdateStatus(this);
-            ui.inGameUI?.UpdateSexExpBar();
-        }
+        ui?.StatusPanel?.UpdateStatus(this);
+        ui?.inGameUI?.UpdateSexExpBar();
     }
 
     private void LevelUpSex()
@@ -258,11 +234,9 @@ public class Player : Entity
         CurrentSexExp -= GetNextSexLevelRequirementSex();
         SexLevel++;
         Debug.Log($"[Player] Sex Level Up! New Sex Level: {SexLevel}");
-        // TODO: grant bonuses, popups, etc.
 
-        ApplySexLevelBonuses(); // ⬅️ re-apply bonuses
-
-        // TODO: FX / popup
+        ApplySexLevelBonuses();
+        // Optional: add popup or FX here
     }
 
     public float GetNextSexLevelRequirementSex()
@@ -288,13 +262,11 @@ public class Player : Entity
         float resilienceBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.resilienceCurve, SexLevel);
         float sexualRestraintBonus = sexLevelScalingData.Evaluate(sexLevelScalingData.sexualRestraintCurve, SexLevel);
 
-        stats.sex.maxArousal.AddModifier(maxArousalBonus, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.sexualDamage.AddModifier(sexualDamageBonus, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.stroke.AddModifier(strokeBonus, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.resilience.AddModifier(resilienceBonus, SEX_LEVEL_BONUS_SOURCE);
-        stats.sex.sexualRestraint.AddModifier(sexualRestraintBonus, SEX_LEVEL_BONUS_SOURCE);
-
-        Debug.Log($"[Player] Applied Sex Level bonuses for L{SexLevel} (MA:{maxArousalBonus}, SD:{sexualDamageBonus}, ST:{strokeBonus}, RE:{resilienceBonus}, SR:{sexualRestraintBonus})");
+        stats.sex.maxArousal.AddModifier(maxArousalBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.sexualDamage.AddModifier(sexualDamageBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.stroke.AddModifier(strokeBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.resilience.AddModifier(resilienceBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
+        stats.sex.sexualRestraint.AddModifier(sexualRestraintBonus, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
     }
 
     private void RemoveSexLevelBonuses()
@@ -307,8 +279,6 @@ public class Player : Entity
         stats.sex.resilience.RemoveModifier(SEX_LEVEL_BONUS_SOURCE);
         stats.sex.sexualRestraint.RemoveModifier(SEX_LEVEL_BONUS_SOURCE);
     }
-
-
 
     private void OnEnable() => input.Enable();
     private void OnDisable() => input.Disable();

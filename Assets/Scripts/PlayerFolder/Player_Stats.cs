@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,7 +46,6 @@ public class Player_Stats : Entity_Stats
 
         Dictionary<string, float> statGains = ApplyCumulativeLevelBonuses();
 
-        // Trigger level-up popup UI
         var popup = GetComponent<Player>()?.ui?.levelUpPopup;
         popup?.ShowPopup(CurrentLevel, statGains);
     }
@@ -75,16 +75,14 @@ public class Player_Stats : Entity_Stats
 
         string tag = $"{LEVEL_UP_TAG_PREFIX}{CurrentLevel}";
 
-        // Apply modifiers to correct stat group objects
-        resources.maxHealth.AddModifier(hpGain, tag);
-        resources.maxMana.AddModifier(mpGain, tag);
-        major.strength.AddModifier(strGain, tag);
-        defense.armor.AddModifier(defGain, tag);
-        major.intelligence.AddModifier(intGain, tag);
-        major.luck.AddModifier(luckGain, tag);
-        major.vitality.AddModifier(vitGain, tag);
+        resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
+        resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
+        major.strength.AddModifier(strGain, StatModType.Flat, tag);
+        defense.armor.AddModifier(defGain, StatModType.Flat, tag);
+        major.intelligence.AddModifier(intGain, StatModType.Flat, tag);
+        major.luck.AddModifier(luckGain, StatModType.Flat, tag);
+        major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
 
-        // For popup
         statGains["Max Health"] = hpGain;
         statGains["Max Mana"] = mpGain;
         statGains["Strength"] = strGain;
@@ -148,7 +146,7 @@ public class Player_Stats : Entity_Stats
         activeBuff.Add(source);
 
         foreach (var buff in buffToApply)
-            GetStatByType(buff.type).AddModifier(buff.value, source);
+            GetStatByType(buff.type).AddModifier(buff.value, StatModType.Flat, source);
 
         yield return new WaitForSeconds(duration);
 
