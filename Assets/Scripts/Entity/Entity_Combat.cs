@@ -55,11 +55,11 @@ public abstract class Entity_Combat : MonoBehaviour
                 vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
 
                 // ✅ Restore mana on hit
-                if (mana != null && _entity is Player)
+                if (_entity is Player player)
                 {
-                    float manaGain = Mathf.Max(1, stats.major.intelligence.GetValue() * 0.2f);
-                    mana.IncreaseMana(manaGain);
+                    player.mana.RestoreManaOnHitWithScaling(player.Level);
                 }
+
             }
         }
     }

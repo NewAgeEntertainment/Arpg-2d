@@ -65,6 +65,14 @@ public class Entity_Mana : MonoBehaviour
         IncreaseMana(amount);
     }
 
+    public void RestoreManaOnHitWithScaling(int level)
+    {
+        int recovery = Mathf.Min(2 + ((level / 10) * 2), 8);
+        IncreaseMana(recovery);
+        Debug.Log($"🔋 Recovered {recovery} MP on hit (Level {level})");
+    }
+
+
 
     public void IncreaseMana(float manaRecoveredAmount)
     {
