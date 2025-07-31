@@ -1,111 +1,150 @@
 ﻿using UnityEngine;
+using System.Collections;
 
-[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(Collider2D), typeof(SpriteRenderer))]
 public class Object_ItemPickup : MonoBehaviour
 {
-    [Header("Pickup Settings")]
-    [SerializeField] private ItemDataSO itemData;
-    [SerializeField] private Collider2D pickupCollider;
+    [Header("Visuals")]
     [SerializeField] private SpriteRenderer iconRenderer;
+    [SerializeField] private Sprite goldSprite;
 
-    [Header("Floating Settings")]
-    [SerializeField] private float floatAmplitude = 0.15f;
-    [SerializeField] private float floatFrequency = 2f;
+    [Header("Pickup Settings")]
+    [SerializeField] private bool isGold = false;
+    [SerializeField] private int goldAmount = 0;
+    [SerializeField] private float flyToPlayerDistance = 2f;
+    [SerializeField] private float flySpeed = 5f;
+    [SerializeField] private float hoverHeight = 0.2f;
+    [SerializeField] private float hoverSpeed = 2f;
 
-    [Header("Attraction Settings")]
-    [SerializeField] private float pickupRange = 3f;
-    [SerializeField] private float flySpeed = 4f;
+    [Header("Shadow")]
+    [SerializeField] private Transform shadowTransform;
+    [SerializeField] private float maxShadowScale = 1f;
+    [SerializeField] private float minShadowScale = 0.3f;
 
-    private Vector3 basePosition;
-    private Transform playerTransform;
-    private bool isFlyingToPlayer = false;
+    [Header("Hop Animation")]
+    [SerializeField] private AnimationCurve hopArc;
+    [SerializeField] private float hopDuration = 0.4f;
+    [SerializeField] private float hopHeight = 1f;
 
-    private void Awake()
+    [Header("Burst Settings")]
+    [SerializeField] private float burstDistance = 3f;
+
+    private Transform player;
+    private ItemDataSO itemData;
+    private Vector3 startPos;
+    private Vector3 desiredSpawnOffset;
+    private bool isBursting = false;
+    private bool hasSettledFromBurst = false;
+
+    private void Start()
     {
         if (iconRenderer == null)
             iconRenderer = GetComponent<SpriteRenderer>();
 
-        if (pickupCollider == null)
-            pickupCollider = GetComponent<Collider2D>();
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.isTrigger = true;
 
-        if (pickupCollider != null)
-            pickupCollider.isTrigger = true;
-
-        if (itemData != null && iconRenderer != null)
-            iconRenderer.sprite = itemData.itemIcon;
-
-        basePosition = transform.position;
+        player = FindAnyObjectByType<Player>()?.transform;
+        startPos = transform.position;
     }
 
-    private void Update()
+    void Update()
     {
-        if (isFlyingToPlayer)
+        if (!isBursting)
         {
-            FlyTowardPlayer();
-        }
-        else
-        {
-            FloatMotion();
-            CheckPlayerDistance();
-        }
-    }
+            // Hover effect
+            float hoverOffset = Mathf.Sin(Time.time * hoverSpeed) * hoverHeight;
+            transform.position = new Vector3(startPos.x, startPos.y + hoverOffset, startPos.z);
 
-    private void FloatMotion()
-    {
-        Vector3 floatOffset = Vector3.up * Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
-        transform.position = basePosition + floatOffset;
-    }
-
-    private void CheckPlayerDistance()
-    {
-        if (playerTransform == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-                playerTransform = playerObj.transform;
-        }
-
-        if (playerTransform != null)
-        {
-            float dist = Vector2.Distance(transform.position, playerTransform.position);
-            if (dist < pickupRange)
+            // Shadow scaling based on hover height
+            if (shadowTransform != null)
             {
-                isFlyingToPlayer = true;
+                float normalizedHeight = (hoverOffset + hoverHeight) / (2 * hoverHeight);
+                float shadowScale = Mathf.Lerp(minShadowScale, maxShadowScale, 1f - normalizedHeight);
+                shadowTransform.localScale = new Vector3(shadowScale, shadowScale, 1);
             }
         }
+
+        // Fly to player logic (if nearby)
+        if (player != null && Vector2.Distance(transform.position, player.position) < flyToPlayerDistance)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, player.position, flySpeed * Time.deltaTime);
+        }
     }
 
-    private void FlyTowardPlayer()
+    public void ApplyBurst(Vector2 direction)
     {
-        if (playerTransform == null) return;
-
-        // Disable float, just move toward player
-        transform.position = Vector2.MoveTowards(transform.position, playerTransform.position, flySpeed * Time.deltaTime);
+        Vector3 endPoint = transform.position + (Vector3)(direction.normalized * burstDistance);
+        StartCoroutine(HopToPosition(endPoint));
     }
 
-    public void SetupItem(ItemDataSO data)
+    private IEnumerator HopToPosition(Vector3 end)
     {
-        itemData = data;
+        isBursting = true;
+        Vector3 start = transform.position;
+        float elapsed = 0f;
 
+        while (elapsed < hopDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / hopDuration);
+            float arc = hopArc.Evaluate(t) * hopHeight;
+
+            Vector3 flatPos = Vector3.Lerp(start, end, t);
+            transform.position = new Vector3(flatPos.x, flatPos.y + arc, flatPos.z);
+
+            if (shadowTransform != null)
+            {
+                float shadowScale = Mathf.Lerp(minShadowScale, maxShadowScale, 1 - (arc / hopHeight));
+                shadowTransform.localScale = new Vector3(shadowScale, shadowScale, 1);
+            }
+
+            yield return null;
+        }
+
+        transform.position = end;
+        startPos = end;
+        isBursting = false;
+
+        // Reset shadow scale
+        if (shadowTransform != null)
+            shadowTransform.localScale = new Vector3(maxShadowScale, maxShadowScale, 1);
+    }
+
+    public void SetupItem(ItemDataSO item)
+    {
+        isGold = false;
+        itemData = item;
         if (iconRenderer != null && itemData != null)
-            iconRenderer.sprite = itemData.itemIcon;
+        {
+            if (itemData.itemIcon != null)
+                iconRenderer.sprite = itemData.itemIcon;
+            else
+                Debug.LogWarning($"[Pickup] Item {itemData.name} is missing an icon!");
+        }
+
+    }
+
+    public void SetupGold(int amount)
+    {
+        isGold = true;
+        goldAmount = amount;
+        if (iconRenderer != null && goldSprite != null)
+            iconRenderer.sprite = goldSprite;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
 
-        Inventory_Player playerInventory = other.GetComponent<Inventory_Player>();
-        if (playerInventory == null || itemData == null) return;
+        Inventory_Player inv = other.GetComponent<Inventory_Player>();
+        if (inv == null) return;
 
-        if (itemData.itemType == ItemType.Gold)
-        {
-            playerInventory.AddGold(itemData.itemPtice);
-        }
-        else
-        {
-            playerInventory.AddItem(new Inventory_Item(itemData));
-        }
+        if (isGold)
+            inv.AddGold(goldAmount);
+        else if (itemData != null)
+            inv.AddItem(new Inventory_Item(itemData));
 
         Destroy(gameObject);
     }

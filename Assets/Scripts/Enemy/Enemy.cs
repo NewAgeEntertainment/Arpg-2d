@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class Enemy : Entity
 {
     public EntityState previousState;
-    public Entity_Stats stats { get; private set; } // Reference to the entity's stats
+    public Entity_Stats stats { get; private set; }
     public Enemy_IdleState idleState;
     public Enemy_MoveState moveState;
     public Enemy_AttackState attackState;
@@ -13,194 +13,185 @@ public class Enemy : Entity
     public Enemy_StunnedState stunnedState;
     public Enemy_DeadState deadState;
 
+    [Header("Item Drop")]
+    [SerializeField] private ItemListDataSO dropList;
+    [SerializeField] private GameObject itemPickupPrefab;
+    [SerializeField] private int minDrop = 1;
+    [SerializeField] private int maxDrop = 3;
+    [SerializeField] private float burstRadius = 3f;
+
+    [Header("Gold Drop")]
+    [SerializeField] private bool dropGold = true;
+    [SerializeField] private int minGold = 10;
+    [SerializeField] private int maxGold = 50;
+    [SerializeField] private int goldStackMin = 5;
+    [SerializeField] private int goldStackMax = 15;
+    [SerializeField] private GameObject goldPickupPrefab;
+
     [Header("Attack info")]
     public float attackDistance;
     public float attackCooldown;
-    public float range; // Range for the enemy's detection of the player
-    [SerializeField] protected LayerMask whatIsPlayer; // Layer mask for the player layer
-    [SerializeField] public GameObject attackIndicator; // Reference to the attack signal GameObject
+    public float range;
+    [SerializeField] protected LayerMask whatIsPlayer;
+    [SerializeField] public GameObject attackIndicator;
     [HideInInspector] public float lastTimeAttacked;
     public float battleMoveSpeed = 3f;
 
     [Header("Stunned State details")]
-    public float stunnedDuration = 1; // Duration of the stunned state
-    public Vector2 stunnedVelocity = new Vector2(7, 7); // Velocity during the stunned state
-    [SerializeField] protected bool canBeStunned; // Flag to check if the enemy is stunned
+    public float stunnedDuration = 1;
+    public Vector2 stunnedVelocity = new Vector2(7, 7);
+    [SerializeField] protected bool canBeStunned;
 
     [Header("Movement details")]
     public float idleTime;
     public float moveSpeed = 1.4f;
     public float pauseDuration;
-    public float battleTime; // Time the enemy stays in battle state
-    [Range(0, 2)]
-    public float moveAnimSpeedMultiplier = 1;
+    public float battleTime;
+    [Range(0, 2)] public float moveAnimSpeedMultiplier = 1;
 
     [Header("Patrol details")]
     public Vector2[] patrolPoints;
     public int currentPatrolIndex;
-    public bool isPaused { get; set; } // Flag to check if the enemy is paused
-
-    public Vector2 currentDirection { get; private set; } // Current direction of the enemy
-
+    public bool isPaused { get; set; }
+    public Vector2 currentDirection { get; private set; }
     public Vector2 target;
-
-    
-    public Transform player { get; private set; } // Reference to the player transform
+    public Transform player { get; private set; }
 
     protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
     {
-        float originalSpeed = moveSpeed; // Store the original speed of the enemy
+        float originalSpeed = moveSpeed;
         float originalBattleSpeed = battleMoveSpeed;
-        float oringinalAnimSpeed = anim.speed; // Store the original animation speed multiplier
+        float originalAnimSpeed = anim.speed;
+        float speedMultiplier = 1 - slowMultiplier;
 
-        float speedMultiplier = 1 - slowMultiplier; // Calculate the speed multiplier based on the slow multiplier
-
-        moveSpeed = moveSpeed * speedMultiplier; // Apply the speed multiplier to the enemy's move speed
-        battleMoveSpeed = battleMoveSpeed * speedMultiplier; // Apply the speed multiplier to the enemy's battle move speed
-        anim.speed = anim.speed * speedMultiplier; // Apply the speed multiplier to the enemy's animation speed
-
+        moveSpeed *= speedMultiplier;
+        battleMoveSpeed *= speedMultiplier;
+        anim.speed *= speedMultiplier;
 
         yield return new WaitForSeconds(duration);
 
-        // after Yield Return, Reset the enemy's speed and animation to their original values after the slowdown duration
-        moveSpeed = originalSpeed; // Reset the enemy's move speed to the original value
-        battleMoveSpeed = originalBattleSpeed; // Reset the enemy's battle move speed to the original value
-        anim.speed = oringinalAnimSpeed; // Reset the enemy's animation speed to the original value
+        moveSpeed = originalSpeed;
+        battleMoveSpeed = originalBattleSpeed;
+        anim.speed = originalAnimSpeed;
     }
 
-    
-
-    public void EnableCounterWindow(bool enable) => canBeStunned = enable; // Enable or disable the counter window for the enemy
-    //  (EnableCoounterWindow) returns canBeStunned to true or false
+    public void EnableCounterWindow(bool enable) => canBeStunned = enable;
 
     public override void EntityDeath()
     {
         base.EntityDeath();
-        stateMachine.ChangeState(deadState); // Change to the dead state
+        DropItems();
+        stateMachine.ChangeState(deadState);
+    }
+
+    private void DropItems()
+    {
+        if (dropList != null && itemPickupPrefab != null && dropList.itemList.Length > 0)
+        {
+            int dropCount = Random.Range(minDrop, maxDrop + 1);
+            for (int i = 0; i < dropCount; i++)
+            {
+                ItemDataSO itemData = dropList.itemList[Random.Range(0, dropList.itemList.Length)];
+                GameObject drop = Instantiate(itemPickupPrefab, transform.position, Quaternion.identity);
+                Object_ItemPickup pickup = drop.GetComponent<Object_ItemPickup>();
+                if (pickup != null)
+                {
+                    pickup.SetupItem(itemData);
+                    pickup.ApplyBurst(Random.insideUnitCircle * burstRadius);
+                }
+            }
+        }
+
+        if (dropGold && goldPickupPrefab != null)
+        {
+            int totalGold = Random.Range(minGold, maxGold + 1);
+            while (totalGold > 0)
+            {
+                int goldChunk = Mathf.Min(totalGold, Random.Range(goldStackMin, goldStackMax + 1));
+                totalGold -= goldChunk;
+
+                GameObject goldDrop = Instantiate(goldPickupPrefab, transform.position, Quaternion.identity);
+                Object_ItemPickup pickup = goldDrop.GetComponent<Object_ItemPickup>();
+                if (pickup != null)
+                {
+                    pickup.SetupGold(goldChunk);
+                    pickup.ApplyBurst(Random.insideUnitCircle * burstRadius);
+                }
+            }
+        }
     }
 
     public void HandlePlayerDeath()
     {
-        // Handle how enemy deal player death. logic here
-        // For example, you can trigger a game over screen or respawn the player.
-        // or give the enemy a demand.
-        stateMachine.ChangeState(idleState); // Change to the dead state
+        stateMachine.ChangeState(idleState);
         Debug.Log("Player has died");
     }
 
     public Transform GetPlayerReference()
     {
         if (player == null)
-            player = PlayerDetected().transform; // Get the player reference if not already set
-
-        return player; // Return the player reference
+            player = PlayerDetected()?.transform;
+        return player;
     }
 
     protected override void Awake()
     {
         base.Awake();
-        //target = patrolPoints[0].position // Initialize the target to the first patrol point
-        stats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
-
-
+        stats = GetComponent<Entity_Stats>();
     }
 
     protected override void Start()
     {
         base.Start();
-        // Initialize the target to the first patrol point
-        StartCoroutine(SetPatrolPoint()); // Move to the next patrol point 
+        StartCoroutine(SetPatrolPoint());
     }
-
-
 
     protected override void Update()
     {
         base.Update();
-
-        stateMachine.currentState.Update(); // Update the current state of the enemy
-        //if (isPaused == true)
-        //{
-        //    rb.linearVelocity = Vector2.zero; // Stop the enemy's movement when paused
-        //    Debug.Log("Enemy is paused");
-        //    return;
-        //}
-
-        
-
         stateMachine.currentState.Update();
-
     }
 
-    //public virtual void ShowAttackIndicator()
-    //{
-    //    attackIndicator.SetActive(true); // Activate the attack signal
-    //}
-
-    //public virtual void HideAttackIndicator()
-    //{
-    //    attackIndicator.SetActive(false); // Deactivate the attack signal
-    //}
-
-    public virtual IEnumerator SetPatrolPoint() // set patrol point  
+    public virtual IEnumerator SetPatrolPoint()
     {
-        isPaused = true; // Set the pause flag to true  
-
-        yield return new WaitForSeconds(pauseDuration); // Wait for the specified pause duration
-        currentDirection = target - (Vector2)transform.position; // Calculate the direction to the target  
-        currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length; // Ensure index wraps around using modulus operator  
-        target = patrolPoints[currentPatrolIndex]; // set the target to the next patrol point  
-        isPaused = false; // Set the pause flag to false
-        currentDirection = target - (Vector2)transform.position; // Calculate the direction to the target  
+        isPaused = true;
+        yield return new WaitForSeconds(pauseDuration);
+        currentDirection = target - (Vector2)transform.position;
+        currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+        target = patrolPoints[currentPatrolIndex];
+        isPaused = false;
+        currentDirection = target - (Vector2)transform.position;
     }
 
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
-
-    public virtual Collider2D PlayerDetected()
-    {
-        return Physics2D.OverlapCircle(transform.position, range, whatIsPlayer); // Return the Collider2D detected within the radius  
-    }
+    public virtual Collider2D PlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
 
     protected override void OnDrawGizmos()
     {
-        base.OnDrawGizmos(); // Call the base class OnDrawGizmos method  
+        base.OnDrawGizmos();
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, range);
 
-        // Draw a wire sphere to visualize the enemy's detection range  
-        Gizmos.color = Color.red; // Set the color of the gizmo to red  
-        Gizmos.DrawWireSphere(transform.position, range); // Draw a wire sphere at the enemy's position with the specified range  
-
-        // Fixing the problematic line by correctly accessing the position property of the Transform objects  
         Gizmos.color = Color.yellow;
-        Vector3 attackRangePosition = new Vector3(transform.position.x, transform.position.y, 0); // Set the attack range position to the enemy's position  
-        Gizmos.DrawWireSphere(attackRangePosition, attackDistance); // Draw a small sphere to represent the attack range  
+        Vector3 attackRangePosition = new Vector3(transform.position.x, transform.position.y, 0);
+        Gizmos.DrawWireSphere(attackRangePosition, attackDistance);
 
-        // Draw a line between all the patrol points  
         for (int i = 0; i < patrolPoints.Length; i++)
         {
             if (i == patrolPoints.Length - 1)
-            {
-                Gizmos.DrawLine(patrolPoints[i], patrolPoints[0]); // Access the position property of the Transform objects  
-            }
+                Gizmos.DrawLine(patrolPoints[i], patrolPoints[0]);
             else
-            {
-                Gizmos.DrawLine(patrolPoints[i], patrolPoints[i + 1]); // Access the position property of the Transform objects  
-            }
+                Gizmos.DrawLine(patrolPoints[i], patrolPoints[i + 1]);
         }
     }
 
     private void InEnable()
     {
-        // subscribe to the Player.OnPlayerDeath event when the enemy is disabled
         Player.OnPlayerDeath += HandlePlayerDeath;
     }
 
     private void OnDisable()
     {
-        // Unsubscribe from the Player.OnPlayerDeath event when the enemy is disabled
         Player.OnPlayerDeath -= HandlePlayerDeath;
     }
-
-
-
-
 }
