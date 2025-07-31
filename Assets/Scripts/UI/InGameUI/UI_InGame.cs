@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -8,6 +9,17 @@ public class UI_InGame : MonoBehaviour
 {
     private Player player;
     private Rewired.Player rplayer;
+
+    [Header("Gold UI")]
+    [SerializeField] private TextMeshProUGUI goldTotalText;
+    [SerializeField] private GameObject goldDisplayRoot;
+    [SerializeField] private TextMeshProUGUI goldGainText;
+    [SerializeField] private float goldDisplayDuration = 2.0f;
+
+    private Coroutine goldGainRoutine;
+
+    [SerializeField] private AudioClip goldPickupClip;
+    [SerializeField] private float goldPickupVolume = 1f;
 
     [Header("Quick Slots")]
     [SerializeField] private UI_QuickItemSlot quickSlot1;
@@ -47,7 +59,10 @@ public class UI_InGame : MonoBehaviour
         playerInventory = FindFirstObjectByType<Inventory_Player>();
 
         if (playerInventory != null)
+        {
             playerInventory.OnInventoryChange += UpdateQuickSlots;
+            playerInventory.OnGoldChanged += UpdateGoldDisplay;
+        }
     }
 
     private void Start()
@@ -57,7 +72,7 @@ public class UI_InGame : MonoBehaviour
         if (player != null)
         {
             player.health.OnHealthUpdate += UpdateHealthBar;
-            player.mana.OnManaUpdate += UpdateManaBar; // ✅ THIS LINE IS NEEDED
+            player.mana.OnManaUpdate += UpdateManaBar;
         }
 
         UpdateHealthBar();
@@ -65,6 +80,11 @@ public class UI_InGame : MonoBehaviour
         UpdateQuickSlots();
         UpdateExpBar();
         UpdateSexExpBar();
+
+        if (playerInventory != null)
+        {
+            UpdateGoldDisplay(playerInventory.gold); // Initial display
+        }
     }
 
     private void Update()
@@ -79,6 +99,49 @@ public class UI_InGame : MonoBehaviour
             playerInventory.TryUseQuickItemInSlot(3);
         if (rplayer.GetButtonDown(quickSlot4Action))
             playerInventory.TryUseQuickItemInSlot(4);
+    }
+
+    private void OnDestroy()
+    {
+        if (playerInventory != null)
+        {
+            playerInventory.OnGoldChanged -= UpdateGoldDisplay;
+            playerInventory.OnInventoryChange -= UpdateQuickSlots;
+        }
+    }
+
+    // ------------------------------
+    // 📌 GOLD UI
+    // ------------------------------
+    public void UpdateGoldDisplay(int currentGold)
+    {
+        if (goldTotalText != null)
+            goldTotalText.text = $"{currentGold:N0} G";
+    }
+
+    public void ShowGoldPickup(int goldAmount)
+    {
+        if (goldGainRoutine != null)
+            StopCoroutine(goldGainRoutine);
+
+        goldGainText.text = $"+{goldAmount:N0} G";
+
+        if (goldDisplayRoot != null)
+            goldDisplayRoot.SetActive(true);
+
+        if (goldPickupClip != null)
+            AudioSource.PlayClipAtPoint(goldPickupClip, Camera.main.transform.position, goldPickupVolume);
+
+
+
+        goldGainRoutine = StartCoroutine(HideGoldGainAfterDelay());
+    }
+
+    private IEnumerator HideGoldGainAfterDelay()
+    {
+        yield return new WaitForSeconds(goldDisplayDuration);
+        if (goldDisplayRoot != null)
+            goldDisplayRoot.SetActive(false);
     }
 
     // ------------------------------
@@ -97,8 +160,6 @@ public class UI_InGame : MonoBehaviour
 
     private void UpdateManaBar()
     {
-        Debug.Log($"🔴 ManaBar Updating: {player.mana.GetCurrentMana()} / {player.stats.GetMaxMana()}");
-
         if (manaText != null)
             manaText.text = $"{Mathf.RoundToInt(player.mana.GetCurrentMana())}/{player.stats.GetMaxMana()}";
 
@@ -107,7 +168,6 @@ public class UI_InGame : MonoBehaviour
         else
             Debug.LogWarning("⚠️ ManaSlider is NULL");
     }
-
 
     // ------------------------------
     // 📌 EXP BAR (NORMAL)
@@ -124,7 +184,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 SEX EXP BAR (FROM PLAYER)
+    // 📌 SEX EXP BAR
     // ------------------------------
     public void UpdateSexExpBar()
     {

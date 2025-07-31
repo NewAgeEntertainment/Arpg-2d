@@ -102,7 +102,16 @@ public class UI : MonoBehaviour
     {
         player = ReInput.players.GetPlayer(playerID);
         skillTreeUI.UnlockDefaultSkills();
+
+        // Subscribe to gold updates
+        var playerInventory = FindFirstObjectByType<Inventory_Player>();
+        if (playerInventory != null)
+        {
+            playerInventory.OnGoldChanged += UpdateGoldUI;
+            UpdateGoldUI(playerInventory.gold); // show current gold immediately
+        }
     }
+
 
     private void Update()
     {
@@ -113,6 +122,13 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(openMainMenuAction)) OpenMainMenuDirect();
         if (player.GetButtonDown(cancelAction)) HandleBackAction();
     }
+
+    public void UpdateGoldUI(int newGoldAmount)
+    {
+        if (goldText != null)
+            goldText.text = $"{newGoldAmount:N0} G:";
+    }
+
 
     #region Open/Close Panels
 
@@ -393,4 +409,12 @@ public class UI : MonoBehaviour
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
     }
+
+    private void OnDestroy()
+    {
+        var playerInventory = FindFirstObjectByType<Inventory_Player>();
+        if (playerInventory != null)
+            playerInventory.OnGoldChanged -= UpdateGoldUI;
+    }
+
 }

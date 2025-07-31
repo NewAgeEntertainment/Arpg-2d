@@ -6,6 +6,10 @@ using System;
 [Serializable]
 public class ItemDataSO : ScriptableObject
 {
+    [Header("Currency (Optional)")]
+    public int goldValue = 0;
+
+
     [Header("Merchant details")]
     [Range(0, 10000)]
     public int itemPtice = 100; // Price of the item in the merchant
@@ -51,6 +55,8 @@ public class ItemDataSO : ScriptableObject
 
     // ✅ Add this property to safely check if item is usable
     public bool isUsable => itemEffect != null;
+
+    public bool isGold => itemType == ItemType.Material && goldValue > 0;
 }
 
 public class ItemStatModifier

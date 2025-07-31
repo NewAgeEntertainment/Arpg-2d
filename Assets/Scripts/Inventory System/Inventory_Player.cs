@@ -6,6 +6,8 @@ public class Inventory_Player : Inventory_Base
 {
     public int gold = 10000;
 
+    public event System.Action<int> OnGoldChanged;
+
     public event Action<int> OnQuickSlotUsed;
 
     public Inventory_Equipment equipmentInventory;
@@ -36,6 +38,20 @@ public class Inventory_Player : Inventory_Base
         equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
         storage = FindFirstObjectByType<Inventory_Storage>();
     }
+
+    public void AddGold(int amount)
+    {
+        gold += amount;
+        OnGoldChanged?.Invoke(gold);
+
+        var ui = FindFirstObjectByType<UI_InGame>();
+        if (ui != null)
+            ui.ShowGoldPickup(amount);
+    }
+
+
+
+
 
     public void SetQuickItemInSlot(int slotNumber, Inventory_Item itemToSet, int amount)
     {

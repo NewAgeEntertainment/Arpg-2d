@@ -1,74 +1,112 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class Object_ItemPickup : MonoBehaviour
 {
-    [SerializeField] private Vector2 dropForce = new Vector2(3, 10);
+    [Header("Pickup Settings")]
     [SerializeField] private ItemDataSO itemData;
+    [SerializeField] private Collider2D pickupCollider;
+    [SerializeField] private SpriteRenderer iconRenderer;
 
-    [Space]
-    [SerializeField] private SpriteRenderer sr;
-    [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private Collider2D col;
+    [Header("Floating Settings")]
+    [SerializeField] private float floatAmplitude = 0.15f;
+    [SerializeField] private float floatFrequency = 2f;
 
+    [Header("Attraction Settings")]
+    [SerializeField] private float pickupRange = 3f;
+    [SerializeField] private float flySpeed = 4f;
 
-    private void OnValidate()
+    private Vector3 basePosition;
+    private Transform playerTransform;
+    private bool isFlyingToPlayer = false;
+
+    private void Awake()
     {
-        if (itemData == null) return;
+        if (iconRenderer == null)
+            iconRenderer = GetComponent<SpriteRenderer>();
 
-        sr = GetComponent<SpriteRenderer>();
-        
-        SetupVisuals();
+        if (pickupCollider == null)
+            pickupCollider = GetComponent<Collider2D>();
+
+        if (pickupCollider != null)
+            pickupCollider.isTrigger = true;
+
+        if (itemData != null && iconRenderer != null)
+            iconRenderer.sprite = itemData.itemIcon;
+
+        basePosition = transform.position;
     }
 
-    public void SetupItem(ItemDataSO itemData)
+    private void Update()
     {
-        this.itemData = itemData;
-        SetupVisuals();
-        
-        float xDropForce = Random.Range(-dropForce.x, dropForce.x);
-        rb.velocity = new Vector2(xDropForce, dropForce.y);
-        col.isTrigger = false;
-    }
-
-    private void SetupVisuals()
-    {
-        sr.sprite = itemData.itemIcon;
-        gameObject.name = "Object_ItemPickup - " + itemData.itemName;
-
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground") && col.isTrigger == false) { 
-        }
+        if (isFlyingToPlayer)
         {
-            col.isTrigger = true; // Switch to trigger mode
-            rb.constraints = RigidbodyConstraints2D.FreezeAll; // Freeze movement
-        }
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-
-        Inventory_Item itemToAdd = new Inventory_Item(itemData);
-        
-        var inventoryPlayer = collision.GetComponent<Inventory_Player>();
-        if (inventoryPlayer == null) return;
-
-
-        // ✅ Let Inventory_Player decide where it goes
-        if (inventoryPlayer.CanAddItem(itemToAdd))
-        {
-            if (inventoryPlayer == null)
-                return;
-            Debug.Log($"[Pickup] Adding {itemToAdd.itemData.itemName} using Inventory_Player.AddItem.");
-            inventoryPlayer.AddItem(itemToAdd);
-            Destroy(gameObject);
+            FlyTowardPlayer();
         }
         else
         {
-            Debug.Log($"[Pickup] No space for {itemToAdd.itemData.itemName}.");
+            FloatMotion();
+            CheckPlayerDistance();
         }
+    }
+
+    private void FloatMotion()
+    {
+        Vector3 floatOffset = Vector3.up * Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
+        transform.position = basePosition + floatOffset;
+    }
+
+    private void CheckPlayerDistance()
+    {
+        if (playerTransform == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+                playerTransform = playerObj.transform;
+        }
+
+        if (playerTransform != null)
+        {
+            float dist = Vector2.Distance(transform.position, playerTransform.position);
+            if (dist < pickupRange)
+            {
+                isFlyingToPlayer = true;
+            }
+        }
+    }
+
+    private void FlyTowardPlayer()
+    {
+        if (playerTransform == null) return;
+
+        // Disable float, just move toward player
+        transform.position = Vector2.MoveTowards(transform.position, playerTransform.position, flySpeed * Time.deltaTime);
+    }
+
+    public void SetupItem(ItemDataSO data)
+    {
+        itemData = data;
+
+        if (iconRenderer != null && itemData != null)
+            iconRenderer.sprite = itemData.itemIcon;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        Inventory_Player playerInventory = other.GetComponent<Inventory_Player>();
+        if (playerInventory == null || itemData == null) return;
+
+        if (itemData.itemType == ItemType.Gold)
+        {
+            playerInventory.AddGold(itemData.itemPtice);
+        }
+        else
+        {
+            playerInventory.AddItem(new Inventory_Item(itemData));
+        }
+
+        Destroy(gameObject);
     }
 }

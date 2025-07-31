@@ -7,5 +7,6 @@ public enum ItemType
     Armor,    // Armor item
     trinket, // Trinket item
     Key,     // Key item
+    Gold,
     Consumable // Potions, buffs, scrolls, etc.
 }

@@ -1,32 +1,31 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Object_Chest : MonoBehaviour, IDamageable
 {
-    private Rigidbody rb => GetComponentInChildren<Rigidbody>();
     private Animator anim => GetComponentInChildren<Animator>();
+    private Entity_DropManager dropManager => GetComponent<Entity_DropManager>();
 
-    private Entity_VFX fx => GetComponent<Entity_VFX>();
-
-    private Entity_DropManager dropManager => GetComponent<Entity_DropManager>(); // Reference to the Entity_DropManager component for item drops
-
-    [Header("Open Details")]
-    [SerializeField] private Vector2 knockback; // Direction and force of the knockback
     [SerializeField] private bool canDropItems = true;
 
-    public bool TakeDamage(float damage, float elementalDamage, ElementType element, Transform damageDealer)
+    public bool TakeDamage(float damage, float ele, ElementType type, Transform dealer)
     {
-        if (canDropItems == false)
+        if (!canDropItems)
             return false;
 
-        canDropItems = false; // Disable further item drops after the first damage taken
-        dropManager?.DropItems(); // Drop an item when the chest is damaged
-        fx.PlayOnDamageVfx(); // Play the damage effect
-        anim.SetBool("chestOpen", true); // open the chest
-        rb.velocity = knockback; // apply a force to the chest
+        canDropItems = false;
 
-        return true; // Return true to indicate that the damage was taken
-        // Drop item
+        anim.SetBool("chestOpen", true);
+        dropManager?.DropItems(); // 👈 Triggers multiple drops
+
+        return true;
     }
 
-
+    // Optional: Dev test key
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            TakeDamage(1, 0, ElementType.None, null);
+        }
+    }
 }
