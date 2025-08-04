@@ -71252,7 +71252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!61 &1072871273
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -71347,9 +71347,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxInventorySize: 18
   itemList: []
-  merchantType: 3
+  merchantType: 0
   shopData: {fileID: 11400000, guid: 369c2085f99c1614e9186361fa8c045f, type: 2}
-  minItemsAmount: 4
+  minItemsAmount: 12
 --- !u!1 &1077289768
 GameObject:
   m_ObjectHideFlags: 0
@@ -79285,7 +79285,15 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1534912434}
     - target: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: storageRef
+      value: 
+      objectReference: {fileID: 1534912434}
+    - target: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: equipmentInventory
+      value: 
+      objectReference: {fileID: 1468730687}
+    - target: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: equipmentInventoryRef
       value: 
       objectReference: {fileID: 1468730687}
     m_RemovedComponents: []

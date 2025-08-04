@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Inventory_Equipment : Inventory_Base
 {
@@ -10,16 +11,25 @@ public class Inventory_Equipment : Inventory_Base
     };
 
     // ✅ Remove hard limit logic
-    public override void AddItem(Inventory_Item itemToAdd)
+    public override bool AddItem(Inventory_Item item)
     {
-        if (!IsEquipment(itemToAdd))
+        if (item == null || item.itemData == null)
         {
-            
-            return;
+            Debug.LogWarning("[Inventory_Equipment] Tried to add null item.");
+            return false;
         }
 
-        base.AddItem(itemToAdd); // Will just add to the list, no limit
+        if (!CanAddItem(item))
+        {
+            Debug.LogWarning("[Inventory_Equipment] No space to add item.");
+            return false;
+        }
+
+        itemList.Add(item);
+        NotifyInventoryChanged();
+        return true;
     }
+
 
     private bool IsEquipment(Inventory_Item item)
     {

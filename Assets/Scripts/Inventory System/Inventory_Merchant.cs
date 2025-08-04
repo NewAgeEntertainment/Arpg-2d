@@ -52,21 +52,53 @@ public class Inventory_Merchant : Inventory_Base
                 return;
             }
 
+            bool added = false;
+
             if (itemToBuy.itemData.itemType == ItemType.Material)
             {
-                playerInventory.storage.AddMaterialToStash(itemToBuy);
+                if (playerInventory == null)
+                {
+                    Debug.LogError("[Merchant] playerInventory is null.");
+                    return;
+                }
+                if (playerInventory.storage == null)
+                {
+                    Debug.LogError("[Merchant] playerInventory.storage is null.");
+                    return;
+                }
+                if (itemToBuy == null)
+                {
+                    Debug.LogError("[Merchant] itemToBuy is null.");
+                    return;
+                }
+                if (itemToBuy.itemData == null)
+                {
+                    Debug.LogError("[Merchant] itemToBuy.itemData is null.");
+                    return;
+                }
+
+                added = playerInventory.storage.AddMaterialToStash(itemToBuy);
             }
             else
             {
                 if (playerInventory.CanAddItem(itemToBuy))
                 {
                     var itemToAdd = new Inventory_Item(itemToBuy.itemData);
-                    playerInventory.AddItem(itemToAdd);
+                    added = playerInventory.AddItem(itemToAdd);
                 }
             }
 
-            playerInventory.gold -= itemToBuy.buyPrice;
-            RemoveOneItem(itemToBuy);
+            if (added)
+            {
+                playerInventory.gold -= itemToBuy.buyPrice;
+                RemoveOneItem(itemToBuy);
+                playerInventory.TriggerUpdateUI();
+            }
+            else
+            {
+                Debug.LogWarning($"[Merchant] Could not add {itemToBuy.itemData.itemName} to inventory or storage.");
+                return;
+            }
         }
 
         NotifyInventoryChanged();

@@ -66,8 +66,17 @@ public class Inventory_Item
     }
 
     public bool CanAddStack() => stackSize < itemData.maxStackSize;
-    public void AddStack() => stackSize++;
-    public void RemoveStack() => stackSize--;
+    public void AddStack(int amount = 1)
+    {
+        stackSize = Mathf.Min(stackSize + amount, itemData.maxStackSize);
+    }
+
+    public void RemoveStack(int amount = 1)
+    {
+        stackSize = Mathf.Max(stackSize - amount, 0);
+    }
+
+    public bool CanStack() => CanAddStack();
 
     public string GetItemInfo()
     {

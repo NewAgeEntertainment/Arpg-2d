@@ -21,16 +21,35 @@ public class Inventory_Base : MonoBehaviour
         OnInventoryChange?.Invoke();
     }
 
-    public virtual void AddItem(Inventory_Item itemToAdd)
+    public virtual bool AddItem(Inventory_Item itemToAdd)
     {
+        if (itemToAdd == null || itemToAdd.itemData == null)
+        {
+            Debug.LogWarning("[Inventory_Base] Tried to add null item.");
+            return false;
+        }
+
         Inventory_Item existing = FindStackable(itemToAdd);
+
         if (existing != null)
+        {
             existing.AddStack();
+        }
         else
+        {
+            if (itemList.Count >= maxInventorySize)
+            {
+                Debug.LogWarning("[Inventory_Base] Inventory full, cannot add item.");
+                return false;
+            }
+
             itemList.Add(itemToAdd);
+        }
 
         NotifyInventoryChanged();
+        return true;
     }
+
 
     public virtual void RemoveOneItem(Inventory_Item itemToRemove)
     {

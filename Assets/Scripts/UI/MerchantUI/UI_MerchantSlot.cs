@@ -134,13 +134,16 @@ public class UI_MerchantSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
 
         if (isBuying)
         {
-            int unitPrice = itemInSlot.buyPrice;
-            int byGold = unitPrice > 0 ? playerInventory.gold / unitPrice : 0;
-            int byStack = Mathf.Max(1, itemInSlot.stackSize);
+            if (isBuying)
+            {
+                int unitPrice = itemInSlot.buyPrice;
+                int byGold = unitPrice > 0 ? playerInventory.gold / unitPrice : 0;
 
-            maxQuantity = Mathf.Max(1, Mathf.Min(byGold, byStack));
+                maxQuantity = Mathf.Max(1, byGold); // Remove byStack limitation
 
-            if (priceText) priceText.text = $"{unitPrice}g";
+                if (priceText) priceText.text = $"{unitPrice}g";
+            }
+
         }
         else
         {

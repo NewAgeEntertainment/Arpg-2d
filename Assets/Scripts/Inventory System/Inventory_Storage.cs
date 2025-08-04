@@ -120,24 +120,44 @@ public class Inventory_Storage : Inventory_Base
     }
 
 
-    public void AddMaterialToStash(Inventory_Item itemToAdd)
+    public bool AddMaterialToStash(Inventory_Item item)
     {
-        var stackableItem = StackableInStash(itemToAdd);
+        if (item == null || item.itemData == null) return false;
 
-        if (stackableItem != null)
-            stackableItem.AddStack();
-        else
+        // Try stacking in material stash
+        foreach (var existing in materialStash)
         {
-
-            var newItemToAdd = new Inventory_Item(itemToAdd.itemData);
-
-            materialStash.Add(newItemToAdd);
+            if (existing.itemData == item.itemData && existing.CanStack())
+            {
+                existing.stackSize += item.stackSize;
+                NotifyInventoryChanged();
+                return true;
+            }
         }
 
+        // Add as new stack
+        materialStash.Add(new Inventory_Item(item.itemData) { stackSize = item.stackSize });
         NotifyInventoryChanged();
-        materialStash = materialStash.OrderBy(item => item.itemData.name).ToList();
-
+        return true;
     }
+
+    public override void RemoveOneItem(Inventory_Item itemToRemove)
+    {
+        base.RemoveOneItem(itemToRemove);
+
+        var found = materialStash.Find(i => i == itemToRemove);
+        if (found != null)
+        {
+            if (found.stackSize > 1)
+                found.RemoveStack();
+            else
+                materialStash.Remove(found);
+
+            NotifyInventoryChanged();
+        }
+    }
+
+
 
     public Inventory_Item StackableInStash(Inventory_Item itemToAdd)
     {
