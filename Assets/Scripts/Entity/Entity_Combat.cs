@@ -7,12 +7,12 @@ using UnityEngine;
 public abstract class Entity_Combat : MonoBehaviour
 {
     protected Entity_Mana mana; // ✅ New: for restoring mana on hit
-
+    [SerializeField] private List<Transform> targetCheckPoints;
 
     public event Action<float> OnDoingPhysicalDamage;
     protected Entity _entity;
-    private Entity_VFX vfx;
-    private Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
+    protected Entity_VFX vfx;
+    protected Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
 
     public DamageScaleData basicAttackScale; // Scale data for basic attack damage, chill, burn, poison, and shock effects
 
@@ -29,7 +29,7 @@ public abstract class Entity_Combat : MonoBehaviour
     }
 
 
-    public void PerformAttack()
+    public virtual void PerformAttack()
     {
         foreach (var target in GetDetectedCollider())
         {

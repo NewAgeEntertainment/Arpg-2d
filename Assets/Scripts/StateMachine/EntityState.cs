@@ -54,9 +54,30 @@ public abstract class EntityState
         
     }
 
-    public void SyncAttackSpeed()
+     public virtual void SyncAttackSpeed()
     {
+        if (anim == null)
+        {
+            Debug.LogWarning("[SyncAttackSpeed] Animator is null!");
+            return;
+        }
+
+        if (stats == null)
+        {
+            Debug.LogWarning("[SyncAttackSpeed] Stats is null!");
+            anim.SetFloat("attackSpeedMultiplier", 1f);
+            return;
+        }
+
         float attackSpeed = stats.offense.attackSpeed.GetValue();
+
+        if (attackSpeed <= 0f)
+        {
+            Debug.LogWarning($"[SyncAttackSpeed] attackSpeed was {attackSpeed}, forcing to 1");
+            attackSpeed = 1f;
+        }
+
         anim.SetFloat("attackSpeedMultiplier", attackSpeed);
+        Debug.Log($"[SyncAttackSpeed] Set to: {attackSpeed}");
     }
 }

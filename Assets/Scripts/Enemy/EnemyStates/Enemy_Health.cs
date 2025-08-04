@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Enemy_Health : Entity_Health
+public class Enemy_Health : Entity_Health, IDamageable
 {
 
     // private Enemy enemy => GetComponent<Enemy>();

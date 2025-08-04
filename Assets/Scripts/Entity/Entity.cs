@@ -5,14 +5,15 @@ public class Entity : MonoBehaviour
 {
     public Animator anim { get; private set; }
     public Rigidbody2D rb { get; private set; }
-    
-    protected StateMachine stateMachine;
+
+    public StateMachine stateMachine { get; protected set; }
+
 
     [HideInInspector] public Vector2 currentDir;
 
     [Header("KnockBack info")]
     // Condition Variable
-    private bool isKnocked; // Flag to check if the entity is knocked back
+    protected bool isKnocked; // Flag to check if the entity is knocked back
     private Coroutine knockbakCo;
     private Coroutine slowDownCo;
 
