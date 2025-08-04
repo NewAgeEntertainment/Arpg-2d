@@ -4,6 +4,9 @@ using System.Collections;
 [RequireComponent(typeof(Collider2D), typeof(SpriteRenderer))]
 public class Object_ItemPickup : MonoBehaviour
 {
+    [Header("Assign this if you want to spawn an item directly")]
+    public ItemDataSO itemToAssign;
+
     [Header("Visuals")]
     [SerializeField] private SpriteRenderer iconRenderer;
     [SerializeField] private Sprite goldSprite;
@@ -47,6 +50,11 @@ public class Object_ItemPickup : MonoBehaviour
 
         player = FindAnyObjectByType<Player>()?.transform;
         startPos = transform.position;
+
+        if (itemToAssign != null)
+        {
+            SetupItem(itemToAssign);
+        }
     }
 
     void Update()
@@ -72,6 +80,17 @@ public class Object_ItemPickup : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, player.position, flySpeed * Time.deltaTime);
         }
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (itemToAssign != null && iconRenderer != null)
+        {
+            iconRenderer.sprite = itemToAssign.itemIcon;
+        }
+    }
+#endif
+
 
     public void ApplyBurst(Vector2 direction)
     {

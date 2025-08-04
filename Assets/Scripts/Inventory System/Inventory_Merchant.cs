@@ -141,6 +141,27 @@ public class Inventory_Merchant : Inventory_Base
         playerInventory.TriggerUpdateUI();
     }
 
+    public List<Inventory_Item> GetSellableItems()
+    {
+        List<Inventory_Item> result = new List<Inventory_Item>();
+
+        if (playerInventory != null)
+        {
+            // Backpack
+            result.AddRange(playerInventory.itemList);
+
+            // Storage materials
+            if (playerInventory.storage != null)
+                result.AddRange(playerInventory.storage.itemList);
+
+            // Optionally add equipment inventory
+            // if (playerInventory.equipmentInventory != null)
+            //     result.AddRange(playerInventory.equipmentInventory.itemList);
+        }
+
+        return result;
+    }
+
     public void FillShopList()
     {
         itemList.Clear();

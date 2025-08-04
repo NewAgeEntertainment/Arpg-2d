@@ -45,7 +45,6 @@ public class Companion_AttackState : CompanionState
 
         anim.SetFloat("xInput", dir.x);
         anim.SetFloat("yInput", dir.y);
-        Debug.Log($"[Update] xInput: {dir.x}, yInput: {dir.y}");
 
         // ✅ Wait for animation to finish before exiting
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
