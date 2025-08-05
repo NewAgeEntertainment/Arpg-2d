@@ -1,18 +1,27 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+//using System.Collections;
+//using System.Collections.Generic;
+//using System.IO;
+//using UnityEngine;
 
-public class FileDataHandler : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+//public class FileDataHandler
+//{
+//    private string fullPath;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-}
+
+//    public FileDataHandler(string dateDirPath, string dataFileName)
+//    {
+//        fullPath = Path.Combine(dateDirPath, dataFileName);
+//    }
+
+//    public void SaveData(GameData gameData)
+//    {
+//        try
+//        {
+//            Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+
+//            string dataToSave = JsonUtility.ToJson(gameData, true);
+
+//            using (FileStream steam = new FileStream(fullPath))
+//        }
+//    }
+//}
