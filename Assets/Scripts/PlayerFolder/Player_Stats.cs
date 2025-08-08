@@ -173,6 +173,22 @@ public class Player_Stats : Entity_Stats
 
     #endregion
 
+    public void SetLevelAndExp(int level, float exp)
+    {
+        CurrentLevel = Mathf.Max(1, level);
+        CurrentEXP = Mathf.Max(0, exp);
+    }
+
+    public void SetSexLevelAndExp(int sexLevel, float sexExp)
+    {
+        CurrentSexLevel = Mathf.Max(1, sexLevel);
+        CurrentSexEXP = Mathf.Max(0, sexExp);
+    }
+
+    public void SetLevel(int level) => CurrentLevel = level;
+    public void SetEXP(float exp) => CurrentEXP = exp;
+
+
     public float GetStatValue(StatType type)
     {
         return GetStatByType(type).GetValue();

@@ -83,7 +83,7 @@ public class UI_InGame : MonoBehaviour
 
         if (playerInventory != null)
         {
-            UpdateGoldDisplay(playerInventory.gold); // Initial display
+            UpdateGoldDisplay(playerInventory.gold);
         }
     }
 
@@ -91,14 +91,10 @@ public class UI_InGame : MonoBehaviour
     {
         if (playerInventory == null) return;
 
-        if (rplayer.GetButtonDown(quickSlot1Action))
-            playerInventory.TryUseQuickItemInSlot(1);
-        if (rplayer.GetButtonDown(quickSlot2Action))
-            playerInventory.TryUseQuickItemInSlot(2);
-        if (rplayer.GetButtonDown(quickSlot3Action))
-            playerInventory.TryUseQuickItemInSlot(3);
-        if (rplayer.GetButtonDown(quickSlot4Action))
-            playerInventory.TryUseQuickItemInSlot(4);
+        if (rplayer.GetButtonDown(quickSlot1Action)) playerInventory.TryUseQuickItemInSlot(1);
+        if (rplayer.GetButtonDown(quickSlot2Action)) playerInventory.TryUseQuickItemInSlot(2);
+        if (rplayer.GetButtonDown(quickSlot3Action)) playerInventory.TryUseQuickItemInSlot(3);
+        if (rplayer.GetButtonDown(quickSlot4Action)) playerInventory.TryUseQuickItemInSlot(4);
     }
 
     private void OnDestroy()
@@ -132,8 +128,6 @@ public class UI_InGame : MonoBehaviour
         if (goldPickupClip != null)
             AudioSource.PlayClipAtPoint(goldPickupClip, Camera.main.transform.position, goldPickupVolume);
 
-
-
         goldGainRoutine = StartCoroutine(HideGoldGainAfterDelay());
     }
 
@@ -165,8 +159,6 @@ public class UI_InGame : MonoBehaviour
 
         if (manaSlider != null)
             manaSlider.value = player.mana.GetManaPercent();
-        else
-            Debug.LogWarning("⚠️ ManaSlider is NULL");
     }
 
     // ------------------------------
@@ -179,6 +171,13 @@ public class UI_InGame : MonoBehaviour
         float currentExp = player.CurrentExp;
         float nextLevelExp = player.NextLevelExp;
 
+        if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
+        if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
+    }
+
+    // ✅ Overload to update from saved data
+    public void UpdateExpBar(float currentExp, float nextLevelExp)
+    {
         if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
         if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
     }

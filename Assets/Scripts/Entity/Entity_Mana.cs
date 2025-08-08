@@ -87,6 +87,13 @@ public class Entity_Mana : MonoBehaviour
         OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
     }
 
+    public void SetCurrentMana(float value)
+    {
+        currentMana = Mathf.Clamp(value, 0, entityStats.GetMaxMana());
+        OnManaUpdate?.Invoke();
+    }
+
+
     public void ReduceMana(float manaCost) 
     {
         

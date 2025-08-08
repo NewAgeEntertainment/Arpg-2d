@@ -39,20 +39,22 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
     protected virtual void Awake()
     {
-        entity = GetComponent<Entity>(); // Get the Entity component attached to the same GameObject
-        entityVfx = GetComponent<Entity_VFX>(); // Get the Entity_VFX component attached to the same GameObject
-        entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject
-        healthBar = GetComponentInChildren<Slider>(); // Get the Slider component for the health bar UI
-        dropManager = GetComponent<Entity_DropManager>(); // Get the Entity_DropManager component for item drops
+        entity = GetComponent<Entity>();
+        entityVfx = GetComponent<Entity_VFX>();
+        entityStats = GetComponent<Entity_Stats>();
+        healthBar = GetComponentInChildren<Slider>();
+        dropManager = GetComponent<Entity_DropManager>();
 
-        currentHealth = entityStats.GetMaxHealth(); // Initialize current health points to maximum health
+        // Only set if currentHealth is not already loaded
+        if (currentHealth <= 0)
+            currentHealth = entityStats.GetMaxHealth();
+
         OnHealthUpdate += UpdateHealthBar;
-        
-        UpdateHealthBar(); // Update the health bar UI to reflect the initial health points
+        UpdateHealthBar();
 
-        InvokeRepeating(nameof(RegenerateHealth), 0, regenInterval); // Start the health regeneration process at regular intervals
-
+        InvokeRepeating(nameof(RegenerateHealth), 0, regenInterval);
     }
+
 
 
     // bool Method most retun true or false
@@ -203,6 +205,13 @@ public class Entity_Health : MonoBehaviour, IDamageable // Interface for entitie
 
         return knockback;
     }
+
+    public void SetCurrentHealth(float value)
+    {
+        currentHealth = Mathf.Clamp(value, 0, entityStats.GetMaxHealth());
+        OnHealthUpdate?.Invoke();
+    }
+
 
     private float CalculateKnockbackDuration(float damage)
     {

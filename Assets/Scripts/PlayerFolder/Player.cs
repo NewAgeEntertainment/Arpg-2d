@@ -1,4 +1,6 @@
-﻿using System;
+﻿// ✅ Full Player.cs with EXP, SexEXP, UI hooks, level logic, and stat bonuses.
+
+using System;
 using System.Collections;
 using UnityEngine;
 using Rewired;
@@ -94,6 +96,8 @@ public class Player : Entity
         basicAttackState = new Player_BasicAttackState(this, stateMachine, "basicAttack");
         deadState = new Player_DeadState(this, stateMachine, "dead");
         counterAttackState = new Player_CounterAttackState(this, stateMachine, "counterAttack");
+
+        DontDestroyOnLoad(gameObject);
     }
 
     protected override void Start()
@@ -135,7 +139,6 @@ public class Player : Entity
         Debug.Log("🔵 Updating Main Mana Bar");
         ui?.playerManaBar?.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
     }
-
 
     public void TeleportPlayer(Vector3 position) => transform.position = position;
 
@@ -228,6 +231,17 @@ public class Player : Entity
 
         ui?.StatusPanel?.UpdateStatus(this);
         ui?.inGameUI?.UpdateSexExpBar();
+    }
+
+    public void SetSexLevel(int level)
+    {
+        SexLevel = level;
+        ApplySexLevelBonuses();
+    }
+
+    public void SetCurrentSexEXP(float exp)
+    {
+        CurrentSexExp = exp;
     }
 
     private void LevelUpSex()

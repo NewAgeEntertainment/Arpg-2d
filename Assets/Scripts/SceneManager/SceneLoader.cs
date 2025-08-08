@@ -67,3 +67,4 @@ public class SceneLoader : MonoBehaviour
         fadeCanvas.blocksRaycasts = false;
     }
 }
+

@@ -1,16 +1,17 @@
+﻿using System;
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 [Serializable]
 public class Stat
 {
     [SerializeField] private float baseValue;
-    [SerializeField] private List<StatModifier> modifiers = new List<StatModifier>();
+    [SerializeField] private List<StatModifier> modifiers = new();
 
     private bool needToRecalculate = true;
     private float finalValue;
 
+    // Return the final stat value after applying modifiers
     public float GetValue()
     {
         if (needToRecalculate)
@@ -18,14 +19,18 @@ public class Stat
             finalValue = CalculateFinalValue();
             needToRecalculate = false;
         }
+
         return finalValue;
     }
 
+    // Base value control
     public void SetBaseValue(float value)
     {
         baseValue = value;
         needToRecalculate = true;
     }
+
+    public float BaseValue => baseValue;
 
     public void MultiplyBaseValue(float multiplier)
     {
@@ -33,6 +38,7 @@ public class Stat
         needToRecalculate = true;
     }
 
+    // Modifier control
     public void AddModifier(float value, StatModType type, string source)
     {
         modifiers.Add(new StatModifier(value, type, source));
@@ -45,6 +51,24 @@ public class Stat
         needToRecalculate = true;
     }
 
+    public void ClearAllModifiers()
+    {
+        modifiers.Clear();
+        needToRecalculate = true;
+    }
+
+    public void AddModifiers(List<StatModifier> modifiersToAdd)
+    {
+        if (modifiersToAdd == null || modifiersToAdd.Count == 0)
+            return;
+
+        modifiers.AddRange(modifiersToAdd);
+        needToRecalculate = true;
+    }
+
+    public List<StatModifier> Modifiers => modifiers;
+
+    // Final value calculation logic
     private float CalculateFinalValue()
     {
         float final = baseValue;
@@ -74,14 +98,12 @@ public class Stat
     }
 }
 
-
-
 [Serializable]
 public class StatModifier
 {
     public float value;
-    public string source;
     public StatModType type;
+    public string source;
 
     public StatModifier(float value, StatModType type, string source)
     {
@@ -90,7 +112,13 @@ public class StatModifier
         this.source = source;
     }
 
-    // For Unity serialization (required)
+    // Needed for Unity serialization
     public StatModifier() { }
 }
 
+//public enum StatModType
+//{
+//    Flat,
+//    PercentAdd,
+//    PercentMult
+//}
