@@ -1,16 +1,20 @@
 ﻿using Rewired;
 using TMPro;
 using UnityEngine;
+using System.Linq;
 
 public class UI : MonoBehaviour
 {
+    // -------- Singleton Guard --------
+    public static UI Instance { get; private set; }
+
     #region Components
     public UI_SkillToolTip skillToolTip { get; private set; }
     public UI_ItemToolTip itemToolTip { get; private set; }
     public Inventory_Item hoveredItem;
 
     [Header("Popup References")]
-    public UI_LevelUpPopup levelUpPopup; // ✅ Add this
+    public UI_LevelUpPopup levelUpPopup;
 
     public UI_StatToolTip statToolTip { get; private set; }
 
@@ -28,6 +32,10 @@ public class UI : MonoBehaviour
 
     [SerializeField] private UI_StatusPanel statusPanel;
     public UI_StatusPanel StatusPanel => statusPanel;
+
+    [SerializeField] private UI_SaveLoadPanel saveLoadPanel;   // 👈 assign in Inspector
+    private bool isSaveOpen = false;
+
 
     [SerializeField] private UI_Storage storageUI;
     public UI_Storage StorageUI => storageUI;
@@ -58,6 +66,7 @@ public class UI : MonoBehaviour
     [SerializeField] private string openOptionsAction = "OpenOptions";
     [SerializeField] private string openMainMenuAction = "OpenMainMenu";
     [SerializeField] private string cancelAction = "UICancel";
+    [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // Rewired action (optional)
 
     private Rewired.Player player;
 
@@ -69,13 +78,27 @@ public class UI : MonoBehaviour
     private bool isStorageOpen = false;
     private bool isMerchantOpen = false;
     private bool isCraftOpen = false;
+
+    // track event subscription so we don’t double-subscribe when scenes change
+    private bool goldSubscribed = false;
+    private Inventory_Player cachedInv;
     #endregion
 
     private void Awake()
     {
-        itemToolTip = GetComponentInChildren<UI_ItemToolTip>();
-        skillToolTip = GetComponentInChildren<UI_SkillToolTip>();
-        statToolTip = GetComponentInChildren<UI_StatToolTip>();
+        // ---- Singleton/DDOL guard ----
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // ---- Cache child components ----
+        itemToolTip = GetComponentInChildren<UI_ItemToolTip>(true);
+        skillToolTip = GetComponentInChildren<UI_SkillToolTip>(true);
+        statToolTip = GetComponentInChildren<UI_StatToolTip>(true);
         craftUI = GetComponentInChildren<UI_Craft>(true);
         merchantUI = GetComponentInChildren<UI_Merchant>(true);
         storageUI = GetComponentInChildren<UI_Storage>(true);
@@ -83,8 +106,7 @@ public class UI : MonoBehaviour
         optionsUI = GetComponentInChildren<UI_Options>(true);
 
         // ✅ Auto-disable popup at start
-        if (levelUpPopup != null)
-            levelUpPopup.gameObject.SetActive(false);
+        if (levelUpPopup != null) levelUpPopup.gameObject.SetActive(false);
 
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
@@ -101,20 +123,53 @@ public class UI : MonoBehaviour
     private void Start()
     {
         player = ReInput.players.GetPlayer(playerID);
-        skillTreeUI.UnlockDefaultSkills();
+        skillTreeUI?.UnlockDefaultSkills();
 
-        // Subscribe to gold updates
-        var playerInventory = FindFirstObjectByType<Inventory_Player>();
-        if (playerInventory != null)
+        TrySubscribeGold();
+    }
+
+    private void OnEnable()
+    {
+        // In case of scene reloads, ensure subscription is valid
+        TrySubscribeGold();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeGold();
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeGold();
+        if (Instance == this) Instance = null;
+    }
+
+    private void TrySubscribeGold()
+    {
+        if (goldSubscribed) return;
+
+        cachedInv = FindFirstObjectByType<Inventory_Player>();
+        if (cachedInv != null)
         {
-            playerInventory.OnGoldChanged += UpdateGoldUI;
-            UpdateGoldUI(playerInventory.gold); // show current gold immediately
+            cachedInv.OnGoldChanged += UpdateGoldUI;
+            goldSubscribed = true;
+            UpdateGoldUI(cachedInv.gold); // show current gold immediately
         }
     }
 
+    private void UnsubscribeGold()
+    {
+        if (!goldSubscribed) return;
+        if (cachedInv != null) cachedInv.OnGoldChanged -= UpdateGoldUI;
+        cachedInv = null;
+        goldSubscribed = false;
+    }
 
     private void Update()
     {
+        if (player == null) return;
+
         if (player.GetButtonDown(openSkillTreeAction)) OpenSkillTree();
         if (player.GetButtonDown(openInventoryAction)) OpenInventory();
         if (player.GetButtonDown(openEquipmentAction)) OpenEquipment();
@@ -128,7 +183,6 @@ public class UI : MonoBehaviour
         if (goldText != null)
             goldText.text = $"{newGoldAmount:N0} G:";
     }
-
 
     #region Open/Close Panels
 
@@ -218,13 +272,56 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
+    public void OpenSavePanel()
+    {
+        EnsureUIRootIsActive();          // makes uiRoot active + pauses gameplay input
+        CloseAllPanels();                // hides other panels (includes main menu)
+
+        // Lazy-find if not assigned in Inspector
+        if (saveLoadPanel == null)
+        {
+            saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Exclude);
+            if (saveLoadPanel == null)
+            {
+                Debug.LogError("[UI] OpenSavePanel: UI_SaveLoadPanel not found in scene.");
+                return;
+            }
+        }
+
+        // Make sure the MonoBehaviour is enabled and any parent Canvas is active
+        if (!saveLoadPanel.gameObject.activeInHierarchy)
+        {
+            // If parent(s) are disabled, enable the top canvas first
+            var topCanvas = saveLoadPanel.GetComponentInParent<Canvas>(true);
+            if (topCanvas != null && !topCanvas.gameObject.activeSelf)
+                topCanvas.gameObject.SetActive(true);
+
+            saveLoadPanel.gameObject.SetActive(true);
+        }
+
+        // Now open the panel itself
+        saveLoadPanel.OpenPanel();
+        Debug.Log("[UI] OpenSavePanel: Save panel opened.");
+    }
+
+
+    public void CloseSavePanel()
+    {
+        isSaveOpen = false;
+        if (saveLoadPanel != null)
+        {
+            saveLoadPanel.ClosePanel();
+        }
+        CheckStopPlayerControls();
+    }
+
+
     public void OpenCraft()
     {
         isCraftOpen = true;
         EnsureUIRootIsActive();
         CloseAllPanels();
 
-        // 🔒 Ensure Main Menu & Storage stay closed
         if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
         if (storageUI != null)
         {
@@ -267,8 +364,6 @@ public class UI : MonoBehaviour
         Debug.Log("[UI] Merchant UI opened");
     }
 
-
-
     public void CloseMerchant()
     {
         isMerchantOpen = false;
@@ -281,7 +376,6 @@ public class UI : MonoBehaviour
 
         CheckStopPlayerControls();
     }
-
 
     public void OpenMainMenuDirect()
     {
@@ -317,11 +411,7 @@ public class UI : MonoBehaviour
     private void EnsureUIRootIsActive()
     {
         uiRoot?.SetActive(true);
-
-        // 🔒 Make sure main menu doesn't pop up when opening other panels
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
-
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
         StopPlayerControls(true);
     }
 
@@ -335,7 +425,7 @@ public class UI : MonoBehaviour
         storageUI?.gameObject.SetActive(false);
         merchantUI?.gameObject.SetActive(false);
         craftUI?.gameObject.SetActive(false);
-        mainMenuPanel?.SetActive(false);   // <- ensure MM is closed too
+        mainMenuPanel?.SetActive(false);
 
         ResetStates();
     }
@@ -356,7 +446,6 @@ public class UI : MonoBehaviour
     {
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
 
-        // ✅ Prevent Equipment UI from closing completely when returning to EquippedPanel
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel())
         {
             Debug.Log("[UI] Equipment panel handled cancel.");
@@ -369,7 +458,6 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // ✅ ADD THIS
         if (merchantUI != null && merchantUI.IsOpen && merchantUI.HandleCancel())
         {
             Debug.Log("[UI] Merchant panel handled cancel.");
@@ -385,12 +473,20 @@ public class UI : MonoBehaviour
             return;
         }
 
+        // Save/Load panel handles cancel
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.HandleCancel())
+        {
+            // If the panel actually closed, update our flag
+            if (!saveLoadPanel.IsOpen) isSaveOpen = false;
+            return;
+        }
+
+
         if (merchantUI != null && isMerchantOpen)
         {
             CloseMerchant();
             return;
         }
-
 
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
@@ -409,12 +505,4 @@ public class UI : MonoBehaviour
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
     }
-
-    private void OnDestroy()
-    {
-        var playerInventory = FindFirstObjectByType<Inventory_Player>();
-        if (playerInventory != null)
-            playerInventory.OnGoldChanged -= UpdateGoldUI;
-    }
-
 }

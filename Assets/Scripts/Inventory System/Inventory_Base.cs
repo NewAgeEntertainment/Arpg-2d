@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Inventory_Base : MonoBehaviour
 {
-    protected Player player;
+    public Player player;
     public event Action OnInventoryChange;
 
     public int maxInventorySize = 10;

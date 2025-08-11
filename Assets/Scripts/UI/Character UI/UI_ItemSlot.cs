@@ -14,7 +14,7 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
     public event Action<Inventory_Item> OnRightClick;     // Right click
 
     [Header("UI Slot Setup")]
-    [SerializeField] private TMPro.TextMeshProUGUI itemNameText;
+    [SerializeField] protected TMPro.TextMeshProUGUI itemNameText;
     [SerializeField] protected UnityEngine.UI.Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;

@@ -1,5 +1,6 @@
 ﻿// Inventory_Item.cs
 using System;
+using System.Linq;            // <-- needed for ToArray()
 using System.Text;
 using UnityEngine;
 
@@ -10,8 +11,14 @@ public class Inventory_Item
 
     public ItemDataSO itemData;
     public int stackSize = 1;
-    public ItemModifier[] modifiers { get; private set; }
+
+    // Per-instance modifiers that get saved/loaded (can differ per copy).
+    [SerializeField] private ItemModifier[] instanceModifiers;
+
     public ItemEffect_DataSO itemEffect;
+    // put this inside the Inventory_Item class (public section)
+    public ItemModifier[] modifiers => instanceModifiers ?? System.Array.Empty<ItemModifier>();
+
 
     public int buyPrice { get; private set; }
     public float sellPrice { get; private set; }
@@ -22,65 +29,76 @@ public class Inventory_Item
         itemEffect = itemData.itemEffect;
         buyPrice = itemData.itemPtice;
         sellPrice = itemData.itemPtice * 0.35f;
-        modifiers = EquipmentData()?.modifiers;
+
+        // Initialize instance modifiers from the SO defaults:
+        // 1) If it's EquipmentDataSO, copy its array.
+        if (itemData is EquipmentDataSO eq && eq.modifiers != null)
+        {
+            // Clone so each Inventory_Item has its own independent array
+            instanceModifiers = (ItemModifier[])eq.modifiers.Clone();
+        }
+        // 2) Otherwise, use the generic list on ItemDataSO (convert to array)
+        else if (itemData.itemModifiers != null && itemData.itemModifiers.Count > 0)
+        {
+            instanceModifiers = itemData.itemModifiers.ToArray();
+        }
+        else
+        {
+            instanceModifiers = Array.Empty<ItemModifier>();
+        }
+
         itemId = itemData.itemName + " - " + Guid.NewGuid();
+    }
+
+    // Accessors used by save/load.
+    public ItemModifier[] GetInstanceModifiers() => instanceModifiers;
+    public void SetInstanceModifiers(ItemModifier[] mods)
+    {
+        instanceModifiers = (mods != null && mods.Length > 0) ? (ItemModifier[])mods.Clone() : Array.Empty<ItemModifier>();
     }
 
     public void AddModifiers(Entity_Stats playerStats)
     {
-        foreach (var mod in modifiers)
+        if (instanceModifiers == null) return;
+        foreach (var mod in instanceModifiers)
         {
-            Stat statToModify = playerStats.GetStatByType(mod.statType);
-            statToModify.AddModifier(mod.value, StatModType.Flat, itemId);
+            var stat = playerStats.GetStatByType(mod.statType);
+            stat.AddModifier(mod.value, StatModType.Flat, itemId);
         }
     }
 
     public void RemoveModifiers(Entity_Stats playerStats)
     {
-        foreach (var mod in modifiers)
+        if (instanceModifiers == null) return;
+        foreach (var mod in instanceModifiers)
         {
-            Stat statToModify = playerStats.GetStatByType(mod.statType);
-            statToModify.RemoveModifier(itemId);
+            var stat = playerStats.GetStatByType(mod.statType);
+            stat.RemoveModifier(itemId);
         }
     }
 
     public void AddItemEffect(Player player) => itemEffect?.Subscribe(player);
     public void RemoveItemEffect() => itemEffect?.Unsubscribe();
 
-    private EquipmentDataSO EquipmentData()
-    {
-        return itemData as EquipmentDataSO;
-    }
+    private EquipmentDataSO EquipmentData() => itemData as EquipmentDataSO;
 
     public float GetStatValue(StatType type)
     {
-        if (itemData == null || itemData.itemModifiers == null)
-            return 0f;
-
+        // For UI/tooltips: read from SO-level defaults
+        if (itemData == null || itemData.itemModifiers == null) return 0f;
         foreach (var mod in itemData.itemModifiers)
-        {
-            if (mod.statType == type)
-                return mod.value;
-        }
+            if (mod.statType == type) return mod.value;
         return 0f;
     }
 
     public bool CanAddStack() => stackSize < itemData.maxStackSize;
-    public void AddStack(int amount = 1)
-    {
-        stackSize = Mathf.Min(stackSize + amount, itemData.maxStackSize);
-    }
-
-    public void RemoveStack(int amount = 1)
-    {
-        stackSize = Mathf.Max(stackSize - amount, 0);
-    }
-
+    public void AddStack(int amount = 1) => stackSize = Mathf.Min(stackSize + amount, itemData.maxStackSize);
+    public void RemoveStack(int amount = 1) => stackSize = Mathf.Max(stackSize - amount, 0);
     public bool CanStack() => CanAddStack();
 
     public string GetItemInfo()
     {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         if (itemData.itemType == ItemType.Material)
         {
@@ -94,10 +112,10 @@ public class Inventory_Item
             return sb.ToString();
         }
 
-        if (modifiers != null && modifiers.Length > 0)
+        if (instanceModifiers != null && instanceModifiers.Length > 0)
         {
             sb.AppendLine("<b>Stats:</b>");
-            foreach (var mod in modifiers)
+            foreach (var mod in instanceModifiers)
             {
                 string modType = mod.statType.ToString();
                 string modValue = mod.value > 0 ? $"+{mod.value}" : mod.value.ToString();
@@ -113,9 +131,7 @@ public class Inventory_Item
         }
 
         if (sb.Length == 0)
-        {
             sb.AppendLine("<color=#888888><i>No special properties.</i></color>");
-        }
 
         return sb.ToString();
     }

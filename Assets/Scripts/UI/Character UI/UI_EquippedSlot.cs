@@ -14,7 +14,7 @@ public class UI_EquippedSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
 
     [Header("Slot Type Label")]
     [SerializeField] private TextMeshProUGUI slotTypeLabel; // ✅ Assign this in the inspector
-    [SerializeField] private TextMeshProUGUI itemNameText;
+    
 
     private bool isInteractable = true;
     private Coroutine blinkCoroutine;

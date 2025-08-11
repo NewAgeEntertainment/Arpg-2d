@@ -3,51 +3,112 @@ using System.Collections.Generic;
 
 public class UI_Storage : MonoBehaviour
 {
-    [SerializeField] private UI_ItemSlotParent playerInventorySlotParent; // Shows BOTH backpack + unequipped gear
-    [SerializeField] private UI_ItemSlotParent storageSlotParent;
-    [SerializeField] private UI_ItemSlotParent materialStashSlotParent;
+    [Header("Slot Parents")]
+    [SerializeField] private UI_ItemSlotParent playerInventorySlotParent;   // Backpack + unequipped gear
+    [SerializeField] private UI_ItemSlotParent storageSlotParent;           // Storage (non-materials)
+    [SerializeField] private UI_ItemSlotParent materialStashSlotParent;     // Materials-only
 
     private Inventory_Player playerInventory;
+    private Inventory_Equipment equipmentInventory;
     private Inventory_Storage storage;
 
+    // prevent double-subscriptions if SetupStorageUI is called more than once
+    private bool subscribed;
+
+    /// <summary>
+    /// Call this when opening the storage panel (or once you have a storage reference).
+    /// </summary>
     public void SetupStorageUI(Inventory_Storage storage)
     {
+        UnhookEvents();
+
         this.storage = storage;
-        playerInventory = storage.playerInventory;
+        playerInventory = storage != null ? storage.playerInventory : null;
+        equipmentInventory = playerInventory != null ? playerInventory.equipmentInventory : null;
 
-        storage.OnInventoryChange += UpdateUI;
-        playerInventory.OnInventoryChange += UpdateUI;
-        playerInventory.equipmentInventory.OnInventoryChange += UpdateUI;
+        // pass storage ref to any child storage slots (for move buttons, etc.)
+        var storageSlots = GetComponentsInChildren<UI_StorageSlot>(true);
+        for (int i = 0; i < storageSlots.Length; i++)
+            storageSlots[i].SetStorage(this.storage);
 
-        foreach (var slot in GetComponentsInChildren<UI_StorageSlot>(true))
-            slot.SetStorage(storage);
-
-        UpdateUI(); // 👈 refresh right away
+        HookEvents();
+        ForceRefresh();
     }
 
     private void OnEnable()
     {
-        UpdateUI(); // 👈 refresh again on open
+        HookEvents();
+        ForceRefresh();
     }
 
+    private void OnDisable() => UnhookEvents();
+    private void OnDestroy() => UnhookEvents();
+
+    private void HookEvents()
+    {
+        if (subscribed) return;
+
+        if (storage != null)
+            storage.OnInventoryChange += UpdateUI;
+
+        if (playerInventory != null)
+            playerInventory.OnInventoryChange += UpdateUI;
+
+        if (equipmentInventory != null)
+            equipmentInventory.OnInventoryChange += UpdateUI;
+
+        subscribed = true;
+    }
+
+    private void UnhookEvents()
+    {
+        if (!subscribed) return;
+
+        if (storage != null)
+            storage.OnInventoryChange -= UpdateUI;
+
+        if (playerInventory != null)
+            playerInventory.OnInventoryChange -= UpdateUI;
+
+        if (equipmentInventory != null)
+            equipmentInventory.OnInventoryChange -= UpdateUI;
+
+        subscribed = false;
+    }
+
+    /// <summary>External nudge (e.g., from GameDataSaver after load).</summary>
+    public void ForceRefresh() => UpdateUI();
+
+    /// <summary>Rebuild all three lists: Player (backpack + unequipped), Storage, Materials.</summary>
     public void UpdateUI()
     {
-        if (storage == null)
+        if (playerInventorySlotParent == null || storageSlotParent == null || materialStashSlotParent == null)
+        {
+            Debug.LogWarning("[UI_Storage] Slot parents are not assigned.");
             return;
+        }
 
-        var combined = new List<Inventory_Item>();
-        combined.AddRange(playerInventory.itemList);  // backpack items
-        combined.AddRange(playerInventory.equipmentInventory.itemList);  // unequipped gear too
+        // Player: backpack + unequipped gear
+        var combinedPlayer = new List<Inventory_Item>();
+        if (playerInventory != null)
+        {
+            if (playerInventory.itemList != null)
+                combinedPlayer.AddRange(playerInventory.itemList);
+            if (playerInventory.equipmentInventory != null && playerInventory.equipmentInventory.itemList != null)
+                combinedPlayer.AddRange(playerInventory.equipmentInventory.itemList);
+        }
+        playerInventorySlotParent.UpdateSlots(combinedPlayer);
 
-        playerInventorySlotParent.UpdateSlots(combined);
-        storageSlotParent.UpdateSlots(storage.itemList);
-        materialStashSlotParent.UpdateSlots(storage.materialStash);
-    }
+        // Storage items (non-materials)
+        if (storage != null && storage.itemList != null)
+            storageSlotParent.UpdateSlots(storage.itemList);
+        else
+            storageSlotParent.UpdateSlots(new List<Inventory_Item>());
 
-    private void OnDisable()
-    {
-        if (storage != null) storage.OnInventoryChange -= UpdateUI;
-        if (playerInventory != null) playerInventory.OnInventoryChange -= UpdateUI;
-        if (playerInventory?.equipmentInventory != null) playerInventory.equipmentInventory.OnInventoryChange -= UpdateUI;
+        // Materials stash
+        if (storage != null && storage.materialStash != null)
+            materialStashSlotParent.UpdateSlots(storage.materialStash);
+        else
+            materialStashSlotParent.UpdateSlots(new List<Inventory_Item>());
     }
 }

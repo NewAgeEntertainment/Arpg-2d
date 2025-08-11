@@ -36,18 +36,24 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void SetupSkillSlot(Skill_DataSO selectedSkill)
     {
-        this.skillData = selectedSkill;
+        if (ui == null) ui = GetComponentInParent<UI>();
+        if (skillIcon == null) skillIcon = GetComponent<Image>();
+        if (rect == null) rect = GetComponent<RectTransform>();
+        if (button == null) button = GetComponent<Button>();
 
-        Color color = Color.black; color.a = .6f;
-        cooldownImage.color = color; // Set the cooldown image color to black with 60% opacity
+        skillData = selectedSkill;
 
-        inputKeyText.text = inputKeyName; // Set the input key text
-        skillIcon.sprite = selectedSkill.icon;
+        if (cooldownImage != null)
+        {
+            var c = Color.black; c.a = 0.6f;
+            cooldownImage.color = c;
+        }
 
-        if(conflictSlot != null)
-            conflictSlot.SetActive(false); // Hide the conflict slot if it exists
-
+        if (inputKeyText != null) inputKeyText.text = inputKeyName;
+        if (skillIcon != null && selectedSkill != null) skillIcon.sprite = selectedSkill.icon;
+        if (conflictSlot != null) conflictSlot.SetActive(false);
     }
+
 
     public void StartCooldown(float cooldown)
     {

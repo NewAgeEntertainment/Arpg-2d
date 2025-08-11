@@ -12,13 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5192c683041cba46a278da24a88ad14, type: 3}
   m_Name: Skill data -  Phantom Recall
   m_EditorClassIdentifier: 
+  id: 3
+  displayName: phantom Recall
+  description: 
+  icon: {fileID: -544345372, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   cost: 0
   unlockedByDefault: 0
   skillType: 3
+  category: 0
   upgradeData:
     upgradeType: 9
     cooldown: 3
     manaCost: 0
-  displayName: phantom Recall
-  description: 
-  icon: {fileID: -544345372, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+    damageScale:
+      physical: 1
+      elemental: 1
+      basePower: 10
+      scalingMultiplier: 1
+      scalingStat: 4
+      chillDuration: 3
+      chillSlowMultiplier: 0.2
+      burnDuration: 3
+      burnDamageScale: 1
+      poisonDuration: 3
+      poisonDamageScale: 1
+      shockDuration: 3
+      shockDamageScale: 1
+      shockCharge: 0.4

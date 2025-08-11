@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using Rewired;
@@ -26,34 +27,51 @@ public class UI_Inventory : UI_Panel
     [Header("Assign Popup UI")]
     [SerializeField] private TMP_InputField assignAmountInput;
 
-    [Header("Actor Buttons")]
+    [Header("Actor Select")]
     [SerializeField] private List<UI_CharacterProfileButton> actorButtons;
+    [SerializeField] private TextMeshProUGUI actorSelectItemLabel;
 
     [Header("Sound")]
     [SerializeField] private AudioClip panelOpenSound;
     [SerializeField] private AudioClip panelCloseSound;
     [SerializeField] private AudioClip assignSound;
+    [SerializeField] private AudioClip noItemSound;   // 🔹 New sound
+    [SerializeField] private AudioClip itemUsedSound; // SFX for item used
     [SerializeField] private AudioSource audioSource;
-    
 
 
+    private bool _playedNoItemSFXThisOpen = false;    // ← avoid double-playing per panel open
 
     private bool isOpen = false;
+    private bool _dirty = false;
     private ItemType? currentFilter = null;
     private Inventory_Item itemBeingAssigned;
 
     private enum PanelState { None, Category, ItemList, ActorSelect, AssignPopup }
     private PanelState currentState = PanelState.None;
 
+    private System.Action<int> _goldChangedHandler;
+
     private void Awake()
     {
         if (inventory == null)
             inventory = FindFirstObjectByType<Inventory_Player>();
 
-        inventory.OnInventoryChange += UpdateUI;
+        if (inventory != null)
+        {
+            inventory.OnInventoryChange += HandleInventoryChanged;
+            _goldChangedHandler = _ => HandleInventoryChanged();
+            inventory.OnGoldChanged += _goldChangedHandler;
+        }
 
         if (backpackSlotsParent != null)
             backpackSlotsParent.OnSlotSubmit += OnItemSlotSubmit;
+
+        if (audioSource != null)
+        {
+            audioSource.ignoreListenerPause = true; // play even if AudioListener.pause is true
+        }
+
 
         CloseInventory();
     }
@@ -66,7 +84,10 @@ public class UI_Inventory : UI_Panel
     private void OnDestroy()
     {
         if (inventory != null)
-            inventory.OnInventoryChange -= UpdateUI;
+        {
+            inventory.OnInventoryChange -= HandleInventoryChanged;
+            if (_goldChangedHandler != null) inventory.OnGoldChanged -= _goldChangedHandler;
+        }
 
         if (backpackSlotsParent != null)
             backpackSlotsParent.OnSlotSubmit -= OnItemSlotSubmit;
@@ -77,9 +98,7 @@ public class UI_Inventory : UI_Panel
         if (rPlayer == null || !isOpen) return;
 
         if (rPlayer.GetButtonDown(cancelAction))
-        {
             HandleCancel();
-        }
 
         if (rPlayer.GetButtonDown(assignPopupAction) && currentState == PanelState.ItemList)
         {
@@ -90,7 +109,6 @@ public class UI_Inventory : UI_Panel
             }
         }
 
-
         if (rPlayer.GetButtonDown(useOnPlayerAction) && currentState == PanelState.ItemList)
         {
             if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
@@ -99,8 +117,31 @@ public class UI_Inventory : UI_Panel
                     OpenActorSelectPanel(selected);
             }
         }
+    }
+
+    private void HandleInventoryChanged()
+    {
+        _dirty = true;
+
+        if (isOpen && currentState == PanelState.ItemList)
+            ForceRefresh();
+
+        if (currentState == PanelState.ActorSelect)
+        {
+            UpdateActorSelectButtons();
+            UpdateActorSelectHeader();
+            MaybePlayNoItemSFX(); // ← cover external consumption too
+        }
+
+        if (goldText != null && inventory != null)
+            goldText.text = $"{inventory.gold:N0}g.";
+    }
 
 
+    public void ForceRefresh()
+    {
+        _dirty = false;
+        UpdateUI(force: true);
     }
 
     public void OpenInventory()
@@ -108,6 +149,8 @@ public class UI_Inventory : UI_Panel
         isOpen = true;
         gameObject.SetActive(true);
         OpenCategoryPanel();
+
+        if (_dirty) ForceRefresh();
     }
 
     public void CloseInventory()
@@ -117,10 +160,8 @@ public class UI_Inventory : UI_Panel
         gameObject.SetActive(false);
         PlayCloseSound();
 
-        // 🟩 Open main menu directly
         FindObjectOfType<UI>()?.OpenMainMenuDirect();
     }
-
 
     public bool IsOpen() => isOpen;
 
@@ -151,7 +192,6 @@ public class UI_Inventory : UI_Panel
         }
     }
 
-
     public void SetFilter(string filterName)
     {
         currentFilter = filterName switch
@@ -167,8 +207,42 @@ public class UI_Inventory : UI_Panel
         };
 
         OpenItemListPanel();
-        UpdateUI();
+        ForceRefresh();
     }
+
+    private void MaybePlayNoItemSFX()
+    {
+        if (_playedNoItemSFXThisOpen) return;
+        if (noItemSound == null) return;
+
+        // Nothing left of the selected item?
+        int remaining = (inventory != null && itemBeingAssigned?.itemData != null)
+            ? inventory.CountItem(itemBeingAssigned.itemData)
+            : 0;
+
+        if (remaining <= 0)
+        {
+            if (audioSource != null)
+                audioSource.PlayOneShot(noItemSound);
+            else
+                AudioSource.PlayClipAtPoint(noItemSound, Vector3.zero); // fallback
+
+            _playedNoItemSFXThisOpen = true;
+        }
+    }
+
+    private void PlayItemUsedSFX()
+    {
+        if (audioSource != null && itemUsedSound != null)
+            audioSource.PlayOneShot(itemUsedSound);
+    }
+
+    private void PlayNoItemSFX()
+    {
+        if (audioSource != null && noItemSound != null)
+            audioSource.PlayOneShot(noItemSound);
+    }
+
 
     private void PlayOpenSound()
     {
@@ -181,7 +255,6 @@ public class UI_Inventory : UI_Panel
         if (audioSource != null && panelCloseSound != null)
             audioSource.PlayOneShot(panelCloseSound);
     }
-
 
     public void OpenCategoryPanel()
     {
@@ -196,7 +269,7 @@ public class UI_Inventory : UI_Panel
         CloseAllPanels();
         itemListPanel.SetActive(true);
         currentState = PanelState.ItemList;
-        UpdateUI();
+        ForceRefresh();
         PlayOpenSound();
     }
 
@@ -206,9 +279,50 @@ public class UI_Inventory : UI_Panel
         actorSelectPanel.SetActive(true);
         currentState = PanelState.ActorSelect;
         itemBeingAssigned = item;
+        _playedNoItemSFXThisOpen = false;   // ← reset here
         PlayOpenSound();
-        
-}
+
+        // ...
+        foreach (var btn in actorButtons)
+        {
+            if (btn == null) continue;
+
+            btn.Setup(OnActorPicked);
+            btn.SetUseItemContext(itemBeingAssigned, inventory, () =>
+            {
+                // Always play a click SFX based on whether an item was used or not
+                int remainingBefore = inventory.CountItem(itemBeingAssigned.itemData);
+
+                bool used = false;
+                if (remainingBefore > 0)
+                {
+                    used = true;
+                    PlayItemUsedSFX();
+                }
+                else
+                {
+                    PlayNoItemSFX();
+                }
+
+                UpdateActorSelectButtons();
+                UpdateActorSelectHeader();
+
+                // If used, check again after update
+                int remainingAfter = inventory.CountItem(itemBeingAssigned.itemData);
+                if (used && remainingAfter <= 0)
+                {
+                    // Optional: could also trigger a special sound here if last one used
+                }
+            });
+
+
+            btn.SetSelected(false);
+        }
+
+        UpdateActorSelectButtons();
+        UpdateActorSelectHeader();
+    }
+
 
     public void OpenAssignPopup(Inventory_Item item)
     {
@@ -216,11 +330,9 @@ public class UI_Inventory : UI_Panel
         assignPopupPanel.SetActive(true);
         currentState = PanelState.AssignPopup;
         itemBeingAssigned = item;
-        assignAmountInput.text = "1";
+        if (assignAmountInput != null) assignAmountInput.text = "1";
         PlayOpenSound();
     }
-
-
 
     private void CloseAllPanels()
     {
@@ -231,20 +343,28 @@ public class UI_Inventory : UI_Panel
         currentState = PanelState.None;
     }
 
-    public void UpdateUI()
+    public void UpdateUI(bool force = false)
     {
-        if (!isOpen) return;
+        if (!force && !isOpen) return;
 
-        goldText.text = $"{inventory.gold:N0}g.";
+        if (goldText != null && inventory != null)
+            goldText.text = $"{inventory.gold:N0}g.";
 
         var combined = new List<Inventory_Item>();
-        combined.AddRange(inventory.itemList);
-        combined.AddRange(inventory.equipmentInventory.itemList);
-        combined.AddRange(inventory.storage.materialStash);
+
+        if (inventory?.itemList != null)
+            combined.AddRange(inventory.itemList);
+
+        if (inventory?.equipmentInventory?.itemList != null)
+            combined.AddRange(inventory.equipmentInventory.itemList);
+
+        if (inventory?.storage?.materialStash != null)
+            combined.AddRange(inventory.storage.materialStash);
 
         var filtered = new List<Inventory_Item>();
         foreach (var item in combined)
         {
+            if (item?.itemData == null) continue;
             if (!currentFilter.HasValue || item.itemData.itemType == currentFilter.Value)
                 filtered.Add(item);
         }
@@ -258,87 +378,34 @@ public class UI_Inventory : UI_Panel
         backpackSlotsParent.UpdateSlots(filtered);
     }
 
-    public void OnPlayerSelectedFromActorPanel(Player player)
+    private void OnActorPicked(Player p)
     {
-        if (itemBeingAssigned == null) return;
-
-        var matchedItem = inventory.FindSameItem(itemBeingAssigned);
-        if (matchedItem == null) return;
-
-        if (matchedItem.itemEffect != null && matchedItem.itemEffect.CanBeUsed(player))
-        {
-            matchedItem.itemEffect.Subscribe(player);
-            matchedItem.itemEffect.ExecuteEffect(player);
-
-            inventory.RemoveOneItem(matchedItem);
-            inventory.TriggerUpdateUI();
-            UpdateActorSelectButtons();
-        }
+        foreach (var btn in actorButtons)
+            btn?.SetSelected(btn.linkedPlayer == p);
     }
 
     private void UpdateActorSelectButtons()
     {
         foreach (var button in actorButtons)
-            button.RefreshBars();
+            button?.RefreshBars();
     }
 
-    public void AssignSlot1() => AssignToQuickSlot(1);
-    public void AssignSlot2() => AssignToQuickSlot(2);
-    public void AssignSlot3() => AssignToQuickSlot(3);
-    public void AssignSlot4() => AssignToQuickSlot(4);
-
-    private void AssignToQuickSlot(int slotNumber)
+    private void UpdateActorSelectHeader()
     {
-        if (itemBeingAssigned == null) return;
+        if (actorSelectItemLabel == null || itemBeingAssigned == null || itemBeingAssigned.itemData == null)
+            return;
 
-        int amount = GetAssignAmount();
-        if (amount <= 0) return;
+        int remaining = inventory != null ? inventory.CountItem(itemBeingAssigned.itemData) : 0;
 
-        // Assign to quick slot
-        inventory.SetQuickItemInSlot(slotNumber, itemBeingAssigned, amount);
+        actorSelectItemLabel.text = $"{itemBeingAssigned.itemData.itemName} x{remaining}";
 
-        // 🔻 Reduce stack size
-        Inventory_Item itemInInventory = inventory.FindSameItem(itemBeingAssigned);
-        if (itemInInventory != null)
+        // 🔹 Play "no item" sound if out of items
+        if (remaining <= 0 && noItemSound != null && audioSource != null)
         {
-            itemInInventory.stackSize -= amount;
-            if (itemInInventory.stackSize <= 0)
-                inventory.itemList.Remove(itemInInventory);
+            audioSource.PlayOneShot(noItemSound);
         }
-
-        // ✅ Play sound
-        if (audioSource != null && assignSound != null)
-            audioSource.PlayOneShot(assignSound);
-
-        inventory.TriggerUpdateUI();
-        itemBeingAssigned = null;
-        assignPopupPanel?.SetActive(false);
-        OpenItemListPanel();
     }
 
-
-
-    public void IncreaseAssignAmount()
-    {
-        if (itemBeingAssigned == null || assignAmountInput == null) return;
-
-        int current = GetAssignAmount() + 1;
-        int totalOwned = inventory.CountItem(itemBeingAssigned.itemData);
-        int assignedElsewhere = inventory.CountAssigned(itemBeingAssigned.itemData);
-
-        int maxAssignable = totalOwned - assignedElsewhere;
-        if (current > maxAssignable) current = maxAssignable;
-
-        assignAmountInput.text = Mathf.Max(1, current).ToString();
-    }
-
-    public void DecreaseAssignAmount()
-    {
-        if (itemBeingAssigned == null || assignAmountInput == null) return;
-
-        int current = Mathf.Max(1, GetAssignAmount() - 1);
-        assignAmountInput.text = current.ToString();
-    }
 
     private int GetAssignAmount()
     {
@@ -346,28 +413,19 @@ public class UI_Inventory : UI_Panel
         return int.TryParse(assignAmountInput.text, out int result) ? Mathf.Max(1, result) : 1;
     }
 
-    public void GoToMainMenuPanel()
-    {
-        FindObjectOfType<UI>()?.OpenMainMenuDirect();
-    }
-
     private void OnItemSlotSubmit(Inventory_Item item)
     {
         if (item == null || item.itemData == null) return;
 
-        // Only allow AssignPopup or ActorSelect for Consumables
         if (item.itemData.itemType != ItemType.Consumable)
         {
             Debug.Log($"[Inventory] {item.itemData.itemName} is not a consumable and cannot be used.");
             return;
         }
 
-        // Now decide based on isUsable
         if (item.itemData.isUsable)
             OpenActorSelectPanel(item);
         else
             OpenAssignPopup(item);
     }
-
-
 }

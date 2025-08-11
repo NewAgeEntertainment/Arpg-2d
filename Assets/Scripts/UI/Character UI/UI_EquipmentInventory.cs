@@ -34,30 +34,29 @@ public class UI_EquipmentInventory : UI_Panel
     [SerializeField] private string cancelAction = "UICancel";
 
     private Rewired.Player rPlayer;
-    private List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
+    private readonly List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
 
     private bool isOpen = false;
     public bool IsOpen => isOpen;
     public UI_EquipSlotParent EquippedSlotsPanel => equippedSlotsPanel;
 
-    private float cancelCooldown = 0f;
-    private const float cancelCooldownDuration = 0.2f; // 200 ms debounce
-
     private enum PanelState { None, EquippedPanel, ItemList }
     private PanelState currentState = PanelState.None;
 
     private ItemType? currentFilter = null;
+    private bool subscribed = false;
 
     private void Awake()
     {
         rPlayer = ReInput.players.GetPlayer(playerID);
-        equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
-        playerInventory = FindFirstObjectByType<Inventory_Player>();
 
-        equipmentInventory.OnInventoryChange += UpdateUI;
-        playerInventory.OnInventoryChange += UpdateUI;
+        if (equipmentInventory == null) equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
+        if (playerInventory == null) playerInventory = FindFirstObjectByType<Inventory_Player>();
 
-        uiSlots.AddRange(equipmentSlotPanel.GetComponentsInChildren<UI_EquipmentSlot>(true));
+        // cache existing UI_EquipmentSlot children (if laid out in editor)
+        if (equipmentSlotPanel != null)
+            uiSlots.AddRange(equipmentSlotPanel.GetComponentsInChildren<UI_EquipmentSlot>(true));
+
         foreach (var slot in uiSlots)
         {
             slot.SetEquipmentToolTip(equipmentToolTip);
@@ -65,6 +64,32 @@ public class UI_EquipmentInventory : UI_Panel
         }
 
         Close();
+    }
+
+    private void OnEnable()
+    {
+        HookEvents();
+        // If opened via code while panel is inactive, ForceRefresh ensures lists match data
+        ForceRefresh();
+    }
+
+    private void OnDisable() => UnhookEvents();
+    private void OnDestroy() => UnhookEvents();
+
+    private void HookEvents()
+    {
+        if (subscribed) return;
+        if (equipmentInventory != null) equipmentInventory.OnInventoryChange += UpdateUI;
+        if (playerInventory != null) playerInventory.OnInventoryChange += UpdateUI;
+        subscribed = true;
+    }
+
+    private void UnhookEvents()
+    {
+        if (!subscribed) return;
+        if (equipmentInventory != null) equipmentInventory.OnInventoryChange -= UpdateUI;
+        if (playerInventory != null) playerInventory.OnInventoryChange -= UpdateUI;
+        subscribed = false;
     }
 
     public void Open()
@@ -83,9 +108,39 @@ public class UI_EquipmentInventory : UI_Panel
         currentState = PanelState.None;
     }
 
+    /// <summary>
+    /// Rebuild both equipped & unequipped lists. (Called by saver post-load)
+    /// </summary>
+    public void RefreshPanels()
+    {
+        UpdateEquippedSlots();
+        UpdateUnequippedItemList();
+    }
+
+    /// <summary>
+    /// Force a rebuild even if panel isn’t open yet (safe to call post-load).
+    /// </summary>
+    public void ForceRefresh()
+    {
+        // Temporarily let UpdateUI run even if panel is closed.
+        if (isOpen) UpdateUI();
+        else
+        {
+            UpdateEquippedSlots();
+            UpdateUnequippedItemList();
+        }
+    }
+
     public void UpdateUI()
     {
         if (!isOpen) return;
+        UpdateUnequippedItemList();
+        UpdateEquippedSlots();
+    }
+
+    private void UpdateUnequippedItemList()
+    {
+        if (equipmentInventory == null || equipmentSlotPanel == null) return;
 
         var items = equipmentInventory.itemList;
         List<Inventory_Item> filteredItems = new List<Inventory_Item>();
@@ -96,6 +151,19 @@ public class UI_EquipmentInventory : UI_Panel
                 filteredItems.Add(item);
         }
 
+        // Ensure we have enough UI slots; create more if the panel uses a prefab pattern
+        if (slotPrefab != null && uiSlots.Count < filteredItems.Count)
+        {
+            int toCreate = filteredItems.Count - uiSlots.Count;
+            for (int i = 0; i < toCreate; i++)
+            {
+                var slot = Instantiate(slotPrefab, equipmentSlotPanel);
+                slot.SetEquipmentToolTip(equipmentToolTip);
+                slot.SetSelectable(true);
+                uiSlots.Add(slot);
+            }
+        }
+
         for (int i = 0; i < uiSlots.Count; i++)
         {
             if (i < filteredItems.Count)
@@ -103,8 +171,12 @@ public class UI_EquipmentInventory : UI_Panel
             else
                 uiSlots[i].Clear();
         }
+    }
 
-        equippedSlotsPanel?.UpdateEquipmentSlots(playerInventory.equipList);
+    private void UpdateEquippedSlots()
+    {
+        if (equippedSlotsPanel == null || playerInventory == null) return;
+        equippedSlotsPanel.UpdateEquipmentSlots(playerInventory.equipList);
     }
 
     public void ShowEquipmentInventoryPanel(ItemType filterType)
@@ -150,28 +222,26 @@ public class UI_EquipmentInventory : UI_Panel
 
     public void ResetAllHighlights()
     {
-        foreach (var equipSlot in equippedSlotsPanel.GetComponentsInChildren<UI_EquippedSlot>())
+        if (equippedSlotsPanel != null)
         {
-            equipSlot.ResetHighlight();
+            foreach (var equipSlot in equippedSlotsPanel.GetComponentsInChildren<UI_EquippedSlot>(true))
+                equipSlot.ResetHighlight();
         }
 
         foreach (var slot in uiSlots)
-        {
             slot.ResetHighlight();
-        }
     }
 
     private void PlaySound(AudioClip clip)
     {
         if (audioSource != null && clip != null)
-        {
             audioSource.PlayOneShot(clip);
-        }
     }
 
     private bool IsOnItemListPanel()
     {
-        return equipmentSlotPanel.gameObject.activeSelf && !equippedSlotsPanel.gameObject.activeSelf;
+        return equipmentSlotPanel != null && equipmentSlotPanel.gameObject.activeSelf
+               && (equippedSlotsPanel == null || !equippedSlotsPanel.gameObject.activeSelf);
     }
 
     public override bool HandleCancel()

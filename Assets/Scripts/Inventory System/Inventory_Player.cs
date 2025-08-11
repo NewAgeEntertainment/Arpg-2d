@@ -6,8 +6,11 @@ public class Inventory_Player : Inventory_Base
 {
     public int gold = 10000;
 
-    public event System.Action<int> OnGoldChanged;
+    public event Action<int> OnGoldChanged;
     public event Action<int> OnQuickSlotUsed;
+
+    // 🔸 NEW: generic “inventory changed” event
+    public event Action OnInventoryChange;
 
     [Header("Assigned References")]
     [SerializeField] private Inventory_Equipment equipmentInventoryRef;
@@ -46,10 +49,23 @@ public class Inventory_Player : Inventory_Base
             Debug.LogWarning("[Inventory_Player] Storage not found. Assign via Inspector.");
     }
 
+    // 🔸 helper all UIs call
+    public void TriggerUpdateUI() => OnInventoryChange?.Invoke();
+
+    // If Inventory_Base already has a NotifyInventoryChanged(), keep using it,
+    // but also raise our event here by shadowing with 'new' (safe if base is virtual/none).
+    protected new void NotifyInventoryChanged()
+    {
+        // call base if it exists & is accessible
+        try { base.NotifyInventoryChanged(); } catch { /* base may be non-virtual/private */ }
+        OnInventoryChange?.Invoke();
+    }
+
     public void AddGold(int amount)
     {
         gold += amount;
         OnGoldChanged?.Invoke(gold);
+        OnInventoryChange?.Invoke();
 
         var ui = FindFirstObjectByType<UI_InGame>();
         if (ui != null)
@@ -66,10 +82,8 @@ public class Inventory_Player : Inventory_Base
 
         int totalOwned = 0;
         foreach (var item in itemList)
-        {
             if (item.itemData == itemToSet.itemData)
                 totalOwned += item.stackSize;
-        }
 
         if (totalOwned <= 0)
         {
@@ -161,18 +175,25 @@ public class Inventory_Player : Inventory_Base
         Debug.Log($"[Inventory_Player] Adding {itemToAdd.itemData.itemName}");
 
         if (itemToAdd.itemData.itemType == ItemType.Material && storage != null)
-            return storage.AddMaterialToStash(itemToAdd);
+        {
+            var addedToStorage = storage.AddMaterialToStash(itemToAdd);
+            if (addedToStorage) NotifyInventoryChanged();
+            return addedToStorage;
+        }
 
         if ((itemToAdd.itemData.itemType == ItemType.Weapon ||
              itemToAdd.itemData.itemType == ItemType.Armor ||
              itemToAdd.itemData.itemType == ItemType.trinket) &&
             equipmentInventory != null && equipmentInventory.CanAddItem(itemToAdd))
         {
-            equipmentInventory.AddItem(itemToAdd);
-            return true;
+            var addedToEquip = equipmentInventory.AddItem(itemToAdd);
+            if (addedToEquip) NotifyInventoryChanged();
+            return addedToEquip;
         }
 
-        return base.AddItem(itemToAdd);
+        var added = base.AddItem(itemToAdd);
+        if (added) NotifyInventoryChanged();
+        return added;
     }
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
@@ -235,6 +256,7 @@ public class Inventory_Player : Inventory_Base
         equipmentInventory.RemoveOneItem(newInventoryItem);
 
         Debug.Log($"[Inventory_Player] Swapped {oldEquippedItem.itemData.itemName} with {newInventoryItem.itemData.itemName}.");
+        NotifyInventoryChanged();
     }
 
     public void UnequipItemByType(ItemType slotType)

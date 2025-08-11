@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 {
@@ -15,129 +15,113 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public bool isUnlocked;
     public bool isLocked;
 
-    [Header("Skil details")]
+    [Header("Skill details")]
     public Skill_DataSO skillData;
     [SerializeField] private string skillName;
     [SerializeField] private Image skillIcon;
     [SerializeField] private int skillCost;
+
+    [Header("Colors")]
     [SerializeField] private string lockedColorHex = "#9F9797";
     private Color lastColor;
 
+    private void EnsureWired()
+    {
+        if (rect == null) rect = GetComponent<RectTransform>();
+        if (skillTree == null) skillTree = GetComponentInParent<UI_SkillTree>(true);
+        if (ui == null) ui = GetComponentInParent<UI>();
+        if (connectHandler == null) connectHandler = GetComponent<UI_TreeConnectHandler>();
+        // skillIcon is serialized; don't auto-find to avoid grabbing wrong child
+    }
 
-    
+    private Color LockedColor()
+    {
+        ColorUtility.TryParseHtmlString(lockedColorHex, out var c);
+        return c;
+    }
 
     private void Start()
     {
+        // Start with locked visuals if not unlocked yet
         if (isUnlocked == false)
-            UpdateIconColor(GetColorByHex(lockedColorHex));
+            UpdateIconColor(LockedColor());
 
         UnlockDefaultSkills();
-
     }
 
     public void UnlockDefaultSkills()
     {
+        EnsureWired();
 
-        GetNeededComponents();
+        if (skillData != null && skillData.unlockedByDefault && !isUnlocked)
+        {
+            // default unlock should not spend points
+            isUnlocked = true;
+            isLocked = false;
+            UpdateIconColor(Color.white);
+            connectHandler?.UnlockConnectionImage(true);
 
-        if (skillData.unlockedByDefault)
-            Unlock();
-
-    }
-
-    private void GetNeededComponents()
-    {
-        ui = GetComponentInParent<UI>();
-        rect = GetComponent<RectTransform>();
-        skillTree = GetComponentInParent<UI_SkillTree>(true);
-        connectHandler = GetComponent<UI_TreeConnectHandler>();
+            // Apply the skill’s upgrade to gameplay/UI
+            if (skillTree != null && skillTree.skillManager != null)
+            {
+                var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
+                if (skill != null) skill.SetSkillUpgrade(skillData);
+            }
+        }
     }
 
     public void Refund()
     {
-        if (isUnlocked == false || skillData.unlockedByDefault)
+        EnsureWired();
+
+        if (isUnlocked == false || (skillData != null && skillData.unlockedByDefault))
             return;
 
         isUnlocked = false;
         isLocked = false;
-        UpdateIconColor(GetColorByHex(lockedColorHex));
 
-        if (skillData.category == SkillCategory.Combat)
-            skillTree.AddSkillPoints(skillData.cost);
-        else
-            skillTree.AddSexSkillPoints(skillData.cost);
+        UpdateIconColor(LockedColor());
+        connectHandler?.UnlockConnectionImage(false);
 
-        connectHandler.UnlockConnectionImage(false);
-
-        // skill manager and reset skill
-    }
-    private void Unlock()
-    {
-        if (isUnlocked)
+        if (skillData != null)
         {
-            Debug.LogWarning("Skill is already unlocked!");
-            return;
-        }
-
-        isUnlocked = true;
-        UpdateIconColor(Color.white);
-        LockConflictNodes();
-
-        if (skillData.category == SkillCategory.Combat)
-            skillTree.RemoveSkillPoints(skillData.cost);
-        else
-            skillTree.RemoveSexSkillPoints(skillData.cost);
-
-        connectHandler.UnlockConnectionImage(true);
-
-        var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
-
-        if (skill == null)
-        {
-            Debug.LogError("Skill returned from GetSkillByType is NULL!");
-        }
-        else
-        {
-            Debug.Log("Skill found: " + skill.GetType().Name);
-
-            if (skill is SexSkill_DeepBreath deepBreath)
-            {
-                Debug.Log("Unlocking Deep Breath skill now...");
-                deepBreath.Unlock();
-            }
+            if (skillData.category == SkillCategory.Combat)
+                skillTree?.AddSkillPoints(skillData.cost);
             else
-            {
-                Debug.LogWarning("Returned skill is not of type SexSkill_DeepBreath.");
-            }
+                skillTree?.AddSexSkillPoints(skillData.cost);
         }
-
-        skill.SetSkillUpgrade(skillData);
+        // (If you have logic to remove skill effects, add here.)
     }
-
 
     private bool CanBeUnlocked()
     {
-        if (isLocked || isUnlocked)
+        EnsureWired();
+
+        if (isLocked || isUnlocked || skillData == null || skillTree == null)
             return false;
 
-        bool enoughPoints = skillData.category == SkillCategory.Combat
-        ? skillTree.EnoughSkillPoints(skillData.cost)
-        : skillTree.EnoughSexSkillPoints(skillData.cost);
+        bool enoughPoints = (skillData.category == SkillCategory.Combat)
+            ? skillTree.EnoughSkillPoints(skillData.cost)
+            : skillTree.EnoughSexSkillPoints(skillData.cost);
 
-        if (!enoughPoints)
-            return false;
+        if (!enoughPoints) return false;
 
-
-        foreach (var node in neededNodes)
+        if (neededNodes != null)
         {
-            if (node.isUnlocked == false)
-                return false;
+            foreach (var node in neededNodes)
+            {
+                if (node != null && node.isUnlocked == false)
+                    return false;
+            }
         }
 
-        foreach (var node in conflictNodes)
+        if (conflictNodes != null)
         {
-            if (node.isUnlocked)
-                return false;
+            foreach (var node in conflictNodes)
+            {
+                if (node != null && node.isUnlocked)
+                    return false;
+            }
         }
 
         return true;
@@ -145,105 +129,157 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void LockConflictNodes()
     {
+        if (conflictNodes == null) return;
+
         foreach (var node in conflictNodes)
         {
-            node.isLocked = true;
+            if (node == null) continue;
+            node.ForceLock();
             node.LockChildNodes();
         }
     }
 
     public void LockChildNodes()
     {
+        EnsureWired();
+
         isLocked = true;
 
-        foreach (var node in connectHandler.GetChildNodes())
-            node.LockChildNodes();
-    }
+        // Traverse connection graph if available
+        var children = connectHandler != null ? connectHandler.GetChildNodes() : null;
+        if (children == null) return;
 
+        foreach (var child in children)
+        {
+            if (child == null) continue;
+            child.ForceLock();
+            child.LockChildNodes();
+        }
+    }
 
     private void UpdateIconColor(Color color)
     {
-        if (skillIcon == null)
-            return;
-
-        lastColor = skillIcon.color;
-        skillIcon.color = color;
+        lastColor = color;
+        if (skillIcon != null) skillIcon.color = color;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
         if (CanBeUnlocked())
         {
-            if (skillTree != null)
-            {
-                skillTree.ShowSkillUnlockConfirmation(this);
-            }
+            skillTree?.ShowSkillUnlockConfirmation(this);
         }
         else if (isLocked)
         {
-            ui.skillToolTip.LockedSkillEffect();
+            // show "locked" feedback
+            if (ui != null && ui.skillToolTip != null)
+                ui.skillToolTip.LockedSkillEffect();
         }
     }
 
     public void ForceUnlock()
     {
-        Unlock();
+        EnsureWired();
+
+        if (skillData == null) return;
+        if (isUnlocked) return;
+
+        isUnlocked = true;
+        isLocked = false;
+
+        UpdateIconColor(Color.white);
+        connectHandler?.UnlockConnectionImage(true);
+
+        // side effects: spend points handled by UI_SkillTree confirmation
+        LockConflictNodes();
+
+        // Apply gameplay/UI upgrade hook
+        if (skillTree != null && skillTree.skillManager != null)
+        {
+            var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
+            if (skill != null)
+            {
+                // If you have specific “unlock” hooks (e.g., DeepBreath.Unlock()), call here
+                skill.SetSkillUpgrade(skillData);
+            }
+        }
+    }
+
+    public void ForceLock()
+    {
+        EnsureWired();
+
+        isUnlocked = false;
+        isLocked = true;
+
+        if (skillIcon != null) skillIcon.color = LockedColor();
+        connectHandler?.UnlockConnectionImage(false);
+        // no traversal here; LockChildNodes() handles cascade explicitly
+    }
+
+    /// <summary>
+    /// Visual-only lock (used by ApplySaveState baseline pass).
+    /// No changes to isLocked/isUnlocked flags or traversal.
+    /// </summary>
+    public void SetLockedVisualOnly()
+    {
+        EnsureWired();
+        if (skillIcon != null) skillIcon.color = LockedColor();
+        connectHandler?.UnlockConnectionImage(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ui.skillToolTip.ShowToolTip(true, rect, skillData, this);
+        EnsureWired();
 
-        if (isUnlocked || isLocked)
-            return;
-        
+        if (ui != null && ui.skillToolTip != null)
+            ui.skillToolTip.ShowToolTip(true, rect, skillData, this);
+
+        if (isUnlocked || isLocked) return;
+
         ToggleNodeHighlight(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        ui.skillToolTip.ShowToolTip(false, rect);
-        ui.skillToolTip.StopLockedSkillEffect();
+        EnsureWired();
 
-        if (isUnlocked || isLocked)
-            return;
-        
+        if (ui != null && ui.skillToolTip != null)
+        {
+            ui.skillToolTip.ShowToolTip(false, rect);
+            ui.skillToolTip.StopLockedSkillEffect();
+        }
+
+        if (isUnlocked || isLocked) return;
+
         ToggleNodeHighlight(false);
     }
 
     private void ToggleNodeHighlight(bool highlight)
     {
-        Color highlightColor = Color.white * .9f; highlightColor.a = 1;
-        Color colorToApply = highlight ? highlightColor : lastColor;
+        var highlightColor = Color.white * 0.9f;
+        highlightColor.a = 1f;
 
+        var colorToApply = highlight ? highlightColor : (skillIcon != null ? skillIcon.color : Color.white);
         UpdateIconColor(colorToApply);
     }
 
-    private Color GetColorByHex(string hexNumber)
-    {
-        ColorUtility.TryParseHtmlString(hexNumber, out Color color);
-
-        return color;
-    }
-
-
     private void OnDisable()
     {
-        if (isLocked)
-            UpdateIconColor(GetColorByHex(lockedColorHex));
-
-        if (isUnlocked)
-            UpdateIconColor(Color.white);
+        // Restore proper color when the node is disabled/enabled (e.g., panel close/open)
+        if (isLocked) UpdateIconColor(LockedColor());
+        if (isUnlocked) UpdateIconColor(Color.white);
     }
 
     private void OnValidate()
     {
-        if (skillData == null)
-            return;
-
-        skillName = skillData.displayName;
-        skillIcon.sprite = skillData.icon;
-        skillCost = skillData.cost;
-        gameObject.name = "UI_TreeNode - " + skillData.displayName;
+        // Keep inspector & hierarchy synchronized
+        if (skillData != null)
+        {
+            skillName = skillData.displayName;
+            if (skillIcon != null) skillIcon.sprite = skillData.icon;
+            skillCost = skillData.cost;
+            gameObject.name = "UI_TreeNode - " + skillData.displayName;
+        }
     }
 }

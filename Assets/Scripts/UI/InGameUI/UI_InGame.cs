@@ -237,4 +237,24 @@ public class UI_InGame : MonoBehaviour
         Debug.LogWarning($"[UI_InGame] No skill slot found for SkillType: {type}");
         return null;
     }
+
+    // UI_InGame.cs
+    public void RefreshSkillSlotsFromTree(UI_SkillTree tree)
+    {
+        if (tree == null) return;
+
+        // Grab all nodes and bind unlocked ones into their slots.
+        var nodes = tree.GetComponentsInChildren<UI_TreeNode>(true);
+        if (nodes == null) return;
+
+        foreach (var n in nodes)
+        {
+            if (n == null || !n.isUnlocked || n.skillData == null) continue;
+
+            var slot = GetSkillSlot(n.skillData.skillType);   // ← you already use this in Skill_Base
+            if (slot != null)
+                slot.SetupSkillSlot(n.skillData);
+        }
+    }
+
 }

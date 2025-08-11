@@ -10,6 +10,9 @@ public enum SkillCategory
 [CreateAssetMenu(menuName = "RPG Setup/Skill Data", fileName = "Skill data - ")]
 public class Skill_DataSO : ScriptableObject
 {
+    [Header("Identity")]
+    public string id; // ← set a unique, stable string (e.g., "fireball_t1")
+
     [Header("Skill Description")]
     public string displayName;
     [TextArea]

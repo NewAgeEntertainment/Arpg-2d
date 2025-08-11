@@ -1,30 +1,54 @@
-﻿using Rewired;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Inventory_Storage : Inventory_Base
 {
     public Inventory_Player playerInventory { get; private set; }
+
+    // Materials kept separately from normal storage items.
     public List<Inventory_Item> materialStash = new List<Inventory_Item>();
+
+    // 🔸 let UIs subscribe to storage changes
+    public event Action OnInventoryChange;
+
+    private void Awake()
+    {
+        // ensure we have a player inventory (can still be set explicitly via SetInventory)
+        if (playerInventory == null)
+            playerInventory = FindFirstObjectByType<Inventory_Player>();
+    }
+
+    public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
+
+    // 🔔 call this anytime item lists change (including after load)
+    protected new void NotifyInventoryChanged()
+    {
+        // call base if it exists
+        try { base.NotifyInventoryChanged(); } catch { /* base may be non-virtual/private */ }
+
+        OnInventoryChange?.Invoke();           // -> UI_Storage
+        playerInventory?.TriggerUpdateUI();    // -> UI_Inventory (list shows materials too)
+    }
+
+    // =========================
+    // Crafting
+    // =========================
 
     public void CraftItem(Inventory_Item itemToCraft)
     {
         ConsumedMaterials(itemToCraft);
-        playerInventory.AddItem(itemToCraft);
+        playerInventory?.AddItem(itemToCraft);
         Debug.Log($"[Craft] Added {itemToCraft.itemData.itemName} to Backpack");
-        //added = true;
+        NotifyInventoryChanged();
     }
 
     public bool CanCraftItem(Inventory_Item itemToCraft)
     {
         return HasEnoughMatrials(itemToCraft) &&
-               playerInventory.CanAddItem(itemToCraft) &&
+               playerInventory != null && playerInventory.CanAddItem(itemToCraft) &&
                itemList.Count < maxInventorySize;
     }
-
-    public void SetInventory(Inventory_Player inventory) => playerInventory = inventory;
 
     public void ConsumedMaterials(Inventory_Item itemToCraft)
     {
@@ -32,30 +56,28 @@ public class Inventory_Storage : Inventory_Base
         {
             int amountToConsume = requiredMaterial.stackSize;
 
-            amountToConsume = amountToConsume - ConsumedMaterialsAmount(playerInventory.itemList, requiredMaterial);
+            amountToConsume -= ConsumedMaterialsAmount(playerInventory?.itemList, requiredMaterial);
 
             if (amountToConsume > 0)
-            {
-                amountToConsume = amountToConsume - ConsumedMaterialsAmount(itemList, requiredMaterial);
-            }
+                amountToConsume -= ConsumedMaterialsAmount(itemList, requiredMaterial);
 
             if (amountToConsume > 0)
-            {
-                amountToConsume = amountToConsume - ConsumedMaterialsAmount(materialStash, requiredMaterial);
-            }
+                amountToConsume -= ConsumedMaterialsAmount(materialStash, requiredMaterial);
         }
+
+        NotifyInventoryChanged();
     }
 
-
-
-    private int ConsumedMaterialsAmount(List<Inventory_Item> itemList, Inventory_Item neededItem)
+    private int ConsumedMaterialsAmount(List<Inventory_Item> list, Inventory_Item neededItem)
     {
+        if (list == null) return 0;
+
         int amountNeeded = neededItem.stackSize;
         int consumedAmount = 0;
 
-        for (int i = itemList.Count - 1; i >= 0; i--)
+        for (int i = list.Count - 1; i >= 0; i--)
         {
-            var item = itemList[i];
+            var item = list[i];
             if (item.itemData != neededItem.itemData) continue;
 
             int removeAmount = Mathf.Min(item.stackSize, amountNeeded - consumedAmount);
@@ -63,7 +85,7 @@ public class Inventory_Storage : Inventory_Base
             consumedAmount += removeAmount;
 
             if (item.stackSize <= 0)
-                itemList.RemoveAt(i);
+                list.RemoveAt(i);
 
             if (consumedAmount >= amountNeeded)
                 break;
@@ -72,9 +94,6 @@ public class Inventory_Storage : Inventory_Base
         return consumedAmount;
     }
 
-
-
-
     private bool HasEnoughMatrials(Inventory_Item itemToCraft)
     {
         foreach (var requiredMaterial in itemToCraft.itemData.craftRecipe)
@@ -82,7 +101,6 @@ public class Inventory_Storage : Inventory_Base
             if (GetAvailableAmountOf(requiredMaterial.itemData) < requiredMaterial.stackSize)
                 return false;
         }
-
         return true;
     }
 
@@ -90,52 +108,39 @@ public class Inventory_Storage : Inventory_Base
     {
         int amount = 0;
 
-        foreach (var item in playerInventory.itemList)
-        {
-            if (item.itemData == requiredItem)
-            {
-                amount = amount + item.stackSize;
-            }
-        }
+        if (playerInventory != null)
+            foreach (var item in playerInventory.itemList)
+                if (item.itemData == requiredItem) amount += item.stackSize;
 
         foreach (var item in itemList)
-        {
-            if (item.itemData == requiredItem)
-            {
-                amount = amount + item.stackSize;
-            }
-        }
+            if (item.itemData == requiredItem) amount += item.stackSize;
 
         foreach (var item in materialStash)
-        {
-            if (item.itemData == requiredItem)
-            {
-                amount = amount + item.stackSize;
-            }
-        }
+            if (item.itemData == requiredItem) amount += item.stackSize;
 
         return amount;
-
-
     }
 
+    // =========================
+    // Materials API
+    // =========================
 
     public bool AddMaterialToStash(Inventory_Item item)
     {
         if (item == null || item.itemData == null) return false;
 
-        // Try stacking in material stash
+        // Merge into an existing stack if possible
         foreach (var existing in materialStash)
         {
-            if (existing.itemData == item.itemData && existing.CanStack())
+            if (existing.itemData == item.itemData && existing.CanAddStack())
             {
-                existing.stackSize += item.stackSize;
+                existing.stackSize = Mathf.Min(existing.stackSize + item.stackSize, existing.itemData.maxStackSize);
                 NotifyInventoryChanged();
                 return true;
             }
         }
 
-        // Add as new stack
+        // Add as new stack (copy data; materials usually don’t carry per-instance mods)
         materialStash.Add(new Inventory_Item(item.itemData) { stackSize = item.stackSize });
         NotifyInventoryChanged();
         return true;
@@ -145,19 +150,16 @@ public class Inventory_Storage : Inventory_Base
     {
         base.RemoveOneItem(itemToRemove);
 
+        // Also support removal from materials list
         var found = materialStash.Find(i => i == itemToRemove);
         if (found != null)
         {
-            if (found.stackSize > 1)
-                found.RemoveStack();
-            else
-                materialStash.Remove(found);
+            if (found.stackSize > 1) found.RemoveStack();
+            else materialStash.Remove(found);
 
             NotifyInventoryChanged();
         }
     }
-
-
 
     public Inventory_Item StackableInStash(Inventory_Item itemToAdd)
     {
@@ -169,8 +171,14 @@ public class Inventory_Storage : Inventory_Base
         return null;
     }
 
+    // =========================
+    // Transfers
+    // =========================
+
     public void FromPlayerToStorage(Inventory_Item item, bool transferFullStack)
     {
+        if (item == null || item.itemData == null || playerInventory == null) return;
+
         int transferAmount = transferFullStack ? item.stackSize : 1;
 
         for (int i = 0; i < transferAmount; i++)
@@ -218,6 +226,8 @@ public class Inventory_Storage : Inventory_Base
 
     public void FromStorageToPlayer(Inventory_Item item, bool transferFullStack)
     {
+        if (item == null || item.itemData == null || playerInventory == null) return;
+
         int transferAmount = transferFullStack ? item.stackSize : 1;
 
         for (int i = 0; i < transferAmount; i++)
