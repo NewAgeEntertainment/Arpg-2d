@@ -16037,7 +16037,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 246481061}
   slotTypeLabel: {fileID: 583497940}
-  itemNameText: {fileID: 408980990}
 --- !u!1 &247076961
 GameObject:
   m_ObjectHideFlags: 0
@@ -18469,7 +18468,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 283534537}
   slotTypeLabel: {fileID: 606665356}
-  itemNameText: {fileID: 2067724878}
 --- !u!1 &284499062
 GameObject:
   m_ObjectHideFlags: 0
@@ -31186,7 +31184,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &488683674
 GameObject:
   m_ObjectHideFlags: 0
@@ -70804,7 +70801,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1042550866
 GameObject:
   m_ObjectHideFlags: 0
@@ -92666,7 +92662,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1361314363
 GameObject:
   m_ObjectHideFlags: 0
@@ -97996,7 +97991,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1438017269
 GameObject:
   m_ObjectHideFlags: 0
@@ -99811,7 +99805,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 1455743484}
   slotTypeLabel: {fileID: 831601411}
-  itemNameText: {fileID: 1765491912}
 --- !u!1 &1457862612
 GameObject:
   m_ObjectHideFlags: 0
@@ -150406,7 +150399,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &483230158999840367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173927,7 +173919,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 8670051218635251587}
   slotTypeLabel: {fileID: 695304016}
-  itemNameText: {fileID: 6732004048801328837}
 --- !u!224 &3395079662717022641
 RectTransform:
   m_ObjectHideFlags: 0
@@ -176354,7 +176345,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &3751195818328948537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188147,7 +188137,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!224 &5462667690203601880
 RectTransform:
   m_ObjectHideFlags: 0
@@ -200313,7 +200302,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2482751944056135972}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8885646271999080681}
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: ReturnToTitle_Ys
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7276415973088993037
 GameObject:
   m_ObjectHideFlags: 0
@@ -203002,7 +203003,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &7620272817189686815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212431,6 +212431,8 @@ MonoBehaviour:
   openMainMenuAction: OpenMainMenu
   cancelAction: UICancel
   openSavePanelAction: OpenSavePanel
+  titleSceneName: Title Screen
+  ddolEssentials: []
 --- !u!1 &8886785148640163422
 GameObject:
   m_ObjectHideFlags: 0

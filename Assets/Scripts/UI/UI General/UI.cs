@@ -2,6 +2,10 @@
 using TMPro;
 using UnityEngine;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using PixelCrushers;
 
 public class UI : MonoBehaviour
 {
@@ -33,9 +37,8 @@ public class UI : MonoBehaviour
     [SerializeField] private UI_StatusPanel statusPanel;
     public UI_StatusPanel StatusPanel => statusPanel;
 
-    [SerializeField] private UI_SaveLoadPanel saveLoadPanel;   // 👈 assign in Inspector
+    [SerializeField] private UI_SaveLoadPanel saveLoadPanel;   // assign in Inspector (or lazy find)
     private bool isSaveOpen = false;
-
 
     [SerializeField] private UI_Storage storageUI;
     public UI_Storage StorageUI => storageUI;
@@ -66,7 +69,7 @@ public class UI : MonoBehaviour
     [SerializeField] private string openOptionsAction = "OpenOptions";
     [SerializeField] private string openMainMenuAction = "OpenMainMenu";
     [SerializeField] private string cancelAction = "UICancel";
-    [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // Rewired action (optional)
+    [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // optional
 
     private Rewired.Player player;
 
@@ -83,6 +86,16 @@ public class UI : MonoBehaviour
     private bool goldSubscribed = false;
     private Inventory_Player cachedInv;
     #endregion
+
+    // ======================= Title Screen / Return-to-Title settings =======================
+    [Header("Title Screen")]
+    [SerializeField] private string titleSceneName = "Title Screen"; // set to your title scene name
+    [Tooltip("DDOL objects to keep when returning to Title (e.g., SaveSystem, Rewired Input Manager, Dialogue Manager if needed).")]
+    [SerializeField] private GameObject[] ddolEssentials;
+
+    private const int SuspendSlot = -1;              // temp "suspend" slot
+    private const string SuspendKey = "suspend_exists";
+    // =======================================================================================
 
     private void Awake()
     {
@@ -105,7 +118,7 @@ public class UI : MonoBehaviour
         inGameUI = GetComponentInChildren<UI_InGame>(true);
         optionsUI = GetComponentInChildren<UI_Options>(true);
 
-        // ✅ Auto-disable popup at start
+        // Auto-disable popup at start
         if (levelUpPopup != null) levelUpPopup.gameObject.SetActive(false);
 
         inventoryUI?.gameObject.SetActive(false);
@@ -272,36 +285,16 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
+    // UI.cs
     public void OpenSavePanel()
     {
-        EnsureUIRootIsActive();          // makes uiRoot active + pauses gameplay input
-        CloseAllPanels();                // hides other panels (includes main menu)
+        EnsureUIRootIsActive();
+        CloseAllPanels();
 
-        // Lazy-find if not assigned in Inspector
         if (saveLoadPanel == null)
-        {
             saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Exclude);
-            if (saveLoadPanel == null)
-            {
-                Debug.LogError("[UI] OpenSavePanel: UI_SaveLoadPanel not found in scene.");
-                return;
-            }
-        }
 
-        // Make sure the MonoBehaviour is enabled and any parent Canvas is active
-        if (!saveLoadPanel.gameObject.activeInHierarchy)
-        {
-            // If parent(s) are disabled, enable the top canvas first
-            var topCanvas = saveLoadPanel.GetComponentInParent<Canvas>(true);
-            if (topCanvas != null && !topCanvas.gameObject.activeSelf)
-                topCanvas.gameObject.SetActive(true);
-
-            saveLoadPanel.gameObject.SetActive(true);
-        }
-
-        // Now open the panel itself
-        saveLoadPanel.OpenPanel();
-        Debug.Log("[UI] OpenSavePanel: Save panel opened.");
+        saveLoadPanel.OpenForSave();   // ⬅️ change from OpenPanel()
     }
 
 
@@ -314,7 +307,6 @@ public class UI : MonoBehaviour
         }
         CheckStopPlayerControls();
     }
-
 
     public void OpenCraft()
     {
@@ -371,7 +363,7 @@ public class UI : MonoBehaviour
         if (merchantUI != null)
         {
             merchantUI.gameObject.SetActive(false);
-            Debug.Log("[UI] Merchant UI closed");
+            Debug.Log("[UI] Merchant panel closed");
         }
 
         CheckStopPlayerControls();
@@ -476,11 +468,9 @@ public class UI : MonoBehaviour
         // Save/Load panel handles cancel
         if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.HandleCancel())
         {
-            // If the panel actually closed, update our flag
             if (!saveLoadPanel.IsOpen) isSaveOpen = false;
             return;
         }
-
 
         if (merchantUI != null && isMerchantOpen)
         {
@@ -505,4 +495,131 @@ public class UI : MonoBehaviour
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
     }
+
+    // ========================= Return-to-Title (Ys-style) & helpers =========================
+
+    /// <summary>
+    /// Immediate "Go to Title" that resets game state and loads the title scene.
+    /// Keeps only ddolEssentials (and SaveSystem/Rewired by default in cleaner).
+    /// </summary>
+    public void GoToTitleScreenClean()
+    {
+        StartCoroutine(ReturnToTitle_Co(saveSuspend: false));
+    }
+
+    /// <summary>
+    /// Show confirm and return to title WITHOUT saving (typical Ys).
+    /// </summary>
+    public void ReturnToTitle_Ys()
+    {
+        ShowConfirm("Return to Title?\nUnsaved progress will be lost.",
+            onYes: () => StartCoroutine(ReturnToTitle_Co(saveSuspend: false)),
+            onNo: null);
+    }
+
+    /// <summary>
+    /// Optional: create a temporary suspend save, then return to title.
+    /// </summary>
+    public void ReturnToTitle_WithSuspend()
+    {
+        ShowConfirm("Suspend and return to Title?",
+            onYes: () => StartCoroutine(ReturnToTitle_Co(saveSuspend: true)),
+            onNo: null);
+    }
+
+    /// <summary>
+    /// Title-screen helper; call this from a "Continue" button to auto-load the suspend save if present.
+    /// </summary>
+    public static bool TryLoadSuspendAndClear()
+    {
+        if (PlayerPrefs.GetInt(SuspendKey, 0) == 1)
+        {
+            if (SaveSystem.hasInstance) SaveSystem.instance.allowNegativeSlotNumbers = true;
+
+            if (SaveSystem.HasSavedGameInSlot(SuspendSlot))
+            {
+                SaveSystem.LoadFromSlot(SuspendSlot);
+                SaveSystem.DeleteSavedGameInSlot(SuspendSlot);
+                PlayerPrefs.DeleteKey(SuspendKey);
+                return true;
+            }
+
+            PlayerPrefs.DeleteKey(SuspendKey);
+        }
+        return false;
+    }
+
+    private IEnumerator ReturnToTitle_Co(bool saveSuspend)
+    {
+        // 1) shut down UI & input
+        SwitchOffAllToolTips();
+        CloseAllPanels();
+        mainMenuPanel?.SetActive(false);
+        uiRoot?.SetActive(false);
+        StopPlayerControls(true);
+        yield return null;
+
+        // 2) optional suspend save
+        if (saveSuspend)
+        {
+            if (SaveSystem.hasInstance) SaveSystem.instance.allowNegativeSlotNumbers = true;
+            SaveSystem.SaveToSlotImmediate(SuspendSlot);
+            PlayerPrefs.SetInt(SuspendKey, 1);
+            PlayerPrefs.Save();
+        }
+
+        // 3) purge DDOL except essentials
+        CleanDontDestroyOnLoadExcept(ddolEssentials);
+
+        // 4) jump to title (clean state)
+        if (string.IsNullOrEmpty(titleSceneName))
+        {
+            Debug.LogError("[UI] ReturnToTitle: titleSceneName is not set.");
+            yield break;
+        }
+
+        SaveSystem.autoUnloadAdditiveScenes = true;
+        SaveSystem.RestartGame(titleSceneName);
+    }
+
+    /// <summary>
+    /// Destroys all root objects in the DontDestroyOnLoad scene except ones explicitly allowed.
+    /// Also always preserves SaveSystem and Rewired Input Manager if present.
+    /// </summary>
+    private void CleanDontDestroyOnLoadExcept(GameObject[] extrasToKeep)
+    {
+        var keep = new HashSet<GameObject>();
+        if (extrasToKeep != null) foreach (var g in extrasToKeep) if (g) keep.Add(g);
+
+        // Always keep SaveSystem & Rewired (remove if your title scene has its own)
+        if (PixelCrushers.SaveSystem.hasInstance && PixelCrushers.SaveSystem.instance)
+            keep.Add(PixelCrushers.SaveSystem.instance.gameObject);
+
+        var rewired = FindObjectOfType<Rewired.InputManager>(true);
+        if (rewired) keep.Add(rewired.gameObject);
+
+        // Destroy everything in DDOL except the allow-list.
+        var ddolScene = gameObject.scene;               // this UI lives here too
+        var roots = new List<GameObject>();
+        ddolScene.GetRootGameObjects(roots);
+
+        for (int i = roots.Count - 1; i >= 0; i--)
+        {
+            var go = roots[i];
+            if (!go) continue;
+            if (keep.Contains(go)) continue;
+
+            // IMPORTANT: also destroy THIS UI root so its canvases don't carry over
+            Destroy(go);
+        }
+    }
+
+
+    // TODO: replace with your actual confirm popup. For now it auto-accepts.
+    private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
+    {
+        onYes?.Invoke();
+    }
+
+    // ========================================================================================
 }

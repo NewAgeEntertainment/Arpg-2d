@@ -7,19 +7,24 @@ using PixelCrushers;
 
 public class UI_SaveLoadPanel : MonoBehaviour
 {
+    public enum Mode { Save, Load }
+
+    [Header("Mode UI")]
+    [SerializeField] private TextMeshProUGUI headerText;   // optional, shows "Save Game" / "Load Game"
+
     [Header("Slots")]
-    public SaveSlotUI[] saveSlots;      // Each slot has a Button; wire the button to call OnClickSlot(index)
+    public SaveSlotUI[] saveSlots;      // Each slot has a Button; wire to OnClickSlot(index)
     public GameObject panel;
 
-    [Header("Overwrite Panel")]
+    [Header("Overwrite Panel (Save mode only)")]
     [SerializeField] private GameObject overwritePanel;
-    [SerializeField] private TextMeshProUGUI overwriteQuestionText; // set default to: "Overwrite this file?"
+    [SerializeField] private TextMeshProUGUI overwriteQuestionText; // default: "Overwrite this file?"
     [SerializeField] private Button overwriteYesButton;
     [SerializeField] private Button overwriteNoButton;
 
-    [Header("Saving Visual")]
+    [Header("Saving Visual (Save mode only)")]
     [SerializeField] private GameObject savingVisualRoot;   // panel with spinner/text
-    [SerializeField] private TextMeshProUGUI savingText;    // shows "Saving.", "Saving..", "Saving..."
+    [SerializeField] private TextMeshProUGUI savingText;    // "Saving.", "Saving..", "Saving..."
     [SerializeField] private float minimumShowTime = 0.35f; // keep visual up briefly
 
     [Header("Audio (Optional)")]
@@ -29,17 +34,22 @@ public class UI_SaveLoadPanel : MonoBehaviour
     [SerializeField] private AudioClip cancelSfx;
     [SerializeField] private AudioClip saveStartSfx;
     [SerializeField] private AudioClip saveDoneSfx;
+    [SerializeField] private AudioClip loadClickSfx;
+    [SerializeField] private AudioClip loadErrorSfx;
 
     private int _pendingSlotIndex = -1;
     private Coroutine _dotsRoutine;
+    private Mode _mode = Mode.Save;
+
+    public bool IsOpen => panel != null && panel.activeSelf;
+    public bool IsOverwriteOpen => overwritePanel != null && overwritePanel.activeSelf;
 
     private void Awake()
     {
         if (panel != null) panel.SetActive(false);
         if (overwritePanel != null) overwritePanel.SetActive(false);
         if (savingVisualRoot != null) savingVisualRoot.SetActive(false);
-
-        if (sfx != null) sfx.ignoreListenerPause = true; // play UI SFX even if game is paused
+        if (sfx != null) sfx.ignoreListenerPause = true;
 
         // Wire overwrite buttons
         if (overwriteYesButton != null)
@@ -47,7 +57,6 @@ public class UI_SaveLoadPanel : MonoBehaviour
             overwriteYesButton.onClick.RemoveAllListeners();
             overwriteYesButton.onClick.AddListener(OnClickOverwriteYes);
         }
-
         if (overwriteNoButton != null)
         {
             overwriteNoButton.onClick.RemoveAllListeners();
@@ -55,44 +64,43 @@ public class UI_SaveLoadPanel : MonoBehaviour
         }
     }
 
-    public bool IsOpen => panel != null && panel.activeSelf;
+    // ------------------ Public API ------------------
 
-    // Optional: expose whether the overwrite dialog is up
-    public bool IsOverwriteOpen => overwritePanel != null && overwritePanel.activeSelf;
-
-    // Let UI.cs route Cancel here:
-    public bool HandleCancel()
+    public void OpenForSave()
     {
-        // If overwrite dialog is up, close it first
-        if (overwritePanel != null && overwritePanel.activeSelf)
-        {
-            overwritePanel.SetActive(false);
-            return true;
-        }
-
-        // If main save panel is open, close it
-        if (panel != null && panel.activeSelf)
-        {
-            ClosePanel();
-            return true;
-        }
-
-        return false;
+        _mode = Mode.Save;
+        OpenPanelInternal();
+        if (headerText != null) headerText.text = "Save Game";
     }
 
-    public void OpenPanel()
+    public void OpenForLoad()
     {
-        panel.SetActive(true);
-        overwritePanel?.SetActive(false);
-        savingVisualRoot?.SetActive(false);
-        RefreshAllSlots();
+        _mode = Mode.Load;
+        OpenPanelInternal();
+        if (headerText != null) headerText.text = "Load Game";
     }
 
     public void ClosePanel()
     {
         overwritePanel?.SetActive(false);
         savingVisualRoot?.SetActive(false);
-        panel.SetActive(false);
+        panel?.SetActive(false);
+    }
+
+    /// Let UI.cs or TitleMenuManager route Esc here
+    public bool HandleCancel()
+    {
+        if (overwritePanel != null && overwritePanel.activeSelf)
+        {
+            overwritePanel.SetActive(false);
+            return true;
+        }
+        if (panel != null && panel.activeSelf)
+        {
+            ClosePanel();
+            return true;
+        }
+        return false;
     }
 
     public void RefreshAllSlots()
@@ -100,7 +108,7 @@ public class UI_SaveLoadPanel : MonoBehaviour
         if (saveSlots == null) return;
         foreach (var slot in saveSlots)
         {
-            if (slot != null) slot.UpdateSlotUI();
+            if (slot != null) slot.UpdateSlotUI(); // keep your existing slot UI logic
         }
     }
 
@@ -109,19 +117,59 @@ public class UI_SaveLoadPanel : MonoBehaviour
     {
         _pendingSlotIndex = slotIndex;
 
-        if (SlotHasData(slotIndex))
+        if (_mode == Mode.Save)
         {
-            Play(openDialogSfx);
-            ShowOverwritePanel();
+            if (SlotHasData(slotIndex))
+            {
+                Play(openDialogSfx);
+                ShowOverwritePanel();
+            }
+            else
+            {
+                StartCoroutine(SaveToSlotFlow(slotIndex));
+            }
+        }
+        else // Load mode
+        {
+            if (!SlotHasData(slotIndex))
+            {
+                Play(loadErrorSfx);
+                return;
+            }
+            Play(loadClickSfx);
+            SaveSystem.LoadFromSlot(slotIndex);
+            // optional: hide UI immediately to avoid double input
+            ClosePanel();
+        }
+    }
+
+    // ------------------ Internals ------------------
+
+    private void OpenPanelInternal()
+    {
+        if (panel == null) return;
+        Play(openDialogSfx);
+
+        // Only Save mode uses these visuals:
+        if (_mode == Mode.Save)
+        {
+            overwritePanel?.SetActive(false);
+            savingVisualRoot?.SetActive(false);
         }
         else
         {
-            StartCoroutine(SaveToSlotFlow(slotIndex));
+            overwritePanel?.SetActive(false);
+            savingVisualRoot?.SetActive(false);
         }
+
+        panel.SetActive(true);
+        RefreshAllSlots();
     }
 
     private void ShowOverwritePanel()
     {
+        if (_mode != Mode.Save) return;
+
         if (overwriteQuestionText != null)
             overwriteQuestionText.text = "Overwrite this file?";
         if (overwritePanel != null)
@@ -130,8 +178,10 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
     private void OnClickOverwriteYes()
     {
+        if (_mode != Mode.Save) return;
+
         Play(confirmSfx);
-        if (overwritePanel != null) overwritePanel.SetActive(false);
+        overwritePanel?.SetActive(false);
         if (_pendingSlotIndex >= 0)
             StartCoroutine(SaveToSlotFlow(_pendingSlotIndex));
     }
@@ -139,13 +189,14 @@ public class UI_SaveLoadPanel : MonoBehaviour
     private void OnClickOverwriteNo()
     {
         Play(cancelSfx);
-        if (overwritePanel != null) overwritePanel.SetActive(false);
+        overwritePanel?.SetActive(false);
         _pendingSlotIndex = -1;
-        // back to slots
     }
 
     private IEnumerator SaveToSlotFlow(int slotIndex)
     {
+        if (_mode != Mode.Save) yield break;
+
         // Show visual + start dots
         if (savingVisualRoot != null) savingVisualRoot.SetActive(true);
         if (savingText != null) savingText.text = "Saving.";
@@ -186,7 +237,6 @@ public class UI_SaveLoadPanel : MonoBehaviour
         }
 
         Play(saveDoneSfx);
-
         if (savingVisualRoot != null) savingVisualRoot.SetActive(false);
 
         RefreshAllSlots();
@@ -210,8 +260,8 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
     private bool SlotHasData(int slotIndex)
     {
-        // If your PixelCrushers version has a direct API, use it:
-        // try { return SaveSystem.HasSavedGameInSlot(slotIndex); } catch { }
+        // Prefer PixelCrushers API:
+        try { return SaveSystem.HasSavedGameInSlot(slotIndex); } catch { }
 
         // Fallback: PlayerPrefs flag set after saving
         return PlayerPrefs.GetInt(SlotKey(slotIndex, "exists"), 0) == 1;

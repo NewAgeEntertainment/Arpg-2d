@@ -6,7 +6,7 @@ public class OpenSaveMenuButton : MonoBehaviour
 
     public void Open()
     {
-        saveMenu.OpenPanel();
+        saveMenu.OpenForSave();
     }
 
     public void Close()
