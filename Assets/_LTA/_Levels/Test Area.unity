@@ -590,7 +590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61c3ede7cf43de94287fe9c7813e5be4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  linkedPlayer: {fileID: 0}
+  linkedPlayer: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   button: {fileID: 4567957}
   nameText: {fileID: 650869042}
   healthSlider: {fileID: 460404440}
@@ -920,8 +920,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 9088119}
-  manaText: {fileID: 89592530}
 --- !u!114 &9088118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4274,14 +4272,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5924272355250140655}
-        m_TargetAssemblyTypeName: UI_Inventory, Assembly-CSharp
-        m_MethodName: AssignSlot1
-        m_Mode: 1
+      - m_Target: {fileID: 1392246786}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
@@ -7797,8 +7795,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 123969031}
-  manaText: {fileID: 941745425}
 --- !u!1 &124081422
 GameObject:
   m_ObjectHideFlags: 0
@@ -14417,8 +14413,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fd131e6b722e7249b39294399d57a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  expSlider: {fileID: 212869002}
-  expText: {fileID: 851721783}
 --- !u!114 &212869002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16946,7 +16940,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &253658467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29574,8 +29568,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 460404440}
-  healthText: {fileID: 1917357942}
 --- !u!114 &460404440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43794,7 +43786,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 607170908}
   itemStackSize: {fileID: 1451002442}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 1
 --- !u!114 &607170907
 MonoBehaviour:
@@ -45093,8 +45087,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fd131e6b722e7249b39294399d57a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  expSlider: {fileID: 625604742}
-  expText: {fileID: 1975792140}
 --- !u!1 &626027955
 GameObject:
   m_ObjectHideFlags: 0
@@ -60726,7 +60718,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &894055998
 Transform:
   m_ObjectHideFlags: 0
@@ -70992,10 +70984,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d196074ddb067e448a0f35afab04ed7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerID: 0
-  cancelAction: Cancel
-  healthBarToggle: {fileID: 202507397}
-  manaBarToggle: {fileID: 1536798158}
 --- !u!222 &1049342977
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -78595,8 +78583,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9207617f8d499f84e8961a0d1a506f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sexyTimeLogicObject: {fileID: 8931125114811120557}
-  startKey: 108
 --- !u!1 &1166202672
 GameObject:
   m_ObjectHideFlags: 0
@@ -86806,7 +86792,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1289721277}
   itemStackSize: {fileID: 1636314224}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 4
 --- !u!224 &1289721276
 RectTransform:
@@ -88536,8 +88524,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 1309369336}
-  manaText: {fileID: 1615006230}
 --- !u!1 &1310080212
 GameObject:
   m_ObjectHideFlags: 0
@@ -94309,7 +94295,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1390913847}
   itemStackSize: {fileID: 1702008338}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 3
 --- !u!1 &1392246786
 GameObject:
@@ -94363,8 +94351,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemNameText: {fileID: 589792640}
   amountInput: {fileID: 1982769280}
-  confirmButton: {fileID: 1232642037}
+  slot1Button: {fileID: 57935862}
+  slot2Button: {fileID: 833195600}
+  slot3Button: {fileID: 497547936}
+  slot4Button: {fileID: 1042550868}
   cancelButton: {fileID: 1260928065}
+  audioSrc: {fileID: 0}
+  confirmSfx: {fileID: 0}
+  cancelSfx: {fileID: 0}
 --- !u!1 &1392892850
 GameObject:
   m_ObjectHideFlags: 0
@@ -98385,7 +98379,7 @@ SpriteRenderer:
   m_SortingLayerID: 1831899741
   m_SortingLayer: -1
   m_SortingOrder: -1
-  m_Sprite: {fileID: 176539489, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  m_Sprite: {fileID: 1648260993, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -98408,7 +98402,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82a652d3cef4fb744a3c8f9f5c759eda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToAssign: {fileID: 11400000, guid: 9a26b7cdfac70cf48bc19b295c0125ce, type: 2}
+  itemToAssign: {fileID: 11400000, guid: c63cc7d461bf98643a8d5380872e64c1, type: 2}
   iconRenderer: {fileID: 1446346739}
   goldSprite: {fileID: 0}
   isGold: 0
@@ -100008,8 +100002,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 1464151732}
-  healthText: {fileID: 132373505}
 --- !u!114 &1464151734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129108,7 +129100,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1857073279}
   itemStackSize: {fileID: 779433056}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 2
 --- !u!114 &1857073278
 MonoBehaviour:
@@ -136217,7 +136211,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75f32f7586d3bba4f992f5c65effe3b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  profileButton: {fileID: 8457004131283246003}
+  profileButton: {fileID: 0}
+  closeWhenOutOfItem: 1
 --- !u!1 &1957355821
 GameObject:
   m_ObjectHideFlags: 0
@@ -139147,8 +139142,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 2013526204}
-  healthText: {fileID: 784159075}
 --- !u!114 &2013526204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139282,9 +139275,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e4f72eeec2eaa447b7ec92e56d5ec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bookAnimator: {fileID: 0}
-  openStateName: Open
-  openDuration: 2
 --- !u!114 &2014996989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144357,6 +144347,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profileButton: {fileID: 4567960}
+  closeWhenOutOfItem: 1
 --- !u!1 &2099981490
 GameObject:
   m_ObjectHideFlags: 0
@@ -157946,6 +157937,10 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.players.Array.data[1]._defaultMouseMaps.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: _userData.mouseMaps.Array.data[0].actionElementMaps.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -158114,8 +158109,12 @@ PrefabInstance:
       value: 36
       objectReference: {fileID: 0}
     - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.players.Array.data[1]._defaultMouseMaps.Array.data[0]._enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: _userData.mouseMaps.Array.data[0].actionElementMaps.Array.data[0]._actionId
-      value: -1
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: _userData.mouseMaps.Array.data[0].actionElementMaps.Array.data[1]._actionId
@@ -158132,6 +158131,10 @@ PrefabInstance:
     - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: _userData.players.Array.data[1]._defaultKeyboardMaps.Array.data[2]._enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.players.Array.data[1]._defaultMouseMaps.Array.data[0]._categoryId
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: _userData.players.Array.data[1]._defaultJoystickMaps.Array.data[0]._layoutId
@@ -190604,6 +190607,7 @@ MonoBehaviour:
   itemListPanel: {fileID: 976615517}
   actorSelectPanel: {fileID: 2099643959}
   assignPopupPanel: {fileID: 1392246786}
+  assignPopup: {fileID: 1392246788}
   assignAmountInput: {fileID: 1982769280}
   actorButtons:
   - {fileID: 4567960}
@@ -190614,6 +190618,7 @@ MonoBehaviour:
   noItemSound: {fileID: 8300000, guid: 37cc5c4c34e880e4ea94f0daa8bb4aef, type: 3}
   itemUsedSound: {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
   audioSource: {fileID: 471500940}
+  enableLegacyAssignSlot: 1
 --- !u!114 &5934342891341185694
 MonoBehaviour:
   m_ObjectHideFlags: 0

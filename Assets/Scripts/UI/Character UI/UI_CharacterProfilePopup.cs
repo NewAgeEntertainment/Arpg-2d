@@ -5,43 +5,44 @@ public class UI_CharacterProfilePopup : MonoBehaviour
     [Header("One reusable profile slot")]
     [SerializeField] private UI_CharacterProfileButton profileButton;
 
+    [Header("Behavior")]
+    [SerializeField] private bool closeWhenOutOfItem = true;
+
     private Inventory_Item itemToUse;
+    private Inventory_Player inventory;
+    private Player targetPlayer;
 
     /// <summary>
-    /// Opens the popup and shows the player profile.
+    /// Opens the popup for a single player and shows live HP/MP.
+    /// Clicking the button will use <paramref name="item"/> on <paramref name="player"/>.
     /// </summary>
     public void Open(Inventory_Item item, Player player)
     {
-        itemToUse = item;
+        // Prefer the live player in the scene
+        if (player == null || !player.gameObject.scene.IsValid())
+            player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
-        // Enable the popup GameObject
+        if (player == null || item == null || item.itemData == null)
+        {
+            Debug.LogWarning("[CharacterProfilePopup] Open: missing player or item.");
+            return;
+        }
+
+        itemToUse = item;
+        var inv = player.GetComponent<Inventory_Player>()
+               ?? FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+
         gameObject.SetActive(true);
 
-        // Setup the single reusable profile slot
-        profileButton.Setup(player, (p) => GiveItemToPlayer(p));
-    }
-
-    private void GiveItemToPlayer(Player player)
-    {
-        if (itemToUse == null) return;
-
-        if (itemToUse.stackSize > 0)
+        profileButton.Setup(player, null);
+        profileButton.SetUseItemContext(itemToUse, inv, afterUse: () =>
         {
-            player.inventory.TryUseItem(itemToUse, player);
-
-            Debug.Log($"[Popup] Used {itemToUse.itemData.itemName} on {player.name}");
-
-            if (itemToUse.stackSize <= 0)
-            {
-                Debug.Log("[Popup] Item stack empty — closing popup.");
-                Close();
-            }
-            else
-            {
-                Debug.Log($"[Popup] Item used. {itemToUse.stackSize} left — popup stays open.");
-            }
-        }
+            // Make sure bars and HUD reflect changes instantly
+            profileButton.RefreshBars();
+            player.ui?.inGameUI?.ForceRefreshFromCurrentState();
+        });
     }
+
 
     public void Close()
     {

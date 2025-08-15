@@ -138,17 +138,25 @@ public class UI : MonoBehaviour
         player = ReInput.players.GetPlayer(playerID);
         skillTreeUI?.UnlockDefaultSkills();
 
+        // Make sure we see the current gold immediately in a fresh scene
         TrySubscribeGold();
+
+        // Kick a one-time HUD/slots refresh when starting from title
+        StartCoroutine(RefreshHUDOnceCo());
     }
 
     private void OnEnable()
     {
-        // In case of scene reloads, ensure subscription is valid
+        // Re-arm gold subscription in case of scene reload
         TrySubscribeGold();
+
+        // Refresh HUD once after every scene load (new game path)
+        SceneManager.sceneLoaded += OnSceneLoaded_UIRefresh;
     }
 
     private void OnDisable()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded_UIRefresh;
         UnsubscribeGold();
     }
 
@@ -156,6 +164,27 @@ public class UI : MonoBehaviour
     {
         UnsubscribeGold();
         if (Instance == this) Instance = null;
+    }
+
+    private void OnSceneLoaded_UIRefresh(Scene scene, LoadSceneMode mode)
+    {
+        StartCoroutine(RefreshHUDOnceCo());
+    }
+
+    private IEnumerator RefreshHUDOnceCo()
+    {
+        // Let spawners create Player/Inventory this frame
+        yield return null;
+
+        // Ensure we’re listening to the current Inventory for gold updates
+        TrySubscribeGold();
+
+        // Force HUD to pull current state (gold, quick slots, exp/sex exp, HP/MP)
+        inGameUI?.ForceRefreshFromCurrentState();
+
+        // Populate skill slots from the current skill tree
+        if (skillTreeUI != null)
+            inGameUI?.RefreshSkillSlotsFromTree(skillTreeUI);
     }
 
     private void TrySubscribeGold()
@@ -189,6 +218,9 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(openOptionsAction)) OpenOptions();
         if (player.GetButtonDown(openMainMenuAction)) OpenMainMenuDirect();
         if (player.GetButtonDown(cancelAction)) HandleBackAction();
+
+        // optional: hotkey for save panel
+        if (player.GetButtonDown(openSavePanelAction)) OpenSavePanel();
     }
 
     public void UpdateGoldUI(int newGoldAmount)
@@ -300,16 +332,12 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // Make sure the GameObject holding UI_SaveLoadPanel is active,
-        // otherwise its child 'panel' can't become visible.
+        // Ensure the holder object is active so its inner 'panel' can show
         saveLoadPanel.gameObject.SetActive(true);
 
-        // Show it in Save mode (or call OpenForLoad for a load menu)
-        saveLoadPanel.OpenForSave();
+        saveLoadPanel.OpenForSave();   // or OpenForLoad();
         isSaveOpen = true;
     }
-
-
 
     public void CloseSavePanel()
     {
@@ -511,18 +539,11 @@ public class UI : MonoBehaviour
 
     // ========================= Return-to-Title (Ys-style) & helpers =========================
 
-    /// <summary>
-    /// Immediate "Go to Title" that resets game state and loads the title scene.
-    /// Keeps only ddolEssentials (and SaveSystem/Rewired by default in cleaner).
-    /// </summary>
     public void GoToTitleScreenClean()
     {
         StartCoroutine(ReturnToTitle_Co(saveSuspend: false));
     }
 
-    /// <summary>
-    /// Show confirm and return to title WITHOUT saving (typical Ys).
-    /// </summary>
     public void ReturnToTitle_Ys()
     {
         ShowConfirm("Return to Title?\nUnsaved progress will be lost.",
@@ -530,9 +551,6 @@ public class UI : MonoBehaviour
             onNo: null);
     }
 
-    /// <summary>
-    /// Optional: create a temporary suspend save, then return to title.
-    /// </summary>
     public void ReturnToTitle_WithSuspend()
     {
         ShowConfirm("Suspend and return to Title?",
@@ -540,9 +558,6 @@ public class UI : MonoBehaviour
             onNo: null);
     }
 
-    /// <summary>
-    /// Title-screen helper; call this from a "Continue" button to auto-load the suspend save if present.
-    /// </summary>
     public static bool TryLoadSuspendAndClear()
     {
         if (PlayerPrefs.GetInt(SuspendKey, 0) == 1)
@@ -595,24 +610,18 @@ public class UI : MonoBehaviour
         SaveSystem.RestartGame(titleSceneName);
     }
 
-    /// <summary>
-    /// Destroys all root objects in the DontDestroyOnLoad scene except ones explicitly allowed.
-    /// Also always preserves SaveSystem and Rewired Input Manager if present.
-    /// </summary>
     private void CleanDontDestroyOnLoadExcept(GameObject[] extrasToKeep)
     {
         var keep = new HashSet<GameObject>();
         if (extrasToKeep != null) foreach (var g in extrasToKeep) if (g) keep.Add(g);
 
-        // Always keep SaveSystem & Rewired (remove if your title scene has its own)
         if (PixelCrushers.SaveSystem.hasInstance && PixelCrushers.SaveSystem.instance)
             keep.Add(PixelCrushers.SaveSystem.instance.gameObject);
 
         var rewired = FindObjectOfType<Rewired.InputManager>(true);
         if (rewired) keep.Add(rewired.gameObject);
 
-        // Destroy everything in DDOL except the allow-list.
-        var ddolScene = gameObject.scene;               // this UI lives here too
+        var ddolScene = gameObject.scene;
         var roots = new List<GameObject>();
         ddolScene.GetRootGameObjects(roots);
 
@@ -622,17 +631,12 @@ public class UI : MonoBehaviour
             if (!go) continue;
             if (keep.Contains(go)) continue;
 
-            // IMPORTANT: also destroy THIS UI root so its canvases don't carry over
             Destroy(go);
         }
     }
 
-
-    // TODO: replace with your actual confirm popup. For now it auto-accepts.
     private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
     {
         onYes?.Invoke();
     }
-
-    // ========================================================================================
 }

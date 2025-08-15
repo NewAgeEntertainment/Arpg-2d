@@ -85,6 +85,10 @@ public class UI_InGame : MonoBehaviour
         {
             UpdateGoldDisplay(playerInventory.gold);
         }
+        else
+        {
+            UpdateGoldDisplay(0);
+        }
     }
 
     private void Update()
@@ -104,6 +108,12 @@ public class UI_InGame : MonoBehaviour
             playerInventory.OnGoldChanged -= UpdateGoldDisplay;
             playerInventory.OnInventoryChange -= UpdateQuickSlots;
         }
+
+        if (player != null)
+        {
+            if (player.health != null) player.health.OnHealthUpdate -= UpdateHealthBar;
+            if (player.mana != null) player.mana.OnManaUpdate -= UpdateManaBar;
+        }
     }
 
     // ------------------------------
@@ -120,12 +130,13 @@ public class UI_InGame : MonoBehaviour
         if (goldGainRoutine != null)
             StopCoroutine(goldGainRoutine);
 
-        goldGainText.text = $"+{goldAmount:N0} G";
+        if (goldGainText != null)
+            goldGainText.text = $"+{goldAmount:N0} G";
 
         if (goldDisplayRoot != null)
             goldDisplayRoot.SetActive(true);
 
-        if (goldPickupClip != null)
+        if (goldPickupClip != null && Camera.main != null)
             AudioSource.PlayClipAtPoint(goldPickupClip, Camera.main.transform.position, goldPickupVolume);
 
         goldGainRoutine = StartCoroutine(HideGoldGainAfterDelay());
@@ -143,7 +154,7 @@ public class UI_InGame : MonoBehaviour
     // ------------------------------
     private void UpdateHealthBar()
     {
-        if (player == null) return;
+        if (player == null || player.stats == null || player.health == null) return;
 
         float currentHealth = Mathf.RoundToInt(player.health.GetCurrentHealth());
         float maxHealth = player.stats.GetMaxHealth();
@@ -154,6 +165,8 @@ public class UI_InGame : MonoBehaviour
 
     private void UpdateManaBar()
     {
+        if (player == null || player.stats == null || player.mana == null) return;
+
         if (manaText != null)
             manaText.text = $"{Mathf.RoundToInt(player.mana.GetCurrentMana())}/{player.stats.GetMaxMana()}";
 
@@ -217,10 +230,10 @@ public class UI_InGame : MonoBehaviour
             return;
         }
 
-        quickSlot1.UpdateQuickSlotUI(playerInventory.quickSlots[0]);
-        quickSlot2.UpdateQuickSlotUI(playerInventory.quickSlots[1]);
-        quickSlot3.UpdateQuickSlotUI(playerInventory.quickSlots[2]);
-        quickSlot4.UpdateQuickSlotUI(playerInventory.quickSlots[3]);
+        if (quickSlot1) quickSlot1.UpdateQuickSlotUI(playerInventory.quickSlots[0]);
+        if (quickSlot2) quickSlot2.UpdateQuickSlotUI(playerInventory.quickSlots[1]);
+        if (quickSlot3) quickSlot3.UpdateQuickSlotUI(playerInventory.quickSlots[2]);
+        if (quickSlot4) quickSlot4.UpdateQuickSlotUI(playerInventory.quickSlots[3]);
     }
 
     // ------------------------------
@@ -238,12 +251,10 @@ public class UI_InGame : MonoBehaviour
         return null;
     }
 
-    // UI_InGame.cs
     public void RefreshSkillSlotsFromTree(UI_SkillTree tree)
     {
         if (tree == null) return;
 
-        // Grab all nodes and bind unlocked ones into their slots.
         var nodes = tree.GetComponentsInChildren<UI_TreeNode>(true);
         if (nodes == null) return;
 
@@ -251,10 +262,43 @@ public class UI_InGame : MonoBehaviour
         {
             if (n == null || !n.isUnlocked || n.skillData == null) continue;
 
-            var slot = GetSkillSlot(n.skillData.skillType);   // ← you already use this in Skill_Base
+            var slot = GetSkillSlot(n.skillData.skillType);
             if (slot != null)
                 slot.SetupSkillSlot(n.skillData);
         }
     }
 
+    // ------------------------------
+    // 📌 ONE-SHOT BOOTSTRAP (NEW)
+    // ------------------------------
+    /// <summary>Force the HUD to pull current Player/Inventory state now (used on fresh scene load).</summary>
+    public void ForceRefreshFromCurrentState()
+    {
+        if (player == null)
+            player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (playerInventory == null)
+        {
+            if (player != null) playerInventory = player.GetComponent<Inventory_Player>();
+            if (playerInventory == null)
+                playerInventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+
+            if (playerInventory != null)
+            {
+                // Ensure we’re subscribed (idempotent if already wired)
+                playerInventory.OnInventoryChange -= UpdateQuickSlots;
+                playerInventory.OnGoldChanged -= UpdateGoldDisplay;
+                playerInventory.OnInventoryChange += UpdateQuickSlots;
+                playerInventory.OnGoldChanged += UpdateGoldDisplay;
+            }
+        }
+
+        // Repaint HUD elements from current objects
+        UpdateQuickSlots();
+        UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
+        UpdateExpBar();
+        UpdateSexExpBar();
+        UpdateHealthBar();
+        UpdateManaBar();
+    }
 }

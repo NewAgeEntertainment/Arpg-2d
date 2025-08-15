@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using Rewired;
 using System.Collections.Generic;
-using Rewired;
+using TMPro;
+using UnityEngine;
 
 public class UI_Inventory : UI_Panel
 {
@@ -22,7 +21,10 @@ public class UI_Inventory : UI_Panel
     [SerializeField] private GameObject categoryPanel;
     [SerializeField] private GameObject itemListPanel;
     [SerializeField] private GameObject actorSelectPanel;
-    [SerializeField] private GameObject assignPopupPanel;
+    [SerializeField] private GameObject assignPopupPanel; // (legacy panel; safe to keep)
+
+    // In UI_Inventory fields:
+    [SerializeField] private UI_AssignPopup assignPopup; // ← drag your popup here
 
     [Header("Assign Popup UI")]
     [SerializeField] private TMP_InputField assignAmountInput;
@@ -35,12 +37,17 @@ public class UI_Inventory : UI_Panel
     [SerializeField] private AudioClip panelOpenSound;
     [SerializeField] private AudioClip panelCloseSound;
     [SerializeField] private AudioClip assignSound;
-    [SerializeField] private AudioClip noItemSound;   // 🔹 New sound
-    [SerializeField] private AudioClip itemUsedSound; // SFX for item used
+    [SerializeField] private AudioClip noItemSound;
+    [SerializeField] private AudioClip itemUsedSound;
     [SerializeField] private AudioSource audioSource;
 
+    // -------- Legacy compatibility: assignslot / AssignSlot (uses UI_ItemSlot) --------
+    [Header("Legacy Slot Binding (optional)")]
+    [Tooltip("Enables AssignSlot/assignslot compatibility for older code paths.")]
+    [SerializeField] private bool enableLegacyAssignSlot = true;
+    private readonly List<UI_ItemSlot> _legacySlots = new();
 
-    private bool _playedNoItemSFXThisOpen = false;    // ← avoid double-playing per panel open
+    private bool _playedNoItemSFXThisOpen = false;
 
     private bool isOpen = false;
     private bool _dirty = false;
@@ -68,10 +75,7 @@ public class UI_Inventory : UI_Panel
             backpackSlotsParent.OnSlotSubmit += OnItemSlotSubmit;
 
         if (audioSource != null)
-        {
-            audioSource.ignoreListenerPause = true; // play even if AudioListener.pause is true
-        }
-
+            audioSource.ignoreListenerPause = true;
 
         CloseInventory();
     }
@@ -130,18 +134,21 @@ public class UI_Inventory : UI_Panel
         {
             UpdateActorSelectButtons();
             UpdateActorSelectHeader();
-            MaybePlayNoItemSFX(); // ← cover external consumption too
+            MaybePlayNoItemSFX();
         }
 
         if (goldText != null && inventory != null)
             goldText.text = $"{inventory.gold:N0}g.";
-    }
 
+        // keep legacy-wired slots in sync
+        RefreshAllLegacySlots();
+    }
 
     public void ForceRefresh()
     {
         _dirty = false;
         UpdateUI(force: true);
+        RefreshAllLegacySlots();
     }
 
     public void OpenInventory()
@@ -160,7 +167,7 @@ public class UI_Inventory : UI_Panel
         gameObject.SetActive(false);
         PlayCloseSound();
 
-        FindObjectOfType<UI>()?.OpenMainMenuDirect();
+        FindFirstObjectByType<UI>()?.OpenMainMenuDirect();
     }
 
     public bool IsOpen() => isOpen;
@@ -175,7 +182,8 @@ public class UI_Inventory : UI_Panel
                 PlayCloseSound();
                 return true;
             case PanelState.AssignPopup:
-                assignPopupPanel.SetActive(false);
+                // If you used a legacy panel, hide it. The new popup manages itself.
+                if (assignPopupPanel != null) assignPopupPanel.SetActive(false);
                 OpenItemListPanel();
                 PlayCloseSound();
                 return true;
@@ -215,7 +223,6 @@ public class UI_Inventory : UI_Panel
         if (_playedNoItemSFXThisOpen) return;
         if (noItemSound == null) return;
 
-        // Nothing left of the selected item?
         int remaining = (inventory != null && itemBeingAssigned?.itemData != null)
             ? inventory.CountItem(itemBeingAssigned.itemData)
             : 0;
@@ -225,11 +232,27 @@ public class UI_Inventory : UI_Panel
             if (audioSource != null)
                 audioSource.PlayOneShot(noItemSound);
             else
-                AudioSource.PlayClipAtPoint(noItemSound, Vector3.zero); // fallback
+                AudioSource.PlayClipAtPoint(noItemSound, Vector3.zero);
 
             _playedNoItemSFXThisOpen = true;
         }
     }
+
+    // UI_Inventory.cs (add this method anywhere in the class)
+    private void TryOpenAssignPopupFromSelection()
+    {
+        if (currentState != PanelState.ItemList) return;
+        if (backpackSlotsParent == null) return;
+
+        if (!backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected) ||
+            selected == null || selected.itemData == null)
+            return;
+
+        // Only open assign popup for consumables that are *not* "use on player"
+        if (selected.itemData.itemType == ItemType.Consumable && !selected.itemData.isUsable)
+            OpenAssignPopup(selected);
+    }
+
 
     private void PlayItemUsedSFX()
     {
@@ -242,7 +265,6 @@ public class UI_Inventory : UI_Panel
         if (audioSource != null && noItemSound != null)
             audioSource.PlayOneShot(noItemSound);
     }
-
 
     private void PlayOpenSound()
     {
@@ -279,10 +301,9 @@ public class UI_Inventory : UI_Panel
         actorSelectPanel.SetActive(true);
         currentState = PanelState.ActorSelect;
         itemBeingAssigned = item;
-        _playedNoItemSFXThisOpen = false;   // ← reset here
+        _playedNoItemSFXThisOpen = false;
         PlayOpenSound();
 
-        // ...
         foreach (var btn in actorButtons)
         {
             if (btn == null) continue;
@@ -290,7 +311,6 @@ public class UI_Inventory : UI_Panel
             btn.Setup(OnActorPicked);
             btn.SetUseItemContext(itemBeingAssigned, inventory, () =>
             {
-                // Always play a click SFX based on whether an item was used or not
                 int remainingBefore = inventory.CountItem(itemBeingAssigned.itemData);
 
                 bool used = false;
@@ -307,14 +327,12 @@ public class UI_Inventory : UI_Panel
                 UpdateActorSelectButtons();
                 UpdateActorSelectHeader();
 
-                // If used, check again after update
                 int remainingAfter = inventory.CountItem(itemBeingAssigned.itemData);
                 if (used && remainingAfter <= 0)
                 {
-                    // Optional: could also trigger a special sound here if last one used
+                    // optional: feedback when last one is consumed
                 }
             });
-
 
             btn.SetSelected(false);
         }
@@ -323,15 +341,145 @@ public class UI_Inventory : UI_Panel
         UpdateActorSelectHeader();
     }
 
-
+    // UI_Inventory.cs
     public void OpenAssignPopup(Inventory_Item item)
     {
+        // hide other subpanels (optional)
         CloseAllPanels();
-        assignPopupPanel.SetActive(true);
+
+        // move state machine
         currentState = PanelState.AssignPopup;
-        itemBeingAssigned = item;
-        if (assignAmountInput != null) assignAmountInput.text = "1";
-        PlayOpenSound();
+
+        // ensure the component is hooked in the Inspector
+        if (assignPopup == null)
+        {
+            Debug.LogError("[UI_Inventory] assignPopup is not set in the Inspector.");
+            return;
+        }
+
+        // make sure the GO is visible, then open with a callback
+        assignPopup.gameObject.SetActive(true);
+        assignPopup.Open(item, OnAssignConfirmedToSlot); // (item, amount, slotIndex1Based)
+    }
+
+
+    // ------------------------------
+    // Assign-to-slot (NEW)
+    // ------------------------------
+    // UI_Inventory.cs
+    private void OnAssignConfirmedToSlot(Inventory_Item item, int amount, int slotIndex1Based)
+    {
+        if (inventory == null || item == null || item.itemData == null) return;
+
+        // Assign (clamps by owned - already assigned), uses a fresh instance for the slot
+        inventory.SetQuickItemInSlot(slotIndex1Based, item, Mathf.Max(1, amount), useFreshInstance: true);
+
+        // Optional SFX
+        if (assignSound != null && audioSource != null)
+            audioSource.PlayOneShot(assignSound);
+
+        // Refresh HUD
+        var ui = FindFirstObjectByType<UI>(FindObjectsInactive.Include);
+        ui?.inGameUI?.UpdateQuickSlots();
+
+        // Return to list
+        OpenItemListPanel();
+        ForceRefresh();
+    }
+
+
+    // UI_Inventory.cs
+    private void AssignToSpecificQuickSlot(Inventory_Item item, int amount, int slotIndex1Based)
+    {
+        // Safety checks / lazy bind
+        if (inventory == null)
+            inventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+        if (inventory == null || item == null || item.itemData == null)
+        {
+            Debug.LogWarning("[UI_Inventory] AssignToSpecificQuickSlot: missing inventory or item.");
+            return;
+        }
+
+        // Clamp inputs and assign (stores a fresh instance in the quick slot)
+        int slot = Mathf.Clamp(slotIndex1Based, 1, (inventory.quickSlots?.Length ?? 4));
+        int count = Mathf.Max(1, amount);
+        inventory.SetQuickItemInSlot(slot, item, count, useFreshInstance: true);
+
+        // Optional SFX
+        if (assignSound != null && audioSource != null)
+            audioSource.PlayOneShot(assignSound);
+
+        // Refresh HUD & return to list
+        var uiRoot = FindFirstObjectByType<UI>(FindObjectsInactive.Include);
+        uiRoot?.inGameUI?.UpdateQuickSlots();
+
+        if (assignPopupPanel != null) assignPopupPanel.SetActive(false);
+        OpenItemListPanel();
+        ForceRefresh();
+    }
+
+
+    // ------------------------------
+    // (Kept for your older code paths)
+    // ------------------------------
+    private void OnAssignConfirmed(Inventory_Item item, int amount)
+    {
+        if (inventory == null || item == null || item.itemData == null) return;
+
+        AssignToQuickSlots(item, amount);
+
+        OpenItemListPanel();
+        ForceRefresh();
+
+        var ui = FindFirstObjectByType<UI>(FindObjectsInactive.Include);
+        ui?.inGameUI?.UpdateQuickSlots();
+    }
+
+    private void AssignToQuickSlots(Inventory_Item item, int amount)
+    {
+        if (inventory.quickSlots == null || inventory.quickSlots.Length < 4)
+        {
+            Debug.LogError("[UI_Inventory] inventory.quickSlots not set or too small (need 4).");
+            return;
+        }
+
+        // 1) Merge with a slot holding the same item (if any)
+        for (int i = 0; i < inventory.quickSlots.Length; i++)
+        {
+            var qs = inventory.quickSlots[i];
+            if (qs.item != null && qs.item.itemData == item.itemData)
+            {
+                inventory.quickSlots[i].slotStack = Mathf.Max(1, qs.slotStack + amount);
+                Debug.Log($"[UI_Inventory] Added {amount} to quick slot {i + 1} (now x{inventory.quickSlots[i].slotStack}).");
+                return;
+            }
+        }
+
+        // 2) Otherwise pick the first empty slot
+        for (int i = 0; i < inventory.quickSlots.Length; i++)
+        {
+            var qs = inventory.quickSlots[i];
+            if (qs.item == null || qs.slotStack <= 0)
+            {
+                var copy = new Inventory_Item(item.itemData);
+                copy.SetInstanceModifiers(item.GetInstanceModifiers());
+
+                inventory.quickSlots[i].item = copy;
+                inventory.quickSlots[i].slotStack = Mathf.Max(1, amount);
+
+                Debug.Log($"[UI_Inventory] Assigned {item.itemData.itemName} x{amount} to quick slot {i + 1}.");
+                return;
+            }
+        }
+
+        // 3) No space -> replace slot 1 (policy choice)
+        {
+            var copy = new Inventory_Item(item.itemData);
+            copy.SetInstanceModifiers(item.GetInstanceModifiers());
+            inventory.quickSlots[0].item = copy;
+            inventory.quickSlots[0].slotStack = Mathf.Max(1, amount);
+            Debug.Log($"[UI_Inventory] No empty quick slot. Replaced slot 1 with {item.itemData.itemName} x{amount}.");
+        }
     }
 
     private void CloseAllPanels()
@@ -339,7 +487,7 @@ public class UI_Inventory : UI_Panel
         categoryPanel?.SetActive(false);
         itemListPanel?.SetActive(false);
         actorSelectPanel?.SetActive(false);
-        assignPopupPanel?.SetActive(false);
+        assignPopupPanel?.SetActive(false); // legacy only; new popup hides itself
         currentState = PanelState.None;
     }
 
@@ -362,11 +510,11 @@ public class UI_Inventory : UI_Panel
             combined.AddRange(inventory.storage.materialStash);
 
         var filtered = new List<Inventory_Item>();
-        foreach (var item in combined)
+        foreach (var it in combined)
         {
-            if (item?.itemData == null) continue;
-            if (!currentFilter.HasValue || item.itemData.itemType == currentFilter.Value)
-                filtered.Add(item);
+            if (it?.itemData == null) continue;
+            if (!currentFilter.HasValue || it.itemData.itemType == currentFilter.Value)
+                filtered.Add(it);
         }
 
         if (backpackSlotsParent == null)
@@ -399,13 +547,11 @@ public class UI_Inventory : UI_Panel
 
         actorSelectItemLabel.text = $"{itemBeingAssigned.itemData.itemName} x{remaining}";
 
-        // 🔹 Play "no item" sound if out of items
         if (remaining <= 0 && noItemSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(noItemSound);
         }
     }
-
 
     private int GetAssignAmount()
     {
@@ -427,5 +573,44 @@ public class UI_Inventory : UI_Panel
             OpenActorSelectPanel(item);
         else
             OpenAssignPopup(item);
+    }
+
+    // ======================
+    // Legacy assignslot shim (uses UI_ItemSlot)
+    // ======================
+    public void assignslot(int index, UI_ItemSlot slot) => AssignSlot(index, slot);
+
+    public void AssignSlot(int index, UI_ItemSlot slot)
+    {
+        if (!enableLegacyAssignSlot || slot == null) return;
+
+        while (_legacySlots.Count <= index) _legacySlots.Add(null);
+        _legacySlots[index] = slot;
+
+        // No Initialize(...) on UI_ItemSlot; just repaint it.
+        RefreshLegacySlot(index);
+    }
+
+    private void RefreshLegacySlot(int index)
+    {
+        if (index < 0 || index >= _legacySlots.Count) return;
+        var slot = _legacySlots[index];
+        if (slot == null) return;
+
+        Inventory_Item item = null;
+        if (inventory != null && inventory.itemList != null &&
+            index >= 0 && index < inventory.itemList.Count)
+        {
+            item = inventory.itemList[index];
+        }
+
+        // UI_ItemSlot API uses UpdateSlot(item) and Clear()
+        if (item == null) slot.Clear();
+        else slot.UpdateSlot(item);
+    }
+
+    private void RefreshAllLegacySlots()
+    {
+        for (int i = 0; i < _legacySlots.Count; i++) RefreshLegacySlot(i);
     }
 }

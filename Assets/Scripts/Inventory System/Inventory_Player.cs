@@ -9,7 +9,7 @@ public class Inventory_Player : Inventory_Base
     public event Action<int> OnGoldChanged;
     public event Action<int> OnQuickSlotUsed;
 
-    // 🔸 NEW: generic “inventory changed” event
+    // UIs (HUD, inventory) listen to this for any repaint
     public event Action OnInventoryChange;
 
     [Header("Assigned References")]
@@ -49,18 +49,17 @@ public class Inventory_Player : Inventory_Base
             Debug.LogWarning("[Inventory_Player] Storage not found. Assign via Inspector.");
     }
 
-    // 🔸 helper all UIs call
+    // ---- Notify helpers ----
     public void TriggerUpdateUI() => OnInventoryChange?.Invoke();
 
-    // If Inventory_Base already has a NotifyInventoryChanged(), keep using it,
-    // but also raise our event here by shadowing with 'new' (safe if base is virtual/none).
     protected new void NotifyInventoryChanged()
     {
-        // call base if it exists & is accessible
-        try { base.NotifyInventoryChanged(); } catch { /* base may be non-virtual/private */ }
+        try { base.NotifyInventoryChanged(); } catch { }
         OnInventoryChange?.Invoke();
     }
 
+
+    // ---- Currency ----
     public void AddGold(int amount)
     {
         gold += amount;
@@ -72,98 +71,184 @@ public class Inventory_Player : Inventory_Base
             ui.ShowGoldPickup(amount);
     }
 
-    public void SetQuickItemInSlot(int slotNumber, Inventory_Item itemToSet, int amount)
+    // ---- Quick Slots API ----
+
+    /// <summary>
+    /// Assign an item to a specific quick slot (1..4).
+    /// Clamps stack to Owned - AlreadyAssignedElsewhere.
+    /// Optionally stores a fresh instance so backpack visuals don't mutate.
+    /// </summary>
+    public void SetQuickItemInSlot(int slotNumber, Inventory_Item sourceItem, int amount, bool useFreshInstance = true)
     {
         if (slotNumber < 1 || slotNumber > quickSlots.Length)
         {
             Debug.LogWarning($"[Inventory_Player] Invalid quick slot number: {slotNumber}");
             return;
         }
-
-        int totalOwned = 0;
-        foreach (var item in itemList)
-            if (item.itemData == itemToSet.itemData)
-                totalOwned += item.stackSize;
-
-        if (totalOwned <= 0)
+        if (sourceItem == null || sourceItem.itemData == null)
         {
-            Debug.LogWarning($"[Inventory_Player] No {itemToSet.itemData.itemName} found in backpack!");
+            Debug.LogWarning("[Inventory_Player] SetQuickItemInSlot: null item");
             return;
         }
 
-        int alreadyAssignedElsewhere = 0;
-        for (int i = 0; i < quickSlots.Length; i++)
+        // How many we can actually reserve from backpack:
+        int available = CountItem(sourceItem.itemData);
+        if (available <= 0)
         {
-            if (i == slotNumber - 1) continue;
-            var qs = quickSlots[i];
-            if (qs.item != null && qs.item.itemData == itemToSet.itemData)
-                alreadyAssignedElsewhere += qs.slotStack;
+            Debug.LogWarning($"[Inventory_Player] No {sourceItem.itemData.itemName} in backpack to reserve.");
+            return;
         }
 
-        QuickSlot currentSlot = quickSlots[slotNumber - 1];
-        int newStack = amount;
+        int toReserve = Mathf.Clamp(amount, 1, available);
+        int actuallyReserved = RemoveFromBackpack(sourceItem.itemData, toReserve);
+        if (actuallyReserved <= 0)
+        {
+            Debug.LogWarning($"[Inventory_Player] Failed to reserve {toReserve}x {sourceItem.itemData.itemName}.");
+            return;
+        }
 
-        if (currentSlot.item != null && currentSlot.item.itemData == itemToSet.itemData)
-            newStack = currentSlot.slotStack + amount;
+        int idx = slotNumber - 1;
+        var current = quickSlots[idx];
 
-        int maxPossible = totalOwned - alreadyAssignedElsewhere;
-        newStack = Mathf.Clamp(newStack, 1, maxPossible);
+        if (current.item != null && current.item.itemData == sourceItem.itemData)
+        {
+            // Same item already in this slot: just add to its reserved stack
+            current.slotStack += actuallyReserved;
+        }
+        else
+        {
+            // Put a copy (or the same instance) in the slot for icon/metadata
+            Inventory_Item slotItem = useFreshInstance
+                ? CloneItemInstance(sourceItem)
+                : sourceItem;
 
-        quickSlots[slotNumber - 1].item = itemToSet;
-        quickSlots[slotNumber - 1].slotStack = newStack;
+            current.item = slotItem;
+            current.slotStack = actuallyReserved;
+        }
 
-        Debug.Log($"[Inventory_Player] Assigned {itemToSet.itemData.itemName} → Slot {slotNumber} Stack: {newStack} (Owned: {totalOwned}, Assigned: {alreadyAssignedElsewhere})");
+        quickSlots[idx] = current;
+
+        Debug.Log($"[Inventory_Player] Reserved {actuallyReserved}x {sourceItem.itemData.itemName} -> QuickSlot {slotNumber}. (Backpack -{actuallyReserved})");
         NotifyInventoryChanged();
     }
 
-    public Inventory_Item GetEquippedItemByType(ItemType type)
+    public void ClearQuickSlot(int slotNumber)
     {
-        if (equipList == null) return null;
+        int idx = slotNumber - 1;
+        if (idx < 0 || idx >= quickSlots.Length) return;
+        quickSlots[idx].item = null;
+        quickSlots[idx].slotStack = 0;
+        NotifyInventoryChanged();
+    }
 
-        foreach (var eq in equipList)
-        {
-            if (eq == null) continue;
-            var item = eq.equipedItem;
-            if (item != null && item.itemData != null && item.itemData.itemType == type)
-                return item;
-        }
+    public QuickSlot GetQuickSlot(int slotNumber)
+    {
+        int idx = slotNumber - 1;
+        if (idx < 0 || idx >= quickSlots.Length) return default;
+        return quickSlots[idx];
+    }
 
-        return null;
+    // Copy a stack/item instance (preserves instance modifiers if you use them)
+    private static Inventory_Item CloneItemInstance(Inventory_Item src)
+    {
+        var copy = new Inventory_Item(src.itemData);
+        copy.SetInstanceModifiers(src.GetInstanceModifiers());
+        // quick slot copies typically don't need full stack; represent one item visually
+        return copy;
     }
 
     public void TryUseQuickItemInSlot(int slotNumber)
     {
         int index = slotNumber - 1;
-
         if (index < 0 || index >= quickSlots.Length)
         {
             Debug.LogWarning($"[Inventory_Player] Invalid quick slot index: {index}");
             return;
         }
 
-        var quickSlot = quickSlots[index];
-        if (quickSlot.item == null || quickSlot.slotStack <= 0)
+        var qs = quickSlots[index];
+        if (qs.item == null || qs.slotStack <= 0)
         {
-            Debug.Log($"[Inventory_Player] Quick Slot {slotNumber} is empty or out of uses");
+            Debug.Log($"[Inventory_Player] Quick Slot {slotNumber} empty/out.");
             return;
         }
 
-        TryUseItem(quickSlot.item, this.player);
+        // Apply effect using your existing TryUseItem logic WITHOUT double-removing backpack:
+        // Trick: temporarily add 1 to backpack, call TryUseItem (which removes that 1), net 0 in backpack.
+        ApplyQuickSlotItemEffectWithoutChangingBackpack(qs.item);
 
-        quickSlot.slotStack--;
-        if (quickSlot.slotStack <= 0)
+        // Consume one from the reserved stack:
+        qs.slotStack--;
+        if (qs.slotStack <= 0)
         {
-            quickSlot.item = null;
-            quickSlot.slotStack = 0;
+            qs.item = null;
+            qs.slotStack = 0;
         }
-
-        quickSlots[index] = quickSlot;
+        quickSlots[index] = qs;
 
         NotifyInventoryChanged();
         OnQuickSlotUsed?.Invoke(index);
-        Debug.Log($"[Inventory_Player] Used Quick Slot {slotNumber}. Remaining: {quickSlot.slotStack}");
+
+        Debug.Log($"[Inventory_Player] Used Quick Slot {slotNumber}. Reserved left: {qs.slotStack}");
     }
 
+    // -------- Helpers --------
+
+    // Remove up to 'amount' from BACKPACK stacks of this item; returns how many actually removed.
+    private int RemoveFromBackpack(ItemDataSO data, int amount)
+    {
+        int remaining = amount;
+        for (int i = itemList.Count - 1; i >= 0 && remaining > 0; i--)
+        {
+            var it = itemList[i];
+            if (it == null || it.itemData != data) continue;
+
+            int take = Mathf.Min(it.stackSize, remaining);
+            it.stackSize -= take;
+            remaining -= take;
+
+            if (it.stackSize <= 0) itemList.RemoveAt(i);
+        }
+
+        int removed = amount - remaining;
+        if (removed > 0) NotifyInventoryChanged();
+        if (remaining > 0)
+            Debug.LogWarning($"[Inventory_Player] Tried to reserve {amount} {data.name} but only {removed} were available.");
+        return removed;
+    }
+
+    // Use your existing consumable logic (TryUseItem) but keep backpack unchanged.
+    // We add a temporary +1 to a backpack stack (or make a temp stack), then TryUseItem consumes that 1.
+    private void ApplyQuickSlotItemEffectWithoutChangingBackpack(Inventory_Item item)
+    {
+        if (item == null || item.itemData == null) return;
+
+        // Find an existing backpack stack of this item:
+        var existing = itemList.Find(i => i != null && i.itemData == item.itemData);
+        bool createdTemp = false;
+
+        if (existing == null)
+        {
+            // Create a temporary 1-stack so TryUseItem has something to consume
+            existing = new Inventory_Item(item.itemData);
+            itemList.Add(existing);
+            createdTemp = true;
+        }
+        else
+        {
+            // Top up by 1 so net backpack change is zero after TryUseItem
+            existing.AddStack(1);
+        }
+
+        // This should apply effects and remove exactly 1 from backpack:
+        TryUseItem(existing, this.player);
+
+        // If TryUseItem didn't send UI updates, ensure we do:
+        NotifyInventoryChanged();
+    }
+
+
+    // ---- Add / Equip / Storage ----
     public override bool AddItem(Inventory_Item itemToAdd)
     {
         if (itemToAdd == null || itemToAdd.itemData == null)
@@ -195,6 +280,22 @@ public class Inventory_Player : Inventory_Base
         if (added) NotifyInventoryChanged();
         return added;
     }
+
+    // Put this inside Inventory_Player (anywhere in the class)
+    public Inventory_Item GetEquippedItemByType(ItemType type)
+    {
+        if (equipList == null) return null;
+
+        foreach (var eq in equipList)
+        {
+            if (eq == null) continue;
+            if (eq.slotType == type && eq.HasItem())
+                return eq.equipedItem;
+        }
+
+        return null;
+    }
+
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
     {
@@ -273,6 +374,7 @@ public class Inventory_Player : Inventory_Base
         }
     }
 
+    // ---- Counting helpers ----
     public int CountEverywhere(ItemDataSO targetData)
     {
         int total = 0;

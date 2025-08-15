@@ -1,61 +1,76 @@
-﻿using UnityEngine;
+﻿// Assets/Scripts/UI/Inventory/UI_AssignPopup.cs
+using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class UI_AssignPopup : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private TMP_Text itemNameText;
     [SerializeField] private TMP_InputField amountInput;
-    [SerializeField] private Button confirmButton;
+    [SerializeField] private Button slot1Button;
+    [SerializeField] private Button slot2Button;
+    [SerializeField] private Button slot3Button;
+    [SerializeField] private Button slot4Button;
     [SerializeField] private Button cancelButton;
 
+    [Header("SFX (optional)")]
+    [SerializeField] private AudioSource audioSrc;
+    [SerializeField] private AudioClip confirmSfx;
+    [SerializeField] private AudioClip cancelSfx;
+
     private Inventory_Item item;
+    // onConfirm(item, amount, slotIndex1Based)
+    private Action<Inventory_Item, int, int> onConfirm;
 
     private void Awake()
     {
-        // Hook up button events
-        confirmButton.onClick.AddListener(OnConfirm);
-        cancelButton.onClick.AddListener(OnCancel);
+        if (audioSrc) audioSrc.ignoreListenerPause = true;
+        if (cancelButton) cancelButton.onClick.AddListener(OnCancel);
+        gameObject.SetActive(false);
     }
 
-    /// <summary>
-    /// Setup the popup with item info.
-    /// </summary>
-    public void Setup(Inventory_Item newItem)
+    public void Open(Inventory_Item newItem, Action<Inventory_Item, int, int> onConfirm)
     {
-        item = newItem;
+        this.item = newItem;
+        this.onConfirm = onConfirm;
 
-        if (itemNameText != null)
-            itemNameText.text = item.itemData.itemName;
+        if (itemNameText) itemNameText.text = (item?.itemData != null) ? item.itemData.itemName : "(null)";
+        if (amountInput) amountInput.text = "1";
 
-        if (amountInput != null)
-            amountInput.text = "1"; // default amount
+        // Clear old listeners, then wire slot buttons
+        WireSlotButton(slot1Button, 1);
+        WireSlotButton(slot2Button, 2);
+        WireSlotButton(slot3Button, 3);
+        WireSlotButton(slot4Button, 4);
+
+        gameObject.SetActive(true);
     }
 
-    private void OnConfirm()
+    private void WireSlotButton(Button btn, int slotIndex1Based)
+    {
+        if (btn == null) return;
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(() => OnPickSlot(slotIndex1Based));
+    }
+
+    private void OnPickSlot(int slotIndex1Based)
     {
         int amount = 1;
+        if (amountInput && int.TryParse(amountInput.text, out var parsed))
+            amount = Mathf.Max(1, parsed);
 
-        if (amountInput != null && int.TryParse(amountInput.text, out int parsedAmount))
-            amount = Mathf.Max(1, parsedAmount);
-
-        Debug.Log($"[AssignPopup] Confirmed. Assign {amount}x {item.itemData.itemName}.");
-
-        // Do your assign logic here (eg: call back to Inventory)
-        // Example: FindFirstObjectByType<UI_Inventory>().AssignItem(item, amount);
-
+        if (audioSrc && confirmSfx) audioSrc.PlayOneShot(confirmSfx);
+        onConfirm?.Invoke(item, amount, slotIndex1Based);
         Close();
     }
 
     private void OnCancel()
     {
-        Debug.Log("[AssignPopup] Cancelled.");
+        if (audioSrc && cancelSfx) audioSrc.PlayOneShot(cancelSfx);
         Close();
     }
 
-    public void Close()
-    {
-        gameObject.SetActive(false);
-    }
+    public void Close() => gameObject.SetActive(false);
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
@@ -6,7 +6,7 @@ using System;
 
 public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [Header("Linked Player")]
+    [Header("Linked Player (optional)")]
     [SerializeField] public Player linkedPlayer;   // assign in Inspector if desired
 
     [Header("Core")]
@@ -24,18 +24,18 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     [Header("Highlight")]
     [SerializeField] private GameObject highlighter;
 
-    // Live references
+    // Live refs
     private Entity_Health playerHealth;
     private Entity_Mana playerMana;
     private Player player;
 
-    // Old callback (still supported)
+    // Legacy callback (still supported)
     private Action<Player> onClickCallback;
 
-    // >>> NEW: Use-item context <<<
-    private Inventory_Item _pendingItem;                 // item to use on click
-    private Inventory_Player _inventory;                 // where we remove the item from
-    private Action _afterUse;                            // UI nudge (e.g., refresh/close) after use
+    // Use-item context
+    private Inventory_Item _pendingItem;
+    private Inventory_Player _inventory;
+    private Action _afterUse;
 
     private void OnDisable() => UnsubscribeVitals();
 
@@ -53,28 +53,29 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         playerMana = null;
     }
 
-    /// <summary>
-    /// Full setup when you know the player explicitly. (Legacy path; keeps your old code working.)
-    /// </summary>
+    /// <summary>Full setup with explicit player (initial draw + live subscriptions).</summary>
     public void Setup(Player player, Action<Player> onClick)
     {
         UnsubscribeVitals();
 
+        // If a prefab or invalid scene object was passed, grab the live Player:
+        if (player == null || !player.gameObject.scene.IsValid())
+            player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
         if (player == null)
         {
-            Debug.LogWarning("[ProfileButton] Setup called with null player.");
+            Debug.LogWarning("[ProfileButton] No runtime Player found.");
             return;
         }
 
         this.player = player;
         this.onClickCallback = onClick;
 
-        playerHealth = player.health;
-        playerMana = player.mana;
+        playerHealth = player.health ?? player.GetComponent<Entity_Health>();
+        playerMana = player.mana ?? player.GetComponent<Entity_Mana>();
 
         if (nameText != null) nameText.text = string.IsNullOrEmpty(player.name) ? "Player" : player.name;
 
-        // initial draw + subscribe
         UpdateHealthBar();
         UpdateManaBar();
 
@@ -90,9 +91,8 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         HighlightOff();
     }
 
-    /// <summary>
-    /// Setup using the serialized linkedPlayer (assign in Inspector).
-    /// </summary>
+
+    /// <summary>Setup using serialized linkedPlayer.</summary>
     public void Setup(Action<Player> onClick)
     {
         if (linkedPlayer == null)
@@ -103,10 +103,7 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         Setup(linkedPlayer, onClick);
     }
 
-    /// <summary>
-    /// >>> NEW: Provide an item + inventory so clicking this profile will USE the item on this player. <<<
-    /// Optionally provide an afterUse callback (e.g., to refresh UI/close panel).
-    /// </summary>
+    /// <summary>Provide an item + inventory so clicking this profile uses the item on this player.</summary>
     public void SetUseItemContext(Inventory_Item pendingItem, Inventory_Player inventory, Action afterUse = null)
     {
         _pendingItem = pendingItem;
@@ -116,45 +113,68 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
 
     private void HandleClick()
     {
-        // If we have a pending item, try to use it directly.
+        // Prefer use-item context, else use legacy delegate:
         if (TryUsePendingItem()) return;
-
-        // Fallback to legacy callback behavior.
         onClickCallback?.Invoke(player);
     }
 
     private bool TryUsePendingItem()
     {
-        if (_pendingItem == null || _pendingItem.itemData == null || _inventory == null || player == null)
+        if (_pendingItem == null || _pendingItem.itemData == null || _inventory == null)
             return false;
 
-        // Usable only?
+        // Resolve a live player if needed
+        if (player == null || !player.gameObject.scene.IsValid())
+            player = linkedPlayer && linkedPlayer.gameObject.scene.IsValid()
+                ? linkedPlayer
+                : FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (player == null)
+        {
+            Debug.LogError("[ProfileButton] No runtime Player to use the item on.");
+            return false;
+        }
+
+        // Only usable consumables here
         if (_pendingItem.itemData.itemType != ItemType.Consumable || !_pendingItem.itemData.isUsable)
             return false;
 
-        // Find the actual instance in inventory (so we can decrement/remove)
-        var instance = _inventory.FindSameItem(_pendingItem);
-        if (instance == null) return false;
+        // Find a concrete inventory instance to consume
+        var instance = FindSameItemInstance(_inventory, _pendingItem)
+                       ?? _inventory.itemList.Find(it => it != null && it.itemData == _pendingItem.itemData);
 
-        // Validate & execute effect
-        if (instance.itemEffect != null && instance.itemEffect.CanBeUsed(player))
+        if (instance == null)
         {
-            instance.itemEffect.Subscribe(player);
-            instance.itemEffect.ExecuteEffect(player);
-
-            // Remove one from inventory and notify
-            _inventory.RemoveOneItem(instance);
-            _inventory.TriggerUpdateUI();
-
-            // Refresh our bars immediately after effect
-            RefreshBars();
-
-            // Let caller update other UI bits if they want
-            _afterUse?.Invoke();
-            return true;
+            Debug.LogWarning("[ProfileButton] No matching item instance in inventory.");
+            return false;
         }
 
-        return false;
+        // ✅ Use the same pipeline as quickslots
+        _inventory.TryUseItem(instance, player);
+
+        // Refresh local bars + outer UI if provided
+        RefreshBars();
+        _afterUse?.Invoke();
+        return true;
+    }
+
+
+
+    /// <summary>Try to match an inventory instance by data and (if present) instance modifiers.</summary>
+    private Inventory_Item FindSameItemInstance(Inventory_Player inv, Inventory_Item sample)
+    {
+        // Prefer an exact instance reference if the same object is in the list:
+        foreach (var it in inv.itemList)
+            if (ReferenceEquals(it, sample)) return it;
+
+        // Otherwise, match by ItemData (and optionally modifiers if you rely on them):
+        foreach (var it in inv.itemList)
+        {
+            if (it == null || it.itemData != sample.itemData) continue;
+            // If you track per-instance modifiers, you could compare them here.
+            return it;
+        }
+        return null;
     }
 
     public void RefreshBars()
@@ -165,29 +185,30 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
 
     private void UpdateHealthBar()
     {
-        if (player == null || player.stats == null || playerHealth == null || healthSlider == null) return;
+        if (player == null) return;
+        playerHealth ??= player.GetComponent<Entity_Health>();
+        var stats = player.stats ?? player.GetComponent<Player_Stats>();
+        if (playerHealth == null || stats == null || healthSlider == null) return;
 
-        float max = Mathf.Max(1f, player.stats.GetMaxHealth());
-        float current = Mathf.RoundToInt(playerHealth.GetCurrentHealth());
-
-        healthSlider.value = Mathf.Clamp01(current / max);
-
-        if (healthText != null)
-            healthText.text = $"{current} / {max}";
+        float max = Mathf.Max(1f, stats.GetMaxHealth());
+        float cur = Mathf.RoundToInt(playerHealth.GetCurrentHealth());
+        healthSlider.value = Mathf.Clamp01(cur / max);
+        if (healthText) healthText.text = $"{cur} / {max}";
     }
 
     private void UpdateManaBar()
     {
-        if (player == null || player.stats == null || playerMana == null || manaSlider == null) return;
+        if (player == null) return;
+        playerMana ??= player.GetComponent<Entity_Mana>();
+        var stats = player.stats ?? player.GetComponent<Player_Stats>();
+        if (playerMana == null || stats == null || manaSlider == null) return;
 
-        float max = Mathf.Max(1f, player.stats.GetMaxMana());
-        float current = Mathf.RoundToInt(playerMana.GetCurrentMana());
-
-        manaSlider.value = Mathf.Clamp01(current / max);
-
-        if (manaText != null)
-            manaText.text = $"{current} / {max}";
+        float max = Mathf.Max(1f, stats.GetMaxMana());
+        float cur = Mathf.RoundToInt(playerMana.GetCurrentMana());
+        manaSlider.value = Mathf.Clamp01(cur / max);
+        if (manaText) manaText.text = $"{cur} / {max}";
     }
+
 
     public void HighlightOn() => highlighter?.SetActive(true);
     public void HighlightOff() => highlighter?.SetActive(false);
@@ -195,9 +216,10 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     public void OnPointerEnter(PointerEventData eventData) => HighlightOn();
     public void OnPointerExit(PointerEventData eventData) => HighlightOff();
 
-    // Optional helper for selection state from outside.
     public void SetSelected(bool selected)
     {
-        if (selected) HighlightOn(); else HighlightOff();
+        if (selected) HighlightOn();
+        else HighlightOff();
     }
+
 }

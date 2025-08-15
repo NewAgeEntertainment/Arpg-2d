@@ -1,99 +1,79 @@
-// Attach this to any always-active object (e.g., GameManager or SaveSystem)
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Cinemachine;
 
-#if UNITY_CINEMACHINE
-using Unity.Cinemachine; // Cinemachine v3
-#endif
-
-public class CameraFollowManager : MonoBehaviour
+[RequireComponent(typeof(CinemachineCamera))]
+[DefaultExecutionOrder(100)]
+public class CinemachineV3AutoFollow : MonoBehaviour
 {
-    [SerializeField, Min(0f)]
-    private float assignTimeoutSeconds = 2f;   // how long we keep trying after a scene loads
+    [SerializeField] private bool alsoSetLookAt = true;
+    [SerializeField, Min(0f)] private float retryWindowSeconds = 2f;
+    [SerializeField] private string fallbackPlayerTag = "Player";
 
-    private Coroutine _assignCo;
+    private CinemachineCamera vcam;
+    private Coroutine bindCo;
+
+    private void Awake() => vcam = GetComponent<CinemachineCamera>();
 
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
-        StartAssignRoutine(); // also try on enable
+        TryBindNow();
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnPlayerRegistered += OnPlayerRegistered;
     }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        if (_assignCo != null) { StopCoroutine(_assignCo); _assignCo = null; }
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnPlayerRegistered -= OnPlayerRegistered;
+
+        if (bindCo != null) { StopCoroutine(bindCo); bindCo = null; }
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void OnSceneLoaded(Scene s, LoadSceneMode m)
     {
-        StartAssignRoutine();
+        if (bindCo != null) StopCoroutine(bindCo);
+        bindCo = StartCoroutine(RetryBindForSeconds(retryWindowSeconds));
     }
 
-    private void StartAssignRoutine()
+    private void OnPlayerRegistered(Player p)
     {
-        if (_assignCo != null) StopCoroutine(_assignCo);
-        _assignCo = StartCoroutine(AssignCameraCo());
+        if (p != null) BindTo(p.transform);
     }
 
-    private System.Collections.IEnumerator AssignCameraCo()
+    private System.Collections.IEnumerator RetryBindForSeconds(float seconds)
     {
         float t = 0f;
-        while (t < assignTimeoutSeconds)
+        while (t < seconds)
         {
-            if (TryAssignOnce())
-                yield break;
-
+            if (TryBindNow()) yield break;
             t += Time.unscaledDeltaTime;
             yield return null;
         }
-
-        Debug.LogWarning("[CameraFollowManager] Timed out trying to assign camera follow.");
+        Debug.LogWarning("[CinemachineV3AutoFollow] Timed out binding to Player.");
     }
 
-    private bool TryAssignOnce()
+    private bool TryBindNow()
     {
         var player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-        if (player == null) return false;
+        if (player != null) { BindTo(player.transform); return true; }
 
-#if UNITY_CINEMACHINE
-        var vcam = PickBestCinemachineCamera();
-        if (vcam != null)
+        if (!string.IsNullOrEmpty(fallbackPlayerTag))
         {
-            vcam.Follow = player.transform;
-            vcam.LookAt  = player.transform;
-            Debug.Log($"[CameraFollowManager] Assigned Player to CinemachineCamera (prio {vcam.Priority}).");
-            return true;
+            var go = GameObject.FindWithTag(fallbackPlayerTag);
+            if (go != null) { BindTo(go.transform); return true; }
         }
-        Debug.LogWarning("[CameraFollowManager] No CinemachineCamera found in scene.");
-#else
-        Debug.LogWarning("[CameraFollowManager] UNITY_CINEMACHINE not defined or Cinemachine not installed.");
-#endif
         return false;
     }
 
-#if UNITY_CINEMACHINE
-    private CinemachineCamera PickBestCinemachineCamera()
+    private void BindTo(Transform target)
     {
-        var cams = FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        CinemachineCamera best = null;
-        int bestPriority = int.MinValue;
-
-        foreach (var cam in cams)
-        {
-            if (cam == null || !cam.isActiveAndEnabled) continue;
-            if (cam.Priority > bestPriority)
-            {
-                bestPriority = cam.Priority;
-                best = cam;
-            }
-        }
-
-        // If none active, return any
-        if (best == null)
-            best = FindFirstObjectByType<CinemachineCamera>(FindObjectsInactive.Include);
-
-        return best;
+        if (vcam == null || target == null) return;
+        vcam.Target.TrackingTarget = target;
+        if (alsoSetLookAt) vcam.Target.LookAtTarget = target;
+        // Debug.Log($"[CinemachineV3AutoFollow] Tracking '{target.name}'");
     }
-#endif
 }
