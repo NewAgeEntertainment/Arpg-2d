@@ -292,10 +292,23 @@ public class UI : MonoBehaviour
         CloseAllPanels();
 
         if (saveLoadPanel == null)
-            saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Exclude);
+            saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Include);
 
-        saveLoadPanel.OpenForSave();   // ⬅️ change from OpenPanel()
+        if (saveLoadPanel == null)
+        {
+            Debug.LogError("[UI] UI_SaveLoadPanel not found in scene.");
+            return;
+        }
+
+        // Make sure the GameObject holding UI_SaveLoadPanel is active,
+        // otherwise its child 'panel' can't become visible.
+        saveLoadPanel.gameObject.SetActive(true);
+
+        // Show it in Save mode (or call OpenForLoad for a load menu)
+        saveLoadPanel.OpenForSave();
+        isSaveOpen = true;
     }
+
 
 
     public void CloseSavePanel()

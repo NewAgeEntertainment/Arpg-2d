@@ -1,19 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using PixelCrushers;
 
+[DefaultExecutionOrder(-1000)] // ensure this initializes very early
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance { get; private set; }
 
-    [Header("Scene Tracking")]
-    [SerializeField] private string initialSceneName = "StartScene";
-    [SerializeField] private string playerSpawnPointName = "PlayerSpawn";
-    private Vector3 lastSpawnPosition;
-    private bool hasSceneLoaded = false;
+    [Header("Optional References")]
+    [SerializeField] private Player player; // auto-found if left null
 
-    [Header("Player")]
-    public Player player;
+    /// <summary>Globally accessible Player reference (auto-caches if missing).</summary>
+    public Player Player => player != null
+        ? player
+        : (player = FindFirstObjectByType<Player>(FindObjectsInactive.Include));
+
+    /// <summary>Raised when a Player is registered (spawner or Player itself can call RegisterPlayer).</summary>
+    public event System.Action<Player> OnPlayerRegistered;
 
     private void Awake()
     {
@@ -26,65 +28,45 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        // We don't initiate scene changes; we just ensure references survive them.
+        SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
     private void Start()
     {
-        if (string.IsNullOrEmpty(initialSceneName)) return;
-
-        if (!SceneManager.GetSceneByName(initialSceneName).isLoaded)
-        {
-            LoadScene(initialSceneName, Vector3.zero);
-        }
-    }
-
-    public void LoadScene(string sceneName, Vector3 spawnPosition)
-    {
-        lastSpawnPosition = spawnPosition;
-        SaveSystem.LoadScene(sceneName); // ✅ FIXED: LoadScene, not LoadSceneAsync
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (player == null)
-        {
-            player = FindAnyObjectByType<Player>();
-        }
-
-        if (player != null)
-        {
-            // Restore last spawn position
-            if (lastSpawnPosition != Vector3.zero)
-                player.TeleportPlayer(lastSpawnPosition);
-
-            // Attach camera
-            var vcam = FindAnyObjectByType<Unity.Cinemachine.CinemachineCamera>();
-            if (vcam != null)
-            {
-                vcam.Follow = player.transform;
-                vcam.LookAt = player.transform;
-            }
-
-            hasSceneLoaded = true;
-            Debug.Log($"[GameManager] Scene loaded: {scene.name}, Player repositioned.");
-        }
-        else
-        {
-            Debug.LogWarning("[GameManager] Player not found in new scene.");
-        }
+        // If a Player already exists (e.g., DDOL), surface it to listeners.
+        if (Player != null)
+            OnPlayerRegistered?.Invoke(player);
     }
 
     private void OnDestroy()
     {
         if (Instance == this)
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // No scene-transition logic here—only keep references fresh if needed.
+        if (player == null)
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
+            var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+            if (p != null) RegisterPlayer(p);
         }
     }
 
+    /// <summary>Call this after you instantiate the Player (e.g., in your PlayerSpawner).</summary>
     public void RegisterPlayer(Player p)
     {
+        if (p == null) return;
         player = p;
+        OnPlayerRegistered?.Invoke(p);
+        // Debug.Log($"[GameManager] Player registered: {p.name}");
+    }
+
+    /// <summary>Clear cached refs (useful when returning to title).</summary>
+    public void ClearCachedRefs()
+    {
+        player = null;
     }
 }

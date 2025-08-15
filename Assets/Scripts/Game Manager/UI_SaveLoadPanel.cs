@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -43,6 +44,9 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
     public bool IsOpen => panel != null && panel.activeSelf;
     public bool IsOverwriteOpen => overwritePanel != null && overwritePanel.activeSelf;
+
+    // Single source of truth for timestamp format
+    private const string TimeFormat = "yyyy-MM-dd HH:mm";
 
     private void Awake()
     {
@@ -170,8 +174,13 @@ public class UI_SaveLoadPanel : MonoBehaviour
     {
         if (_mode != Mode.Save) return;
 
+        // Optional: contextualize with last saved time
+        var when = GetSlotTimestampStatic(_pendingSlotIndex);
         if (overwriteQuestionText != null)
-            overwriteQuestionText.text = "Overwrite this file?";
+            overwriteQuestionText.text = when.HasValue
+                ? $"Overwrite this file?\nLast saved: {when.Value.ToString(TimeFormat, CultureInfo.InvariantCulture)}"
+                : "Overwrite this file?";
+
         if (overwritePanel != null)
             overwritePanel.SetActive(true);
     }
@@ -196,6 +205,9 @@ public class UI_SaveLoadPanel : MonoBehaviour
     private IEnumerator SaveToSlotFlow(int slotIndex)
     {
         if (_mode != Mode.Save) yield break;
+
+        // Disable all slot buttons to prevent double-clicking
+        SetSlotsInteractable(false);
 
         // Show visual + start dots
         if (savingVisualRoot != null) savingVisualRoot.SetActive(true);
@@ -239,6 +251,9 @@ public class UI_SaveLoadPanel : MonoBehaviour
         Play(saveDoneSfx);
         if (savingVisualRoot != null) savingVisualRoot.SetActive(false);
 
+        // Re-enable slot buttons
+        SetSlotsInteractable(true);
+
         RefreshAllSlots();
     }
 
@@ -275,7 +290,8 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
     private void SetSlotTimestamp(int slotIndex, DateTime time)
     {
-        PlayerPrefs.SetString(SlotKey(slotIndex, "time"), time.ToString("yyyy-MM-dd HH:mm"));
+        // Save with invariant culture and fixed format
+        PlayerPrefs.SetString(SlotKey(slotIndex, "time"), time.ToString(TimeFormat, CultureInfo.InvariantCulture));
         PlayerPrefs.Save();
     }
 
@@ -283,7 +299,16 @@ public class UI_SaveLoadPanel : MonoBehaviour
     {
         var s = PlayerPrefs.GetString($"SaveSlot_{slotIndex}_time", string.Empty);
         if (string.IsNullOrEmpty(s)) return null;
-        if (DateTime.TryParse(s, out var t)) return t;
+
+        if (DateTime.TryParseExact(
+                s,
+                "yyyy-MM-dd HH:mm",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var t))
+        {
+            return t;
+        }
         return null;
     }
 
@@ -295,4 +320,25 @@ public class UI_SaveLoadPanel : MonoBehaviour
     {
         if (sfx != null && clip != null) sfx.PlayOneShot(clip);
     }
+
+    // -------- UI helper --------
+    private void SetSlotsInteractable(bool interactable)
+    {
+        if (saveSlots == null) return;
+
+        foreach (var slot in saveSlots)
+        {
+            if (slot == null) continue;
+
+            if (_mode == Mode.Save)
+            {
+                if (slot.saveButton != null) slot.saveButton.interactable = interactable;
+            }
+            else // Load mode
+            {
+                if (slot.loadButton != null) slot.loadButton.interactable = interactable;
+            }
+        }
+    }
+
 }

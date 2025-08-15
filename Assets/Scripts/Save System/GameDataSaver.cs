@@ -196,10 +196,13 @@ public class GameDataSaver : Saver
         }
 
         // HP/MP
-        if (health != null && data.currentHealth > 0f)
-            health.SetCurrentHealth(data.currentHealth);
+        // HP/MP
+        if (health != null)
+            health.SetCurrentHealth(Mathf.Clamp(data.currentHealth, 0f, stats != null ? stats.GetMaxHealth() : data.currentHealth));
+
         if (mana != null)
-            mana.SetCurrentMana(data.currentMana);
+            mana.SetCurrentMana(Mathf.Clamp(data.currentMana, 0f, stats != null ? stats.GetMaxMana() : data.currentMana));
+
 
         // Normal Level/EXP
         if (stats != null)

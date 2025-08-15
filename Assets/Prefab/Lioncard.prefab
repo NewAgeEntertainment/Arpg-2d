@@ -394,6 +394,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5852501936329725365}
   - component: {fileID: 8328735636652493673}
+  - component: {fileID: 7404050491979521307}
   - component: {fileID: 875733981393590875}
   - component: {fileID: 2475480508921098455}
   - component: {fileID: 5213953530006539592}
@@ -405,6 +406,8 @@ GameObject:
   - component: {fileID: 7274584616826402989}
   - component: {fileID: 435423305743461155}
   - component: {fileID: 479301254802990526}
+  - component: {fileID: 4425057631042862245}
+  - component: {fileID: 1517721848282973766}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -449,30 +452,77 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb2c05fc18a633429121f39081d7efa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
+  player: {fileID: 2475480508921098455}
   maxInventorySize: 10
   itemList: []
+  gold: 10000
+  equipmentInventoryRef: {fileID: 7404050491979521307}
+  storageRef: {fileID: 0}
   equipList:
   - slotType: 1
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
+      instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 2
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
+      instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 3
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
+      instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 3
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
+      instanceModifiers: []
       itemEffect: {fileID: 0}
+  quickSlots:
+  - item:
+      itemData: {fileID: 0}
+      stackSize: 0
+      instanceModifiers: []
+      itemEffect: {fileID: 0}
+    slotStack: 0
+  - item:
+      itemData: {fileID: 0}
+      stackSize: 0
+      instanceModifiers: []
+      itemEffect: {fileID: 0}
+    slotStack: 0
+  - item:
+      itemData: {fileID: 0}
+      stackSize: 0
+      instanceModifiers: []
+      itemEffect: {fileID: 0}
+    slotStack: 0
+  - item:
+      itemData: {fileID: 0}
+      stackSize: 0
+      instanceModifiers: []
+      itemEffect: {fileID: 0}
+    slotStack: 0
+--- !u!114 &7404050491979521307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d641e07aa9687d94bae4a67b8cbdc76d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 2475480508921098455}
+  maxInventorySize: 10
+  itemList: []
 --- !u!114 &875733981393590875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -494,7 +544,7 @@ MonoBehaviour:
       baseValue: 0
       modifiers: []
     maxMana:
-      baseValue: 42.9
+      baseValue: 50
       modifiers: []
     manaRegen:
       baseValue: 0
@@ -561,7 +611,7 @@ MonoBehaviour:
       modifiers: []
   sex:
     maxArousal:
-      baseValue: 0
+      baseValue: 100
       modifiers: []
     stroke:
       baseValue: 0
@@ -575,6 +625,7 @@ MonoBehaviour:
     sexualRestraint:
       baseValue: 0
       modifiers: []
+  levelScalingData: {fileID: 0}
 --- !u!114 &2475480508921098455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -588,6 +639,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
+  sexBonus_MaxArousalPerLevel: 5
+  sexBonus_SexualDamagePerLevel: 1
+  sexBonus_StrokePerLevel: 0
+  sexBonus_ResiliencePerLevel: 1
+  sexBonus_SexualRestraintPerLevel: 2
+  BASE_SEX_EXP_REQUIREMENT: 50
+  SEX_EXP_GROWTH_RATE: 2
   lastMoveDirection: {x: 0, y: -1}
   playerID: 0
   attackMovement:
@@ -596,6 +654,8 @@ MonoBehaviour:
   - 7
   jumpAttackVelocity: {x: 4, y: -6}
   comboResetTime: 3
+  Portrait: {fileID: 21300000, guid: 11feb41ddca36f14b97f77b541a2eaf3, type: 3}
+  Bio: sdhfjhaljfhsjldfksajhfjkasdhfjshfkjsahdfkjshdfkjahsdfkjhsdjfhksdjfhkjdshfkjhsdlkj;sdflkjdf;kgjlk;
   moveSpeed: 8
   jumpForce: 0
   dashDuration: 1
@@ -641,6 +701,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb6a9152fd490643a12b33ca631e796, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deepBreathData: {fileID: 11400000, guid: e41840111e853d443aa7171e2534874a, type: 2}
+  stats: {fileID: 875733981393590875}
 --- !u!114 &6972770920434634234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -653,12 +715,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 582dcf26d7460d44dbce2fed38905c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  targetCheckPoints: []
   basicAttackScale:
-    phyiscal: 1
+    physical: 1
     elemental: 1
+    basePower: 10
+    scalingMultiplier: 1
+    scalingStat: 9
     chillDuration: 3
-    chillSlowMulitplier: 0.2
-    burnDuratin: 3
+    chillSlowMultiplier: 0.2
+    burnDuration: 3
     burnDamageScale: 1
     poisonDuration: 3
     poisonDamageScale: 1
@@ -721,6 +787,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a15e285c6eea3bb4fb98c6dd62f02f56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  expReward: 25
   currentHealth: 0
   isDead: 0
   regenInterval: 1
@@ -759,7 +826,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0.52, y: 1.09}
@@ -834,6 +901,42 @@ MonoBehaviour:
   chillVfx: {r: 0.30980393, g: 0.3882353, b: 1, a: 1}
   imageEchoInterval: 0.05
   imageEchoPrefeb: {fileID: 7952621571400533209, guid: 1d022bfd49ccfda41a7e71b18ee477e1, type: 3}
+--- !u!114 &4425057631042862245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af33a602e20a3d4ca46c8a6ef942618, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: Player
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 1
+  m_target: {fileID: 5852501936329725365}
+  m_usePlayerSpawnpoint: 1
+  m_multiscene: 1
+--- !u!114 &1517721848282973766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a176af03504b73e49a2ff5bcd061cd65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: PlayerStats
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  player: {fileID: 2475480508921098455}
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0
@@ -901,7 +1004,7 @@ MonoBehaviour:
   skillType: 2
   upgradeType: 0
   cooldown: 2
-  manaCost: 0
+  manaCost: 10
 --- !u!114 &6435512993695752812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -964,7 +1067,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillType: 6
   upgradeType: 0
-  cooldown: 1
+  cooldown: 1.93
   manaCost: 0
   sexyTimeLogic: {fileID: 0}
   unlocked: 0
@@ -1355,7 +1458,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1567,7 +1670,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1642,7 +1745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0.112580776, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1748,7 +1851,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
