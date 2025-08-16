@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using PixelCrushers;
+using UnityEngine.UI;
+using System.Reflection;
 
 public class UI : MonoBehaviour
 {
@@ -61,6 +63,18 @@ public class UI : MonoBehaviour
     [Header("Main Menu Panel")]
     [SerializeField] private GameObject mainMenuPanel;
 
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // New: Menu Health/Mana bindings (drag your MENU UI widgets here, not the HUD ones)
+    [Header("Main Menu - Health & Mana (drag from Menu UI)")]
+    [SerializeField] private Slider menuHealthSlider;
+    [SerializeField] private TMP_Text menuHealthText;
+    [SerializeField] private Slider menuManaSlider;
+    [SerializeField] private TMP_Text menuManaText;
+
+    [Header("Menu Bars Update (fallback polling)")]
+    [SerializeField] private float menuPollInterval = 0.1f;
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     [Header("Rewired Input")]
     [SerializeField] private int playerID = 0;
     [SerializeField] private string openSkillTreeAction = "OpenSkillTree";
@@ -96,6 +110,12 @@ public class UI : MonoBehaviour
     private const int SuspendSlot = -1;              // temp "suspend" slot
     private const string SuspendKey = "suspend_exists";
     // =======================================================================================
+
+    // ====== Menu bars internal (player stats reflection + events) ==========================
+    private Component statsComp;                 // Player_Stats / Entity_Stats / Player
+    private PropertyInfo pCurHP, pMaxHP, pCurMP, pMaxMP;
+    private EventInfo eHP, eMP;
+    private Coroutine menuPollCo;
 
     private void Awake()
     {
@@ -141,6 +161,9 @@ public class UI : MonoBehaviour
         // Make sure we see the current gold immediately in a fresh scene
         TrySubscribeGold();
 
+        // Bind to player stats (for menu bars)
+        BindStats(AutoFindStats());
+
         // Kick a one-time HUD/slots refresh when starting from title
         StartCoroutine(RefreshHUDOnceCo());
     }
@@ -150,7 +173,7 @@ public class UI : MonoBehaviour
         // Re-arm gold subscription in case of scene reload
         TrySubscribeGold();
 
-        // Refresh HUD once after every scene load (new game path)
+        // Rebind stats after scene loads
         SceneManager.sceneLoaded += OnSceneLoaded_UIRefresh;
     }
 
@@ -158,17 +181,29 @@ public class UI : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded_UIRefresh;
         UnsubscribeGold();
+        UnhookStatEvents();
+        StopMenuPoll();
     }
 
     private void OnDestroy()
     {
         UnsubscribeGold();
+        UnhookStatEvents();
         if (Instance == this) Instance = null;
     }
 
     private void OnSceneLoaded_UIRefresh(Scene scene, LoadSceneMode mode)
     {
+        // ensure we have current stats reference after spawns
+        StartCoroutine(AfterSceneLoad_Co());
         StartCoroutine(RefreshHUDOnceCo());
+    }
+
+    private IEnumerator AfterSceneLoad_Co()
+    {
+        yield return null;
+        BindStats(AutoFindStats());
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf) ForceRefreshMenuBars();
     }
 
     private IEnumerator RefreshHUDOnceCo()
@@ -226,7 +261,7 @@ public class UI : MonoBehaviour
     public void UpdateGoldUI(int newGoldAmount)
     {
         if (goldText != null)
-            goldText.text = $"{newGoldAmount:N0} G:";
+            goldText.text = $"{newGoldAmount:N0} G";
     }
 
     #region Open/Close Panels
@@ -415,6 +450,11 @@ public class UI : MonoBehaviour
         EnsureUIRootIsActive();
         CloseAllPanels();
         mainMenuPanel?.SetActive(true);
+
+        // Refresh menu HP/MP immediately and start polling if needed
+        ForceRefreshMenuBars();
+        StartMenuPollIfNeeded();
+
         StopPlayerControls(true);
     }
 
@@ -432,6 +472,7 @@ public class UI : MonoBehaviour
         if (!IsAnySubPanelOpen() && (mainMenuPanel == null || !mainMenuPanel.activeSelf))
         {
             StopPlayerControls(false);
+            StopMenuPoll();
         }
     }
 
@@ -461,6 +502,7 @@ public class UI : MonoBehaviour
         mainMenuPanel?.SetActive(false);
 
         ResetStates();
+        StopMenuPoll();
     }
 
     private void ResetStates()
@@ -638,5 +680,178 @@ public class UI : MonoBehaviour
     private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
     {
         onYes?.Invoke();
+    }
+
+    // ============================ Menu Bars: internals =====================================
+
+    private Component AutoFindStats()
+    {
+        // Try to find by exact type name without hard dependencies
+        // Modern Unity: FindFirstObjectByType<T>() only takes an optional Inactive flag.
+        var playerStats = FindFirstObjectByType<Component>(FindObjectsInactive.Include);
+        if (playerStats != null && playerStats.GetType().Name == "Player_Stats")
+            return playerStats;
+
+        // Fallback: scan all loaded components for common names
+        foreach (var c in FindObjectsOfType<Component>(true))
+        {
+            var n = c.GetType().Name;
+            if (n == "Player_Stats" || n == "Entity_Stats" || n == "Player")
+                return c;
+        }
+        return null;
+    }
+
+
+    private void BindStats(Component comp)
+    {
+        if (comp == statsComp) return;
+
+        UnhookStatEvents();
+        statsComp = comp;
+
+        if (statsComp == null)
+        {
+            pCurHP = pMaxHP = pCurMP = pMaxMP = null;
+            eHP = eMP = null;
+            return;
+        }
+
+        var t = statsComp.GetType();
+        pCurHP = t.GetProperty("CurrentHealth") ?? t.GetProperty("currentHealth") ?? t.GetProperty("HP");
+        pMaxHP = t.GetProperty("MaxHealth") ?? t.GetProperty("maxHealth") ?? t.GetProperty("MaxHP");
+        pCurMP = t.GetProperty("CurrentMana") ?? t.GetProperty("currentMana") ?? t.GetProperty("MP");
+        pMaxMP = t.GetProperty("MaxMana") ?? t.GetProperty("maxMana") ?? t.GetProperty("MaxMP");
+
+        eHP = t.GetEvent("OnHealthChanged");
+        eMP = t.GetEvent("OnManaChanged");
+
+        HookStatEvents();
+    }
+
+    private void HookStatEvents()
+    {
+        if (statsComp == null) return;
+
+        // Hook if signatures exist (int,int) or ()
+        if (eHP != null)
+        {
+            var del = System.Delegate.CreateDelegate(eHP.EventHandlerType, this, nameof(OnHealthChangedEvent));
+            eHP.AddEventHandler(statsComp, del);
+        }
+
+        if (eMP != null)
+        {
+            var del = System.Delegate.CreateDelegate(eMP.EventHandlerType, this, nameof(OnManaChangedEvent));
+            eMP.AddEventHandler(statsComp, del);
+        }
+    }
+
+    private void UnhookStatEvents()
+    {
+        if (statsComp == null) return;
+
+        if (eHP != null)
+        {
+            var del = System.Delegate.CreateDelegate(eHP.EventHandlerType, this, nameof(OnHealthChangedEvent));
+            eHP.RemoveEventHandler(statsComp, del);
+        }
+        if (eMP != null)
+        {
+            var del = System.Delegate.CreateDelegate(eMP.EventHandlerType, this, nameof(OnManaChangedEvent));
+            eMP.RemoveEventHandler(statsComp, del);
+        }
+    }
+
+    // Flexible event handlers (support () and (int,int))
+    private void OnHealthChangedEvent() { RefreshMenuHealth(); }
+    private void OnHealthChangedEvent(int current, int max) { SetMenuHealth(current, max); }
+    private void OnManaChangedEvent() { RefreshMenuMana(); }
+    private void OnManaChangedEvent(int current, int max) { SetMenuMana(current, max); }
+
+    private void StartMenuPollIfNeeded()
+    {
+        if (menuPollCo != null || eHP != null || eMP != null) return; // already have events or a poll
+        if (mainMenuPanel == null || !mainMenuPanel.activeSelf) return;
+        menuPollCo = StartCoroutine(MenuPollLoop());
+    }
+
+    private void StopMenuPoll()
+    {
+        if (menuPollCo != null)
+        {
+            StopCoroutine(menuPollCo);
+            menuPollCo = null;
+        }
+    }
+
+    private IEnumerator MenuPollLoop()
+    {
+        var wait = new WaitForSeconds(menuPollInterval);
+        while (mainMenuPanel != null && mainMenuPanel.activeSelf)
+        {
+            RefreshMenuBars();
+            yield return wait;
+        }
+        menuPollCo = null;
+    }
+
+    private void ForceRefreshMenuBars()
+    {
+        RefreshMenuBars();
+    }
+
+    private void RefreshMenuBars()
+    {
+        RefreshMenuHealth();
+        RefreshMenuMana();
+    }
+
+    private void RefreshMenuHealth()
+    {
+        if (statsComp == null || pCurHP == null || pMaxHP == null) return;
+        int cur = SafeGetInt(statsComp, pCurHP);
+        int max = SafeGetInt(statsComp, pMaxHP);
+        SetMenuHealth(cur, max);
+    }
+
+    private void RefreshMenuMana()
+    {
+        if (statsComp == null || pCurMP == null || pMaxMP == null) return;
+        int cur = SafeGetInt(statsComp, pCurMP);
+        int max = SafeGetInt(statsComp, pMaxMP);
+        SetMenuMana(cur, max);
+    }
+
+    private void SetMenuHealth(int current, int max)
+    {
+        if (menuHealthSlider)
+        {
+            menuHealthSlider.maxValue = max;
+            menuHealthSlider.value = Mathf.Clamp(current, 0, max);
+        }
+        if (menuHealthText)
+            menuHealthText.text = $"{current}/{max}";
+    }
+
+    private void SetMenuMana(int current, int max)
+    {
+        if (menuManaSlider)
+        {
+            menuManaSlider.maxValue = max;
+            menuManaSlider.value = Mathf.Clamp(current, 0, max);
+        }
+        if (menuManaText)
+            menuManaText.text = $"{current}/{max}";
+    }
+
+    private static int SafeGetInt(object obj, PropertyInfo pi)
+    {
+        if (pi == null) return 0;
+        var v = pi.GetValue(obj, null);
+        if (v is int i) return i;
+        if (v is float f) return Mathf.RoundToInt(f);
+        if (v is double d) return Mathf.RoundToInt((float)d);
+        return 0;
     }
 }
