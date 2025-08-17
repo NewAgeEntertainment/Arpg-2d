@@ -1,4 +1,4 @@
-﻿// ✅ Full Player.cs with EXP, SexEXP, UI hooks, level logic, and stat bonuses.
+﻿// ✅ Full Player.cs with EXP, SexEXP, UI hooks, level logic, stat bonuses, and spawn-safe init.
 
 using System;
 using System.Collections;
@@ -51,7 +51,8 @@ public class Player : Entity
     public Player_DeadState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
 
-    [SerializeField] private int playerID = 0;
+    [Header("Rewired")]
+    [SerializeField] private int playerID = 0; // <- This is the Rewired Player ID you’re using
     [SerializeField] private Rewired.Player rPlayer;
 
     [Header("Attack details")]
@@ -73,6 +74,11 @@ public class Player : Entity
     public float ThrustSpeed;
     public Vector2 moveInput { get; set; }
 
+    /// <summary>
+    /// Public exposure in case other systems need to read which Rewired Player this instance uses.
+    /// </summary>
+    public int rewiredPlayerId => playerID;
+
     protected override void Awake()
     {
         base.Awake();
@@ -89,6 +95,7 @@ public class Player : Entity
 
         input = new PlayerInputSet();
 
+        // --- Construct states
         idleState = new Player_IdleState(this, stateMachine, "idle");
         moveState = new Player_MoveState(this, stateMachine, "move");
         dashState = new Player_DashState(this, stateMachine, "dash");
@@ -97,36 +104,90 @@ public class Player : Entity
         deadState = new Player_DeadState(this, stateMachine, "dead");
         counterAttackState = new Player_CounterAttackState(this, stateMachine, "counterAttack");
 
+        // --- Propagate Rewired Player ID to all states (so PlayerState can fetch rPlayer)
+        idleState.SetRewiredPlayerId(playerID);
+        moveState.SetRewiredPlayerId(playerID);
+        dashState.SetRewiredPlayerId(playerID);
+        thrustState.SetRewiredPlayerId(playerID);
+        basicAttackState.SetRewiredPlayerId(playerID);
+        deadState.SetRewiredPlayerId(playerID);
+        counterAttackState.SetRewiredPlayerId(playerID);
+
         DontDestroyOnLoad(gameObject);
     }
 
     protected override void Start()
     {
         base.Start();
-        stateMachine.Initialize(idleState);
-        rPlayer = ReInput.players.GetPlayer(playerID);
 
-        health.OnHealthUpdate += UpdateMainUIHealth;
-        mana.OnManaUpdate += UpdateMainUIMana;
+        // If something already initialized the SM (e.g., via spawner hook), don’t re-init.
+        if (stateMachine.currentState == null)
+            stateMachine.Initialize(idleState);
+
+        // Cache Rewired player safely
+        TryCacheRewiredPlayer();
+
+        // Hook UI signals
+        if (health != null) health.OnHealthUpdate += UpdateMainUIHealth;
+        if (mana != null) mana.OnManaUpdate += UpdateMainUIMana;
 
         UpdateMainUIHealth();
         UpdateMainUIMana();
 
         ApplySexLevelBonuses();
+
+        // Optional: repaint HUD fully if your UI has that API
+        ui?.inGameUI?.ForceRefreshFromCurrentState();
     }
 
     protected override void Update()
     {
         base.Update();
 
-        if (rPlayer.GetButtonDown("Interact"))
-            TryInteract();
+        // Guard: make sure rPlayer exists (e.g., if Rewired init lagged)
+        if (rPlayer == null) TryCacheRewiredPlayer();
 
-        if (rPlayer.GetButtonDown("TestEXP"))
-            GainEXP(50);
+        if (rPlayer != null)
+        {
+            if (rPlayer.GetButtonDown("Interact"))
+                TryInteract();
 
-        if (rPlayer.GetButtonDown("TestSexEXP"))
-            GainSexEXP(25);
+            if (rPlayer.GetButtonDown("TestEXP"))
+                GainEXP(50);
+
+            if (rPlayer.GetButtonDown("TestSexEXP"))
+                GainSexEXP(25);
+        }
+    }
+
+    /// <summary>
+    /// Called by PlayerSpawner / Player_InitHook immediately after instantiation.
+    /// Guarantees the state machine enters a state before Update() so skills can fire.
+    /// </summary>
+    public void InitializeAfterSpawn()
+    {
+        // Ensure SM is initialized so PlayerState.Enter() runs (caches Rewired, etc.)
+        if (stateMachine.currentState == null)
+            stateMachine.Initialize(idleState);
+
+        // Ensure Rewired player is cached
+        TryCacheRewiredPlayer();
+
+        // Repaint HUD connections if needed
+        ui?.inGameUI?.ForceRefreshFromCurrentState();
+    }
+
+    private void TryCacheRewiredPlayer()
+    {
+        try
+        {
+            rPlayer = ReInput.players.GetPlayer(playerID);
+            // Debug.Log($"[Player] Cached Rewired Player {playerID}: {(rPlayer != null)}");
+        }
+        catch
+        {
+            // ReInput might not be ready yet; will try again next frame
+        }
     }
 
     private void UpdateMainUIHealth()
@@ -136,7 +197,7 @@ public class Player : Entity
 
     private void UpdateMainUIMana()
     {
-        Debug.Log("🔵 Updating Main Mana Bar");
+        // Debug.Log("🔵 Updating Main Mana Bar");
         ui?.playerManaBar?.UpdateMana(mana.GetCurrentMana(), stats.GetMaxMana());
     }
 
@@ -147,7 +208,7 @@ public class Player : Entity
         float originalMoveSpeed = moveSpeed;
         float originalJumpForce = jumpForce;
         float originalAnimSpeed = anim.speed;
-        float originalAttackMovement = attackMovement[0];
+        float originalAttackMovement = attackMovement != null && attackMovement.Length > 0 ? attackMovement[0] : 0f;
         float speedMultiplier = 1 - slowMultiplier;
 
         moveSpeed *= speedMultiplier;
@@ -155,8 +216,11 @@ public class Player : Entity
         anim.speed *= speedMultiplier;
         dashSpeed *= speedMultiplier;
 
-        for (int i = 0; i < attackMovement.Length; i++)
-            attackMovement[i] *= speedMultiplier;
+        if (attackMovement != null)
+        {
+            for (int i = 0; i < attackMovement.Length; i++)
+                attackMovement[i] *= speedMultiplier;
+        }
 
         yield return new WaitForSeconds(duration);
 
@@ -164,8 +228,11 @@ public class Player : Entity
         jumpForce = originalJumpForce;
         anim.speed = originalAnimSpeed;
 
-        for (int i = 0; i < attackMovement.Length; i++)
-            attackMovement[i] = originalAttackMovement;
+        if (attackMovement != null)
+        {
+            for (int i = 0; i < attackMovement.Length; i++)
+                attackMovement[i] = originalAttackMovement;
+        }
     }
 
     public override void EntityDeath()

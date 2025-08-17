@@ -1,47 +1,53 @@
 using UnityEngine;
-using Rewired;
 
 public class Player_DashState : PlayerState
 {
-    //private float originalGravityScale;
-    //private float dashDirx;
-    //private float dashDiry;
+    private Vector2 dashDir;
 
-    public Player_DashState(Player player, StateMachine stateMachine, string animBoolName) : base(player, stateMachine, animBoolName)
-    {
-    }
+    public Player_DashState(Player player, StateMachine stateMachine, string animBoolName)
+        : base(player, stateMachine, animBoolName) { }
 
     public override void Enter()
     {
         base.Enter();
 
+        // 1) pick a direction (like Thrust): current input, else last facing, else down
+        dashDir = moveInput.sqrMagnitude > 0.0001f ? moveInput : player.lastMoveDirection;
+        if (dashDir.sqrMagnitude < 0.0001f) dashDir = Vector2.down;
+        dashDir = dashDir.normalized;
+
+        // 2) spend mana & start cooldown *only if* dash can be used
+        if (!skillManager.dash.CanUseSkillCheck(out var why))
+        {
+            Debug.LogWarning($"[Dash] blocked in Enter: {why}");
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+        if (!skillManager.dash.CommitUse())
+        {
+            // Mana spend failed or something else blocked last second
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+
+        // 3) effects (same timing as before)
         skillManager.dash.OnStartEffect();
-        player.vfx.DoImageEchoEffect(player.dashDuration);
+        player.vfx?.DoImageEchoEffect(player.dashDuration);
 
-        // this is where we set the dash direction. for 4 directional movement.
-        //dashDirx = moveInput.x;
-        //dashDiry = moveInput.y;
-        //----
+        // 4) run for the configured duration
         stateTimer = player.dashDuration;
-
-        //originalGravityScale = rb.gravityScale;
-        //rb.gravityScale = 0;
     }
-
 
     public override void Update()
     {
         base.Update();
-        CancelDashIfNeeded();
-        player.SetVelocity(player.dashSpeed * moveInput.x, player.dashSpeed * moveInput.y);
 
+        // Constant push like Thrust: velocity = speed * fixed direction
+        player.SetVelocity(player.dashSpeed * dashDir.x, player.dashSpeed * dashDir.y);
 
-        if (stateTimer < 0)
+        if (stateTimer < 0f)
         {
-         
-                stateMachine.ChangeState(player.idleState);
-            //else
-            //    stateMachine.ChangeState(player.fallState);
+            stateMachine.ChangeState(player.idleState);
         }
     }
 
@@ -50,13 +56,8 @@ public class Player_DashState : PlayerState
         base.Exit();
 
         skillManager.dash.OnEndEffect();
-
-        player.SetVelocity(0, 0);
-        //rb.gravityScale = originalGravityScale;
+        player.SetVelocity(0f, 0f);
     }
 
-    private void CancelDashIfNeeded()
-    {
-        
-    }
+    private void CancelDashIfNeeded() { /* hook if you add cancels */ }
 }

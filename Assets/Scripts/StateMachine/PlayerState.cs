@@ -1,21 +1,28 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
-using Rewired; // Ensure you have the Rewired package installed for input handling
+using Rewired;
 
 public abstract class PlayerState : EntityState
 {
-
     protected Player player;
     protected PlayerInputSet input;
     protected Player_SkillManager skillManager;
-    protected Entity_Mana mana; // Reference to the Entity_Mana component for mana management
+    protected Entity_Mana mana;
 
-    public float attackSpeed { get; protected set; } // Attack speed multiplier for the player
-    [SerializeField] private int playerID = 0; // Player ID for multiplayer support    
-    public Rewired.Player rPlayer {  get; protected set; }
+    public float attackSpeed { get; protected set; }
 
-    protected Vector2 moveInput; // Declare moveInput to fix CS0103    
+    // Because PlayerState is NOT a MonoBehaviour, SerializeField won't show in Inspector.
+    // We support an overridable ID via SetRewiredPlayerId; otherwise default 0.
+    private int _cachedRewiredId = 0;
+    public Rewired.Player rPlayer { get; protected set; }
+
+    protected Vector2 moveInput;
+
+    // Action names are strings; keep them in one place
+    protected virtual string DashAction => "Dash";
+    protected virtual string ThrustAction => "Thrust";
+    protected virtual string ShardAction => "Shard";
 
     public PlayerState(Player player, StateMachine stateMachine, string animBoolName) : base(stateMachine, animBoolName)
     {
@@ -24,94 +31,117 @@ public abstract class PlayerState : EntityState
         anim = player.anim;
         rb = player.rb;
         input = player.input;
-        stats = player.stats; // Get the Entity_Stats component from the player    
+        stats = player.stats;
         skillManager = player.skillManager;
-        mana = player.GetComponent<Entity_Mana>(); // Get the Entity_Mana component from the player
+        mana = player.GetComponent<Entity_Mana>();
     }
 
-    // The error CS0115 indicates that the method `Start` in `PlayerState` is attempting to override a method that does not exist in its base class `EntityState`.  
-    // To fix this, we need to remove the `override` keyword from the `Start` method in `PlayerState`.  
-
-    
+    /// <summary>Call this from your Player when constructing states to override the default (0).</summary>
+    public void SetRewiredPlayerId(int id) => _cachedRewiredId = Mathf.Max(0, id);
 
     public override void Enter()
     {
         base.Enter();
-        rPlayer = Rewired.ReInput.players.GetPlayer(playerID);
+        EnsureRewiredPlayer();
     }
-
 
     public override void Update()
     {
         base.Update();
 
-        // Get input values  
+        if (!EnsureRewiredPlayer())
+            return;
+
+        // Axes
         xInput = rPlayer.GetAxis("Horizontal");
         yInput = rPlayer.GetAxis("Vertical");
 
-        //// Update player's moveInput  
         moveInput = new Vector2(xInput, yInput);
+        if (moveInput.sqrMagnitude > 0.01f)
+            player.lastMoveDirection = moveInput.normalized;
 
-        Vector2 input = new Vector2(xInput, yInput);
-        if (input.sqrMagnitude > 0.01f)
+        // --- Skills ---
+        // --- Skills ---
+        // in PlayerState input:
+        if (rPlayer.GetButtonDown(DashAction))
         {
-            player.lastMoveDirection = input.normalized;
-        }
-        
-        //if (input.Player.Dash.WasPressedThisFrame() && CanDash())
-        //{
-        //    skillManager.dash.SetSkillOnCooldown();
-        //    stateMachine.ChangeState(player.dashState);
-        //}
-
-        // Handle skill inputs  
-        if (rPlayer.GetButtonDown("Dash") && CanDash())
-        {
-            skillManager.dash.SetSkillOnCooldown();
-            stateMachine.ChangeState(player.dashState);
+            if (skillManager.dash.CanUseSkillCheck(out var why))
+                stateMachine.ChangeState(player.dashState);
+            else
+                Debug.LogWarning($"Dash blocked: {why}");
         }
 
-        if (rPlayer.GetButtonDown("Thrust") && CanThrust())
+        if (rPlayer.GetButtonDown(ThrustAction))
         {
-            stateMachine.ChangeState(player.thrustState);
+            if (skillManager.thrust.CanUseSkillCheck(out var why))
+                stateMachine.ChangeState(player.thrustState);
+            else
+                Debug.LogWarning($"Thrust blocked: {why}");
         }
 
-        if (rPlayer.GetButtonDown("Shard"))
+
+
+        if (rPlayer.GetButtonDown(ShardAction))
         {
-            skillManager.shard.TryUseSkill();
+            Debug.Log("[Input] Shard pressed");
+            if (skillManager.shard != null)
+                skillManager.shard.TryUseSkill();
+            else
+                Debug.LogError("[Skill] Shard component missing on player!");
         }
     }
+
 
     public override void UpdateAnimationParameters()
     {
         base.UpdateAnimationParameters();
-        
     }
 
-    private bool CanDash()
+    private bool EnsureRewiredPlayer()
     {
-        if (skillManager.dash.CanUseSkill() == false)
-        
-            return false;
+        if (rPlayer != null) return true;
 
+        try
+        {
+            // If your Player exposes a public 'rewiredPlayerId', use it; otherwise fall back to cached/default (0).
+            int id = _cachedRewiredId;
+            // If you *do* have player.rewiredPlayerId in your Player class, uncomment:
+            // id = player != null ? player.rewiredPlayerId : _cachedRewiredId;
 
-        if (stateMachine.currentState == player.dashState)
+            rPlayer = ReInput.players.GetPlayer(id);
+            if (rPlayer == null)
+            {
+                // Rewired not ready yet or wrong ID
+                return false;
+            }
+            return true;
+        }
+        catch
+        {
+            // ReInput might not be initialized yet
             return false;
-        Debug.Log("Can Dash: true");
+        }
+    }
+
+    private bool CanDash(out string reason)
+    {
+        reason = "";
+        if (skillManager == null) { reason = "skillManager null"; return false; }
+        if (skillManager.dash == null) { reason = "dash missing"; return false; }
+        if (!skillManager.dash.CanUseSkill()) { reason = "dash on cooldown/locked"; return false; }
+        if (stateMachine.currentState == player.dashState) { reason = "already dashing"; return false; }
         return true;
     }
 
-    private bool CanThrust()
+    private bool CanThrust(out string reason)
     {
-        //if (mana.UseMana(skillManager.thrust.manaCost) == false)
-        //    return false; // Check if there is enough mana to use the thrust skill
-
-        if (skillManager.thrust.CanUseSkill() == false)
-            return false;
-
-        if (stateMachine.currentState == player.thrustState)
-            return false;
-
+        reason = "";
+        if (skillManager == null) { reason = "skillManager null"; return false; }
+        if (skillManager.thrust == null) { reason = "thrust missing"; return false; }
+        if (!skillManager.thrust.CanUseSkill()) { reason = "thrust on cooldown/locked"; return false; }
+        if (stateMachine.currentState == player.thrustState) { reason = "already thrusting"; return false; }
         return true;
     }
+
+
 }

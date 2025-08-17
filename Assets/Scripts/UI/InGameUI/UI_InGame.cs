@@ -81,19 +81,12 @@ public class UI_InGame : MonoBehaviour
         UpdateExpBar();
         UpdateSexExpBar();
 
-        if (playerInventory != null)
-        {
-            UpdateGoldDisplay(playerInventory.gold);
-        }
-        else
-        {
-            UpdateGoldDisplay(0);
-        }
+        UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
     }
 
     private void Update()
     {
-        if (playerInventory == null) return;
+        if (playerInventory == null || rplayer == null) return;
 
         if (rplayer.GetButtonDown(quickSlot1Action)) playerInventory.TryUseQuickItemInSlot(1);
         if (rplayer.GetButtonDown(quickSlot2Action)) playerInventory.TryUseQuickItemInSlot(2);
@@ -117,7 +110,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 GOLD UI
+    // GOLD UI
     // ------------------------------
     public void UpdateGoldDisplay(int currentGold)
     {
@@ -150,7 +143,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 HEALTH & MANA
+    // HEALTH & MANA
     // ------------------------------
     private void UpdateHealthBar()
     {
@@ -175,7 +168,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 EXP BAR (NORMAL)
+    // EXP BAR (NORMAL)
     // ------------------------------
     public void UpdateExpBar()
     {
@@ -188,7 +181,6 @@ public class UI_InGame : MonoBehaviour
         if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
     }
 
-    // ✅ Overload to update from saved data
     public void UpdateExpBar(float currentExp, float nextLevelExp)
     {
         if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
@@ -196,7 +188,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 SEX EXP BAR
+    // SEX EXP BAR
     // ------------------------------
     public void UpdateSexExpBar()
     {
@@ -218,7 +210,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 QUICK SLOT UI
+    // QUICK SLOT UI
     // ------------------------------
     public void UpdateQuickSlots()
     {
@@ -237,7 +229,7 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 SKILL SLOT ACCESS
+    // SKILL SLOT ACCESS
     // ------------------------------
     public UI_SkillSlot GetSkillSlot(SkillType type)
     {
@@ -269,9 +261,8 @@ public class UI_InGame : MonoBehaviour
     }
 
     // ------------------------------
-    // 📌 ONE-SHOT BOOTSTRAP (NEW)
+    // ONE-SHOT BOOTSTRAP
     // ------------------------------
-    /// <summary>Force the HUD to pull current Player/Inventory state now (used on fresh scene load).</summary>
     public void ForceRefreshFromCurrentState()
     {
         if (player == null)
@@ -285,7 +276,6 @@ public class UI_InGame : MonoBehaviour
 
             if (playerInventory != null)
             {
-                // Ensure we’re subscribed (idempotent if already wired)
                 playerInventory.OnInventoryChange -= UpdateQuickSlots;
                 playerInventory.OnGoldChanged -= UpdateGoldDisplay;
                 playerInventory.OnInventoryChange += UpdateQuickSlots;
@@ -293,7 +283,6 @@ public class UI_InGame : MonoBehaviour
             }
         }
 
-        // Repaint HUD elements from current objects
         UpdateQuickSlots();
         UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
         UpdateExpBar();

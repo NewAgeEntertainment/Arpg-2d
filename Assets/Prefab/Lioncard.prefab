@@ -409,6 +409,7 @@ GameObject:
   - component: {fileID: 4425057631042862245}
   - component: {fileID: 1517721848282973766}
   - component: {fileID: 4620312241617601018}
+  - component: {fileID: 3196277605636976479}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -660,9 +661,9 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 0
   dashDuration: 1
-  dashSpeed: 12
+  dashSpeed: 5
   ThrustDuration: 1
-  ThrustSpeed: 20
+  ThrustSpeed: 5
 --- !u!50 &5213953530006539592
 Rigidbody2D:
   serializedVersion: 4
@@ -950,6 +951,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d119f0a058803dc46926eca016fc580e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3196277605636976479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a75e1f7958b57f84db9a31f7c8511a1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0
@@ -1002,6 +1015,7 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 3
   manaCost: 0
+  unlockedByDefault: 1
 --- !u!114 &7563797542631961709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1018,6 +1032,7 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 2
   manaCost: 10
+  unlockedByDefault: 0
 --- !u!114 &6435512993695752812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1034,6 +1049,7 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 1
   manaCost: 0
+  unlockedByDefault: 0
   shardPrefab: {fileID: 453335324129619194, guid: 2e9bcadcaa78a2d4487c7440523eb802, type: 3}
   detonateTime: 2
   shardSpeed: 12
@@ -1058,6 +1074,7 @@ MonoBehaviour:
   upgradeType: 11
   cooldown: 0
   manaCost: 0
+  unlockedByDefault: 0
   spinSwordPrefab: {fileID: 875279385106085006, guid: 43769973bbf735a4db85f9e28f18c0c9, type: 3}
   maxDistance: 5
   attacksPerSecond: 6
@@ -1082,6 +1099,7 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 1.93
   manaCost: 0
+  unlockedByDefault: 0
   sexyTimeLogic: {fileID: 0}
   unlocked: 0
 --- !u!1 &4262697515208930187

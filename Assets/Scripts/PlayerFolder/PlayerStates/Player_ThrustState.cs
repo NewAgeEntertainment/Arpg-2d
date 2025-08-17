@@ -2,49 +2,51 @@ using UnityEngine;
 
 public class Player_ThrustState : PlayerState
 {
-    private Vector2 ThrustDir; // Changed from float to Vector2
+    private Vector2 thrustDir;
 
-    public Player_ThrustState(Player player, StateMachine stateMachine, string animBoolName) : base(player, stateMachine, animBoolName)
-    {
-    }
+    public Player_ThrustState(Player player, StateMachine stateMachine, string animBoolName)
+        : base(player, stateMachine, animBoolName) { }
 
     public override void Enter()
     {
         base.Enter();
 
-        ThrustDir = new Vector2(player.currentDir.x, player.currentDir.y); // No changes needed here
-                                                                           // this is where we set the dash direction. for 4 directional movement.
-        
-        
-        stateTimer = player.ThrustDuration;
+        // Prefer the latest input; if none, use last facing direction
+        thrustDir = moveInput.sqrMagnitude > 0.0001f ? moveInput : player.lastMoveDirection;
+        if (thrustDir.sqrMagnitude < 0.0001f) thrustDir = Vector2.down;
+        thrustDir = thrustDir.normalized;
 
-        //originalGravityScale = rb.gravityScale;
-        //rb.gravityScale = 0;
+        // Start cooldown/effects
+        if (skillManager?.thrust != null)
+        {
+            skillManager.thrust.SetSkillOnCooldown();
+            skillManager.thrust.OnStartEffect();
+        }
+
+        stateTimer = player.ThrustDuration;
     }
 
     public override void Update()
     {
         base.Update();
-        CancelThrustIfNeeded();
-        player.SetVelocity(player.dashSpeed * ThrustDir.x, player.dashSpeed * ThrustDir.y); // Updated to use ThrustDir.x and ThrustDir.y
 
-        if (stateTimer < 0)
+        player.SetVelocity(player.ThrustSpeed * thrustDir.x, player.ThrustSpeed * thrustDir.y);
+
+        if (stateTimer < 0f)
         {
             stateMachine.ChangeState(player.idleState);
-            //else
-            //    stateMachine.ChangeState(player.fallState);
         }
     }
 
     public override void Exit()
     {
         base.Exit();
-        player.SetVelocity(0, 0);
-        //rb.gravityScale = originalGravityScale;
+
+        if (skillManager?.thrust != null)
+            skillManager.thrust.OnEndEffect();
+
+        player.SetVelocity(0f, 0f);
     }
 
-    private void CancelThrustIfNeeded()
-    {
-
-    }
+    private void CancelThrustIfNeeded() { /* hook for cancels */ }
 }

@@ -10,9 +10,13 @@ public class Skill_Base : MonoBehaviour
 
     [Header("General details")]
     [SerializeField] protected SkillType skillType;
-    [SerializeField] protected SkillUpgradeType upgradeType;
-    [SerializeField] protected float cooldown;
-    [SerializeField] protected float manaCost;
+    [SerializeField] protected SkillUpgradeType upgradeType; // None => locked unless default-unlocked
+    [SerializeField] protected float cooldown = 0f;
+    [SerializeField] protected float manaCost = 0f;
+
+    [Header("Unlocking")]
+    [Tooltip("If true, this skill is usable even without a Skill_DataSO upgrade (good for Dash/Thrust).")]
+    [SerializeField] private bool unlockedByDefault = false;
 
     private float lastTimeUsed;
 
@@ -22,18 +26,62 @@ public class Skill_Base : MonoBehaviour
         skillManager = GetComponentInParent<Player_SkillManager>();
         player = GetComponentInParent<Player>();
 
-        lastTimeUsed = -cooldown; // allow immediate use
+        // Allow immediate use at startup
+        lastTimeUsed = -cooldown;
     }
 
+    /// <summary>Pure check: does NOT spend mana or start cooldown.</summary>
+    public bool CanUseSkillCheck(out string reason)
+    {
+        reason = "";
+        if (!IsUnlocked())
+        {
+            reason = "locked";
+            return false;
+        }
+        if (OnCooldown())
+        {
+            reason = "on cooldown";
+            return false;
+        }
+        if (mana != null && manaCost > 0f && mana.GetCurrentMana() < manaCost)
+        {
+            reason = "not enough mana";
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>Convenience pure check (no side effects).</summary>
+    public bool CanUseSkill() => CanUseSkillCheck(out _);
+
+    /// <summary>Commit the use: spend mana (if any) and start cooldown.</summary>
+    public bool CommitUse()
+    {
+        // Spend mana
+        if (mana != null && manaCost > 0f)
+        {
+            if (!mana.UseMana(manaCost))
+                return false;
+        }
+
+        SetSkillOnCooldown();
+        return true;
+    }
+
+    /// <summary>Default TryUse for one-shot skills (e.g., Shard). Child overrides can call base.TryUseSkill().</summary>
     public virtual void TryUseSkill()
     {
-        if (!CanUseSkill())
+        if (!CanUseSkillCheck(out var reason))
+        {
+            Debug.Log($"[Skill_Base] {name} blocked: {reason}");
+            return;
+        }
+        if (!CommitUse())
             return;
 
-        // ✅ Skill logic should be added in child class override
-        Debug.Log($"[Skill_Base] {name} skill used. Mana spent: {manaCost}");
-
-        // Child classes will do the actual effect (e.g. damage, VFX, etc.)
+        Debug.Log($"[Skill_Base] {name} used. Mana spent: {manaCost}");
+        // Child classes should actually perform the effect (projectile, AoE, etc).
     }
 
     public virtual void SetSkillUpgrade(Skill_DataSO skillData)
@@ -46,8 +94,7 @@ public class Skill_Base : MonoBehaviour
 
         if (skillData.skillType != skillType)
         {
-            Debug.LogWarning(
-                $"[{name}] Mismatched SkillType! This Skill_Base is [{skillType}] but the SO is [{skillData.skillType}]");
+            Debug.LogWarning($"[{name}] Mismatched SkillType! This Skill_Base is [{skillType}] but SO is [{skillData.skillType}]");
         }
 
         if (skillData.upgradeData == null)
@@ -63,27 +110,20 @@ public class Skill_Base : MonoBehaviour
         manaCost = upgrade.manaCost;
         damageScaleData = upgrade.damageScale != null ? upgrade.damageScale : damageScaleData;
 
+        // Wire HUD slot
         try
         {
-            if (player == null)
-                player = FindFirstObjectByType<Player>();
-
+            if (player == null) player = FindFirstObjectByType<Player>();
             var ui = player?.ui?.inGameUI;
-            if (ui == null)
+            if (ui != null)
             {
-                Debug.LogWarning($"[{name}] UI not ready while setting skill upgrade ({skillData.name}). Skipping UI binding.");
+                var slot = ui.GetSkillSlot(skillType);
+                if (slot != null) slot.SetupSkillSlot(skillData);
+                else Debug.LogWarning($"[{name}] No UI skill slot found for {skillType} while setting {skillData.name}.");
             }
             else
             {
-                var slot = ui.GetSkillSlot(skillType);
-                if (slot != null)
-                {
-                    slot.SetupSkillSlot(skillData);
-                }
-                else
-                {
-                    Debug.LogWarning($"[{name}] No UI skill slot found for {skillType} while setting {skillData.name}.");
-                }
+                Debug.LogWarning($"[{name}] UI not ready while setting skill upgrade ({skillData.name}). Skipping UI binding.");
             }
         }
         catch (System.Exception ex)
@@ -91,29 +131,12 @@ public class Skill_Base : MonoBehaviour
             Debug.LogError($"[{name}] Exception while wiring UI in SetSkillUpgrade: {ex}");
         }
 
-        ResetCoolDown();
+        // ⬇️ Important: make the skill READY immediately after unlock
+        ResetCooldown();           // <-- use the READY version, not ResetCoolDown()
     }
 
-    public bool CanUseSkill()
-    {
-        if (upgradeType == SkillUpgradeType.None)
-            return false;
-
-        if (OnCooldown())
-        {
-            Debug.Log($"[Skill_Base] {name} is on cooldown.");
-            return false;
-        }
-
-        if (mana == null || !mana.UseMana(manaCost))
-        {
-            Debug.Log($"[Skill_Base] Not enough mana to use {name}. Required: {manaCost}");
-            return false;
-        }
-
-        SetSkillOnCooldown();
-        return true;
-    }
+    /// <summary>Core unlock predicate.</summary>
+    public bool IsUnlocked() => unlockedByDefault || upgradeType != SkillUpgradeType.None;
 
     public bool Unlocked(SkillUpgradeType upgradeToCheck) => upgradeType == upgradeToCheck;
 
@@ -132,8 +155,7 @@ public class Skill_Base : MonoBehaviour
 
     public void ResetCoolDownBy(float cooldownReduction) => lastTimeUsed += cooldownReduction;
 
-    public void ResetCoolDown() => lastTimeUsed = Time.time;
-
+    /// <summary>READY now (cooldown cleared).</summary>
     public void ResetCooldown()
     {
         if (player?.ui?.inGameUI != null)
@@ -144,4 +166,11 @@ public class Skill_Base : MonoBehaviour
 
         lastTimeUsed = Time.time - cooldown;
     }
+
+    // Back-compat alias (your old code called this but it actually put the skill ON cooldown).
+    // Keep it, but make it call the READY version to avoid confusion/bugs.
+    public void ResetCoolDown() => ResetCooldown();
+
+    /// <summary>Optional: call at runtime to allow Dash/Thrust without tree.</summary>
+    public void ForceUnlock(bool value = true) => unlockedByDefault = value;
 }

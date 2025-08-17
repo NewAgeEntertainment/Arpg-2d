@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,7 +6,6 @@ using UnityEngine.EventSystems;
 
 public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    // things this game object needs to function
     private UI ui;
     private Image skillIcon;
     private RectTransform rect;
@@ -15,11 +13,14 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private Skill_DataSO skillData;
 
+    [Header("Slot Setup")]
     public SkillType skillType;
-    [SerializeField] private Image cooldownImage;
-    [SerializeField] private string inputKeyName;
+
+    [Header("UI")]
+    [SerializeField] private Image cooldownImage;       // radial image (Filled, 0..1)
+    [SerializeField] private string inputKeyName;       // e.g., "Q"
     [SerializeField] private TextMeshProUGUI inputKeyText;
-    [SerializeField] private GameObject conflictSlot;
+    [SerializeField] private GameObject conflictSlot;   // flashes when unusable / empty
 
     private void Awake()
     {
@@ -31,7 +32,7 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private void OnValidate()
     {
-        gameObject.name = "UI_SkillSlot - " + skillType.ToString(); // Set the name of the GameObject based on the input key name
+        gameObject.name = "UI_SkillSlot - " + skillType.ToString();
     }
 
     public void SetupSkillSlot(Skill_DataSO selectedSkill)
@@ -47,42 +48,82 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         {
             var c = Color.black; c.a = 0.6f;
             cooldownImage.color = c;
+            cooldownImage.fillAmount = 0f; // ready
         }
 
         if (inputKeyText != null) inputKeyText.text = inputKeyName;
-        if (skillIcon != null && selectedSkill != null) skillIcon.sprite = selectedSkill.icon;
-        if (conflictSlot != null) conflictSlot.SetActive(false);
+
+        if (skillIcon != null && selectedSkill != null)
+            skillIcon.sprite = selectedSkill.icon;
+
+        if (conflictSlot != null)
+            conflictSlot.SetActive(false);
     }
 
+    public Skill_DataSO Data => skillData;
+    public bool HasSkill => skillData != null;
+    public bool IsReady => cooldownImage == null || cooldownImage.fillAmount <= 0.001f;
 
-    public void StartCooldown(float cooldown)
+    public float CooldownSeconds
+        => (skillData != null && skillData.upgradeData != null)
+            ? Mathf.Max(0f, skillData.upgradeData.cooldown)
+            : 5f;
+
+    public float ManaCost
+        => (skillData != null && skillData.upgradeData != null)
+            ? Mathf.Max(0f, skillData.upgradeData.manaCost)
+            : 0f;
+
+    public void SetKeyLabel(string label)
     {
-        cooldownImage.fillAmount = 1;
-        StartCoroutine(CooldownCo(cooldown)); // Start the cooldown coroutine
+        inputKeyName = label;
+        if (inputKeyText != null) inputKeyText.text = label;
     }
 
-    public void ResetCooldown() => cooldownImage.fillAmount = 0f; // Reset the cooldown image fill amount to 0
+    public void StartCooldown(float cooldownSeconds)
+    {
+        if (cooldownImage == null) return;
+        StopAllCoroutines();
+        cooldownImage.fillAmount = 1f;
+        StartCoroutine(CooldownCo(cooldownSeconds));
+    }
+
+    public void ResetCooldown()
+    {
+        if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+    }
+
+    public void PulseConflict(float seconds = 0.2f)
+    {
+        if (conflictSlot == null) return;
+        StopCoroutine(nameof(PulseCo));
+        StartCoroutine(PulseCo(seconds));
+    }
 
     private IEnumerator CooldownCo(float duration)
     {
-        float timePassed = 0f;
-
-        while (timePassed < duration)
+        float t = 0f;
+        while (t < duration)
         {
-            timePassed = timePassed + Time.deltaTime;
-            cooldownImage.fillAmount = 1 - (timePassed / duration); // Update the cooldown image fill amount
-            yield return null; // Wait for the next frame
+            t += Time.deltaTime;
+            if (cooldownImage != null)
+                cooldownImage.fillAmount = 1f - (t / duration);
+            yield return null;
         }
+        if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+    }
 
-        cooldownImage.fillAmount = 0f; // Reset the cooldown image fill amount
+    private IEnumerator PulseCo(float seconds)
+    {
+        conflictSlot.SetActive(true);
+        yield return new WaitForSeconds(seconds);
+        conflictSlot.SetActive(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (skillData == null)
-            return;
-
-        ui.skillToolTip.ShowToolTip(true, rect, skillData, null); // Show the skill tooltip with the skill data
+        if (skillData == null) return;
+        ui.skillToolTip.ShowToolTip(true, rect, skillData, null);
     }
 
     public void OnPointerExit(PointerEventData eventData)
