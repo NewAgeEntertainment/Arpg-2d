@@ -8,22 +8,34 @@ public class InventorySaver : Saver
 {
     private Inventory_Player inventory;
 
+    // Multi-path ItemData lookup (add more folders if needed)
     private static Dictionary<string, ItemDataSO> itemLookup;
     private static readonly string[] LOOKUP_PATHS = { "Items", "Materials" };
 
     [System.Serializable]
     public class InventorySaveData
     {
-        public List<SavedItem> items = new List<SavedItem>();
+        public List<SavedItem> items = new List<SavedItem>();   // backpack
         public int gold;
+
+        // NEW: quick slots (fixed 4 entries, index = slot number - 1)
+        public List<SavedQuickSlot> quickSlots = new List<SavedQuickSlot>(4);
     }
 
     [System.Serializable]
     public class SavedItem
     {
-        public string itemName; // Uses itemData.name (asset filename without path)
+        public string itemName; // itemData.name
         public int stackSize;
-        public List<SavedItemModifier> modifiers; // per-instance modifiers
+        public List<SavedItemModifier> modifiers;
+    }
+
+    [System.Serializable]
+    public class SavedQuickSlot
+    {
+        public string itemName; // null/empty means empty slot
+        public int stackSize;
+        public List<SavedItemModifier> modifiers;
     }
 
     [System.Serializable]
@@ -64,6 +76,7 @@ public class InventorySaver : Saver
 
         var data = new InventorySaveData { gold = inventory.gold };
 
+        // ---- Backpack ----
         foreach (var item in inventory.itemList)
         {
             if (item?.itemData == null) continue;
@@ -72,17 +85,38 @@ public class InventorySaver : Saver
             {
                 itemName = item.itemData.name,
                 stackSize = Mathf.Max(1, item.stackSize),
-                modifiers = new List<SavedItemModifier>()
+                modifiers = PackMods(item.GetInstanceModifiers())
             };
 
-            var instMods = item.GetInstanceModifiers();
-            if (instMods != null && instMods.Length > 0)
-            {
-                foreach (var m in instMods)
-                    saved.modifiers.Add(new SavedItemModifier { statType = m.statType, value = m.value });
-            }
-
             data.items.Add(saved);
+        }
+
+        // ---- Quick Slots (4) ----
+        data.quickSlots.Clear();
+        int slotCount = (inventory.quickSlots != null) ? inventory.quickSlots.Length : 0;
+        for (int i = 0; i < 4; i++)
+        {
+            Inventory_Player.QuickSlot src = default;
+            if (i < slotCount) src = inventory.quickSlots[i];
+
+            if (src.item == null || src.slotStack <= 0 || src.item.itemData == null)
+            {
+                data.quickSlots.Add(new SavedQuickSlot
+                {
+                    itemName = null,
+                    stackSize = 0,
+                    modifiers = new List<SavedItemModifier>()
+                });
+            }
+            else
+            {
+                data.quickSlots.Add(new SavedQuickSlot
+                {
+                    itemName = src.item.itemData.name,
+                    stackSize = Mathf.Max(1, src.slotStack),
+                    modifiers = PackMods(src.item.GetInstanceModifiers())
+                });
+            }
         }
 
         return SaveSystem.Serialize(data);
@@ -95,6 +129,7 @@ public class InventorySaver : Saver
         var data = SaveSystem.Deserialize<InventorySaveData>(s);
         if (data == null || inventory == null) return;
 
+        // ---- Backpack ----
         inventory.itemList.Clear();
 
         foreach (var saved in data.items)
@@ -110,12 +145,7 @@ public class InventorySaver : Saver
             var newItem = new Inventory_Item(itemData);
 
             if (saved.modifiers != null && saved.modifiers.Count > 0)
-            {
-                var rebuilt = new ItemModifier[saved.modifiers.Count];
-                for (int i = 0; i < rebuilt.Length; i++)
-                    rebuilt[i] = new ItemModifier { statType = saved.modifiers[i].statType, value = saved.modifiers[i].value };
-                newItem.SetInstanceModifiers(rebuilt);
-            }
+                newItem.SetInstanceModifiers(UnpackMods(saved.modifiers));
 
             if (saved.stackSize > 1)
                 newItem.AddStack(saved.stackSize - 1);
@@ -123,8 +153,64 @@ public class InventorySaver : Saver
             inventory.itemList.Add(newItem);
         }
 
+        // ---- Gold ----
         inventory.gold = data.gold;
+
+        // ---- Quick Slots (restore exact 4) ----
+        if (inventory.quickSlots == null || inventory.quickSlots.Length != 4)
+        {
+            // If field is not serialized or size differs, create 4 slots.
+            inventory.quickSlots = new Inventory_Player.QuickSlot[4];
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            var dst = new Inventory_Player.QuickSlot(); // works for struct/class
+            if (data.quickSlots != null && i < data.quickSlots.Count)
+            {
+                var saved = data.quickSlots[i];
+                if (!string.IsNullOrEmpty(saved.itemName) && saved.stackSize > 0)
+                {
+                    if (!itemLookup.TryGetValue(saved.itemName, out var so) || so == null)
+                    {
+                        Debug.LogWarning($"[InventorySaver] QuickSlot {i + 1}: ItemData not found for '{saved.itemName}'. Leaving empty.");
+                    }
+                    else
+                    {
+                        var item = new Inventory_Item(so);
+                        if (saved.modifiers != null && saved.modifiers.Count > 0)
+                            item.SetInstanceModifiers(UnpackMods(saved.modifiers));
+
+                        dst.item = item;
+                        dst.slotStack = Mathf.Max(1, saved.stackSize);
+                    }
+                }
+            }
+
+            // Assign back (struct-safe)
+            inventory.quickSlots[i] = dst;
+        }
+
+        // One notify to refresh UI (UI_InGame listens and will repaint quick slots)
         inventory.NotifyInventoryChanged();
     }
-}
 
+    // ---------- helpers ----------
+    private static List<SavedItemModifier> PackMods(ItemModifier[] mods)
+    {
+        var list = new List<SavedItemModifier>();
+        if (mods == null || mods.Length == 0) return list;
+        foreach (var m in mods)
+            list.Add(new SavedItemModifier { statType = m.statType, value = m.value });
+        return list;
+    }
+
+    private static ItemModifier[] UnpackMods(List<SavedItemModifier> mods)
+    {
+        if (mods == null || mods.Count == 0) return System.Array.Empty<ItemModifier>();
+        var arr = new ItemModifier[mods.Count];
+        for (int i = 0; i < arr.Length; i++)
+            arr[i] = new ItemModifier { statType = mods[i].statType, value = mods[i].value };
+        return arr;
+    }
+}
