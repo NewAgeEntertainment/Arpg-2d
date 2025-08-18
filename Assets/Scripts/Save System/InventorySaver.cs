@@ -1,163 +1,130 @@
-﻿//// InventorySaver.cs
-//using PixelCrushers;
-//using UnityEngine;
-//using System.Collections.Generic;
+﻿// Assets/Scripts/Save System/InventorySaver.cs
+using PixelCrushers;
+using UnityEngine;
+using System.Collections.Generic;
 
-///// <summary>
-///// Saves & loads the player's backpack inventory and gold.
-///// Works with any subfolder structure under Resources/Items/**.
-///// Also preserves per-instance item modifiers.
-///// </summary>
-//[DisallowMultipleComponent]
-//public class InventorySaver : Saver
-//{
-//    private Inventory_Player inventory;
+[DisallowMultipleComponent]
+public class InventorySaver : Saver
+{
+    private Inventory_Player inventory;
 
-//    // Cache of all ItemDataSO found under Resources/Items (any subfolder).
-//    // Key = asset name (itemData.name), Value = ItemDataSO
-//    private static Dictionary<string, ItemDataSO> itemLookup;
+    private static Dictionary<string, ItemDataSO> itemLookup;
+    private static readonly string[] LOOKUP_PATHS = { "Items", "Materials" };
 
-//    [System.Serializable]
-//    public class InventorySaveData
-//    {
-//        public List<SavedItem> items = new List<SavedItem>();
-//        public int gold;
-//    }
+    [System.Serializable]
+    public class InventorySaveData
+    {
+        public List<SavedItem> items = new List<SavedItem>();
+        public int gold;
+    }
 
-//    [System.Serializable]
-//    public class SavedItem
-//    {
-//        public string itemName; // Uses itemData.name (asset filename without path)
-//        public int stackSize;
-//        public List<SavedItemModifier> modifiers; // per-instance modifiers
-//    }
+    [System.Serializable]
+    public class SavedItem
+    {
+        public string itemName; // Uses itemData.name (asset filename without path)
+        public int stackSize;
+        public List<SavedItemModifier> modifiers; // per-instance modifiers
+    }
 
-//    [System.Serializable]
-//    public class SavedItemModifier
-//    {
-//        public StatType statType;
-//        public float value;
-//    }
+    [System.Serializable]
+    public class SavedItemModifier
+    {
+        public StatType statType;
+        public float value;
+    }
 
-//    private void Awake()
-//    {
-//        inventory = GetComponent<Inventory_Player>();
-//        BuildItemLookupIfNeeded();
-//    }
+    private void Awake()
+    {
+        inventory = GetComponent<Inventory_Player>();
+        BuildItemLookupIfNeeded();
+    }
 
-//    private static void BuildItemLookupIfNeeded()
-//    {
-//        if (itemLookup != null) return;
+    private static void BuildItemLookupIfNeeded()
+    {
+        if (itemLookup != null) return;
 
-//        itemLookup = new Dictionary<string, ItemDataSO>();
+        itemLookup = new Dictionary<string, ItemDataSO>();
+        foreach (var path in LOOKUP_PATHS)
+        {
+            var allItems = Resources.LoadAll<ItemDataSO>(path);
+            foreach (var so in allItems)
+            {
+                if (so == null) continue;
+                if (!itemLookup.ContainsKey(so.name))
+                    itemLookup.Add(so.name, so);
+                else
+                    Debug.LogWarning($"[InventorySaver] Duplicate ItemDataSO name: {so.name} (in {path}). Keep names unique.");
+            }
+        }
+    }
 
-//        // This loads every ItemDataSO anywhere under Resources/Items/** (recursively).
-//        var allItems = Resources.LoadAll<ItemDataSO>("Items");
+    public override string RecordData()
+    {
+        if (inventory == null) return string.Empty;
 
-//        foreach (var so in allItems)
-//        {
-//            if (so == null) continue;
+        var data = new InventorySaveData { gold = inventory.gold };
 
-//            // NOTE: Key is the asset's .name (the file name without extension).
-//            // Keep these unique across all subfolders, or last one wins.
-//            if (!itemLookup.ContainsKey(so.name))
-//            {
-//                itemLookup.Add(so.name, so);
-//            }
-//            else
-//            {
-//                Debug.LogWarning($"[InventorySaver] Duplicate ItemDataSO name detected: {so.name}. " +
-//                                 "Ensure unique asset names across your Items folders.");
-//            }
-//        }
-//    }
+        foreach (var item in inventory.itemList)
+        {
+            if (item?.itemData == null) continue;
 
-//    public override string RecordData()
-//    {
-//        if (inventory == null) return string.Empty;
+            var saved = new SavedItem
+            {
+                itemName = item.itemData.name,
+                stackSize = Mathf.Max(1, item.stackSize),
+                modifiers = new List<SavedItemModifier>()
+            };
 
-//        var data = new InventorySaveData
-//        {
-//            gold = inventory.gold
-//        };
+            var instMods = item.GetInstanceModifiers();
+            if (instMods != null && instMods.Length > 0)
+            {
+                foreach (var m in instMods)
+                    saved.modifiers.Add(new SavedItemModifier { statType = m.statType, value = m.value });
+            }
 
-//        foreach (var item in inventory.itemList)
-//        {
-//            if (item?.itemData == null) continue;
+            data.items.Add(saved);
+        }
 
-//            var saved = new SavedItem
-//            {
-//                itemName = item.itemData.name,      // ← asset file name
-//                stackSize = item.stackSize,
-//                modifiers = new List<SavedItemModifier>()
-//            };
+        return SaveSystem.Serialize(data);
+    }
 
-//            // Save per-instance modifiers (if any)
-//            var instMods = item.GetInstanceModifiers();
-//            if (instMods != null)
-//            {
-//                foreach (var m in instMods)
-//                {
-//                    saved.modifiers.Add(new SavedItemModifier
-//                    {
-//                        statType = m.statType,
-//                        value = m.value
-//                    });
-//                }
-//            }
+    public override void ApplyData(string s)
+    {
+        BuildItemLookupIfNeeded();
 
-//            data.items.Add(saved);
-//        }
+        var data = SaveSystem.Deserialize<InventorySaveData>(s);
+        if (data == null || inventory == null) return;
 
-//        return SaveSystem.Serialize(data);
-//    }
+        inventory.itemList.Clear();
 
-//    public override void ApplyData(string s)
-//    {
-//        BuildItemLookupIfNeeded();
+        foreach (var saved in data.items)
+        {
+            if (string.IsNullOrEmpty(saved.itemName)) continue;
 
-//        var data = SaveSystem.Deserialize<InventorySaveData>(s);
-//        if (data == null || inventory == null) return;
+            if (!itemLookup.TryGetValue(saved.itemName, out var itemData) || itemData == null)
+            {
+                Debug.LogWarning($"[InventorySaver] ItemData not found: {saved.itemName}. Ensure it’s under Resources/Items or Resources/Materials.");
+                continue;
+            }
 
-//        inventory.itemList.Clear();
+            var newItem = new Inventory_Item(itemData);
 
-//        foreach (var saved in data.items)
-//        {
-//            if (string.IsNullOrEmpty(saved.itemName))
-//                continue;
+            if (saved.modifiers != null && saved.modifiers.Count > 0)
+            {
+                var rebuilt = new ItemModifier[saved.modifiers.Count];
+                for (int i = 0; i < rebuilt.Length; i++)
+                    rebuilt[i] = new ItemModifier { statType = saved.modifiers[i].statType, value = saved.modifiers[i].value };
+                newItem.SetInstanceModifiers(rebuilt);
+            }
 
-//            if (!itemLookup.TryGetValue(saved.itemName, out var itemData) || itemData == null)
-//            {
-//                Debug.LogWarning($"[InventorySaver] ItemData not found for name: {saved.itemName}. " +
-//                                 "Check that the asset exists under Resources/Items/** and that its file name matches.");
-//                continue;
-//            }
+            if (saved.stackSize > 1)
+                newItem.AddStack(saved.stackSize - 1);
 
-//            var newItem = new Inventory_Item(itemData);
+            inventory.itemList.Add(newItem);
+        }
 
-//            // Restore per-instance modifiers
-//            if (saved.modifiers != null && saved.modifiers.Count > 0)
-//            {
-//                var rebuilt = new ItemModifier[saved.modifiers.Count];
-//                for (int i = 0; i < rebuilt.Length; i++)
-//                {
-//                    rebuilt[i] = new ItemModifier
-//                    {
-//                        statType = saved.modifiers[i].statType,
-//                        value = saved.modifiers[i].value
-//                    };
-//                }
-//                newItem.SetInstanceModifiers(rebuilt);
-//            }
+        inventory.gold = data.gold;
+        inventory.NotifyInventoryChanged();
+    }
+}
 
-//            // Restore stack
-//            if (saved.stackSize > 1)
-//                newItem.AddStack(saved.stackSize - 1);
-
-//            inventory.itemList.Add(newItem);
-//        }
-
-//        inventory.gold = data.gold;
-//        inventory.NotifyInventoryChanged();
-//    }
-//}

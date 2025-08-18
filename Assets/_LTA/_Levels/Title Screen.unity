@@ -521,9 +521,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 269584472}
-        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
-        m_MethodName: OnClickSlot
+      - m_Target: {fileID: 2085106787}
+        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
+        m_MethodName: LoadGameFromSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2157,6 +2157,7 @@ GameObject:
   - component: {fileID: 401990018}
   - component: {fileID: 401990016}
   - component: {fileID: 401990015}
+  - component: {fileID: 401990021}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2176,13 +2177,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a175841fabfd804bb2e4267a8918d3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_key: 
+  m_key: G
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
-  playerInv: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  equipmentInv: {fileID: 7404050491979521307, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  storage: {fileID: 0}
   player: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   stats: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   health: {fileID: 300927545034408096, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
@@ -2211,9 +2209,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e4f72eeec2eaa447b7ec92e56d5ec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bookAnimator: {fileID: 0}
-  openStateName: Open
-  openDuration: 2
 --- !u!114 &401990019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2242,6 +2237,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &401990021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401990014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a4dfb2d6324d1a478b20c8b3161cb7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: storage
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  storage: {fileID: 0}
 --- !u!1 &461791994
 GameObject:
   m_ObjectHideFlags: 0
@@ -5640,10 +5652,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d196074ddb067e448a0f35afab04ed7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerID: 0
-  cancelAction: Cancel
-  healthBarToggle: {fileID: 1513352931}
-  manaBarToggle: {fileID: 1156155122}
 --- !u!222 &861398813
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -410,6 +410,9 @@ GameObject:
   - component: {fileID: 1517721848282973766}
   - component: {fileID: 4620312241617601018}
   - component: {fileID: 3196277605636976479}
+  - component: {fileID: 59787990051658067}
+  - component: {fileID: 5616091342431156763}
+  - component: {fileID: 1655113877837431418}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -706,6 +709,7 @@ MonoBehaviour:
   deepBreathData: {fileID: 11400000, guid: e41840111e853d443aa7171e2534874a, type: 2}
   stats: {fileID: 875733981393590875}
   deepBreathOverride: {fileID: 3156779666245849974}
+  createDeepBreathIfMissingAtRuntime: 1
   autoUnlockDeepBreathIfDataMissing: 1
   verboseLogs: 1
 --- !u!114 &6972770920434634234
@@ -966,6 +970,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a75e1f7958b57f84db9a31f7c8511a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &59787990051658067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da36980b99d290459661807d96fbd1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: inventory
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+--- !u!114 &5616091342431156763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a1015894a13b6d4aa8ae8cff0335964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: equipment
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  playerInv: {fileID: 8328735636652493673}
+  equipmentInv: {fileID: 7404050491979521307}
+  player: {fileID: 2475480508921098455}
+--- !u!114 &1655113877837431418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a4dfb2d6324d1a478b20c8b3161cb7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: storage
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  storage: {fileID: 0}
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0
