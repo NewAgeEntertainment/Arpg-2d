@@ -4,6 +4,9 @@ using UnityEngine.Events;
 [RequireComponent(typeof(SexyTimeStateMachine))]
 public class SexyTimeLogic : MonoBehaviour
 {
+    // 🔑 Static reference to the currently active instance
+    public static SexyTimeLogic Current { get; private set; }
+
     [SerializeField] private Player_SkillManager skillManager;
 
     [Header("Core")]
@@ -27,6 +30,13 @@ public class SexyTimeLogic : MonoBehaviour
     private float npcAttackBarFillTimestamp;
     private float originalPussySqueeze;
     private float originalPussySqueezeCooldown;
+
+    // --- Add near your other serialized fields ---
+    [Header("Skills / Debug")]
+    [SerializeField] private bool autoUnlockDeepBreath = false;   // turn on in Inspector to sanity-check
+
+    [Tooltip("Press this key to trigger Deep Breath directly (testing).")]
+    [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B; // NEW
 
     [Header("Climax")]
     public float cumDuration = 5f;
@@ -66,6 +76,8 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void OnEnable()
     {
+        Current = this; // 🔑 mark this as the active instance
+
         OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
         OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
         OnPlayerBarFull.AddListener(OnBlueWinsFirst);
@@ -74,6 +86,8 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void OnDisable()
     {
+        if (Current == this) Current = null; // 🔑 clear if disabled
+
         OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
         OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
     }
@@ -90,12 +104,14 @@ public class SexyTimeLogic : MonoBehaviour
             inputRouter.Init();
 
         if (skillManager == null)
-            skillManager = FindFirstObjectByType<Player_SkillManager>();
+            skillManager = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+
+        ResolveSkillManager();
     }
 
     private void Start()
     {
-        cachedPlayer = FindFirstObjectByType<Player>();
+        cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
         if (autoStart)
             StartSexyTime();
@@ -107,6 +123,10 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (!isSexyTimeGoingOn && inputRouter != null && inputRouter.StartPressed())
             StartSexyTime();
+
+        // Debug key to test Deep Breath quickly (optional)
+        if (debugDeepBreathKey != KeyCode.None && Input.GetKeyDown(debugDeepBreathKey))
+            CastDeepBreathe();
 
         if (!isSexyTimeGoingOn) return;
 
@@ -121,9 +141,25 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (ui == null)
         {
-            Debug.LogError("[SexyTimeLogic] UI Controller not assigned!");
-            return;
+            ui = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+            if (ui == null)
+            {
+                Debug.LogError("[SexyTimeLogic] UI Controller not assigned!");
+                return;
+            }
         }
+
+        // Player/skills may be spawned now - resolve again
+        ResolveSkillManager();
+
+        // Make sure Deep Breath exists & is unlocked (auto-create/unlock via manager if needed)
+        skillManager?.EnsureDeepBreathReady(true);
+
+        // ✅ Allow immediate use of Deep Breath on a fresh start
+        deepBreatheTimestamp = Time.time - deepBreatheCooldown;
+
+        // (Optional: your debug toggle still works if you kept it)
+        Current = this;
 
         inputRouter?.EnableSexyTimeMaps();
 
@@ -156,6 +192,39 @@ public class SexyTimeLogic : MonoBehaviour
             ResetNPCAttack();
             isCoroutineRunning = true;
         }
+    }
+
+
+    private bool ResolveSkillManager()
+    {
+        if (skillManager != null) return true;
+
+        // 1) Try the cached player first
+        if (cachedPlayer == null)
+            cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (cachedPlayer != null)
+            skillManager = cachedPlayer.GetComponent<Player_SkillManager>();
+
+        // 2) Try GameManager's player reference if you have one
+        if (skillManager == null)
+        {
+            var gmPlayer = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            if (gmPlayer != null)
+                skillManager = gmPlayer.GetComponent<Player_SkillManager>();
+        }
+
+        // 3) Fallback: search scene (include inactive, covers prefabs activated later)
+        if (skillManager == null)
+            skillManager = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+
+        if (skillManager == null)
+        {
+            Debug.LogWarning("[SexyTimeLogic] Could not resolve Player_SkillManager. Deep Breath will be unavailable.");
+            return false;
+        }
+
+        return true;
     }
 
     public void ResetSexyTime()
@@ -283,18 +352,39 @@ public class SexyTimeLogic : MonoBehaviour
 
     public bool IsDeepBreathUnlocked()
     {
-        var deepBreath = skillManager?.deepBreath;
-        return deepBreath != null && deepBreath.Unlocked(SkillUpgradeType.DeepBreath);
+        if (!ResolveSkillManager())
+            return false;
+
+        var deepBreath = skillManager.deepBreath;
+        if (deepBreath == null)
+        {
+            // Try to create/resolve it and re-check
+            skillManager.EnsureDeepBreathReady(true);   // NEW
+            deepBreath = skillManager.deepBreath;
+            if (deepBreath == null)
+            {
+                Debug.LogWarning("[SexyTimeLogic] skillManager exists but 'deepBreath' is NULL. Assign or create it on Player_SkillManager.");
+                return false;
+            }
+        }
+
+        bool unlocked = deepBreath.Unlocked(SkillUpgradeType.DeepBreath);
+        if (!unlocked)
+            Debug.Log("Deep Breathe is locked. Unlock via SetSkillUpgrade(...) or toggle 'autoUnlockDeepBreath' for a quick test.");
+
+        return unlocked;
     }
 
     public void CastDeepBreathe()
     {
+        if (!ResolveSkillManager()) { Debug.Log("Deep Breathe blocked: no SkillManager."); return; }
+
+        // Ensure the component exists/unlocked as needed
         if (!IsDeepBreathUnlocked())
-        {
-            Debug.Log("Deep Breathe is locked or skillManager missing.");
             return;
-        }
-        skillManager.deepBreath.TryUseSkill();
+
+        // Delegate to the skill (handles cooldown + UI updates)
+        skillManager.deepBreath.TryUseSkill(); // NEW
     }
 
     private void GrantSexExpIfNeeded()
@@ -310,7 +400,7 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (amount > 0)
         {
-            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<Player>();
+            if (cachedPlayer == null) cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
             if (cachedPlayer != null)
             {

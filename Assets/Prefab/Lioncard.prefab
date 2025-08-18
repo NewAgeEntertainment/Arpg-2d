@@ -705,6 +705,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deepBreathData: {fileID: 11400000, guid: e41840111e853d443aa7171e2534874a, type: 2}
   stats: {fileID: 875733981393590875}
+  deepBreathOverride: {fileID: 3156779666245849974}
+  autoUnlockDeepBreathIfDataMissing: 1
+  verboseLogs: 1
 --- !u!114 &6972770920434634234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1099,9 +1102,9 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 1.93
   manaCost: 0
-  unlockedByDefault: 0
+  unlockedByDefault: 1
   sexyTimeLogic: {fileID: 0}
-  unlocked: 0
+  unlocked: 1
 --- !u!1 &4262697515208930187
 GameObject:
   m_ObjectHideFlags: 0

@@ -79112,6 +79112,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9207617f8d499f84e8961a0d1a506f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sexyTimeLogicObject: {fileID: 8931125114811120557}
+  allowKeyboardFallback: 1
+  fallbackKey: 108
 --- !u!1 &1166202672
 GameObject:
   m_ObjectHideFlags: 0
@@ -110962,7 +110965,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1623565206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122451,79 +122454,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1732401127}
   m_CullTransparentMesh: 1
---- !u!1001 &1733197574
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3412577514713453343, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_Name
-      value: Lioncard
-      objectReference: {fileID: 0}
-    - target: {fileID: 3738569970553218436, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3738569970553218436, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -3.02
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.83
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
 --- !u!1 &1736284100
 GameObject:
   m_ObjectHideFlags: 0
@@ -131306,7 +131236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 272001bc424dc6d46b3ef4248a2d34db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillManager: {fileID: 0}
+  skillManager: {fileID: 5843875191212425359, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   ui: {fileID: 1318618181}
   inputRouter: {fileID: 8931125114811120558}
   autoStart: 0
@@ -131314,10 +131244,12 @@ MonoBehaviour:
   arousalPerStroke: 3
   strokeMultiplier: 0
   playerBarValueDeplete: 10
-  playerStats: {fileID: 0}
+  playerStats: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   partnerStats: {fileID: 1530223336}
   pussySqueeze: 0
   pussySqueezeCooldown: 5
+  autoUnlockDeepBreath: 1
+  debugDeepBreathKey: 98
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59
@@ -172809,7 +172741,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3fbbd56d992c3354783d13f447507b81, type: 2}
+  - {fileID: 2100000, guid: f784939b7b5bf3f4680f5d449b953718, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -179695,7 +179627,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   neededNodes: []
   conflictNodes: []
-  isUnlocked: 0
+  isUnlocked: 1
   isLocked: 0
   skillData: {fileID: 11400000, guid: e41840111e853d443aa7171e2534874a, type: 2}
   skillName: Deep Breath
@@ -198111,7 +198043,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8931125114811120557}
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 8829751501224059594, guid: ed7f1a7386ac30d4da1611e5a99725a4, type: 3}
 --- !u!224 &6836267462396276641
 RectTransform:
   m_ObjectHideFlags: 0
@@ -210905,9 +210837,11 @@ MonoBehaviour:
   calculateTangents: 0
   maskInteraction: 2
   maskMaterials:
-    materialsMaskDisabled: []
+    materialsMaskDisabled:
+    - {fileID: 2100000, guid: 3fbbd56d992c3354783d13f447507b81, type: 2}
     materialsInsideMask: []
-    materialsOutsideMask: []
+    materialsOutsideMask:
+    - {fileID: 2100000, guid: f784939b7b5bf3f4680f5d449b953718, type: 2}
   disableRenderingOnOverride: 1
   physicsPositionInheritanceFactor: {x: 1, y: 1}
   physicsRotationInheritanceFactor: 1
@@ -211911,7 +211845,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
   combat: {fileID: 0}
-  playerTarget: {fileID: 0}
+  playerTarget: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   followStartDistance: 3
   followStopDistance: 1.2
   maxFollowDistance: 10
@@ -215577,4 +215511,3 @@ SceneRoots:
   - {fileID: 491098067}
   - {fileID: 1373227334}
   - {fileID: 1623565207}
-  - {fileID: 1733197574}
