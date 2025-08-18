@@ -154,7 +154,7 @@ public class EquipmentSaver : Saver
             }
         }
 
-        // 4) Re-equip from save (prefer the exact matching instance from the bag by modifiers)
+        // 4) Re-equip from save (prefer exact instance by modifiers; fill empty slots of that type)
         if (data.equipped != null && playerInv.equipList != null)
         {
             foreach (var eq in data.equipped)
@@ -162,50 +162,59 @@ public class EquipmentSaver : Saver
                 if (string.IsNullOrEmpty(eq.itemName) || string.IsNullOrEmpty(eq.slotType)) continue;
                 if (!itemLookup.TryGetValue(eq.itemName, out var so) || so == null) continue;
 
-                // Find target slot by type string
-                var slot = playerInv.equipList.Find(s => s != null && s.slotType.ToString() == eq.slotType);
-                if (slot == null) continue;
+                // ✅ Find a FREE slot of this type (critical when duplicates exist)
+                var targetSlot = playerInv.equipList.Find(s =>
+                    s != null &&
+                    s.slotType.ToString() == eq.slotType &&
+                    !s.HasItem());
 
-                // Prefer instance with identical modifiers
-                Inventory_Item instanceFromBag = null;
-                for (int i = 0; i < equipmentInv.itemList.Count; i++)
+                if (targetSlot == null)
                 {
-                    var candidate = equipmentInv.itemList[i];
-                    if (candidate?.itemData == so && SameMods(candidate.GetInstanceModifiers(), eq.modifiers))
-                    {
-                        instanceFromBag = candidate;
-                        equipmentInv.itemList.RemoveAt(i);
-                        break;
-                    }
+                    // No free slot of that type—leave item in bag; don't consume an instance
+                    Debug.LogWarning($"[EquipmentSaver] No free '{eq.slotType}' slot for '{eq.itemName}'. Item stays in bag.");
+                    continue;
                 }
 
-                // Fallback: first of that SO
-                if (instanceFromBag == null)
+                // Prefer an exact per-instance modifier match in the bag
+                int matchIndex = -1;
+                for (int i = 0; i < equipmentInv.itemList.Count; i++)
+                {
+                    var cand = equipmentInv.itemList[i];
+                    if (cand?.itemData == so && SameMods(cand.GetInstanceModifiers(), eq.modifiers))
+                    { matchIndex = i; break; }
+                }
+                // Fallback: any copy of that SO
+                if (matchIndex < 0)
                 {
                     for (int i = 0; i < equipmentInv.itemList.Count; i++)
                     {
-                        var candidate = equipmentInv.itemList[i];
-                        if (candidate?.itemData == so)
-                        {
-                            instanceFromBag = candidate;
-                            equipmentInv.itemList.RemoveAt(i);
-                            break;
-                        }
+                        var cand = equipmentInv.itemList[i];
+                        if (cand?.itemData == so) { matchIndex = i; break; }
                     }
                 }
 
-                var equippedItem = instanceFromBag ?? new Inventory_Item(so);
+                Inventory_Item equippedItem;
+                if (matchIndex >= 0)
+                {
+                    // Remove from bag ONLY AFTER we know we have a slot
+                    equippedItem = equipmentInv.itemList[matchIndex];
+                    equipmentInv.itemList.RemoveAt(matchIndex);
+                }
+                else
+                {
+                    // Not in bag—create a fresh instance (edge case)
+                    equippedItem = new Inventory_Item(so);
+                }
 
-                // Restore per-instance modifiers for the equipped copy (if created new or different)
                 if (eq.modifiers != null && eq.modifiers.Count > 0)
                     equippedItem.SetInstanceModifiers(UnpackMods(eq.modifiers));
 
-                // Equip: set slot, apply stat mods & effects
-                slot.equipedItem = equippedItem;
-                slot.equipedItem.AddModifiers(playerInv.player.stats);
-                slot.equipedItem.AddItemEffect(playerInv.player);
+                targetSlot.equipedItem = equippedItem;
+                targetSlot.equipedItem.AddModifiers(playerInv.player.stats);
+                targetSlot.equipedItem.AddItemEffect(playerInv.player);
             }
         }
+
 
         // 5) Refresh UIs
         equipmentInv.NotifyInventoryChanged();
