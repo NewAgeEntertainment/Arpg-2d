@@ -224,9 +224,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: LoadFromSlot
+      - m_Target: {fileID: 269584472}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -521,9 +521,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2085106787}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: LoadGameFromSlot
+      - m_Target: {fileID: 269584472}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -652,9 +652,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: SaveToSlot
+      - m_Target: {fileID: 269584472}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9822,11 +9822,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41103de1fc8829a428bcaf047849593f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotID: 0
+  slotID: 2
   slotLabel: {fileID: 365104932}
   slotInfo: {fileID: 1911868636}
   saveButton: {fileID: 1949406171}
-  loadButton: {fileID: 0}
+  loadButton: {fileID: 1949406171}
 --- !u!114 &1949406171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9870,19 +9870,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1949406172}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 269584472}
-        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
-        m_MethodName: OnClickSlot
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1949406172
 MonoBehaviour:
   m_ObjectHideFlags: 0

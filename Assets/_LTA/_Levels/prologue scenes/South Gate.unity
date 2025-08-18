@@ -1500,7 +1500,7 @@ RectTransform:
   m_Father: {fileID: 1005582021}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.1206741, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6967,9 +6967,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: LoadFromSlot
+      - m_Target: {fileID: 1676775036}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12097,6 +12097,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profileButton: {fileID: 209121573}
+  closeWhenOutOfItem: 1
 --- !u!114 &99885000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30652,8 +30653,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemNameText: {fileID: 185891367}
   amountInput: {fileID: 2029799458}
-  confirmButton: {fileID: 79841059}
+  slot1Button: {fileID: 0}
+  slot2Button: {fileID: 0}
+  slot3Button: {fileID: 0}
+  slot4Button: {fileID: 0}
   cancelButton: {fileID: 1528919131}
+  audioSrc: {fileID: 0}
+  confirmSfx: {fileID: 0}
+  cancelSfx: {fileID: 0}
 --- !u!1 &274687125
 GameObject:
   m_ObjectHideFlags: 0
@@ -34825,8 +34832,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1314329699}
-  - {fileID: 545130756}
   - {fileID: 516403337}
+  - {fileID: 545130756}
   - {fileID: 689570678}
   - {fileID: 531621148}
   m_Father: {fileID: 1746472426}
@@ -35181,7 +35188,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 323805858}
   itemStackSize: {fileID: 795333820}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 2
 --- !u!1 &324893363
 GameObject:
@@ -45185,7 +45194,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 442361360}
   itemStackSize: {fileID: 840235561}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 3
 --- !u!1 &442551549
 GameObject:
@@ -51667,7 +51678,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 217.137, y: -482}
+  m_AnchoredPosition: {x: 117.214874, y: -291.4176}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &517681255
@@ -52700,10 +52711,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 479081880}
-  - {fileID: 296240167}
-  - {fileID: 364865989}
   - {fileID: 2129017220}
   - {fileID: 181539186}
+  - {fileID: 296240167}
+  - {fileID: 364865989}
   m_Father: {fileID: 1746472426}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -68103,7 +68114,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 217.137, y: -476}
+  m_AnchoredPosition: {x: -55.629105, y: -295.18683}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &545130757
@@ -70432,9 +70443,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: LoadFromSlot
+      - m_Target: {fileID: 1676775036}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -71353,10 +71364,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 697321163}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 390.9236, y: -114.205}
+  m_SizeDelta: {x: 611.8472, y: 164.41}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &577714390
 MonoBehaviour:
@@ -82065,7 +82076,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 2501.3203, y: 121.50001}
-  m_SizeDelta: {x: 796.8472, y: 0}
+  m_SizeDelta: {x: 796.8472, y: 230.41}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &697321164
 MonoBehaviour:
@@ -82483,7 +82494,7 @@ RectTransform:
   m_Father: {fileID: 1441647189}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.120697, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -83591,7 +83602,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sexyTimeLogicObject: {fileID: 760673059}
-  startKey: 108
+  allowKeyboardFallback: 1
+  fallbackKey: 108
 --- !u!4 &718405834
 Transform:
   m_ObjectHideFlags: 0
@@ -87932,6 +87944,8 @@ MonoBehaviour:
   partnerStats: {fileID: 1668499166}
   pussySqueeze: 0
   pussySqueezeCooldown: 5
+  autoUnlockDeepBreath: 0
+  debugDeepBreathKey: 98
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59
@@ -91437,10 +91451,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 981816263}
-  - {fileID: 1042395895}
   - {fileID: 1256715725}
   - {fileID: 286190394}
   - {fileID: 1550692101}
+  - {fileID: 1042395895}
   m_Father: {fileID: 1746472426}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -94003,9 +94017,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: LoadFromSlot
+      - m_Target: {fileID: 1676775036}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -102049,6 +102063,11 @@ MonoBehaviour:
   playerHealthBar: {fileID: 1102785591}
   playerManaBar: {fileID: 1358788596}
   mainMenuPanel: {fileID: 1536407524}
+  menuHealthSlider: {fileID: 0}
+  menuHealthText: {fileID: 0}
+  menuManaSlider: {fileID: 0}
+  menuManaText: {fileID: 0}
+  menuPollInterval: 0.1
   playerID: 0
   openSkillTreeAction: OpenSkillTree
   openInventoryAction: OpenInventory
@@ -114705,7 +114724,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 988863744}
   itemStackSize: {fileID: 2029633236}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 4
 --- !u!1 &989091642
 GameObject:
@@ -121539,7 +121560,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -170.313, y: -436}
+  m_AnchoredPosition: {x: 33.696274, y: -232.3612}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1042395896
@@ -145784,10 +145805,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1914759940}
+  - {fileID: 751418438}
   - {fileID: 1857791831}
   - {fileID: 2066082379}
   - {fileID: 505630048}
-  - {fileID: 751418438}
   m_Father: {fileID: 1746472426}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -145869,7 +145890,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -170.313, y: -429}
+  m_AnchoredPosition: {x: -59.873917, y: -235.5155}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1256974902
@@ -157884,9 +157905,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: SaveToSlot
+      - m_Target: {fileID: 1676775036}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -161554,7 +161575,7 @@ RectTransform:
   m_Father: {fileID: 1070239924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -183943,6 +183964,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profileButton: {fileID: 2101078705}
+  closeWhenOutOfItem: 1
 --- !u!114 &1650329069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209706,7 +209728,7 @@ RectTransform:
   m_Father: {fileID: 589150709}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.1206741, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -220240,6 +220262,7 @@ MonoBehaviour:
   itemListPanel: {fileID: 1508385428}
   actorSelectPanel: {fileID: 99884997}
   assignPopupPanel: {fileID: 273795155}
+  assignPopup: {fileID: 0}
   assignAmountInput: {fileID: 2029799458}
   actorButtons:
   - {fileID: 209121573}
@@ -220250,6 +220273,7 @@ MonoBehaviour:
   noItemSound: {fileID: 8300000, guid: 37cc5c4c34e880e4ea94f0daa8bb4aef, type: 3}
   itemUsedSound: {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
   audioSource: {fileID: 1124002611}
+  enableLegacyAssignSlot: 1
 --- !u!212 &1923809895
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -221356,7 +221380,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1929647190}
   itemStackSize: {fileID: 102561557}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 1
 --- !u!1 &1932938549
 GameObject:
@@ -221937,7 +221963,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1938115553
 RectTransform:
   m_ObjectHideFlags: 0
@@ -264206,9 +264232,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PixelCrushers.SaveSystem, Assembly-CSharp-firstpass
-        m_MethodName: SaveToSlot
+      - m_Target: {fileID: 1676775036}
+        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
+        m_MethodName: OnClickSlot
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -265909,9 +265935,6 @@ MonoBehaviour:
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
-  playerInv: {fileID: 8328735636652493673, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  equipmentInv: {fileID: 7404050491979521307, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  storage: {fileID: 0}
   player: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   stats: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   health: {fileID: 300927545034408096, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
