@@ -155,6 +155,9 @@ public class SexyTimeLogic : MonoBehaviour
         // Make sure Deep Breath exists & is unlocked (auto-create/unlock via manager if needed)
         skillManager?.EnsureDeepBreathReady(true);
 
+        // ✅ make sure we're reading the Player's actual stats (with bonuses applied)
+        BindToActivePlayerStats();
+
         // ✅ Allow immediate use of Deep Breath on a fresh start
         deepBreatheTimestamp = Time.time - deepBreatheCooldown;
 
@@ -193,6 +196,23 @@ public class SexyTimeLogic : MonoBehaviour
             isCoroutineRunning = true;
         }
     }
+
+    // put inside SexyTimeLogic
+    private void BindToActivePlayerStats()
+    {
+        // Always rebind to the player's live stats at session start
+        var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        if (p != null)
+        {
+            var ps = p.GetComponent<Player_Stats>();
+            if (ps != null && playerStats != ps)
+            {
+                playerStats = ps; // <-- ensure mini-game uses the same stats that get the bonuses
+                                  // Debug.Log("[SexyTimeLogic] Bound playerStats to Player_Stats on live Player.");
+            }
+        }
+    }
+
 
 
     private bool ResolveSkillManager()
