@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Assets/Scripts/Inventory/Inventory_Player.cs
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,9 +9,7 @@ public class Inventory_Player : Inventory_Base
 
     public event Action<int> OnGoldChanged;
     public event Action<int> OnQuickSlotUsed;
-
-    // UIs (HUD, inventory) listen to this for any repaint
-    public event Action OnInventoryChange;
+    public new event Action OnInventoryChange; // HUD listeners
 
     [Header("Assigned References")]
     [SerializeField] private Inventory_Equipment equipmentInventoryRef;
@@ -43,21 +42,18 @@ public class Inventory_Player : Inventory_Base
         equipmentInventory = equipmentInventoryRef != null ? equipmentInventoryRef : FindFirstObjectByType<Inventory_Equipment>();
         storage = storageRef != null ? storageRef : FindFirstObjectByType<Inventory_Storage>();
 
-        if (equipmentInventory == null)
-            Debug.LogWarning("[Inventory_Player] Equipment inventory not found. Assign via Inspector.");
-        if (storage == null)
-            Debug.LogWarning("[Inventory_Player] Storage not found. Assign via Inspector.");
+        if (equipmentInventory == null) Debug.LogWarning("[Inventory_Player] Equipment inventory not found. Assign via Inspector.");
+        if (storage == null) Debug.LogWarning("[Inventory_Player] Storage not found. Assign via Inspector.");
     }
 
     // ---- Notify helpers ----
-    public void TriggerUpdateUI() => OnInventoryChange?.Invoke();
-
-    protected new void NotifyInventoryChanged()
+    public new void NotifyInventoryChanged()
     {
         try { base.NotifyInventoryChanged(); } catch { }
         OnInventoryChange?.Invoke();
     }
 
+    public void TriggerUpdateUI() => OnInventoryChange?.Invoke();
 
     // ---- Currency ----
     public void AddGold(int amount)
@@ -67,17 +63,10 @@ public class Inventory_Player : Inventory_Base
         OnInventoryChange?.Invoke();
 
         var ui = FindFirstObjectByType<UI_InGame>();
-        if (ui != null)
-            ui.ShowGoldPickup(amount);
+        if (ui != null) ui.ShowGoldPickup(amount);
     }
 
     // ---- Quick Slots API ----
-
-    /// <summary>
-    /// Assign an item to a specific quick slot (1..4).
-    /// Clamps stack to Owned - AlreadyAssignedElsewhere.
-    /// Optionally stores a fresh instance so backpack visuals don't mutate.
-    /// </summary>
     public void SetQuickItemInSlot(int slotNumber, Inventory_Item sourceItem, int amount, bool useFreshInstance = true)
     {
         if (slotNumber < 1 || slotNumber > quickSlots.Length)
@@ -91,7 +80,6 @@ public class Inventory_Player : Inventory_Base
             return;
         }
 
-        // How many we can actually reserve from backpack:
         int available = CountItem(sourceItem.itemData);
         if (available <= 0)
         {
@@ -112,16 +100,11 @@ public class Inventory_Player : Inventory_Base
 
         if (current.item != null && current.item.itemData == sourceItem.itemData)
         {
-            // Same item already in this slot: just add to its reserved stack
             current.slotStack += actuallyReserved;
         }
         else
         {
-            // Put a copy (or the same instance) in the slot for icon/metadata
-            Inventory_Item slotItem = useFreshInstance
-                ? CloneItemInstance(sourceItem)
-                : sourceItem;
-
+            Inventory_Item slotItem = useFreshInstance ? CloneItemInstance(sourceItem) : sourceItem;
             current.item = slotItem;
             current.slotStack = actuallyReserved;
         }
@@ -148,12 +131,10 @@ public class Inventory_Player : Inventory_Base
         return quickSlots[idx];
     }
 
-    // Copy a stack/item instance (preserves instance modifiers if you use them)
     private static Inventory_Item CloneItemInstance(Inventory_Item src)
     {
         var copy = new Inventory_Item(src.itemData);
         copy.SetInstanceModifiers(src.GetInstanceModifiers());
-        // quick slot copies typically don't need full stack; represent one item visually
         return copy;
     }
 
@@ -173,17 +154,11 @@ public class Inventory_Player : Inventory_Base
             return;
         }
 
-        // Apply effect using your existing TryUseItem logic WITHOUT double-removing backpack:
-        // Trick: temporarily add 1 to backpack, call TryUseItem (which removes that 1), net 0 in backpack.
-        ApplyQuickSlotItemEffectWithoutChangingBackpack(qs.item);
+        bool used = ApplyQuickSlotItemEffectWithoutChangingBackpack(qs.item);
+        if (!used) return;
 
-        // Consume one from the reserved stack:
         qs.slotStack--;
-        if (qs.slotStack <= 0)
-        {
-            qs.item = null;
-            qs.slotStack = 0;
-        }
+        if (qs.slotStack <= 0) { qs.item = null; qs.slotStack = 0; }
         quickSlots[index] = qs;
 
         NotifyInventoryChanged();
@@ -193,8 +168,6 @@ public class Inventory_Player : Inventory_Base
     }
 
     // -------- Helpers --------
-
-    // Remove up to 'amount' from BACKPACK stacks of this item; returns how many actually removed.
     private int RemoveFromBackpack(ItemDataSO data, int amount)
     {
         int remaining = amount;
@@ -217,36 +190,36 @@ public class Inventory_Player : Inventory_Base
         return removed;
     }
 
-    // Use your existing consumable logic (TryUseItem) but keep backpack unchanged.
-    // We add a temporary +1 to a backpack stack (or make a temp stack), then TryUseItem consumes that 1.
-    private void ApplyQuickSlotItemEffectWithoutChangingBackpack(Inventory_Item item)
+    private bool ApplyQuickSlotItemEffectWithoutChangingBackpack(Inventory_Item item)
     {
-        if (item == null || item.itemData == null) return;
+        if (item == null || item.itemData == null) return false;
 
-        // Find an existing backpack stack of this item:
         var existing = itemList.Find(i => i != null && i.itemData == item.itemData);
         bool createdTemp = false;
 
         if (existing == null)
         {
-            // Create a temporary 1-stack so TryUseItem has something to consume
             existing = new Inventory_Item(item.itemData);
             itemList.Add(existing);
             createdTemp = true;
         }
         else
         {
-            // Top up by 1 so net backpack change is zero after TryUseItem
-            existing.AddStack(1);
+            existing.AddStack(1); // net-zero after successful use
         }
 
-        // This should apply effects and remove exactly 1 from backpack:
-        TryUseItem(existing, this.player);
+        bool used = TryUseItemChecked(existing, this.player);
 
-        // If TryUseItem didn't send UI updates, ensure we do:
-        NotifyInventoryChanged();
+        if (!used)
+        {
+            if (createdTemp) itemList.Remove(existing);
+            else existing.RemoveStack(1);
+
+            NotifyInventoryChanged();
+        }
+
+        return used;
     }
-
 
     // ---- Add / Equip / Storage ----
     public override bool AddItem(Inventory_Item itemToAdd)
@@ -281,21 +254,14 @@ public class Inventory_Player : Inventory_Base
         return added;
     }
 
-    // Put this inside Inventory_Player (anywhere in the class)
     public Inventory_Item GetEquippedItemByType(ItemType type)
     {
         if (equipList == null) return null;
-
         foreach (var eq in equipList)
-        {
-            if (eq == null) continue;
-            if (eq.slotType == type && eq.HasItem())
+            if (eq != null && eq.slotType == type && eq.HasItem())
                 return eq.equipedItem;
-        }
-
         return null;
     }
-
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
     {
@@ -333,8 +299,7 @@ public class Inventory_Player : Inventory_Base
     public void UnequipItem(Inventory_Item itemToUnequip, bool replacing = false)
     {
         var slot = equipList.Find(slot => slot.equipedItem == itemToUnequip);
-        if (slot != null)
-            slot.equipedItem = null;
+        if (slot != null) slot.equipedItem = null;
 
         itemToUnequip.RemoveModifiers(player.stats);
         itemToUnequip.RemoveItemEffect();
@@ -382,25 +347,17 @@ public class Inventory_Player : Inventory_Base
         total += CountItem(targetData);
 
         if (equipmentInventory != null)
-        {
             foreach (var it in equipmentInventory.itemList)
-                if (it.itemData == targetData)
-                    total += it.stackSize;
-        }
+                if (it.itemData == targetData) total += it.stackSize;
 
         if (equipList != null)
-        {
             foreach (var eq in equipList)
                 if (eq != null && eq.HasItem() && eq.equipedItem.itemData == targetData)
                     total += 1;
-        }
 
         if (storage != null)
-        {
             foreach (var it in storage.itemList)
-                if (it.itemData == targetData)
-                    total += it.stackSize;
-        }
+                if (it.itemData == targetData) total += it.stackSize;
 
         return total;
     }

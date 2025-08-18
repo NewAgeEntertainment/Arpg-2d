@@ -1,67 +1,59 @@
-﻿using System;
+﻿// Assets/Scripts/Entity/Entity_Mana.cs
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class Entity_Mana : MonoBehaviour
 {
-    [SerializeField] private Slider manaBar; // Reference to the mana bar UI element  
-    public event Action OnManaUpdate; // Event to notify when health is updated
-
+    [SerializeField] private Slider manaBar;
+    public event Action OnManaUpdate;
 
     private Entity entity;
-    private Entity_Stats entityStats; // Reference to the Entity_Stats component for mana calculations  
-    private Skill_Base skill; // Reference to the Skill component for skill-related functionality
+    private Entity_Stats entityStats;
+    private Skill_Base skill;
 
     private bool miniManaBarActive;
-    [SerializeField] protected float currentMana; // Current mana points, initialized to maximum mana  
-    [SerializeField] protected bool isDead; // Flag to indicate if the entity is dead and cannot use mana  
+    [SerializeField] protected float currentMana;
+    [SerializeField] protected bool isDead;
 
-    [SerializeField] protected float manaCost; // Cost of the last used ability or action that consumed mana  
+    [SerializeField] protected float manaCost;
     [SerializeField] protected bool isManaDepleted;
-    [SerializeField] protected bool useMana; // Flag to indicate if mana was used in the last action  
+    [SerializeField] protected bool useMana;
 
     [Header("Mana regen")]
-    [SerializeField] private float manaRegenInterval = 1f; // Amount of mana to regenerate per second  
-    [SerializeField] private bool canRegenerateMana = true; // Flag to enable or disable mana regeneration  
-
-
+    [SerializeField] private float manaRegenInterval = 1f;
+    [SerializeField] private bool canRegenerateMana = true;
 
     protected virtual void Awake()
     {
-        skill = GetComponent<Skill_Base>(); // Get the Skill component attached to the same GameObject
-        entity = GetComponent<Entity>(); // Get the Entity component attached to the same GameObject  
-        entityStats = GetComponent<Entity_Stats>(); // Get the Entity_Stats component attached to the same GameObject  
-        //manaBar = GetComponentInChildren<Slider>(); // Get the Slider component for the mana bar UI  
-        currentMana = entityStats.GetMaxMana(); // Initialize current mana points to maximum mana  
+        skill = GetComponent<Skill_Base>();
+        entity = GetComponent<Entity>();
+        entityStats = GetComponent<Entity_Stats>();
+        currentMana = entityStats.GetMaxMana();
         OnManaUpdate += UpdateManaBar;
-        
-        UpdateManaBar(); // Update the mana bar UI to reflect the initial mana points  
-        Debug.Log("🧠 Mana script instance: " + GetComponent<Entity_Mana>().gameObject.name);
+
+        UpdateManaBar();
+        Debug.Log("🧠 Mana script instance: " + gameObject.name);
     }
-
-
 
     public virtual bool UseMana(float manaCost)
     {
-        if (isDead || isManaDepleted)
-            return false; // If the entity is already dead or mana is depleted, do nothing  
+        if (isDead || isManaDepleted) return false;
 
-        if (currentMana >= manaCost) // Check if there is enough mana to use  
+        if (currentMana >= manaCost)
         {
-            currentMana -= manaCost; // Deduct the mana cost from current mana  
-            Debug.Log("🟣 Mana used: " + manaCost); // ✅ Add this
-            OnManaUpdate?.Invoke(); // ✅ Make sure this is here  
-            return true; // Mana usage was successful  
+            currentMana -= manaCost;
+            Debug.Log("🟣 Mana used: " + manaCost);
+            OnManaUpdate?.Invoke();
+            return true;
         }
 
-        return false; // Not enough mana to use  
+        return false;
     }
 
     public void RestoreManaOnHit(float amount)
     {
         if (isDead) return;
-
         IncreaseMana(amount);
     }
 
@@ -72,19 +64,14 @@ public class Entity_Mana : MonoBehaviour
         Debug.Log($"🔋 Recovered {recovery} MP on hit (Level {level})");
     }
 
-
-
     public void IncreaseMana(float manaRecoveredAmount)
     {
-        if (isDead)
-            return;
+        if (isDead) return;
 
-        float newMana = currentMana + manaRecoveredAmount; // Calculate the new health points after healing  
-        float maxMana = entityStats.GetMaxMana(); // Get the maximum health points from the Entity_Stats component  
-
-        // Ensure the new health does not exceed the maximum health  
-        currentMana = Mathf.Min(newMana, maxMana); // Set the current health to the minimum of new health and maximum health  
-        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
+        float newMana = currentMana + manaRecoveredAmount;
+        float maxMana = entityStats.GetMaxMana();
+        currentMana = Mathf.Min(newMana, maxMana);
+        OnManaUpdate?.Invoke();
     }
 
     public void SetCurrentMana(float value)
@@ -93,47 +80,28 @@ public class Entity_Mana : MonoBehaviour
         OnManaUpdate?.Invoke();
     }
 
-
-    public void ReduceMana(float manaCost) 
+    public void ReduceMana(float manaCost)
     {
-        
-
-        currentMana = currentMana - manaCost; // Reduce the mana points by the mana cost amount, ensuring it doesn't go below zero  
-        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
-
-        if (currentMana < 0)
-            return; // If current mana is less than or equal to zero, do nothing  
-
+        currentMana = currentMana - manaCost;
+        OnManaUpdate?.Invoke();
+        if (currentMana < 0) return;
     }
-
-
-
-
-    //private void Die()
-    //{
-    //    isDead = true; // Set the entity as dead  
-    //    entity.EntityDeath(); // Call the EntityDeath method from the Entity class  
-    //}
 
     public float GetManaPercent() => currentMana / entityStats.GetMaxMana();
 
     public void SetManaToPercent(float percent)
     {
         currentMana = entityStats.GetMaxMana() * Mathf.Clamp01(percent);
-        OnManaUpdate?.Invoke(); // Invoke the event to notify that mana has been updated
-
+        OnManaUpdate?.Invoke();
     }
 
-    public float GetCurrentMana() => currentMana; // Method to get the current mana points
+    public float GetCurrentMana() => currentMana;
 
     private void UpdateManaBar()
     {
-        if (manaBar == null && manaBar.transform.parent.gameObject.activeSelf == false)
-            return; // If the mana bar is not assigned, do nothing  
-
-        manaBar.value = currentMana / entityStats.GetMaxMana(); // Update the mana bar UI based on the current mana points  
+        if (manaBar == null || !manaBar.transform.parent.gameObject.activeSelf) return;
+        manaBar.value = currentMana / entityStats.GetMaxMana();
     }
 
-    public void EnableManaBar(bool enable) => manaBar?.transform.parent.gameObject.SetActive(enable); // Method to enable or disable the health bar UI
-
+    public void EnableManaBar(bool enable) => manaBar?.transform.parent.gameObject.SetActive(enable);
 }
