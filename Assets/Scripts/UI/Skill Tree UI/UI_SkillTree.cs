@@ -1,3 +1,4 @@
+// Assets/Scripts/UI/SkillTree/UI_SkillTree.cs
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -17,7 +18,6 @@ public class UI_SkillTree : UI_Panel
     [Header("Graph Roots (connection updaters)")]
     [SerializeField] private UI_TreeConnectHandler[] parentNodes;
 
-    
     public Player_SkillManager skillManager { get; private set; }
 
     [Header("Confirmation Popup")]
@@ -43,7 +43,6 @@ public class UI_SkillTree : UI_Panel
     private static SkillTreeState _pendingState;
     public static void SetPendingState(SkillTreeState s)
     {
-        // store a copy so external references can’t mutate later
         if (s == null) { _pendingState = null; return; }
         _pendingState = new SkillTreeState
         {
@@ -63,10 +62,9 @@ public class UI_SkillTree : UI_Panel
     private void Start()
     {
         UnlockDefaultSkills();     // default nodes
-        UpdateAllConnections();    // wires lines/positions
+        UpdateAllConnections();
         UpdateSkillPointsUI();
 
-        // if saver queued a state before we were alive, apply it now (after one frame)
         if (_pendingState != null)
             StartCoroutine(ApplyPendingAfterFrame());
     }
@@ -137,21 +135,41 @@ public class UI_SkillTree : UI_Panel
     }
 
     /// <summary>
+    /// NEW: Produce a serializable snapshot of the tree for saving.
+    /// </summary>
+    public SkillTreeState CreateSaveState()
+    {
+        var state = new SkillTreeState
+        {
+            combatSkillPoints = GetCombatSkillPoints(),
+            sexSkillPoints = GetSexSkillPoints()
+        };
+
+        var nodes = GetComponentsInChildren<UI_TreeNode>(true) ?? new UI_TreeNode[0];
+        foreach (var n in nodes)
+        {
+            if (n == null || n.skillData == null) continue;
+            var name = n.skillData.name;
+
+            if (n.isUnlocked) state.unlockedSkillNames.Add(name);
+            else if (n.isLocked) state.lockedSkillNames.Add(name);
+        }
+
+        return state;
+    }
+
+    /// <summary>
     /// Apply saved state (unlocked/locked nodes + point pools).
-    /// Safe to call at runtime or one frame after Start.
     /// </summary>
     public void ApplySaveState(SkillTreeState state)
     {
         if (state == null) return;
 
-        // Ensure manager exists (so nodes can SetSkillUpgrade)
         if (skillManager == null)
             skillManager = FindAnyObjectByType<Player_SkillManager>();
 
-        var nodes = GetComponentsInChildren<UI_TreeNode>(true);
-        if (nodes == null) nodes = new UI_TreeNode[0];
+        var nodes = GetComponentsInChildren<UI_TreeNode>(true) ?? new UI_TreeNode[0];
 
-        // Build quick lookup by SO name
         var byName = new Dictionary<string, UI_TreeNode>();
         foreach (var n in nodes)
         {
@@ -160,7 +178,7 @@ public class UI_SkillTree : UI_Panel
             if (!byName.ContainsKey(name)) byName.Add(name, n);
         }
 
-        // 0) Baseline: set visual locked and clear flags (no traversal)
+        // Baseline visuals/flags
         foreach (var n in nodes)
         {
             if (n == null) continue;
@@ -169,33 +187,32 @@ public class UI_SkillTree : UI_Panel
             n.SetLockedVisualOnly();
         }
 
-        // 1) Apply unlocked list first
+        // Unlocked first (triggers SetSkillUpgrade)
         if (state.unlockedSkillNames != null)
         {
             foreach (var name in state.unlockedSkillNames)
             {
                 if (string.IsNullOrEmpty(name)) continue;
-                if (!byName.TryGetValue(name, out var node) || node == null) continue;
-                node.ForceUnlock(); // handles visuals + SetSkillUpgrade + conflict locks
+                if (byName.TryGetValue(name, out var node) && node != null)
+                    node.ForceUnlock();
             }
         }
 
-        // 2) Apply explicit locked list to enforce locks (optional)
+        // Explicit locks next
         if (state.lockedSkillNames != null)
         {
             foreach (var name in state.lockedSkillNames)
             {
                 if (string.IsNullOrEmpty(name)) continue;
-                if (!byName.TryGetValue(name, out var node) || node == null) continue;
-                if (!node.isUnlocked) node.ForceLock(); // don’t relock unlocked
+                if (byName.TryGetValue(name, out var node) && node != null && !node.isUnlocked)
+                    node.ForceLock();
             }
         }
 
-        // 3) Restore point pools
+        // Points
         SetCombatSkillPoints(state.combatSkillPoints);
         SetSexSkillPoints(state.sexSkillPoints);
 
-        // 4) Connections redraw
         UpdateAllConnections();
     }
 
@@ -250,7 +267,6 @@ public class UI_SkillTree : UI_Panel
             var cost = pendingSkillNode.skillData.cost;
             var cat = pendingSkillNode.skillData.category;
 
-            // Spend from the correct pool first
             if (cat == SkillCategory.Combat)
             {
                 if (EnoughSkillPoints(cost))
