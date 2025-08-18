@@ -18,12 +18,12 @@ public class TitleMenuManager : MonoBehaviour
     [SerializeField] private Button quitButton;
 
     [Header("Scene Names")]
-    [Tooltip("Your first gameplay scene name (must be in Build Settings).\nExample: Level_01")]
+    [Tooltip("Your first gameplay scene name (must be in Build Settings).")]
     [SerializeField] private string firstLevelSceneName = "Level_01";
 
     [Header("Save Wipe Options for 'New Game'")]
-    [Tooltip("Also delete any saved files/slots before starting a new game.")]
-    [SerializeField] private bool wipeAllSlotsOnNewGame = true;
+    [Tooltip("If true, ALL save slots are deleted before starting a new game. Leave OFF to preserve saves.")]
+    [SerializeField] private bool wipeAllSlotsOnNewGame = false; // <-- default OFF
 
     [Header("Transition (local fade if no PixelCrushers SceneTransitionManager)")]
     [SerializeField] private CanvasGroup fadeOverlay;   // Fullscreen Image under a Canvas, Raycast Target ON
@@ -43,17 +43,14 @@ public class TitleMenuManager : MonoBehaviour
         loadMenu = (loadPanel != null) ? loadPanel.GetComponentInChildren<LoadMenu>(true) : null;
         optionsMenu = (optionsPanel != null) ? optionsPanel.GetComponentInChildren<OptionsMenu>(true) : null;
 
-        // Optional button wiring if not using the Inspector events:
         if (playButton != null) playButton.onClick.AddListener(OnClickPlay);
         if (loadButton != null) loadButton.onClick.AddListener(OpenLoad);
         if (optionsButton != null) optionsButton.onClick.AddListener(OpenOptions);
         if (quitButton != null) quitButton.onClick.AddListener(OnClickQuit);
 
-        // PixelCrushers defaults
         SaveSystem.autoUnloadAdditiveScenes = true;
         SaveSystem.debug = Debug.isDebugBuild;
 
-        // Ensure overlay starts hidden but blocks nothing until used
         if (fadeOverlay != null)
         {
             fadeOverlay.alpha = 0f;
@@ -64,7 +61,6 @@ public class TitleMenuManager : MonoBehaviour
 
     private void Update()
     {
-        // Global ESC handling (only if a subpanel is open)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (controlsPanel != null && controlsPanel.activeSelf) { CloseControls(); return; }
@@ -97,7 +93,7 @@ public class TitleMenuManager : MonoBehaviour
         if (loadPanel == null || isTransitioning) return;
         mainPanel?.SetActive(false);
         loadPanel.SetActive(true);
-        loadMenu?.RefreshList(); // build list each time
+        loadMenu?.RefreshList();
     }
 
     public void CloseLoad()
@@ -145,38 +141,29 @@ public class TitleMenuManager : MonoBehaviour
         isTransitioning = true;
         SetMenuInteractable(false);
 
-        // Optional: wipe saves for a "fresh" new game
-        if (wipeAllSlotsOnNewGame) SaveUtility.DeleteAllSlots();
+        // ⛔ Do NOT delete saves when starting a new game.
+        // If you still have a wipe flag, make sure it's false or remove that code.
+        // if (wipeAllSlotsOnNewGame) SaveUtility.DeleteAllSlots(); // <- remove/disable
 
-        // Reset runtime state (PixelCrushers)
+        // ✅ Fresh in-memory state only (doesn't touch files on disk)
         SaveSystem.ResetGameState();
 
-        // If a PixelCrushers SceneTransitionManager is present under SaveSystem,
-        // SaveSystem.RestartGame will use it automatically (fade/async).
-        bool hasPCMTransition = PixelCrushersTools_HasSceneTransitionManager();
+        // ✅ Prevent any auto-save that "uses the last slot" from overwriting old files
+        PlayerPrefs.DeleteKey(SaveSystem.LastSavedGameSlotPlayerPrefsKey);
+        PlayerPrefs.Save();
 
-        if (hasPCMTransition)
-        {
-            SaveSystem.RestartGame(firstLevelSceneName);
-            // Block input until the SaveSystem kicks the new scene (a small guard)
-            yield return StartCoroutine(LocalFadeGuard_Co(show: true, duration: 0.01f)); // almost instant
-        }
-        else
-        {
-            // Local fade → load → keep faded until new scene is ready
-            yield return StartCoroutine(LocalFadeGuard_Co(show: true, duration: fadeDuration));
-            SaveSystem.RestartGame(firstLevelSceneName);
-            // You can keep it faded; PixelCrushers will swap the scene quickly.
-            // Optionally add a small delay if you want to guarantee black between scenes:
-            yield return null;
-        }
+        // (optional) local fade before kicking the scene change
+        yield return StartCoroutine(LocalFadeGuard_Co(show: true, duration: fadeDuration));
 
-        // We don’t auto-fade back in here because your gameplay scene should own its own entry fade
-        // (e.g., via a ScreenFader in the first level). If you want this menu to fade out AND in:
-        // yield return StartCoroutine(LocalFadeGuard_Co(show:false, duration:fadeDuration));
+        // ✅ Load your first gameplay scene (PixelCrushers handles transitions if present)
+        SaveSystem.RestartGame(firstLevelSceneName);
+
+        // If you prefer to bypass SaveSystem's scene loader:
+        // UnityEngine.SceneManagement.SceneManager.LoadScene(firstLevelSceneName);
 
         isTransitioning = false;
     }
+
 
     private void SetMenuInteractable(bool interactable)
     {
@@ -201,11 +188,7 @@ public class TitleMenuManager : MonoBehaviour
 
     private IEnumerator LocalFadeGuard_Co(bool show, float duration)
     {
-        if (fadeOverlay == null || duration <= 0f)
-        {
-            // If no overlay, at least block clicks during transition
-            yield break;
-        }
+        if (fadeOverlay == null || duration <= 0f) yield break;
 
         fadeOverlay.blocksRaycasts = true;
         fadeOverlay.interactable = true;
@@ -231,14 +214,10 @@ public class TitleMenuManager : MonoBehaviour
 
     private bool PixelCrushersTools_HasSceneTransitionManager()
     {
-        // If you added the SceneTransitionManager under the Save System prefab, this returns true.
 #if PIXELCRUSHERS
         var stm = Object.FindFirstObjectByType<PixelCrushers.SceneTransitionManager>(FindObjectsInactive.Include);
         return stm != null;
 #else
-        // If you don't use the symbol, just try to find it by type name safely:
-        var stm = Object.FindFirstObjectByType<MonoBehaviour>(FindObjectsInactive.Include);
-        // naive fallback: you can simplify to "return false;" if you prefer not to reflect/name-check
         return false;
 #endif
     }
