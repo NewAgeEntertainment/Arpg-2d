@@ -71,6 +71,11 @@ public class UI : MonoBehaviour
     [SerializeField] private Slider menuManaSlider;
     [SerializeField] private TMP_Text menuManaText;
 
+    // NEW: Location & Time Played (drag the top bar TMPs here)
+    [Header("Top Bar - Location & Time")]
+    [SerializeField] private TMP_Text locationLabel;     // e.g., "Location: Forest Area 0"
+    [SerializeField] private TMP_Text timePlayedLabel;   // e.g., "Time Played: 00:00"
+
     [Header("Menu Bars Update (fallback polling)")]
     [SerializeField] private float menuPollInterval = 0.1f;
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -166,6 +171,10 @@ public class UI : MonoBehaviour
 
         // Kick a one-time HUD/slots refresh when starting from title
         StartCoroutine(RefreshHUDOnceCo());
+
+        // Top bar immediate fill:
+        UpdateLocationLabel();
+        UpdateTimePlayedLabelImmediate();
     }
 
     private void OnEnable()
@@ -175,6 +184,14 @@ public class UI : MonoBehaviour
 
         // Rebind stats after scene loads
         SceneManager.sceneLoaded += OnSceneLoaded_UIRefresh;
+
+        // NEW: hook playtime + scene change to keep the top bar hot
+        PlayTimeTracker.OnSecondChanged += HandleSecondTick;
+        SceneManager.activeSceneChanged += HandleActiveSceneChanged;
+
+        // immediate refresh
+        HandleSecondTick(PlayTimeTracker.TotalSecondsInt);
+        UpdateLocationLabel();
     }
 
     private void OnDisable()
@@ -183,6 +200,10 @@ public class UI : MonoBehaviour
         UnsubscribeGold();
         UnhookStatEvents();
         StopMenuPoll();
+
+        // NEW: unhook
+        PlayTimeTracker.OnSecondChanged -= HandleSecondTick;
+        SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
     }
 
     private void OnDestroy()
@@ -197,6 +218,9 @@ public class UI : MonoBehaviour
         // ensure we have current stats reference after spawns
         StartCoroutine(AfterSceneLoad_Co());
         StartCoroutine(RefreshHUDOnceCo());
+
+        // update location label when scene loads
+        UpdateLocationLabel();
     }
 
     private IEnumerator AfterSceneLoad_Co()
@@ -702,7 +726,6 @@ public class UI : MonoBehaviour
         return null;
     }
 
-
     private void BindStats(Component comp)
     {
         if (comp == statsComp) return;
@@ -853,5 +876,29 @@ public class UI : MonoBehaviour
         if (v is float f) return Mathf.RoundToInt(f);
         if (v is double d) return Mathf.RoundToInt((float)d);
         return 0;
+    }
+
+    // ============================ Top Bar helpers =====================================
+
+    private void HandleSecondTick(int _)
+    {
+        UpdateTimePlayedLabelImmediate();
+    }
+
+    private void HandleActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        UpdateLocationLabel();
+    }
+
+    private void UpdateTimePlayedLabelImmediate()
+    {
+        if (timePlayedLabel != null)
+            timePlayedLabel.text = $"Time Played: {PlayTimeTracker.FormatHHMM(PlayTimeTracker.TotalSecondsInt)}";
+    }
+
+    private void UpdateLocationLabel()
+    {
+        if (locationLabel != null)
+            locationLabel.text = $"Location: {SceneManager.GetActiveScene().name}";
     }
 }
