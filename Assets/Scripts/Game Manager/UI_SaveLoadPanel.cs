@@ -227,9 +227,17 @@ public class UI_SaveLoadPanel : MonoBehaviour
         {
             SaveSystem.SaveToSlot(slotIndex);
 
-            // Mark metadata so we know this slot is occupied next time
-            MarkSlotHasData(slotIndex, true);
-            SetSlotTimestamp(slotIndex, DateTime.Now);
+            // ---- YOUR METADATA (recorded but only some shown in UI) ----
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", SaveSystem.GetCurrentSceneName());
+            PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_playSeconds", PlayTimeTracker.TotalSecondsInt);
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_time", DateTime.Now.ToString(TimeFormat, CultureInfo.InvariantCulture));
+            PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_exists", 1);
+            PlayerPrefs.Save();
+            // ------------------------------------------------------------
+
+            // (Optional if you still keep these helpers)
+            // MarkSlotHasData(slotIndex, true);
+            // SetSlotTimestamp(slotIndex, DateTime.Now);
         }
         catch (Exception ex)
         {
@@ -256,6 +264,7 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
         RefreshAllSlots();
     }
+
 
     private IEnumerator AnimateSavingDots()
     {

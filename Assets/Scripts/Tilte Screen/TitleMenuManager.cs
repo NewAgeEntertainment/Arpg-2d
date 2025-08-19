@@ -162,7 +162,24 @@ public class TitleMenuManager : MonoBehaviour
         // UnityEngine.SceneManagement.SceneManager.LoadScene(firstLevelSceneName);
 
         isTransitioning = false;
+
+        // Reset counter for a fresh file:
+        PlayTimeTracker.ResetAndStart();
+
+        // Start timer when the first gameplay scene has finished loading:
+        PixelCrushers.SaveSystem.sceneLoaded += OnFirstGameplayLoaded_StartTimer;
+
+        // Kick the scene change:
+        SaveSystem.RestartGame(firstLevelSceneName);
+
     }
+
+    private void OnFirstGameplayLoaded_StartTimer(string sceneName, int sceneIndex)
+    {
+        PixelCrushers.SaveSystem.sceneLoaded -= OnFirstGameplayLoaded_StartTimer;
+        PlayTimeTracker.ResetAndStart();   // start from 0 and begin counting
+    }
+
 
 
     private void SetMenuInteractable(bool interactable)
@@ -185,6 +202,8 @@ public class TitleMenuManager : MonoBehaviour
         cg.interactable = interactable;
         cg.blocksRaycasts = interactable;
     }
+
+
 
     private IEnumerator LocalFadeGuard_Co(bool show, float duration)
     {
