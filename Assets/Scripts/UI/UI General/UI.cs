@@ -282,6 +282,15 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(openSavePanelAction)) OpenSavePanel();
     }
 
+    public static UI EnsureExists(UI prefab)
+    {
+        if (Instance != null) return Instance;
+        var ui = Instantiate(prefab);
+        ui.name = prefab != null ? prefab.name : "UI";
+        return ui;
+    }
+
+
     public void UpdateGoldUI(int newGoldAmount)
     {
         if (goldText != null)

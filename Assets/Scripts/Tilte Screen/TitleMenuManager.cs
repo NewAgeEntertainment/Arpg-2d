@@ -90,9 +90,20 @@ public class TitleMenuManager : MonoBehaviour
 
     public void OpenLoad()
     {
-        if (loadPanel == null || isTransitioning) return;
+        if (isTransitioning || loadPanel == null) return;
+
         mainPanel?.SetActive(false);
         loadPanel.SetActive(true);
+
+        // ✅ If you're using the custom UI_SaveLoadPanel, open it here:
+        var uiSaveLoad = loadPanel.GetComponent<UI_SaveLoadPanel>();
+        if (uiSaveLoad != null)
+        {
+            uiSaveLoad.OpenForLoad();   // turns on content + refreshes slots
+        }
+
+        // (Optional) If you still use PixelCrushers LoadMenu somewhere inside:
+        if (loadMenu == null) loadMenu = loadPanel.GetComponentInChildren<LoadMenu>(true);
         loadMenu?.RefreshList();
     }
 

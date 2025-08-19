@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using Rewired;
 
-public class UI_Options : UI_Panel
+public class UI_Options : MonoBehaviour
 {
     [Header("Rewired Input")]
     [SerializeField] private int playerID = 0;
@@ -35,7 +35,7 @@ public class UI_Options : UI_Panel
     {
         if (rPlayer != null && rPlayer.GetButtonDown(cancelAction))
         {
-            HandleCancel();
+            //HandleCancel();
         }
     }
 
@@ -60,11 +60,11 @@ public class UI_Options : UI_Panel
             player.mana.EnableManaBar(isOn);
     }
 
-    public override bool HandleCancel()
-    {
-        ClosePanel();
-        return true;
-    }
+    //public override bool HandleCancel()
+    //{
+    //    ClosePanel();
+    //    return true;
+    //}
 
     public void ClosePanel()
     {
