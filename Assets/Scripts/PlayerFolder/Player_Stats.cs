@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,10 +44,11 @@ public class Player_Stats : Entity_Stats
         CurrentLevel++;
         Debug.Log($"[Player_Stats] Leveled Up! New Level: {CurrentLevel}");
 
+        // Calculate and apply gains:
         Dictionary<string, float> statGains = ApplyCumulativeLevelBonuses();
 
-        var popup = GetComponent<Player>()?.ui?.levelUpPopup;
-        popup?.ShowPopup(CurrentLevel, statGains);
+        // SHOW POPUP via the service (no local reference needed):
+        LevelUpPopupService.Show(CurrentLevel, statGains);
     }
 
     public float GetNextLevelRequirement()
@@ -69,16 +70,9 @@ public class Player_Stats : Entity_Stats
         float luckGain = StatGrowthCalculator.GetLuck(level);
         float vitGain = StatGrowthCalculator.GetVitality(level);
 
-        //float strokeGain = StatGrowthCalculator.GetStroke(level);
-        //float resilienceGain = StatGrowthCalculator.GetResilience(level);
-        //float sexDamageGain = StatGrowthCalculator.GetSexualDamage(level);
-        //float maxArousalGain = StatGrowthCalculator.GetMaxArousal(level);
-        //float restraintGain = StatGrowthCalculator.GetSexualRestraint(level);
-
-
         string tag = $"{LEVEL_UP_TAG_PREFIX}{level}";
 
-        // Apply to stats
+        // Apply to stats:
         resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
         resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
         major.strength.AddModifier(strGain, StatModType.Flat, tag);
@@ -87,14 +81,7 @@ public class Player_Stats : Entity_Stats
         major.luck.AddModifier(luckGain, StatModType.Flat, tag);
         major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
 
-        //sex.stroke.AddModifier(strokeGain, StatModType.Flat, tag);
-        //sex.resilience.AddModifier(resilienceGain, StatModType.Flat, tag);
-        //sex.sexualDamage.AddModifier(sexDamageGain, StatModType.Flat, tag);
-        //sex.maxArousal.AddModifier(maxArousalGain, StatModType.Flat, tag);
-        //sex.sexualRestraint.AddModifier(restraintGain, StatModType.Flat, tag);
-
-
-        // For popup
+        // For popup:
         statGains["Max Health"] = hpGain;
         statGains["Max Mana"] = mpGain;
         statGains["Strength"] = strGain;
@@ -103,10 +90,8 @@ public class Player_Stats : Entity_Stats
         statGains["Luck"] = luckGain;
         statGains["Vitality"] = vitGain;
 
-
         return statGains;
     }
-
 
     #endregion
 
@@ -145,10 +130,7 @@ public class Player_Stats : Entity_Stats
 
     #region Buff System
 
-    public bool CanApplyBuffOf(string source)
-    {
-        return activeBuff.Contains(source) == false;
-    }
+    public bool CanApplyBuffOf(string source) => activeBuff.Contains(source) == false;
 
     public void ApplyBuff(BuffEffectData[] buffToApply, float duration, string source)
     {
@@ -167,12 +149,13 @@ public class Player_Stats : Entity_Stats
         foreach (var buff in buffToApply)
             GetStatByType(buff.type).RemoveModifier(source);
 
-        inventory.NotifyInventoryChanged();
+        inventory?.NotifyInventoryChanged();
         activeBuff.Remove(source);
     }
 
     #endregion
 
+    // Save/Load helpers
     public void SetLevelAndExp(int level, float exp)
     {
         CurrentLevel = Mathf.Max(1, level);
@@ -188,9 +171,5 @@ public class Player_Stats : Entity_Stats
     public void SetLevel(int level) => CurrentLevel = level;
     public void SetEXP(float exp) => CurrentEXP = exp;
 
-
-    public float GetStatValue(StatType type)
-    {
-        return GetStatByType(type).GetValue();
-    }
+    public float GetStatValue(StatType type) => GetStatByType(type).GetValue();
 }

@@ -12,6 +12,7 @@ using System.Reflection;
 public class UI : MonoBehaviour
 {
     // -------- Singleton Guard --------
+
     public static UI Instance { get; private set; }
 
     #region Components
