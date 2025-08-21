@@ -135,7 +135,6 @@ public class UI_GameOver : MonoBehaviour
 
     private void OnClickLoad()
     {
-        // Open Save/Load (Load mode) and hide GameOver
         if (saveLoadPanel == null)
             saveLoadPanel = FindObjectOfType<UI_SaveLoadPanel>(true);
 
@@ -145,15 +144,14 @@ public class UI_GameOver : MonoBehaviour
             return;
         }
 
-        // Hide visually but keep active so we can restore via ESC
-        HideKeepActive(fadeDuration);
+        // Hide this (fade or set inactive as you prefer)
+        HideKeepActive(fadeDuration); // or root.SetActive(false);
 
-        // Make sure the Save/Load holder is active
+        // Open in Load mode, tagging where it came from:
         saveLoadPanel.gameObject.SetActive(true);
-        saveLoadPanel.OpenForLoad();
-
-        _openedSaveFromGameOver = true;
+        saveLoadPanel.OpenForLoad(UI_SaveLoadPanel.OpenContext.GameOver);
     }
+
 
     private void OnClickTitle()
     {

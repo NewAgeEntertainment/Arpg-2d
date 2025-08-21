@@ -3437,23 +3437,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &473992460 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3707435978065218090, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-  m_PrefabInstance: {fileID: 1892700384026816265}
-  m_PrefabAsset: {fileID: 0}
---- !u!225 &473992465
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 473992460}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &491098065
 GameObject:
   m_ObjectHideFlags: 0
@@ -25268,11 +25251,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129650936}
   m_CullTransparentMesh: 1
---- !u!1 &2135490113 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3374900719716297129, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-  m_PrefabInstance: {fileID: 1892700384026816265}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &287415346512407979
 GameObject:
   m_ObjectHideFlags: 0
@@ -27524,14 +27502,6 @@ PrefabInstance:
       propertyPath: sfx
       value: 
       objectReference: {fileID: 471500940}
-    - target: {fileID: 2361916614885198931, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: canvasGroup
-      value: 
-      objectReference: {fileID: 473992465}
-    - target: {fileID: 2361916614885198931, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: contentRoot
-      value: 
-      objectReference: {fileID: 473992460}
     - target: {fileID: 2389078445063904767, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
@@ -27551,10 +27521,6 @@ PrefabInstance:
     - target: {fileID: 2716476661988399172, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -301.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3374900719716297129, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3582825723646780450, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: audioSource
@@ -27604,10 +27570,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -301.5
       objectReference: {fileID: 0}
-    - target: {fileID: 4906808472578133378, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: root
-      value: 
-      objectReference: {fileID: 2135490113}
     - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -318.5
@@ -27815,10 +27777,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3707435978065218090, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 473992465}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
 --- !u!224 &2038313312089937067
 RectTransform:
