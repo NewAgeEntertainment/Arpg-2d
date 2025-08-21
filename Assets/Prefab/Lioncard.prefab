@@ -399,9 +399,9 @@ GameObject:
   - component: {fileID: 2475480508921098455}
   - component: {fileID: 5213953530006539592}
   - component: {fileID: 5843875191212425359}
+  - component: {fileID: 7836690205457666931}
   - component: {fileID: 6972770920434634234}
   - component: {fileID: 6996464327934491418}
-  - component: {fileID: 300927545034408096}
   - component: {fileID: 6484941635704767120}
   - component: {fileID: 7274584616826402989}
   - component: {fileID: 435423305743461155}
@@ -713,6 +713,30 @@ MonoBehaviour:
   createDeepBreathIfMissingAtRuntime: 1
   autoUnlockDeepBreathIfDataMissing: 1
   verboseLogs: 1
+--- !u!114 &7836690205457666931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98f016a35dc1e6f4488f9d0fe3158916, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  expReward: 25
+  currentHealth: 0
+  isDead: 0
+  regenInterval: 1
+  canRegenerateHealth: 1
+  knockbackDuration: 0.2
+  onDamageKnockback: 0
+  heavyDamageThreshold: 5
+  heavyKnockbackDuration: 5
+  onHeavyDamageKnockback: 0
+  gameOverRoot: {fileID: 8667730609461038966, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+  showDelay: 0.75
 --- !u!114 &6972770920434634234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -785,28 +809,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0.53, y: 1.08}
   m_Size: {x: 0.77, y: 1.9736052}
   m_Direction: 0
---- !u!114 &300927545034408096
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a15e285c6eea3bb4fb98c6dd62f02f56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  expReward: 25
-  currentHealth: 0
-  isDead: 0
-  regenInterval: 1
-  canRegenerateHealth: 1
-  knockbackDuration: 1
-  onDamageKnockback: 2.48
-  heavyDamageThreshold: 1
-  heavyKnockbackDuration: 1
-  onHeavyDamageKnockback: 1
 --- !u!61 &6484941635704767120
 BoxCollider2D:
   m_ObjectHideFlags: 0

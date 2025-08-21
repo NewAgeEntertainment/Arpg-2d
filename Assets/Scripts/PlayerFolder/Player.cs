@@ -48,7 +48,7 @@ public class Player : Entity
     public Player_DashState dashState { get; private set; }
     public Player_ThrustState thrustState { get; private set; }
     public Player_BasicAttackState basicAttackState { get; private set; }
-    public Player_DeadState deadState { get; private set; }
+    public Player_DeathState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
 
     [Header("Rewired")]
@@ -101,7 +101,7 @@ public class Player : Entity
         dashState = new Player_DashState(this, stateMachine, "dash");
         thrustState = new Player_ThrustState(this, stateMachine, "thrust");
         basicAttackState = new Player_BasicAttackState(this, stateMachine, "basicAttack");
-        deadState = new Player_DeadState(this, stateMachine, "dead");
+        deadState = new Player_DeathState(this, stateMachine, "dead");
         counterAttackState = new Player_CounterAttackState(this, stateMachine, "counterAttack");
 
         // --- Propagate Rewired Player ID to all states (so PlayerState can fetch rPlayer)
