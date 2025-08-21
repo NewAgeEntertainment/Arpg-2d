@@ -15,9 +15,7 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private GameObject goldDisplayRoot;
     [SerializeField] private TextMeshProUGUI goldGainText;
     [SerializeField] private float goldDisplayDuration = 2.0f;
-
     private Coroutine goldGainRoutine;
-
     [SerializeField] private AudioClip goldPickupClip;
     [SerializeField] private float goldPickupVolume = 1f;
 
@@ -53,11 +51,15 @@ public class UI_InGame : MonoBehaviour
 
     [HideInInspector] public Inventory_Player playerInventory;
 
+    private Player _subscribedPlayer;
+    private Player_Stats _subscribedStats;
+
     private void Awake()
     {
         rplayer = ReInput.players.GetPlayer(playerID);
-        playerInventory = FindFirstObjectByType<Inventory_Player>();
 
+        // Try initial inventory (may be rehooked later)
+        playerInventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
         if (playerInventory != null)
         {
             playerInventory.OnInventoryChange += UpdateQuickSlots;
@@ -67,22 +69,118 @@ public class UI_InGame : MonoBehaviour
 
     private void Start()
     {
-        player = FindFirstObjectByType<Player>();
+        HookPlayer(FindFirstObjectByType<Player>(FindObjectsInactive.Include));
 
-        if (player != null)
-        {
-            player.health.OnHealthUpdate += UpdateHealthBar;
-            player.mana.OnManaUpdate += UpdateManaBar;
-        }
-
+        UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
         UpdateHealthBar();
         UpdateManaBar();
         UpdateQuickSlots();
-        UpdateExpBar();
-        UpdateSexExpBar();
 
-        UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
+        // If player/stats not ready on first frame, force another pass next frame
+        StartCoroutine(ForceOneMorePaintNextFrame());
     }
+
+    private IEnumerator ForceOneMorePaintNextFrame()
+    {
+        yield return null;
+        ForceRefreshFromCurrentState();
+    }
+
+    private void OnEnable()
+    {
+        if (_subscribedPlayer == null)
+            HookPlayer(FindFirstObjectByType<Player>(FindObjectsInactive.Include));
+    }
+
+    private void OnDisable()
+    {
+        UnhookPlayer();
+    }
+
+    private void OnDestroy()
+    {
+        UnhookPlayer();
+
+        if (playerInventory != null)
+        {
+            playerInventory.OnGoldChanged -= UpdateGoldDisplay;
+            playerInventory.OnInventoryChange -= UpdateQuickSlots;
+        }
+    }
+
+    // ========== Hook / Unhook ==========
+
+    private void HookPlayer(Player p)
+    {
+        if (p == _subscribedPlayer && p != null) return;
+
+        UnhookPlayer();
+        _subscribedPlayer = p;
+
+        if (_subscribedPlayer == null) return;
+
+        // Cache inventory & subscribe
+        playerInventory = _subscribedPlayer.GetComponent<Inventory_Player>();
+        if (playerInventory == null)
+            playerInventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+
+        if (playerInventory != null)
+        {
+            playerInventory.OnInventoryChange -= UpdateQuickSlots;
+            playerInventory.OnGoldChanged -= UpdateGoldDisplay;
+            playerInventory.OnInventoryChange += UpdateQuickSlots;
+            playerInventory.OnGoldChanged += UpdateGoldDisplay;
+        }
+
+        // HP/MP events
+        if (_subscribedPlayer.health != null) _subscribedPlayer.health.OnHealthUpdate += UpdateHealthBar;
+        if (_subscribedPlayer.mana != null) _subscribedPlayer.mana.OnManaUpdate += UpdateManaBar;
+
+        // EXP events from STATS
+        _subscribedStats = _subscribedPlayer.stats;
+        if (_subscribedStats != null)
+        {
+            _subscribedStats.OnExpChanged += OnExpChanged;
+            _subscribedStats.OnSexExpChanged += OnSexExpChanged;
+
+            // Immediate paint from stats
+            OnExpChanged(_subscribedStats.CurrentEXP, _subscribedStats.GetNextLevelRequirement());
+            OnSexExpChanged(_subscribedStats.CurrentSexEXP,
+                            _subscribedStats.GetNextSexLevelRequirement(),
+                            _subscribedStats.CurrentSexLevel);
+        }
+
+        // Also store a direct reference for convenience in other methods
+        player = _subscribedPlayer;
+
+        // Paint other bits
+        UpdateQuickSlots();
+        UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);
+        UpdateHealthBar();
+        UpdateManaBar();
+    }
+
+    private void UnhookPlayer()
+    {
+        if (_subscribedPlayer != null)
+        {
+            if (_subscribedPlayer.health != null)
+                _subscribedPlayer.health.OnHealthUpdate -= UpdateHealthBar;
+            if (_subscribedPlayer.mana != null)
+                _subscribedPlayer.mana.OnManaUpdate -= UpdateManaBar;
+        }
+
+        if (_subscribedStats != null)
+        {
+            _subscribedStats.OnExpChanged -= OnExpChanged;
+            _subscribedStats.OnSexExpChanged -= OnSexExpChanged;
+            _subscribedStats = null;
+        }
+
+        _subscribedPlayer = null;
+    }
+
+    // ========== Input for quick slots ==========
 
     private void Update()
     {
@@ -94,24 +192,8 @@ public class UI_InGame : MonoBehaviour
         if (rplayer.GetButtonDown(quickSlot4Action)) playerInventory.TryUseQuickItemInSlot(4);
     }
 
-    private void OnDestroy()
-    {
-        if (playerInventory != null)
-        {
-            playerInventory.OnGoldChanged -= UpdateGoldDisplay;
-            playerInventory.OnInventoryChange -= UpdateQuickSlots;
-        }
+    // ========== GOLD UI ==========
 
-        if (player != null)
-        {
-            if (player.health != null) player.health.OnHealthUpdate -= UpdateHealthBar;
-            if (player.mana != null) player.mana.OnManaUpdate -= UpdateManaBar;
-        }
-    }
-
-    // ------------------------------
-    // GOLD UI
-    // ------------------------------
     public void UpdateGoldDisplay(int currentGold)
     {
         if (goldTotalText != null)
@@ -142,9 +224,8 @@ public class UI_InGame : MonoBehaviour
             goldDisplayRoot.SetActive(false);
     }
 
-    // ------------------------------
-    // HEALTH & MANA
-    // ------------------------------
+    // ========== HEALTH & MANA ==========
+
     private void UpdateHealthBar()
     {
         if (player == null || player.stats == null || player.health == null) return;
@@ -167,51 +248,45 @@ public class UI_InGame : MonoBehaviour
             manaSlider.value = player.mana.GetManaPercent();
     }
 
-    // ------------------------------
-    // EXP BAR (NORMAL)
-    // ------------------------------
-    public void UpdateExpBar()
+    // ========== EXP & SEX EXP (events) ==========
+
+    private void OnExpChanged(float current, float next)
     {
-        if (player == null) return;
+        float ratio = next > 0.0001f ? Mathf.Clamp01(current / next) : 0f;
 
-        float currentExp = player.CurrentExp;
-        float nextLevelExp = player.NextLevelExp;
+        if (expSlider != null)
+            expSlider.value = ratio;
 
-        if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
-        if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
+        if (expText != null)
+            expText.text = $"EXP: {current:F0} / {next:F0}";
     }
 
-    public void UpdateExpBar(float currentExp, float nextLevelExp)
+    private void OnSexExpChanged(float current, float next, int level)
     {
-        if (expSlider != null) expSlider.value = nextLevelExp > 0 ? currentExp / nextLevelExp : 0f;
-        if (expText != null) expText.text = $"EXP: {currentExp:F0} / {nextLevelExp:F0}";
-    }
-
-    // ------------------------------
-    // SEX EXP BAR
-    // ------------------------------
-    public void UpdateSexExpBar()
-    {
-        if (player == null)
-        {
-            player = FindFirstObjectByType<Player>();
-            if (player == null) return;
-        }
-
-        float currentSexExp = player.CurrentSexExp;
-        float nextSexExp = player.NextSexLevelSexExp;
-        int sexLevel = player.SexLevel;
+        float ratio = next > 0.0001f ? Mathf.Clamp01(current / next) : 0f;
 
         if (sexExpSlider != null)
-            sexExpSlider.value = nextSexExp > 0 ? currentSexExp / nextSexExp : 0f;
+            sexExpSlider.value = ratio;
 
         if (sexExpText != null)
-            sexExpText.text = $"Sex Lv {sexLevel}  {currentSexExp:F0}/{nextSexExp:F0}";
+            sexExpText.text = $"Sex Lv {level}  {current:F0}/{next:F0}";
     }
 
-    // ------------------------------
-    // QUICK SLOT UI
-    // ------------------------------
+    // Legacy/direct refresh entry points (safe no-ops if events already fired)
+    public void UpdateExpBar()
+    {
+        if (player == null || player.stats == null) return;
+        OnExpChanged(player.stats.CurrentEXP, player.stats.GetNextLevelRequirement());
+    }
+
+    public void UpdateSexExpBar()
+    {
+        if (player == null || player.stats == null) return;
+        OnSexExpChanged(player.stats.CurrentSexEXP, player.stats.GetNextSexLevelRequirement(), player.stats.CurrentSexLevel);
+    }
+
+    // ========== QUICK SLOT UI ==========
+
     public void UpdateQuickSlots()
     {
         if (playerInventory == null) return;
@@ -228,16 +303,10 @@ public class UI_InGame : MonoBehaviour
         if (quickSlot4) quickSlot4.UpdateQuickSlotUI(playerInventory.quickSlots[3]);
     }
 
-    // ------------------------------
-    // SKILL SLOT ACCESS
-    // ------------------------------
     public UI_SkillSlot GetSkillSlot(SkillType type)
     {
         foreach (var slot in skillSlots)
-        {
-            if (slot != null && slot.skillType == type)
-                return slot;
-        }
+            if (slot != null && slot.skillType == type) return slot;
 
         Debug.LogWarning($"[UI_InGame] No skill slot found for SkillType: {type}");
         return null;
@@ -253,35 +322,19 @@ public class UI_InGame : MonoBehaviour
         foreach (var n in nodes)
         {
             if (n == null || !n.isUnlocked || n.skillData == null) continue;
-
             var slot = GetSkillSlot(n.skillData.skillType);
-            if (slot != null)
-                slot.SetupSkillSlot(n.skillData);
+            if (slot != null) slot.SetupSkillSlot(n.skillData);
         }
     }
 
-    // ------------------------------
-    // ONE-SHOT BOOTSTRAP
-    // ------------------------------
+    // ========== Bootstrap / resiliency ==========
+
     public void ForceRefreshFromCurrentState()
     {
         if (player == null)
-            player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-
-        if (playerInventory == null)
-        {
-            if (player != null) playerInventory = player.GetComponent<Inventory_Player>();
-            if (playerInventory == null)
-                playerInventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
-
-            if (playerInventory != null)
-            {
-                playerInventory.OnInventoryChange -= UpdateQuickSlots;
-                playerInventory.OnGoldChanged -= UpdateGoldDisplay;
-                playerInventory.OnInventoryChange += UpdateQuickSlots;
-                playerInventory.OnGoldChanged += UpdateGoldDisplay;
-            }
-        }
+            HookPlayer(FindFirstObjectByType<Player>(FindObjectsInactive.Include));
+        else
+            HookPlayer(player); // ensures events are hooked
 
         UpdateQuickSlots();
         UpdateGoldDisplay(playerInventory != null ? playerInventory.gold : 0);

@@ -5,7 +5,13 @@ using UnityEngine;
 
 public class Player_Stats : Entity_Stats
 {
-    public float CurrentEXP { get; private set; } = 0;
+    // UI/event hooks
+    public event Action<float, float> OnExpChanged;                // (current, nextReq)
+    public event Action<float, float, int> OnSexExpChanged;        // (current, nextReq, level)
+    public event Action<int> OnLevelChanged;                       // (newLevel)
+
+    // Progress
+    public float CurrentEXP { get; private set; } = 0f;
     public int CurrentLevel { get; private set; } = 1;
 
     [Header("Level Scaling")]
@@ -16,7 +22,15 @@ public class Player_Stats : Entity_Stats
 
     private const string LEVEL_UP_TAG_PREFIX = "LevelUp_L";
 
-    private List<string> activeBuff = new List<string>();
+    // Sex EXP
+    public float CurrentSexEXP { get; private set; } = 0f;
+    public int CurrentSexLevel { get; private set; } = 1;
+
+    private const float SEX_EXP_BASE_REQ = 75f;
+    private const float SEX_EXP_GROWTH = 1.4f;
+
+    // Buffs
+    private readonly List<string> activeBuff = new List<string>();
     private Inventory_Player inventory;
 
     protected override void Awake()
@@ -25,12 +39,12 @@ public class Player_Stats : Entity_Stats
         inventory = GetComponent<Inventory_Player>();
     }
 
-    #region Normal EXP & Level-Up
+    // ========= Normal EXP & Level-Up =========
 
     public void AddEXP(float amount)
     {
         CurrentEXP += amount;
-        Debug.Log($"[Player_Stats] Gained EXP: {amount} | Total EXP: {CurrentEXP}");
+        RaiseExp();
 
         while (CurrentEXP >= GetNextLevelRequirement())
         {
@@ -42,24 +56,24 @@ public class Player_Stats : Entity_Stats
     {
         CurrentEXP -= GetNextLevelRequirement();
         CurrentLevel++;
-        Debug.Log($"[Player_Stats] Leveled Up! New Level: {CurrentLevel}");
 
-        // Calculate and apply gains:
-        Dictionary<string, float> statGains = ApplyCumulativeLevelBonuses();
+        OnLevelChanged?.Invoke(CurrentLevel); // notify listeners first
+        RaiseExp();                           // refresh EXP bar for new threshold
 
-        // SHOW POPUP via the service (no local reference needed):
-        LevelUpPopupService.Show(CurrentLevel, statGains);
+        var statGains = ApplyCumulativeLevelBonuses();
+
+        // Compatible with UI_LevelUpPopup.Show(int, IDictionary<string,float>)
+        GetComponent<Player>()?.ui?.levelUpPopup?.Show(CurrentLevel, statGains);
     }
 
     public float GetNextLevelRequirement()
     {
-        return BASE_EXP_REQUIREMENT * Mathf.Pow(EXP_GROWTH_RATE, CurrentLevel - 1);
+        return BASE_EXP_REQUIREMENT * Mathf.Pow(EXP_GROWTH_RATE, Mathf.Max(0, CurrentLevel - 1));
     }
 
     private Dictionary<string, float> ApplyCumulativeLevelBonuses()
     {
         var statGains = new Dictionary<string, float>();
-
         int level = CurrentLevel;
 
         float hpGain = StatGrowthCalculator.GetMaxHealth(level);
@@ -72,7 +86,7 @@ public class Player_Stats : Entity_Stats
 
         string tag = $"{LEVEL_UP_TAG_PREFIX}{level}";
 
-        // Apply to stats:
+        // Apply to stats
         resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
         resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
         major.strength.AddModifier(strGain, StatModType.Flat, tag);
@@ -81,7 +95,7 @@ public class Player_Stats : Entity_Stats
         major.luck.AddModifier(luckGain, StatModType.Flat, tag);
         major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
 
-        // For popup:
+        // For popup
         statGains["Max Health"] = hpGain;
         statGains["Max Mana"] = mpGain;
         statGains["Strength"] = strGain;
@@ -93,20 +107,14 @@ public class Player_Stats : Entity_Stats
         return statGains;
     }
 
-    #endregion
+    private void RaiseExp() => OnExpChanged?.Invoke(CurrentEXP, GetNextLevelRequirement());
 
-    #region Sex EXP / Sex Level
-
-    public float CurrentSexEXP { get; private set; } = 0;
-    public int CurrentSexLevel { get; private set; } = 1;
-
-    private const float SEX_EXP_BASE_REQ = 75f;
-    private const float SEX_EXP_GROWTH = 1.4f;
+    // ========= Sex EXP / Sex Level =========
 
     public void AddSexEXP(float amount)
     {
         CurrentSexEXP += amount;
-        Debug.Log($"[Player_Stats] Gained Sex EXP: {amount} | Total: {CurrentSexEXP}");
+        RaiseSex();
 
         while (CurrentSexEXP >= GetNextSexLevelRequirement())
         {
@@ -118,22 +126,24 @@ public class Player_Stats : Entity_Stats
     {
         CurrentSexEXP -= GetNextSexLevelRequirement();
         CurrentSexLevel++;
-        Debug.Log($"[Player_Stats] Sex Level Up! New Sex Level: {CurrentSexLevel}");
+        RaiseSex();
     }
 
     public float GetNextSexLevelRequirement()
     {
-        return SEX_EXP_BASE_REQ * Mathf.Pow(SEX_EXP_GROWTH, CurrentSexLevel - 1);
+        return SEX_EXP_BASE_REQ * Mathf.Pow(SEX_EXP_GROWTH, Mathf.Max(0, CurrentSexLevel - 1));
     }
 
-    #endregion
+    private void RaiseSex() => OnSexExpChanged?.Invoke(CurrentSexEXP, GetNextSexLevelRequirement(), CurrentSexLevel);
 
-    #region Buff System
+    // ========= Buff System =========
 
-    public bool CanApplyBuffOf(string source) => activeBuff.Contains(source) == false;
+    public bool CanApplyBuffOf(string source) => !activeBuff.Contains(source);
 
     public void ApplyBuff(BuffEffectData[] buffToApply, float duration, string source)
     {
+        if (buffToApply == null || buffToApply.Length == 0) return;
+        if (!CanApplyBuffOf(source)) return;
         StartCoroutine(buffCo(buffToApply, duration, source));
     }
 
@@ -144,6 +154,8 @@ public class Player_Stats : Entity_Stats
         foreach (var buff in buffToApply)
             GetStatByType(buff.type).AddModifier(buff.value, StatModType.Flat, source);
 
+        inventory?.NotifyInventoryChanged();
+
         yield return new WaitForSeconds(duration);
 
         foreach (var buff in buffToApply)
@@ -153,23 +165,45 @@ public class Player_Stats : Entity_Stats
         activeBuff.Remove(source);
     }
 
-    #endregion
+    // ========= Save/Load helpers =========
 
-    // Save/Load helpers
+    /// <summary>Set level & exp and immediately notify listeners (UI refresh).</summary>
     public void SetLevelAndExp(int level, float exp)
     {
         CurrentLevel = Mathf.Max(1, level);
         CurrentEXP = Mathf.Max(0, exp);
+        OnLevelChanged?.Invoke(CurrentLevel);
+        RaiseExp();
     }
 
+    /// <summary>Set sex level & exp and immediately notify listeners (UI refresh).</summary>
     public void SetSexLevelAndExp(int sexLevel, float sexExp)
     {
         CurrentSexLevel = Mathf.Max(1, sexLevel);
         CurrentSexEXP = Mathf.Max(0, sexExp);
+        RaiseSex();
     }
 
-    public void SetLevel(int level) => CurrentLevel = level;
-    public void SetEXP(float exp) => CurrentEXP = exp;
+    public void SetLevel(int level)
+    {
+        CurrentLevel = Mathf.Max(1, level);
+        OnLevelChanged?.Invoke(CurrentLevel);
+        RaiseExp();
+    }
+
+    public void SetEXP(float exp)
+    {
+        CurrentEXP = Mathf.Max(0, exp);
+        RaiseExp();
+    }
+
+    /// <summary>Use this after a New Game / Load if you need to force all bars to repaint.</summary>
+    public void ForceRaiseAllExpSignals()
+    {
+        OnLevelChanged?.Invoke(CurrentLevel);
+        RaiseExp();
+        RaiseSex();
+    }
 
     public float GetStatValue(StatType type) => GetStatByType(type).GetValue();
 }
