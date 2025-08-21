@@ -168,6 +168,31 @@ public class Entity_Health : MonoBehaviour, IDamageable
         OnHealthUpdate?.Invoke();
     }
 
+    // In Entity_Health.cs (add anywhere inside the class)
+    public bool IsDead => isDead;
+
+    public void ForceRevive(float? setHealth = null)
+    {
+        isDead = false;
+
+        float max = entityStats.GetMaxHealth();
+        if (setHealth.HasValue)
+            currentHealth = Mathf.Clamp(setHealth.Value, 1f, max);
+        else if (currentHealth <= 0f)
+            currentHealth = 1f;
+
+        OnHealthUpdate?.Invoke();
+    }
+
+    public void ForceReviveToFull()
+    {
+        isDead = false;
+        // If you disable regen while dead elsewhere, reset that here if needed.
+        currentHealth = GetComponent<Entity_Stats>().GetMaxHealth();
+        OnHealthUpdate?.Invoke();
+    }
+
+
     private float CalculateKnockbackDuration(float damage)
         => IsHeavyDamage(damage) ? heavyKnockbackDuration : knockbackDuration;
 

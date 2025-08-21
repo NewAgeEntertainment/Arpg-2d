@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using Rewired;
+using UnityEngine.SceneManagement;
 
 public class Player : Entity
 {
@@ -114,6 +115,9 @@ public class Player : Entity
         counterAttackState.SetRewiredPlayerId(playerID);
 
         DontDestroyOnLoad(gameObject);
+        
+
+
     }
 
     protected override void Start()
@@ -160,22 +164,23 @@ public class Player : Entity
         }
     }
 
+
+
+
     /// <summary>
     /// Called by PlayerSpawner / Player_InitHook immediately after instantiation.
     /// Guarantees the state machine enters a state before Update() so skills can fire.
     /// </summary>
     public void InitializeAfterSpawn()
     {
-        // Ensure SM is initialized so PlayerState.Enter() runs (caches Rewired, etc.)
         if (stateMachine.currentState == null)
             stateMachine.Initialize(idleState);
 
-        // Ensure Rewired player is cached
         TryCacheRewiredPlayer();
-
-        // Repaint HUD connections if needed
+        HardReviveAndSnapToIdle();           // << add this line
         ui?.inGameUI?.ForceRefreshFromCurrentState();
     }
+
 
     private void TryCacheRewiredPlayer()
     {
@@ -355,6 +360,121 @@ public class Player : Entity
         stats.sex.sexualRestraint.RemoveModifier(SEX_LEVEL_BONUS_SOURCE);
     }
 
-    private void OnEnable() => input.Enable();
-    private void OnDisable() => input.Disable();
+    // Runs after any scene load: ensure we aren't stuck in dead pose/state after loading a save/new game
+    private void OnSceneLoaded_ReviveGuard(Scene scene, LoadSceneMode mode)
+    {
+        HardReviveAndSnapToIdle();
+
+        // Make sure refs are valid
+        if (health == null) health = GetComponent<Entity_Health>();
+        if (stats == null) stats = GetComponent<Player_Stats>();
+
+        // If we were dead or have zero health, hard revive to a clean state.
+        if (health != null && (health.IsDead || health.GetCurrentHealth() <= 0.001f))
+        {
+            health.ForceReviveToFull();
+        }
+
+        // Clear animator's "dead" latch and jump to Idle at time 0.
+        if (anim != null)
+        {
+            anim.ResetTrigger("die");        // if you used a trigger
+            anim.SetBool("dead", false);     // matches your Death state's animBoolName
+            anim.Play("idle", 0, 0f);        // <- use your actual Idle state name if different
+        }
+
+        // Reset SM + movement
+        stateMachine.ChangeState(idleState);
+        SetVelocity(0f, 0f);
+
+        // Hide any lingering GameOver screen (in case we came from that flow)
+        UI_GameOver.HideStatic(0f);
+    }
+
+
+    public void ReviveIfStuckDead(bool fullHeal)
+    {
+        if (health == null) return;
+
+        bool animDead = (anim != null) && anim.GetBool("dead");
+        if (stateMachine.currentState == deadState || animDead || health.IsDead || health.GetCurrentHealth() <= 0f)
+        {
+            // clear death
+            health.ForceRevive(fullHeal ? (float?)stats.GetMaxHealth() : null);
+
+            if (anim != null) anim.SetBool("dead", false);
+            SetVelocity(0f, 0f);
+
+            if (stateMachine.currentState == deadState)
+                stateMachine.ChangeState(idleState);
+            else if (stateMachine.currentState == null)
+                stateMachine.Initialize(idleState);
+            else
+                stateMachine.ChangeState(idleState);
+
+            UI_GameOver.HideStatic(0f);
+        }
+    }
+
+
+
+    private void OnEnable()
+    {
+        input.Enable();
+
+        // Guard against double-subscribe by removing first.
+        SceneManager.sceneLoaded -= OnSceneLoaded_ReviveGuard;
+        SceneManager.sceneLoaded += OnSceneLoaded_ReviveGuard;
+    }
+
+    private void OnDisable()
+    {
+        // Always unsubscribe when this component is disabled/destroyed.
+        SceneManager.sceneLoaded -= OnSceneLoaded_ReviveGuard;
+
+        input.Disable();
+    }
+
+
+
+    // Call this after starting a new game OR after loading a save.
+    public void HardReviveAndSnapToIdle()
+    {
+        // 1) Health logic
+        if (health == null) health = GetComponent<Entity_Health>();
+        if (stats == null) stats = GetComponent<Player_Stats>();
+        if (health != null && (health.IsDead || health.GetCurrentHealth() <= 0f))
+            health.ForceRevive(); // or ForceReviveToFull();
+
+        // 2) Animator reset + jump to Idle
+        if (anim != null)
+        {
+            anim.ResetTrigger("die");
+            anim.ResetTrigger("Death");
+            anim.SetBool("dead", false);
+            anim.SetBool("isDead", false);
+
+            anim.Rebind();
+            anim.Update(0f);
+
+            // Try common Idle names; if not found, default layer reset is enough.
+            TryPlayIdle(anim);
+        }
+
+        // 3) State machine & motion
+        stateMachine.ChangeState(idleState);
+        SetVelocity(0f, 0f);
+    }
+
+    private static void TryPlayIdle(Animator a)
+    {
+        // Try common state names (layer 0)
+        string[] names = { "Base Layer.Idle", "Idle", "idle", "Locomotion", "Movement" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            int h = Animator.StringToHash(names[i]);
+            if (a.HasState(0, h)) { a.Play(h, 0, 0f); return; }
+        }
+    }
+
 }

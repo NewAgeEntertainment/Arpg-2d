@@ -1,52 +1,100 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class Player_DeathState : PlayerState
 {
-    private bool popupShown;
-    private float fallbackDelay = 0.75f; // used if we can’t read clip length
+    private readonly Player player;
+    private readonly string animKey;
+    [SerializeField] private string triggerName = "death";
 
     public Player_DeathState(Player player, StateMachine sm, string animBoolName)
-        : base(player, sm, animBoolName) { }
+        : base(player, sm, animBoolName)
+    {
+        this.player = player;
+        this.animKey = animBoolName;
+    }
+
+    
 
     public override void Enter()
     {
         base.Enter();
 
-        popupShown = false;
+        var rb = player.GetComponent<Rigidbody2D>();
+        if (rb) rb.velocity = Vector2.zero;
 
-        // stop motion & input
-        player.SetVelocity(0, 0);
-        player.input.Disable();
-
-        // play death anim (animBoolName should map to your “dead” bool)
-        // If you're using a trigger, set it here instead.
-        // anim.SetBool(animBoolName, true); // base.Enter usually does this
-
-        // try to use current state’s animation length
-        float delay = fallbackDelay;
-        var info = player.anim.GetCurrentAnimatorStateInfo(0);
-        if (info.length > 0f) delay = info.length * Mathf.Max(0.95f, info.normalizedTime < 1f ? 1f : 1f);
-
-        stateTimer = delay; // PlayerState decreases stateTimer each Update
-    }
-
-    public override void Update()
-    {
-        base.Update();
-
-        // keep the body still
-        player.SetVelocity(0, 0);
-
-        if (!popupShown && stateTimer <= 0f)
+        // Disable inputs safely
+        try
         {
-            popupShown = true;
-            UI_GameOver.ShowStatic(); // or ShowNow() if you added the alias
+            var rewired = Rewired.ReInput.players.GetPlayer(player.rewiredPlayerId);
+            rewired.controllers.maps.SetMapsEnabled(false, "Default");
         }
+        catch { }
+
+        var anim = player.anim;
+        if (anim != null)
+        {
+            if (HasParam(anim, triggerName)) anim.SetTrigger(triggerName);
+            else if (HasParam(anim, "Death")) anim.SetTrigger("Death");
+            else if (HasBool(anim, animKey)) anim.SetBool(animKey, true);
+        }
+
+        player.StartCoroutine(WaitThenShowGameOver(anim));
     }
 
     public override void Exit()
     {
-        base.Exit();
-        // stay dead; no special cleanup here
+        var a = player.anim;
+        if (a != null)
+        {
+            // Clear any state flag this state set:
+            if (HasBool(a, animKey)) a.SetBool(animKey, false);
+            a.SetBool("dead", false);           // in case your animKey isn’t “dead”
+            a.ResetTrigger("die");              // if you used a trigger too
+
+            a.Rebind();                         // << force animator back to defaults
+            a.Update(0f);                       // << apply immediately
+        }
     }
+
+    private IEnumerator WaitThenShowGameOver(Animator anim)
+    {
+        yield return null;
+
+        float wait = 1f;
+        if (anim != null && anim.runtimeAnimatorController != null)
+        {
+            // give animator a frame to settle
+            yield return null;
+
+            if (anim.GetCurrentAnimatorClipInfoCount(0) > 0)
+            {
+                var clips = anim.GetCurrentAnimatorClipInfo(0);
+                if (clips.Length > 0 && clips[0].clip != null)
+                    wait = Mathf.Max(0.25f, clips[0].clip.length);
+            }
+        }
+
+        yield return new WaitForSeconds(wait);
+
+        // ✅ Robust: show regardless of whether an instance already exists
+        UI_GameOver.ShowStatic();
+    }
+
+    private static bool HasParam(Animator a, string name)
+    {
+        foreach (var p in a.parameters) if (p.name == name) return true;
+        return false;
+    }
+
+    private static bool HasBool(Animator a, string name)
+    {
+        foreach (var p in a.parameters)
+            if (p.name == name && p.type == AnimatorControllerParameterType.Bool)
+                return true;
+        return false;
+    }
+
+    
+
 }
