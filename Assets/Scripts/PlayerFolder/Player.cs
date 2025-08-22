@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using Rewired;
+using UnityEngine.SceneManagement;
 
 public class Player : Entity
 {
@@ -232,6 +233,87 @@ public class Player : Entity
         closest.GetComponent<IInteractable>()?.Interact();
     }
 
+    // --- Revive/anim safety after scene loads or new game ---
+    private bool _reviveHooked;
+
+    private void OnEnable()
+    {
+        // keep your existing OnEnable
+        input.Enable();
+
+        if (!_reviveHooked)
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded_EnsureAlive;
+            _reviveHooked = true;
+        }
+    }
+
+    private void OnDisable()
+    {
+        input.Disable();
+
+        if (_reviveHooked)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded_EnsureAlive;
+            _reviveHooked = false;
+        }
+    }
+
+    // Runs after every scene load (including SaveSystem loads)
+    private void OnSceneLoaded_EnsureAlive(Scene s, LoadSceneMode m)
+    {
+        StartCoroutine(EnsureAliveNextFrame());
+    }
+
+    private IEnumerator EnsureAliveNextFrame()
+    {
+        // let spawners finish
+        yield return null;
+
+        ResetToAliveAfterLoad(fullHealIfZero: true);
+
+        // repaint HUD
+        ui?.inGameUI?.ForceRefreshFromCurrentState();
+    }
+
+    // Call this from anywhere if needed
+    public void ResetToAliveAfterLoad(bool fullHealIfZero)
+    {
+        // 1) clear dead flag + health
+        if (health != null)
+        {
+            if (fullHealIfZero && health.GetCurrentHealth() <= 0f)
+                health.ForceReviveToFull();      // your helper on Entity_Health
+            else
+                health.ForceRevive();             // leaves current HP if > 0, sets at least 1 HP otherwise
+        }
+
+        // 2) animator / state machine
+        if (anim != null)
+        {
+            anim.ResetTrigger("dead");
+            anim.SetBool("dead", false);         // name must match your death anim bool
+        }
+
+        // If the SM was never initialized (fresh spawn), initialize. If it was dead, go idle.
+        if (stateMachine.currentState == null)
+            stateMachine.Initialize(idleState);
+        else if (stateMachine.currentState == deadState)
+            stateMachine.ChangeState(idleState);
+
+        // 3) stop residual motion
+        SetVelocity(0f, 0f);
+
+        // 4) re-enable default input maps (in case a UI or state disabled them)
+        try
+        {
+            var rp = ReInput.players.GetPlayer(playerID);
+            rp.controllers.maps.SetMapsEnabled(true, "Default");
+        }
+        catch { /* Rewired not ready yet */ }
+    }
+
+
     // --- Compatibility shim for old UI code ---
     // Old UI calls Player.GetNextSexLevelRequirementSex(); forward to Player_Stats now.
     public float GetNextSexLevelRequirementSex()
@@ -285,6 +367,5 @@ public class Player : Entity
         stats.sex.sexualRestraint.RemoveModifier(SEX_LEVEL_BONUS_SOURCE);
     }
 
-    private void OnEnable() => input.Enable();
-    private void OnDisable() => input.Disable();
+    
 }

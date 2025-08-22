@@ -145,13 +145,13 @@ public class UI_GameOver : MonoBehaviour
         }
 
         // Hide this (fade or set inactive as you prefer)
-        HideKeepActive(fadeDuration); // or root.SetActive(false);
+        HideKeepActive(fadeDuration);
 
         // Open in Load mode, tagging where it came from:
         saveLoadPanel.gameObject.SetActive(true);
         saveLoadPanel.OpenForLoad(UI_SaveLoadPanel.OpenContext.GameOver);
+        _openedSaveFromGameOver = true;
     }
-
 
     private void OnClickTitle()
     {

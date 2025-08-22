@@ -3651,9 +3651,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainPanel: {fileID: 711540704}
-  loadPanel: {fileID: 0}
+  loadPanel: {fileID: 1559727520752385989}
   optionsPanel: {fileID: 861398809}
   controlsPanel: {fileID: 122472317}
+  mainButtonsRoot: {fileID: 0}
   playButton: {fileID: 1104692128}
   loadButton: {fileID: 1548238437}
   optionsButton: {fileID: 726761119}
@@ -5582,9 +5583,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6813102995918767325}
-        m_TargetAssemblyTypeName: UI_SaveLoadPanel, Assembly-CSharp
-        m_MethodName: OpenForLoad
+      - m_Target: {fileID: 711540709}
+        m_TargetAssemblyTypeName: TitleMenuManager, Assembly-CSharp
+        m_MethodName: OpenLoad
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -11448,12 +11449,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   headerText: {fileID: 0}
-  contentRoot: {fileID: 1684936469}
-  canvasGroup: {fileID: 70596464}
   saveSlots:
   - {fileID: 8575060352110346890}
   - {fileID: 388797881017181525}
   - {fileID: 8290398865690069744}
+  panel: {fileID: 1559727520752385989}
   overwritePanel: {fileID: 1349339885819915786}
   overwriteQuestionText: {fileID: 584095761756874885}
   overwriteYesButton: {fileID: 7508691091525712038}

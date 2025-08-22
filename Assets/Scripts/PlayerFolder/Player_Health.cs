@@ -1,3 +1,4 @@
+// Player_Health.cs
 using UnityEngine;
 using System.Collections;
 
@@ -10,8 +11,8 @@ public class Player_Health : Entity_Health
         base.Awake();
     }
 
-    void OnEnable() { Player.OnPlayerDeath += HandlePlayerDeath; }
-    void OnDisable() { Player.OnPlayerDeath -= HandlePlayerDeath; }
+    private void OnEnable() { Player.OnPlayerDeath += HandlePlayerDeath; }
+    private void OnDisable() { Player.OnPlayerDeath -= HandlePlayerDeath; }
 
     private void HandlePlayerDeath()
     {

@@ -650,8 +650,6 @@ MonoBehaviour:
   sexBonus_StrokePerLevel: 0
   sexBonus_ResiliencePerLevel: 1
   sexBonus_SexualRestraintPerLevel: 2
-  BASE_SEX_EXP_REQUIREMENT: 50
-  SEX_EXP_GROWTH_RATE: 2
   lastMoveDirection: {x: 0, y: -1}
   playerID: 0
   attackMovement:
@@ -731,12 +729,11 @@ MonoBehaviour:
   regenInterval: 1
   canRegenerateHealth: 1
   knockbackDuration: 0.2
-  onDamageKnockback: 0
+  onDamageKnockback: 2
   heavyDamageThreshold: 5
-  heavyKnockbackDuration: 5
+  heavyKnockbackDuration: 0.1
   onHeavyDamageKnockback: 0
-  gameOverRoot: {fileID: 8667730609461038966, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-  showDelay: 0.75
+  gameOverShowDelay: 0.75
 --- !u!114 &6972770920434634234
 MonoBehaviour:
   m_ObjectHideFlags: 0
