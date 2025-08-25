@@ -6,13 +6,13 @@ using PixelCrushers;
 public class TitleMenuManager : MonoBehaviour
 {
     [Header("Panels")]
-    [SerializeField] private GameObject mainPanel;     // "MainMenu"
+    [SerializeField] private GameObject mainPanel;     // "MainMenu" root (this object stays active)
     [SerializeField] private GameObject loadPanel;     // "Save_Load Panel" (has UI_SaveLoadPanel)
-    [SerializeField] private GameObject optionsPanel;
+    [SerializeField] private GameObject optionsPanel;  // root that holds UI_Options
     [SerializeField] private GameObject controlsPanel;
 
-    [Header("Main Buttons Root (hide when Save/Load is open)")]
-    [SerializeField] private GameObject mainButtonsRoot; // <-- drag your "Button Holder" here
+    [Header("Main Buttons Root (hide when Save/Load/Options are open)")]
+    [SerializeField] private GameObject mainButtonsRoot; // drag your "Button Holder" here
 
     [Header("Buttons (optional wire-up)")]
     [SerializeField] private Button playButton;
@@ -31,21 +31,25 @@ public class TitleMenuManager : MonoBehaviour
     [SerializeField, Min(0f)] private float fadeDuration = 0.35f;
 
     private LoadMenu loadMenu;
-    private OptionsMenu optionsMenu;
+    private UI_Options optionsUI;
     private bool isTransitioning = false;
 
     // Save/Load handling (like UI.cs)
     private UI_SaveLoadPanel uiSaveLoad;
     private bool saveLoadHooked = false;
 
+    // NEW: keep manager alive—never disable mainPanel; use CanvasGroup instead
+    private CanvasGroup mainPanelCG;
+
     private void Awake()
     {
+        // Ensure initial visibility
         if (mainPanel != null) mainPanel.SetActive(true);
         if (loadPanel != null) loadPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(false);
 
-        // Optional: guess Button Holder if not assigned
+        // If button root isn’t wired, try to guess it under mainPanel
         if (mainButtonsRoot == null && mainPanel != null)
         {
             foreach (Transform child in mainPanel.transform)
@@ -60,7 +64,7 @@ public class TitleMenuManager : MonoBehaviour
         }
 
         loadMenu = (loadPanel != null) ? loadPanel.GetComponentInChildren<LoadMenu>(true) : null;
-        optionsMenu = (optionsPanel != null) ? optionsPanel.GetComponentInChildren<OptionsMenu>(true) : null;
+        optionsUI = (optionsPanel != null) ? optionsPanel.GetComponentInChildren<UI_Options>(true) : null;
 
         if (playButton != null) playButton.onClick.AddListener(OnClickPlay);
         if (loadButton != null) loadButton.onClick.AddListener(OpenLoad);
@@ -76,19 +80,50 @@ public class TitleMenuManager : MonoBehaviour
             fadeOverlay.blocksRaycasts = false;
             fadeOverlay.interactable = false;
         }
+
+        // NEW: Add/Use CanvasGroup on mainPanel so we can disable input without disabling the object
+        if (mainPanel != null)
+        {
+            mainPanelCG = mainPanel.GetComponent<CanvasGroup>();
+            if (mainPanelCG == null) mainPanelCG = mainPanel.AddComponent<CanvasGroup>();
+            mainPanelCG.interactable = true;
+            mainPanelCG.blocksRaycasts = true;
+            // alpha remains whatever your UI art needs; we are not fading the menu here
+        }
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            // Save/Load: let the panel swallow ESC first (handles overwrite dialogs, etc.)
             if (uiSaveLoad != null && uiSaveLoad.IsOpen)
             {
-                if (uiSaveLoad.HandleCancel()) return; // Closed via panel; Closed event will re-show buttons.
+                if (uiSaveLoad.HandleCancel()) return; // its Closed event (or our CloseLoad) will re-show buttons
             }
 
+            // Controls (inside Options)
             if (controlsPanel != null && controlsPanel.activeSelf) { CloseControls(); return; }
-            if (optionsPanel != null && optionsPanel.activeSelf) { CloseOptions(); return; }
+
+            // Options: mirror Save/Load behavior
+            if (optionsPanel != null && optionsPanel.activeSelf)
+            {
+                if (optionsUI == null && optionsPanel != null)
+                    optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
+
+                if (optionsUI != null && optionsUI.HandleCancel())
+                {
+                    // After a handled cancel, restore main menu interactivity & buttons
+                    RestoreMainMenuInteractivity();
+                    return;
+                }
+
+                // Fallback safety
+                CloseOptions();
+                return;
+            }
+
+            // Legacy: Load panel wrapper (in case uiSaveLoad is nested)
             if (loadPanel != null && loadPanel.activeSelf) { CloseLoad(); return; }
         }
     }
@@ -110,20 +145,17 @@ public class TitleMenuManager : MonoBehaviour
 #endif
     }
 
-    // ----------------- OPEN LOAD -----------------
+    // ----------------- LOAD -----------------
 
     public void OpenLoad()
     {
         if (isTransitioning) return;
 
-        bool loadIsChildOfMain = (mainPanel != null && loadPanel != null &&
-                                  loadPanel.transform.IsChildOf(mainPanel.transform));
-
-        if (!loadIsChildOfMain) mainPanel?.SetActive(false);
-        else if (!mainPanel.activeSelf) mainPanel.SetActive(true);
-
         EnsureActiveAncestors(loadPanel);
         loadPanel?.SetActive(true);
+
+        // Keep manager alive: hide buttons + disable mainPanel raycasts
+        HideMainMenuInteractivity();
 
         if (uiSaveLoad == null && loadPanel != null)
             uiSaveLoad = loadPanel.GetComponentInChildren<UI_SaveLoadPanel>(true);
@@ -142,9 +174,6 @@ public class TitleMenuManager : MonoBehaviour
 
         HookSaveLoadClosed(true);
 
-        // HIDE MENU BUTTONS while Save/Load is shown
-        SetMainButtonsVisible(false);
-
         if (!uiSaveLoad.gameObject.activeSelf) uiSaveLoad.gameObject.SetActive(true);
         uiSaveLoad.OpenForLoad(UI_SaveLoadPanel.OpenContext.TitleMenu);
 
@@ -160,29 +189,45 @@ public class TitleMenuManager : MonoBehaviour
 
         loadPanel?.SetActive(false);
 
-        // SHOW MENU BUTTONS again
-        SetMainButtonsVisible(true);
-
-        if (mainPanel != null && !mainPanel.activeSelf) mainPanel.SetActive(true);
+        // Restore main menu interactivity & buttons
+        RestoreMainMenuInteractivity();
 
         HookSaveLoadClosed(false);
     }
 
-    // ----------------- Options -----------------
+    // ----------------- OPTIONS -----------------
 
     public void OpenOptions()
     {
         if (optionsPanel == null || isTransitioning) return;
-        mainPanel?.SetActive(false);
+
+        // Keep manager alive: hide buttons + disable mainPanel raycasts
+        HideMainMenuInteractivity();
+
+        EnsureActiveAncestors(optionsPanel);
         optionsPanel.SetActive(true);
         controlsPanel?.SetActive(false);
+
+        if (optionsUI == null && optionsPanel != null)
+            optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
+
+        optionsUI?.OpenOptions();
     }
 
     public void CloseOptions()
     {
         if (optionsPanel == null) return;
-        optionsPanel.SetActive(false);
-        mainPanel?.SetActive(true);
+
+        if (optionsUI == null && optionsPanel != null)
+            optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
+
+        if (optionsUI != null && optionsPanel.activeSelf)
+            optionsUI.ClosePanel();
+
+        controlsPanel?.SetActive(false);
+
+        // Restore main menu interactivity & buttons
+        RestoreMainMenuInteractivity();
     }
 
     public void OpenControls()
@@ -305,8 +350,7 @@ public class TitleMenuManager : MonoBehaviour
         if (ctx == UI_SaveLoadPanel.OpenContext.TitleMenu)
         {
             loadPanel?.SetActive(false);
-            SetMainButtonsVisible(true);                // <- show buttons again
-            if (mainPanel != null && !mainPanel.activeSelf) mainPanel.SetActive(true);
+            RestoreMainMenuInteractivity();
             HookSaveLoadClosed(false);
         }
     }
@@ -327,5 +371,42 @@ public class TitleMenuManager : MonoBehaviour
     private void SetMainButtonsVisible(bool visible)
     {
         if (mainButtonsRoot != null) mainButtonsRoot.SetActive(visible);
+    }
+
+    // NEW: centralize main menu interactivity toggles so manager never gets disabled
+    private void HideMainMenuInteractivity()
+    {
+        SetMainButtonsVisible(false);
+        if (mainPanelCG != null)
+        {
+            mainPanelCG.interactable = false;
+            mainPanelCG.blocksRaycasts = false;
+            // alpha unchanged (keep background art)
+        }
+    }
+
+    // TitleMenuManager.cs
+    public void CloseAllOptionPanels()
+    {
+        // Close sub-panels first
+        if (controlsPanel != null) controlsPanel.SetActive(false);
+        if (optionsPanel != null) optionsPanel.SetActive(false);
+
+        // Show the title main panel + buttons again
+        if (mainPanel != null) mainPanel.SetActive(true);
+        SetMainButtonsVisible(true);   // uses your existing mainButtonsRoot
+    }
+
+
+    private void RestoreMainMenuInteractivity()
+    {
+        SetMainButtonsVisible(true);
+        if (mainPanelCG != null)
+        {
+            mainPanelCG.interactable = true;
+            mainPanelCG.blocksRaycasts = true;
+        }
+        if (mainPanel != null && !mainPanel.activeSelf)
+            mainPanel.SetActive(true); // safety in case someone else disabled it
     }
 }

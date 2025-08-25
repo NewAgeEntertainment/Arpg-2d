@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 692070307004957364}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.57, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.0262, y: -0.3549, z: 0}
+  m_LocalScale: {x: 0.69552916, y: 0.56959367, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6872105781401148063}
@@ -96,6 +96,8 @@ GameObject:
   - component: {fileID: 4465219189712556279}
   - component: {fileID: 6095710220151942664}
   - component: {fileID: 1513525788181406032}
+  - component: {fileID: 8831961560963390557}
+  - component: {fileID: 2436890384415363165}
   m_Layer: 10
   m_Name: Object_ItemPickup - 20G
   m_TagString: Untagged
@@ -131,8 +133,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82a652d3cef4fb744a3c8f9f5c759eda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemToAssign: {fileID: 0}
   iconRenderer: {fileID: 6095710220151942664}
-  goldSprite: {fileID: 194336859228450555, guid: 8afb8c256f6f9c340be1b3006bd04417, type: 3}
+  goldSprite: {fileID: -1086817084, guid: 043466650405eb244bd1818db0b58ee4, type: 3}
   isGold: 1
   goldAmount: 0
   flyToPlayerDistance: 2
@@ -210,7 +213,7 @@ SpriteRenderer:
   m_SortingLayerID: 1831899741
   m_SortingLayer: -1
   m_SortingOrder: -1
-  m_Sprite: {fileID: 194336859228450555, guid: 8afb8c256f6f9c340be1b3006bd04417, type: 3}
+  m_Sprite: {fileID: -1086817084, guid: 043466650405eb244bd1818db0b58ee4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -256,8 +259,8 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    pivot: {x: 0.5, y: 0.1}
+    oldSize: {x: 0.5714286, y: 0.5714286}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -266,3 +269,43 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &8831961560963390557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 872795072155214972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: 
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  m_mode: 1
+  m_destroyMode: 0
+  m_destroyedVersionPrefab: {fileID: 0}
+--- !u!95 &2436890384415363165
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 872795072155214972}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 54b26572a8b2a6948aadcc239665eb97, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

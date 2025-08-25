@@ -21,6 +21,11 @@ public class Companion : Entity
     public float battleMoveSpeed = 4.5f;
     public float moveAnimSpeedMultiplier = 1f;
 
+    [Header("Party")]
+    [SerializeField] private bool startInParty = false;     // optional default
+    public bool InParty { get; private set; }
+    public System.Action<bool> OnPartyFlagChanged;
+
     [HideInInspector] public Companion_FollowState followState;
     [HideInInspector] public Companion_ChaseState chaseState;
     [HideInInspector] public Companion_AttackState attackState;
@@ -36,23 +41,66 @@ public class Companion : Entity
 
     protected override void Start()
     {
+        // Ensure we have a player target
         if (playerTarget == null)
-            playerTarget = GameObject.FindGameObjectWithTag("Player").transform;
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerTarget = p.transform;
+        }
 
+        // Build states
         followState = new Companion_FollowState(this, stateMachine);
         chaseState = new Companion_ChaseState(this, stateMachine);
         attackState = new Companion_AttackState(this, stateMachine);
         returnState = new Companion_ReturnState(this, stateMachine);
         idleState = new Companion_IdleState(this, stateMachine);
 
+        // Start in Idle (avoids the CS0019 ‘??’ issue)
         stateMachine.Initialize(idleState);
+
+        // Apply initial party status -> this will switch to Follow if true
+        SetInParty(startInParty);   // startInParty: false for “wait until recruited”
     }
+
 
     protected override void Update()
     {
         stateMachine.UpdateActiveState();
     }
 
+    // ----------------------------------------------------------------
+    // PARTY API
+    // ----------------------------------------------------------------
+    public void SetInParty(bool value)
+    {
+        if (InParty == value) return;
+        InParty = value;
+
+        // Notify listeners (e.g., UI)
+        OnPartyFlagChanged?.Invoke(value);
+
+        // Behaviour change
+        if (value)
+        {
+            if (playerTarget == null)
+            {
+                var p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) playerTarget = p.transform;
+            }
+            if (value) stateMachine.ChangeState(followState);
+            else { stateMachine.ChangeState(idleState); StopMovement(); }
+
+        }
+        else
+        {
+            stateMachine.ChangeState(idleState);
+            StopMovement();
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Movement helpers (as you already had)
+    // ----------------------------------------------------------------
     public void MoveTo(Vector2 targetPos)
     {
         Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
@@ -60,20 +108,13 @@ public class Companion : Entity
         UpdateAnimatorDirection(dir);
     }
 
-    public void StopMovement()
-    {
-        rb.velocity = Vector2.zero;
-    }
+    public void StopMovement() => rb.velocity = Vector2.zero;
 
-    public bool IsTooFarFromPlayer()
-    {
-        return Vector2.Distance(transform.position, playerTarget.position) > maxFollowDistance;
-    }
+    public bool IsTooFarFromPlayer() =>
+        Vector2.Distance(transform.position, playerTarget.position) > maxFollowDistance;
 
-    public bool IsCloseEnoughToPlayer()
-    {
-        return Vector2.Distance(transform.position, playerTarget.position) <= followStopDistance;
-    }
+    public bool IsCloseEnoughToPlayer() =>
+        Vector2.Distance(transform.position, playerTarget.position) <= followStopDistance;
 
     public bool HasEnemyInChaseRadius()
     {
@@ -96,19 +137,14 @@ public class Companion : Entity
                 closest = hit.transform;
             }
         }
-
         return closest;
     }
 
-    public bool IsEnemyInAttackRange(Transform enemy)
-    {
-        return Vector2.Distance(transform.position, enemy.position) <= attackRange;
-    }
+    public bool IsEnemyInAttackRange(Transform enemy) =>
+        Vector2.Distance(transform.position, enemy.position) <= attackRange;
 
-    public bool IsEnemyInChaseRadius(Transform enemy)
-    {
-        return Vector2.Distance(transform.position, enemy.position) <= chaseRadius;
-    }
+    public bool IsEnemyInChaseRadius(Transform enemy) =>
+        Vector2.Distance(transform.position, enemy.position) <= chaseRadius;
 
     public void FaceTarget(Vector2 targetPosition)
     {
@@ -127,8 +163,6 @@ public class Companion : Entity
         }
     }
 
-
-
     private void UpdateAnimatorDirection(Vector2 dir)
     {
         anim.SetFloat("xInput", dir.x);
@@ -137,16 +171,9 @@ public class Companion : Entity
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, followStartDistance);
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, followStopDistance);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, chaseRadius);
-
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.green; Gizmos.DrawWireSphere(transform.position, followStartDistance);
+        Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, followStopDistance);
+        Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, chaseRadius);
+        Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

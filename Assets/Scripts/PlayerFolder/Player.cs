@@ -357,6 +357,18 @@ public class Player : Entity
         stats.sex.sexualRestraint.AddModifier(sexBonus_SexualRestraintPerLevel * lvl, StatModType.Flat, SEX_LEVEL_BONUS_SOURCE);
     }
 
+    void OnTriggerEnter2D(Collider2D c)
+    {
+        Debug.Log($"Trigger: {c.name} (isTrigger={c.isTrigger}, layer={LayerMask.LayerToName(c.gameObject.layer)})");
+    }
+
+    void OnCollisionEnter2D(Collision2D c)
+    {
+        Debug.Log($"Collision: {c.collider.name} (isTrigger={c.collider.isTrigger})");
+    }
+
+
+
     private void RemoveSexLevelBonuses()
     {
         if (stats == null) return;

@@ -8,6 +8,7 @@ public class Entity_Health : MonoBehaviour, IDamageable
 {
     public event Action OnTakingDamage;
     public event Action OnHealthUpdate;
+    public event System.Action Died;
 
     private Slider healthBar;
     private Entity entity;
@@ -129,16 +130,21 @@ public class Entity_Health : MonoBehaviour, IDamageable
             Die();
     }
 
+    // Inside Entity_Health
+    public event System.Action OnDied;
+
     private void Die()
     {
         if (isDead) return;
         isDead = true;
 
         entity?.EntityDeath();
-
         TryGrantEXPToPlayer();
         dropManager?.DropItems();
+
+        OnDied?.Invoke(); // <-- add this line
     }
+
 
     private void TryGrantEXPToPlayer()
     {
