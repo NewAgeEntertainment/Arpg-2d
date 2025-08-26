@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Companion : Entity
@@ -21,11 +22,15 @@ public class Companion : Entity
     public float battleMoveSpeed = 4.5f;
     public float moveAnimSpeedMultiplier = 1f;
 
+    // --- Party (needed by PartyManager & Companion_Rabbie) ---
     [Header("Party")]
-    [SerializeField] private bool startInParty = false;     // optional default
+    [SerializeField] private bool startInParty = false; // Inspector toggle
+    public bool StartInParty => startInParty;
     public bool InParty { get; private set; }
-    public System.Action<bool> OnPartyFlagChanged;
+    public Action<bool> OnPartyFlagChanged;
+    private bool _queueFollow; // if SetInParty happens before Initialize(...)
 
+    // --- States ---
     [HideInInspector] public Companion_FollowState followState;
     [HideInInspector] public Companion_ChaseState chaseState;
     [HideInInspector] public Companion_AttackState attackState;
@@ -35,87 +40,84 @@ public class Companion : Entity
     protected override void Awake()
     {
         base.Awake();
-        stateMachine = new StateMachine();
+        stateMachine = new StateMachine();   // keep your original pattern
         combat = GetComponent<CompanionCombat>();
     }
 
     protected override void Start()
     {
-        // Ensure we have a player target
         if (playerTarget == null)
         {
             var p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) playerTarget = p.transform;
         }
 
-        // Build states
-        followState = new Companion_FollowState(this, stateMachine);
-        chaseState = new Companion_ChaseState(this, stateMachine);
-        attackState = new Companion_AttackState(this, stateMachine);
-        returnState = new Companion_ReturnState(this, stateMachine);
-        idleState = new Companion_IdleState(this, stateMachine);
+        // Create states if not already provided by a subclass
+        if (followState == null) followState = new Companion_FollowState(this, stateMachine);
+        if (chaseState == null) chaseState = new Companion_ChaseState(this, stateMachine);
+        if (attackState == null) attackState = new Companion_AttackState(this, stateMachine);
+        if (returnState == null) returnState = new Companion_ReturnState(this, stateMachine);
+        if (idleState == null) idleState = new Companion_IdleState(this, stateMachine);
 
-        // Start in Idle (avoids the CS0019 ‘??’ issue)
-        stateMachine.Initialize(idleState);
+        // Initialize once
+        if (stateMachine.currentState == null)
+            stateMachine.Initialize(idleState);
 
-        // Apply initial party status -> this will switch to Follow if true
-        SetInParty(startInParty);   // startInParty: false for “wait until recruited”
+        // If recruited early or Start In Party is checked, ensure we end in Follow
+        AfterStateMachineInitialized();
     }
-
 
     protected override void Update()
     {
         stateMachine.UpdateActiveState();
     }
 
-    // ----------------------------------------------------------------
-    // PARTY API
-    // ----------------------------------------------------------------
-    public void SetInParty(bool value)
-    {
-        if (InParty == value) return;
-        InParty = value;
+    // ---------------- Movement ----------------
+    // Companion.cs — replace these
 
-        // Notify listeners (e.g., UI)
-        OnPartyFlagChanged?.Invoke(value);
-
-        // Behaviour change
-        if (value)
-        {
-            if (playerTarget == null)
-            {
-                var p = GameObject.FindGameObjectWithTag("Player");
-                if (p != null) playerTarget = p.transform;
-            }
-            if (value) stateMachine.ChangeState(followState);
-            else { stateMachine.ChangeState(idleState); StopMovement(); }
-
-        }
-        else
-        {
-            stateMachine.ChangeState(idleState);
-            StopMovement();
-        }
-    }
-
-    // ----------------------------------------------------------------
-    // Movement helpers (as you already had)
-    // ----------------------------------------------------------------
     public void MoveTo(Vector2 targetPos)
     {
-        Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
-        rb.velocity = dir * moveSpeed;
-        UpdateAnimatorDirection(dir);
+        Vector2 dir = (targetPos - (Vector2)transform.position);
+        if (dir.sqrMagnitude < 0.0001f)
+        {
+            SetZeroVelocity();             // <- Entity API (applied in FixedUpdate)
+            return;
+        }
+
+        dir.Normalize();
+        SetVelocity(dir.x * moveSpeed, dir.y * moveSpeed);  // <- Entity API
+
+        // keep animator aligned with motion
+        anim.SetFloat("xInput", dir.x);
+        anim.SetFloat("yInput", dir.y);
     }
 
-    public void StopMovement() => rb.velocity = Vector2.zero;
+    public void StopMovement()
+    {
+        SetZeroVelocity();                 // <- Entity API
+    }
 
-    public bool IsTooFarFromPlayer() =>
-        Vector2.Distance(transform.position, playerTarget.position) > maxFollowDistance;
+    public float DistanceToPlayer() =>
+    playerTarget ? Vector2.Distance(transform.position, playerTarget.position) : float.PositiveInfinity;
 
-    public bool IsCloseEnoughToPlayer() =>
-        Vector2.Distance(transform.position, playerTarget.position) <= followStopDistance;
+    // use start distance for waking up from Idle
+    public bool ShouldStartFollowing() =>
+        DistanceToPlayer() > followStartDistance;
 
+
+    public bool IsTooFarFromPlayer()
+    {
+        if (playerTarget == null) return false;
+        return Vector2.Distance(transform.position, playerTarget.position) > maxFollowDistance;
+    }
+
+    public bool IsCloseEnoughToPlayer()
+    {
+        if (playerTarget == null) return false;
+        return Vector2.Distance(transform.position, playerTarget.position) <= followStopDistance;
+    }
+
+    // ---------------- Combat helpers ----------------
     public bool HasEnemyInChaseRadius()
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, chaseRadius, enemyLayer);
@@ -137,20 +139,27 @@ public class Companion : Entity
                 closest = hit.transform;
             }
         }
+
         return closest;
     }
 
-    public bool IsEnemyInAttackRange(Transform enemy) =>
-        Vector2.Distance(transform.position, enemy.position) <= attackRange;
+    public bool IsEnemyInAttackRange(Transform enemy)
+    {
+        if (enemy == null) return false;
+        return Vector2.Distance(transform.position, enemy.position) <= attackRange;
+    }
 
-    public bool IsEnemyInChaseRadius(Transform enemy) =>
-        Vector2.Distance(transform.position, enemy.position) <= chaseRadius;
+    public bool IsEnemyInChaseRadius(Transform enemy)
+    {
+        if (enemy == null) return false;
+        return Vector2.Distance(transform.position, enemy.position) <= chaseRadius;
+    }
 
     public void FaceTarget(Vector2 targetPosition)
     {
         Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
 
-        // Use cardinal direction rounding
+        // Cardinal rounding
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
         {
             anim.SetFloat("xInput", direction.x > 0 ? 1 : -1);
@@ -169,11 +178,60 @@ public class Companion : Entity
         anim.SetFloat("yInput", dir.y);
     }
 
+    // ---------------- Party API ----------------
+    /// <summary>Called by CompanionPartyManager when recruiting/dismissing.</summary>
+    public void SetInParty(bool value)
+    {
+        if (InParty == value) return;
+        InParty = value;
+        OnPartyFlagChanged?.Invoke(value);
+
+        if (value)
+        {
+            if (playerTarget == null)
+            {
+                var p = GameObject.FindGameObjectWithTag("Player");
+                if (p != null) playerTarget = p.transform;
+            }
+
+            if (followState != null && stateMachine?.currentState != null)
+                stateMachine.ChangeState(followState);
+            else
+                _queueFollow = true;
+        }
+        else
+        {
+            if (idleState != null && stateMachine?.currentState != null)
+                stateMachine.ChangeState(idleState);
+            StopMovement();
+        }
+    }
+
+    /// <summary>Call once immediately after Initialize(idleState).</summary>
+    public void AfterStateMachineInitialized()
+    {
+        if ((InParty || StartInParty || _queueFollow) &&
+            followState != null && stateMachine?.currentState != null)
+        {
+            _queueFollow = false;
+            if (!InParty && StartInParty) InParty = true; // keep event noise low
+            stateMachine.ChangeState(followState);
+        }
+    }
+
+    // ---------------- Gizmos ----------------
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.green; Gizmos.DrawWireSphere(transform.position, followStartDistance);
-        Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, followStopDistance);
-        Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, chaseRadius);
-        Gizmos.color = Color.magenta; Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, followStartDistance);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, followStopDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, chaseRadius);
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

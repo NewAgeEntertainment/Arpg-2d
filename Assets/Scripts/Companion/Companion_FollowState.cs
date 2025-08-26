@@ -10,7 +10,7 @@ public class Companion_FollowState : CompanionState
     {
         base.Update();
 
-        // If dismissed or there's no target, stop and idle.
+        // --- hard gate ---
         if (!companion.InParty || companion.playerTarget == null)
         {
             companion.StopMovement();
@@ -18,26 +18,21 @@ public class Companion_FollowState : CompanionState
             return;
         }
 
-        // Combat takes priority.
         if (companion.HasEnemyInChaseRadius())
         {
             stateMachine.ChangeState(companion.chaseState);
             return;
         }
 
-        // Reached player? idle.
-        float sqrDist = (companion.playerTarget.position - companion.transform.position).sqrMagnitude;
-        float stopDist = companion.followStopDistance;
-        if (sqrDist <= stopDist * stopDist)
+        if (companion.IsCloseEnoughToPlayer())
         {
             companion.StopMovement();
             stateMachine.ChangeState(companion.idleState);
             return;
         }
 
-        // Move toward the player and face them.
-        Vector2 targetPos = companion.playerTarget.position;
-        companion.MoveTo(targetPos);
-        companion.FaceTarget(targetPos);
+        companion.MoveTo(companion.playerTarget.position);
+        companion.FaceTarget(companion.playerTarget.position);
     }
+
 }

@@ -20,4 +20,3 @@ public class Companion_ReturnState : CompanionState
         }
     }
 }
-

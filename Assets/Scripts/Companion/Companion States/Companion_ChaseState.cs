@@ -39,4 +39,3 @@ public class Companion_ChaseState : CompanionState
         companion.MoveTo(target.position);
     }
 }
-

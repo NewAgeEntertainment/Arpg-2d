@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public class CompanionPartyManager : MonoBehaviour
@@ -72,46 +73,89 @@ public class CompanionPartyManager : MonoBehaviour
         return null;
     }
 
+
+    // CompanionPartyManager.cs  (only the scene-instance branch is shown)
     public GameObject Recruit(string id, bool silent = false)
     {
         var entry = GetEntry(id);
-        if (entry == null) { Debug.LogWarning($"[CompanionPartyManager] No roster entry id '{id}'"); return null; }
+        if (entry == null)
+        {
+            Debug.LogWarning($"[PartyManager] Recruit FAILED. No roster entry id='{id}'.");
+            return null;
+        }
 
         // Already active?
         if (_active.TryGetValue(id, out var existing) && existing)
         {
             if (reactivateIfAlreadyInScene && !existing.activeSelf) existing.SetActive(true);
             FlagInParty(existing, true);
+            if (!silent) Debug.Log($"[PartyManager] Recruit '{id}' → already active @{existing.transform.position}");
             return existing;
         }
 
-        GameObject instance = null;
+        GameObject instance;
 
-        // Prefer a scene instance if assigned
+        // -------- Scene instance path (stays where you placed it) --------
         if (entry.sceneInstance != null)
         {
             instance = entry.sceneInstance.gameObject;
+            var keepPos = instance.transform.position;
+            var rb2d = instance.GetComponent<Rigidbody2D>();
+
             if (reactivateIfAlreadyInScene && !instance.activeSelf) instance.SetActive(true);
+
+            Debug.Log($"[PartyManager] Recruit '{id}' (scene instance) startPos={keepPos}");
+
+            SetupCompanion(instance);
+
+            if (forceFollowOnRecruit)
+                ForceFollow(instance);
+            else
+                Debug.Log($"[PartyManager] ForceFollowOnRecruit=OFF → staying Idle after recruit.");
+
+            FlagInParty(instance, true);
+            _active[id] = instance;
+
+            // Keep world position in case something else moves it this frame
+            if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.position = keepPos; }
+            instance.transform.position = keepPos;
+            //StartCoroutine(RestoreNextFrame(instance.transform, rb2d, keepPos));
+
+            if (!silent) Debug.Log($"[PartyManager] Recruited '{id}' @ {instance.transform.position}");
+            return instance;
         }
+        // -------- Prefab path (spawns near player) --------
         else if (entry.prefab != null)
         {
             instance = Instantiate(entry.prefab, partyRoot);
             instance.transform.position = GetSpawnPosition();
-        }
-        else
-        {
-            Debug.LogWarning($"[CompanionPartyManager] Roster '{id}' has no Prefab or Scene Instance.");
-            return null;
+            Debug.Log($"[PartyManager] Recruit '{id}' (prefab) spawned @ {instance.transform.position}");
+
+            SetupCompanion(instance);
+            if (forceFollowOnRecruit) ForceFollow(instance);
+            FlagInParty(instance, true);
+            _active[id] = instance;
+
+            if (!silent) Debug.Log($"[PartyManager] Recruited '{id}'");
+            return instance;
         }
 
-        SetupCompanion(instance);
-        if (forceFollowOnRecruit) ForceFollow(instance);
-        FlagInParty(instance, true);
-        _active[id] = instance;
-
-        if (!silent) Debug.Log($"[CompanionPartyManager] Recruited '{id}'");
-        return instance;
+        Debug.LogWarning($"[PartyManager] Recruit '{id}' FAILED. No prefab or scene instance set.");
+        return null;
     }
+
+    //private IEnumerator RestoreNextFrame(Transform t, Rigidbody2D rb2d, Vector3 pos)
+    //{
+    //    yield return null; // one frame later
+    //    if (!t) yield break;
+    //    if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.position = pos; }
+    //    t.position = pos;
+    //    Debug.Log($"[PartyManager] (RestoreNextFrame) enforced pos {pos}");
+    //}
+
+
+
+
 
     public void Dismiss(string id, bool destroy = false)
     {
@@ -148,19 +192,41 @@ public class CompanionPartyManager : MonoBehaviour
     private void SetupCompanion(GameObject go)
     {
         // Parent under PartyRoot (keeps hierarchy neat)
-        if (partyRoot != null) go.transform.SetParent(partyRoot, worldPositionStays: true);
+        if (partyRoot != null)
+        {
+            var before = go.transform.position;
+            go.transform.SetParent(partyRoot, worldPositionStays: true);
+            Debug.Log($"[PartyManager] Parent '{go.name}' → PartyRoot. pos stays {before}");
+        }
 
         // Point to player
         var comp = go.GetComponent<Companion>();
-        if (comp != null && player != null) comp.playerTarget = player;
+        if (comp != null)
+        {
+            if (comp.playerTarget == null)
+            {
+                if (player == null)
+                {
+                    var p = GameObject.FindGameObjectWithTag("Player");
+                    if (p != null) player = p.transform;
+                }
+                comp.playerTarget = player;
+            }
+            Debug.Log($"[PartyManager] Setup '{go.name}' → playerTarget={(comp.playerTarget ? comp.playerTarget.name : "null")}");
+        }
+        else
+        {
+            Debug.LogWarning($"[PartyManager] '{go.name}' has no Companion component.");
+        }
     }
+
 
     private void ForceFollow(GameObject go)
     {
         var comp = go.GetComponent<Companion>();
         if (comp != null)
         {
-            // Nudge the state machine to a following stance (SetInParty also does this)
+            Debug.Log($"[PartyManager] ForceFollow → SetInParty(true) + Follow for '{go.name}'");
             comp.SetInParty(true);
         }
     }
@@ -168,18 +234,25 @@ public class CompanionPartyManager : MonoBehaviour
     private void FlagInParty(GameObject go, bool value)
     {
         var comp = go.GetComponent<Companion>();
-        if (comp != null) comp.SetInParty(value);
+        if (comp != null)
+        {
+            comp.SetInParty(value);
+            Debug.Log($"[PartyManager] FlagInParty('{go.name}', {value})");
+        }
     }
 
     private Vector3 GetSpawnPosition()
     {
         if (player == null) return Vector3.zero;
 
-        // Simple radial placement around player based on active count
         int n = _active.Count + 1; // about to add one
         float radius = spawnOffset + (n * ringSpacing * 0.25f);
-        float angle = n * 110f * Mathf.Deg2Rad; // spread a bit
+        float angle = n * 110f * Mathf.Deg2Rad;
         Vector3 offset = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius;
-        return player.position + offset;
+        var pos = player.position + offset;
+
+        Debug.Log($"[PartyManager] GetSpawnPosition n={n} radius={radius:F2} → {pos}");
+        return pos;
     }
+
 }

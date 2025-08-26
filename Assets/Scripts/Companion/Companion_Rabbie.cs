@@ -5,7 +5,6 @@ public class Companion_Rabbie : Companion
     protected override void Awake()
     {
         base.Awake();
-
         idleState = new Companion_IdleState(this, stateMachine);
         followState = new Companion_FollowState(this, stateMachine);
         chaseState = new Companion_ChaseState(this, stateMachine);
@@ -16,6 +15,7 @@ public class Companion_Rabbie : Companion
     protected override void Start()
     {
         base.Start();
-        stateMachine.Initialize(idleState);
+        if (stateMachine.currentState == null)
+            stateMachine.Initialize(idleState);  // only if nothing set yet
     }
 }
