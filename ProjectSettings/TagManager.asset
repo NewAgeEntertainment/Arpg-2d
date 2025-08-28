@@ -19,7 +19,7 @@ TagManager:
   - Chest
   - PlayerInteract
   - Companion
-  - Wall
+  - Invisible Wall
   - 
   - 
   - 
@@ -40,8 +40,14 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Inv Wall
+    uniqueID: 2263515625
+    locked: 0
   - name: Background
     uniqueID: 596823231
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   - name: Ground
     uniqueID: 1379488757
@@ -58,9 +64,6 @@ TagManager:
   - name: Player
     uniqueID: 1831899741
     locked: 0
-  - name: Default
-    uniqueID: 0
-    locked: 0
   - name: Partner
     uniqueID: 470496047
     locked: 0
@@ -69,7 +72,4 @@ TagManager:
     locked: 0
   - name: UI
     uniqueID: 1859501777
-    locked: 0
-  - name: Wall Base
-    uniqueID: 2263515625
     locked: 0
