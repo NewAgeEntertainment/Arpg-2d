@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;          // <— for reading toast timings from the prefab
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -54,6 +55,36 @@ public class UI_InGame : MonoBehaviour
     private Player _subscribedPlayer;
     private Player_Stats _subscribedStats;
 
+    // ==== Item Pickup Toasts (SEQUENTIAL) ====
+    [Header("Item Pickup Toasts")]
+    [Tooltip("Anchor (RectTransform) where the toast appears. Place it anywhere on your HUD.")]
+    [SerializeField] private RectTransform pickupToastParent;
+    [Tooltip("Prefab with UI_ItemPickupToast on the root.")]
+    [SerializeField] private UI_ItemPickupToast toastPrefab;
+    [Tooltip("SFX to play each time a toast is shown.")]
+    [SerializeField] private AudioClip itemPickupClip;
+    [SerializeField] private float itemPickupVolume = 1f;
+
+    [Header("Toast Queue Settings")]
+    [Tooltip("If > 0, overrides toast duration (seconds). Otherwise we read fadeIn+hold+fadeOut from the prefab via reflection.")]
+    [SerializeField] private float toastLifetimeOverride = 0f;
+    [Tooltip("Max queued toasts to avoid runaway enqueue when looting huge piles.")]
+    [SerializeField] private int maxQueue = 50;
+    [Tooltip("Small padding added to the computed lifetime so back-to-back toasts never overlap.")]
+    [SerializeField] private float lifetimePadding = 0.05f;
+
+    // Queue internals
+    private struct ToastRequest
+    {
+        public Sprite icon;
+        public string name;
+        public int amount;
+    }
+
+    private readonly Queue<ToastRequest> _toastQueue = new();
+    private bool _isPlayingQueue = false;
+    private float _cachedToastLifetime = -1f;
+
     private void Awake()
     {
         rplayer = ReInput.players.GetPlayer(playerID);
@@ -76,7 +107,6 @@ public class UI_InGame : MonoBehaviour
         UpdateManaBar();
         UpdateQuickSlots();
 
-        // If player/stats not ready on first frame, force another pass next frame
         StartCoroutine(ForceOneMorePaintNextFrame());
     }
 
@@ -342,5 +372,88 @@ public class UI_InGame : MonoBehaviour
         UpdateSexExpBar();
         UpdateHealthBar();
         UpdateManaBar();
+    }
+
+    // ========== ITEM PICKUP TOASTS (SEQUENTIAL) ==========
+
+    /// <summary>
+    /// Public entry point: enqueue a toast. Only one toast is shown at a time.
+    /// </summary>
+    public void ShowItemPickup(Sprite icon, string itemName, int amount = 1)
+    {
+        if (toastPrefab == null || pickupToastParent == null) return;
+
+        // cap queue size
+        if (_toastQueue.Count >= maxQueue) _toastQueue.Dequeue();
+
+        _toastQueue.Enqueue(new ToastRequest
+        {
+            icon = icon,
+            name = itemName,
+            amount = amount
+        });
+
+        if (!_isPlayingQueue) StartCoroutine(ProcessToastQueue());
+    }
+
+    private IEnumerator ProcessToastQueue()
+    {
+        _isPlayingQueue = true;
+
+        float lifetime = GetToastLifetime(); // unscaled seconds
+
+        while (_toastQueue.Count > 0)
+        {
+            var req = _toastQueue.Dequeue();
+
+            // Spawn + setup
+            var toast = Instantiate(toastPrefab, pickupToastParent);
+            toast.gameObject.SetActive(true);
+            toast.Setup(req.icon, req.name, req.amount);
+
+            // SFX
+            if (itemPickupClip != null && Camera.main != null)
+                AudioSource.PlayClipAtPoint(itemPickupClip, Camera.main.transform.position, itemPickupVolume);
+
+            // Wait for this toast to finish (the toast anim uses unscaled time)
+            yield return new WaitForSecondsRealtime(lifetime + lifetimePadding);
+
+            // (toast deactivates/destroys itself in its own script)
+        }
+
+        _isPlayingQueue = false;
+    }
+
+    /// <summary>
+    /// Reads fadeIn + hold + fadeOut from the toast prefab via reflection (private fields),
+    /// unless an explicit override is provided. Fallback = 1.75s.
+    /// </summary>
+    private float GetToastLifetime()
+    {
+        if (toastLifetimeOverride > 0f) return toastLifetimeOverride;
+
+        if (_cachedToastLifetime > 0f) return _cachedToastLifetime;
+
+        const float fallback = 1.75f; // 0.15 + 1.25 + 0.35 (defaults from the sample)
+        if (toastPrefab == null) return fallback;
+
+        try
+        {
+            var t = toastPrefab.GetType();
+            var fIn = t.GetField("fadeIn", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var fHold = t.GetField("hold", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var fOut = t.GetField("fadeOut", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+            float vin = fIn != null ? (float)fIn.GetValue(toastPrefab) : 0.15f;
+            float vhold = fHold != null ? (float)fHold.GetValue(toastPrefab) : 1.25f;
+            float vout = fOut != null ? (float)fOut.GetValue(toastPrefab) : 0.35f;
+
+            _cachedToastLifetime = Mathf.Max(0.1f, vin + vhold + vout);
+            return _cachedToastLifetime;
+        }
+        catch
+        {
+            return fallback;
+        }
     }
 }

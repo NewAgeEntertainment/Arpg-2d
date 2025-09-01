@@ -222,6 +222,7 @@ public class Inventory_Player : Inventory_Base
     }
 
     // ---- Add / Equip / Storage ----
+    // Inventory_Player.cs
     public override bool AddItem(Inventory_Item itemToAdd)
     {
         if (itemToAdd == null || itemToAdd.itemData == null)
@@ -232,27 +233,47 @@ public class Inventory_Player : Inventory_Base
 
         Debug.Log($"[Inventory_Player] Adding {itemToAdd.itemData.itemName}");
 
+        // MATERIAL → storage
         if (itemToAdd.itemData.itemType == ItemType.Material && storage != null)
         {
             var addedToStorage = storage.AddMaterialToStash(itemToAdd);
-            if (addedToStorage) NotifyInventoryChanged();
+            if (addedToStorage)
+            {
+                NotifyInventoryChanged();
+                var ui = FindFirstObjectByType<UI_InGame>();
+                if (ui != null) ui.ShowItemPickup(itemToAdd.itemData.itemIcon, itemToAdd.itemData.itemName, itemToAdd.stackSize); // <-- ADD THIS
+            }
             return addedToStorage;
         }
 
+        // EQUIPMENT → equipment inventory
         if ((itemToAdd.itemData.itemType == ItemType.Weapon ||
              itemToAdd.itemData.itemType == ItemType.Armor ||
              itemToAdd.itemData.itemType == ItemType.trinket) &&
             equipmentInventory != null && equipmentInventory.CanAddItem(itemToAdd))
         {
             var addedToEquip = equipmentInventory.AddItem(itemToAdd);
-            if (addedToEquip) NotifyInventoryChanged();
+            if (addedToEquip)
+            {
+                NotifyInventoryChanged();
+                var ui = FindFirstObjectByType<UI_InGame>();
+                if (ui != null) ui.ShowItemPickup(itemToAdd.itemData.itemIcon, itemToAdd.itemData.itemName, 1); // <-- ADD THIS
+            }
             return addedToEquip;
         }
 
+        // default → backpack
         var added = base.AddItem(itemToAdd);
-        if (added) NotifyInventoryChanged();
+        if (added)
+        {
+            NotifyInventoryChanged();
+            var ui = FindFirstObjectByType<UI_InGame>();
+            if (ui != null) ui.ShowItemPickup(itemToAdd.itemData.itemIcon, itemToAdd.itemData.itemName, itemToAdd.stackSize); // <-- ADD THIS
+        }
         return added;
     }
+
+
 
     // Inventory_Player.cs  — add this convenience overload
     public bool AddItem(ItemDataSO data, int count = 1)
@@ -261,8 +282,17 @@ public class Inventory_Player : Inventory_Base
 
         var item = new Inventory_Item(data);
         item.stackSize = Mathf.Max(1, count);
-        return AddItem(item);   // routes to storage/equipment/backpack + NotifyInventoryChanged()
+        bool ok = AddItem(item);
+
+        if (ok)
+        {
+            var ui = FindFirstObjectByType<UI_InGame>();
+            if (ui != null) ui.ShowItemPickup(data.itemIcon, data.itemName, count); // <-- ADD THIS
+        }
+        return ok;
     }
+
+
 
 
     public Inventory_Item GetEquippedItemByType(ItemType type)
