@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(SexyTimeStateMachine))]
@@ -31,12 +32,9 @@ public class SexyTimeLogic : MonoBehaviour
     private float originalPussySqueeze;
     private float originalPussySqueezeCooldown;
 
-    // --- Add near your other serialized fields ---
     [Header("Skills / Debug")]
-    [SerializeField] private bool autoUnlockDeepBreath = false;   // turn on in Inspector to sanity-check
-
-    [Tooltip("Press this key to trigger Deep Breath directly (testing).")]
-    [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B; // NEW
+    [SerializeField] private bool autoUnlockDeepBreath = false;
+    [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B;
 
     [Header("Climax")]
     public float cumDuration = 5f;
@@ -47,7 +45,19 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private int blueBarExp = 50;
     [SerializeField] private int pinkBarExp = 100;
 
-    [Header("Quest Events")]
+    [Header("Affection Rewards / Penalties")]
+    [Tooltip("When BLUE (player) reaches climax first, add this many affection points.")]
+    [SerializeField] private int blueBarAffectionAdd = 5;
+
+    [Tooltip("When BLUE wins, subtract this many affection points as a penalty (set 0 to ignore).")]
+    [SerializeField] private int blueBarAffectionSubtract = 0;
+
+    [Tooltip("When PINK (partner) reaches climax first, add this many affection points.")]
+    [SerializeField] private int pinkBarAffectionAdd = 10;
+
+    [Tooltip("When PINK wins, subtract this many affection points as a penalty (set 0 to ignore).")]
+    [SerializeField] private int pinkBarAffectionSubtract = 0;
+
     public UnityEvent OnPlayerBarFull = new UnityEvent();
     public UnityEvent OnPartnerBarFull = new UnityEvent();
 
@@ -73,10 +83,11 @@ public class SexyTimeLogic : MonoBehaviour
     private enum FinishWinner { None, PlayerBlue, PartnerPink }
     private FinishWinner winner = FinishWinner.None;
     private bool expGranted = false;
+    private bool affectionGranted = false;
 
     private void OnEnable()
     {
-        Current = this; // 🔑 mark this as the active instance
+        Current = this;
 
         OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
         OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
@@ -86,7 +97,7 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void OnDisable()
     {
-        if (Current == this) Current = null; // 🔑 clear if disabled
+        if (Current == this) Current = null;
 
         OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
         OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
@@ -99,7 +110,6 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (inputRouter == null)
             inputRouter = GetComponent<SexyTimeInputRouter>();
-
         if (inputRouter != null)
             inputRouter.Init();
 
@@ -112,9 +122,7 @@ public class SexyTimeLogic : MonoBehaviour
     private void Start()
     {
         cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-
-        if (autoStart)
-            StartSexyTime();
+        if (autoStart) StartSexyTime();
     }
 
     private void Update()
@@ -124,7 +132,6 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isSexyTimeGoingOn && inputRouter != null && inputRouter.StartPressed())
             StartSexyTime();
 
-        // Debug key to test Deep Breath quickly (optional)
         if (debugDeepBreathKey != KeyCode.None && Input.GetKeyDown(debugDeepBreathKey))
             CastDeepBreathe();
 
@@ -149,25 +156,18 @@ public class SexyTimeLogic : MonoBehaviour
             }
         }
 
-        // Player/skills may be spawned now - resolve again
         ResolveSkillManager();
-
-        // Make sure Deep Breath exists & is unlocked (auto-create/unlock via manager if needed)
         skillManager?.EnsureDeepBreathReady(true);
-
-        // ✅ make sure we're reading the Player's actual stats (with bonuses applied)
         BindToActivePlayerStats();
 
-        // ✅ Allow immediate use of Deep Breath on a fresh start
         deepBreatheTimestamp = Time.time - deepBreatheCooldown;
 
-        // (Optional: your debug toggle still works if you kept it)
         Current = this;
-
         inputRouter?.EnableSexyTimeMaps();
 
         winner = FinishWinner.None;
         expGranted = false;
+        affectionGranted = false;
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
@@ -197,36 +197,26 @@ public class SexyTimeLogic : MonoBehaviour
         }
     }
 
-    // put inside SexyTimeLogic
     private void BindToActivePlayerStats()
     {
-        // Always rebind to the player's live stats at session start
         var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
         if (p != null)
         {
             var ps = p.GetComponent<Player_Stats>();
             if (ps != null && playerStats != ps)
-            {
-                playerStats = ps; // <-- ensure mini-game uses the same stats that get the bonuses
-                                  // Debug.Log("[SexyTimeLogic] Bound playerStats to Player_Stats on live Player.");
-            }
+                playerStats = ps;
         }
     }
-
-
 
     private bool ResolveSkillManager()
     {
         if (skillManager != null) return true;
 
-        // 1) Try the cached player first
         if (cachedPlayer == null)
             cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-
         if (cachedPlayer != null)
             skillManager = cachedPlayer.GetComponent<Player_SkillManager>();
 
-        // 2) Try GameManager's player reference if you have one
         if (skillManager == null)
         {
             var gmPlayer = GameManager.Instance != null ? GameManager.Instance.Player : null;
@@ -234,7 +224,6 @@ public class SexyTimeLogic : MonoBehaviour
                 skillManager = gmPlayer.GetComponent<Player_SkillManager>();
         }
 
-        // 3) Fallback: search scene (include inactive, covers prefabs activated later)
         if (skillManager == null)
             skillManager = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
 
@@ -250,6 +239,7 @@ public class SexyTimeLogic : MonoBehaviour
     public void ResetSexyTime()
     {
         GrantSexExpIfNeeded();
+        GrantAffectionIfNeeded();   // <-- affection added/subtracted here
 
         inputRouter?.DisableSexyTimeMaps();
 
@@ -270,7 +260,6 @@ public class SexyTimeLogic : MonoBehaviour
             anim.Play("idle", 0, 0f);
 
         ui.Hide();
-
         gameObject.SetActive(false);
     }
 
@@ -378,8 +367,7 @@ public class SexyTimeLogic : MonoBehaviour
         var deepBreath = skillManager.deepBreath;
         if (deepBreath == null)
         {
-            // Try to create/resolve it and re-check
-            skillManager.EnsureDeepBreathReady(true);   // NEW
+            skillManager.EnsureDeepBreathReady(true);
             deepBreath = skillManager.deepBreath;
             if (deepBreath == null)
             {
@@ -398,13 +386,8 @@ public class SexyTimeLogic : MonoBehaviour
     public void CastDeepBreathe()
     {
         if (!ResolveSkillManager()) { Debug.Log("Deep Breathe blocked: no SkillManager."); return; }
-
-        // Ensure the component exists/unlocked as needed
-        if (!IsDeepBreathUnlocked())
-            return;
-
-        // Delegate to the skill (handles cooldown + UI updates)
-        skillManager.deepBreath.TryUseSkill(); // NEW
+        if (!IsDeepBreathUnlocked()) return;
+        skillManager.deepBreath.TryUseSkill();
     }
 
     private void GrantSexExpIfNeeded()
@@ -434,5 +417,44 @@ public class SexyTimeLogic : MonoBehaviour
         }
 
         expGranted = true;
+    }
+
+    private void GrantAffectionIfNeeded()
+    {
+        if (affectionGranted) return;
+
+        // Compute net affection delta based on the winner
+        int delta = 0;
+        switch (winner)
+        {
+            case FinishWinner.PlayerBlue:
+                delta = blueBarAffectionAdd - Mathf.Abs(blueBarAffectionSubtract);
+                break;
+            case FinishWinner.PartnerPink:
+                delta = pinkBarAffectionAdd - Mathf.Abs(pinkBarAffectionSubtract);
+                break;
+        }
+
+        var profile = FindPartnerProfile();
+        if (profile != null && delta != 0)
+        {
+            ConquestRosterManager.Instance?.AddAffection(profile, delta);
+            Debug.Log($"[SexyTime] Affection delta {delta:+#;-#;0} applied to {profile.name} ({winner}).");
+        }
+        else if (profile == null)
+        {
+            Debug.LogWarning("[SexyTime] No CharacterProfileRef on partner; cannot modify affection.");
+        }
+
+        affectionGranted = true;
+    }
+
+    private CharacterProfileSO FindPartnerProfile()
+    {
+        if (partnerStats == null) return null;
+        var r = partnerStats.GetComponent<CharacterProfileRef>()
+             ?? partnerStats.GetComponentInParent<CharacterProfileRef>(true)
+             ?? partnerStats.GetComponentInChildren<CharacterProfileRef>(true);
+        return r ? r.profile : null;
     }
 }

@@ -29,9 +29,9 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 425660}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -55,7 +55,9 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -98,6 +100,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
 --- !u!1 &125852
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,6 +113,9 @@ GameObject:
   - component: {fileID: 11426072}
   - component: {fileID: 11471062}
   - component: {fileID: 11424616}
+  - component: {fileID: 772208984224608610}
+  - component: {fileID: 6928077019490214751}
+  - component: {fileID: 5338892661485796081}
   m_Layer: 0
   m_Name: Dialogue Manager
   m_TagString: Untagged
@@ -124,13 +130,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 125852}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 22425850}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &11426072
 MonoBehaviour:
@@ -144,7 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab8b685e62a9aeb4a9472b30ec2d86d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialDatabase: {fileID: 0}
+  initialDatabase: {fileID: 11400000, guid: ac20ad03561167542bed229f27d42e8d, type: 2}
   displaySettings:
     conversationOverrideSettings:
       useOverrides: 0
@@ -189,11 +196,13 @@ MonoBehaviour:
       continueButton: 0
       requireContinueOnLastLine: 0
       richTextEmphases: 1
+      convertPipesToLineBreaks: 1
       informSequenceStartAndEnd: 0
     cameraSettings:
       sequencerCamera: {fileID: 0}
       alternateCameraObject: {fileID: 0}
       cameraAngles: {fileID: 0}
+      cameraEasing: 0
       keepCameraPositionAtConversationEnd: 0
       showSubtitleOnEmptyContinue: 0
       defaultSequence: Delay({{end}})
@@ -316,3 +325,40 @@ MonoBehaviour:
   onUseTouch:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &772208984224608610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bad8bcd861a25c241812359e07b141d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unregisterOnDisable: 0
+--- !u!114 &6928077019490214751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 091116581e4e59f43a76b5553a88b3df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5338892661485796081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 958c8ea04456692449631447dd8b30b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

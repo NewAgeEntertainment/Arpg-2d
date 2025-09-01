@@ -74,6 +74,23 @@ public class Player : Entity
 
     public int rewiredPlayerId => playerID;
 
+    // ===================== Tall Grass (Volume + Overlay) =====================
+    [Header("Tall Grass (volume+overlay)")]
+    [Tooltip("Tag used by your GrassVolume trigger object(s).")]
+    [SerializeField] private string grassTag = "GrassVolume";
+    [Tooltip("Optional layer name for grass volumes; left blank to ignore.")]
+    [SerializeField] private string grassLayerName = "TallGrass";
+    [Tooltip("Optional: particle played at feet while walking in grass if Player_VFX has no method.")]
+    [SerializeField] private ParticleSystem grassRustlePrefab;
+    [Tooltip("Where to spawn the rustle VFX. Defaults to this transform if null.")]
+    [SerializeField] private Transform feetPivot;
+    [SerializeField, Range(0.05f, 0.5f)] private float grassRustleInterval = 0.18f;
+
+    private float _lastGrassRustleTime;
+    public bool InGrass { get; private set; }
+    public event Action<bool> OnGrassStateChanged;
+    // ========================================================================
+
     protected override void Awake()
     {
         base.Awake();
@@ -140,6 +157,9 @@ public class Player : Entity
             if (rPlayer.GetButtonDown("TestEXP")) GainEXP(50);
             if (rPlayer.GetButtonDown("TestSexEXP")) GainSexEXP(25);
         }
+
+        // --- Tall grass ambient VFX while moving ---
+        HandleGrassFootstepsVFX();
     }
 
     public void InitializeAfterSpawn()
@@ -360,6 +380,10 @@ public class Player : Entity
     void OnTriggerEnter2D(Collider2D c)
     {
         Debug.Log($"Trigger: {c.name} (isTrigger={c.isTrigger}, layer={LayerMask.LayerToName(c.gameObject.layer)})");
+
+        // >>> Tall Grass enter detection (added) <<<
+        if (IsGrassCollider(c))
+            EnterGrass();
     }
 
     void OnCollisionEnter2D(Collision2D c)
@@ -367,7 +391,19 @@ public class Player : Entity
         Debug.Log($"Collision: {c.collider.name} (isTrigger={c.collider.isTrigger})");
     }
 
+    // >>> Added: keep/exit logic for grass volumes <<<
+    void OnTriggerStay2D(Collider2D c)
+    {
+        if (IsGrassCollider(c))
+            InGrass = true;
+    }
 
+    void OnTriggerExit2D(Collider2D c)
+    {
+        if (IsGrassCollider(c))
+            ExitGrass();
+    }
+    // <<< end grass triggers >>>
 
     private void RemoveSexLevelBonuses()
     {
@@ -379,5 +415,93 @@ public class Player : Entity
         stats.sex.sexualRestraint.RemoveModifier(SEX_LEVEL_BONUS_SOURCE);
     }
 
-    
+    // ---------------- Tall Grass helpers (added) ----------------
+
+    private bool IsGrassCollider(Collider2D c)
+    {
+        if (!c.isTrigger) return false;
+
+        // Tag check
+        if (!string.IsNullOrEmpty(grassTag) && c.CompareTag(grassTag))
+            return true;
+
+        // Layer check
+        if (!string.IsNullOrEmpty(grassLayerName))
+        {
+            int layer = LayerMask.NameToLayer(grassLayerName);
+            if (layer >= 0 && c.gameObject.layer == layer) return true;
+        }
+
+        // Component check (in case you added a GrassVolume script)
+        return c.GetComponent<GrassVolume>() != null;
+    }
+
+    private void EnterGrass()
+    {
+        if (InGrass) return;
+        InGrass = true;
+        OnGrassStateChanged?.Invoke(true);
+
+        // Optional: immediate rustle on first step-in
+        SpawnGrassRustleVFX();
+        // Example: if you have footstep audio routing
+        // Audio?.SetFootstepProfile("Grass");
+    }
+
+    private void ExitGrass()
+    {
+        if (!InGrass) return;
+        InGrass = false;
+        OnGrassStateChanged?.Invoke(false);
+
+        // Audio?.SetFootstepProfile("Default");
+    }
+
+    private void HandleGrassFootstepsVFX()
+    {
+        if (!InGrass) return;
+
+        // Consider either input or rigidbody speed
+        bool moving = (rb != null && rb.velocity.sqrMagnitude > 0.01f) ||
+                      (moveInput.sqrMagnitude > 0.01f);
+
+        if (!moving) return;
+
+        if (Time.time - _lastGrassRustleTime >= grassRustleInterval)
+        {
+            _lastGrassRustleTime = Time.time;
+            SpawnGrassRustleVFX();
+        }
+    }
+
+    // Let external triggers toggle grass state safely.
+    public void SetInGrass(bool value)
+    {
+        if (value) EnterGrass();
+        else ExitGrass();
+    }
+
+
+    private void SpawnGrassRustleVFX()
+    {
+        // Prefer your Player_VFX component if it exposes something like this:
+        if (vfx != null && vfx.TryPlay("GrassRustle")) return;
+
+        // Fallback: instantiate the optional ParticleSystem prefab at the feet
+        if (grassRustlePrefab != null)
+        {
+            Transform pivot = feetPivot != null ? feetPivot : transform;
+            var ps = Instantiate(grassRustlePrefab, pivot.position, Quaternion.identity);
+            // Auto-destroy after it finishes
+            var main = ps.main;
+            Destroy(ps.gameObject, main.duration + main.startLifetime.constantMax + 0.25f);
+        }
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (feetPivot == null) feetPivot = transform;
+    }
+#endif
 }

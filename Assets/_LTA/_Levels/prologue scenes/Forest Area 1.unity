@@ -920,8 +920,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 9088119}
-  manaText: {fileID: 89592530}
 --- !u!114 &9088118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1429,7 +1427,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -1477,7 +1475,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: -1034139120, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2243,7 +2241,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -2291,7 +2289,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: 176539489, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -6710,7 +6708,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1379488757
-  m_SortingLayer: -4
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -20187,6 +20185,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &117977117
 MonoBehaviour:
@@ -20664,8 +20663,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 123969031}
-  manaText: {fileID: 941745425}
 --- !u!1 &124081422
 GameObject:
   m_ObjectHideFlags: 0
@@ -21336,6 +21333,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &138100914
 MonoBehaviour:
@@ -21626,6 +21624,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &139178727
 MonoBehaviour:
@@ -23151,7 +23150,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: 662506596, guid: d4473f1ce4f076649aa03caceeb61640, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -23981,7 +23980,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: -5346903199351845522, guid: ea9b7bfb66816924d9e41da69cc58ad6, type: 3}
   m_Color: {r: 1, g: 0.95660377, b: 0.95660377, a: 1}
@@ -27028,6 +27027,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   expSlider: {fileID: 212869002}
   expText: {fileID: 851721783}
+  useNormalizedSlider: 1
+  wholeNumbers: 1
+  animateFill: 1
+  fillDuration: 0.2
 --- !u!114 &212869002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28489,7 +28492,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 246481061}
   slotTypeLabel: {fileID: 583497940}
-  itemNameText: {fileID: 408980990}
 --- !u!1 &247076961
 GameObject:
   m_ObjectHideFlags: 0
@@ -29204,6 +29206,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &253531843
 MonoBehaviour:
@@ -29331,10 +29334,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43f37d1b625e513468f6dc68b7eccc2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvasGroup: {fileID: 0}
   titleText: {fileID: 164705076}
   levelText: {fileID: 602152807}
-  statGainText: {fileID: 1013045946}
-  displayDuration: 3
+  listRoot: {fileID: 0}
+  lineTemplate: {fileID: 0}
+  fadeInDuration: 0.15
+  showDuration: 1
+  fadeOutDuration: 0.3
+  sfx: {fileID: 0}
+  levelUpClip: {fileID: 0}
 --- !u!224 &253658468
 RectTransform:
   m_ObjectHideFlags: 0
@@ -29709,6 +29718,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &262943865
 MonoBehaviour:
@@ -30599,7 +30609,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 283534537}
   slotTypeLabel: {fileID: 606665356}
-  itemNameText: {fileID: 2067724878}
 --- !u!1 &284499062
 GameObject:
   m_ObjectHideFlags: 0
@@ -30808,6 +30817,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &286305180
 MonoBehaviour:
@@ -35143,7 +35153,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -38144,6 +38154,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &396347454
 MonoBehaviour:
@@ -41395,8 +41406,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 460404440}
-  healthText: {fileID: 1917357942}
 --- !u!114 &460404440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42124,7 +42133,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1379488757
-  m_SortingLayer: -4
+  m_SortingLayer: 1
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -47661,7 +47670,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &488683674
 GameObject:
   m_ObjectHideFlags: 0
@@ -48708,6 +48716,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &514668981
 MonoBehaviour:
@@ -53849,7 +53858,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 607170908}
   itemStackSize: {fileID: 1451002442}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 1
 --- !u!114 &607170907
 MonoBehaviour:
@@ -55225,6 +55236,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   expSlider: {fileID: 625604742}
   expText: {fileID: 1975792140}
+  useNormalizedSlider: 1
+  wholeNumbers: 1
+  animateFill: 1
+  fillDuration: 0.2
 --- !u!1 &626027955
 GameObject:
   m_ObjectHideFlags: 0
@@ -57521,6 +57536,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &675436078
 MonoBehaviour:
@@ -58464,6 +58480,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &693251799
 MonoBehaviour:
@@ -63387,7 +63404,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -67418,6 +67435,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &824608522
 MonoBehaviour:
@@ -69468,6 +69486,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &868895519
 MonoBehaviour:
@@ -69638,7 +69657,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1379488757
-  m_SortingLayer: -4
+  m_SortingLayer: 1
   m_SortingOrder: 2
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -75135,6 +75154,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &894549121
 MonoBehaviour:
@@ -76347,7 +76367,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -77746,6 +77766,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &933780601
 MonoBehaviour:
@@ -78410,6 +78431,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &945747109
 MonoBehaviour:
@@ -81753,7 +81775,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 594830084, guid: abd9d0da63096b641b16bf7b6a494a17, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -84121,6 +84143,7 @@ GameObject:
   - component: {fileID: 1042426968}
   - component: {fileID: 1042426969}
   - component: {fileID: 1042426971}
+  - component: {fileID: 1042426972}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -84167,9 +84190,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e4f72eeec2eaa447b7ec92e56d5ec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bookAnimator: {fileID: 1828743358996848108}
-  openStateName: Open
-  openDuration: 2
 --- !u!114 &1042426969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84182,6 +84202,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19f24c72e2e375248b1553a2aca48bde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  alsoSetLookAt: 1
+  retryWindowSeconds: 2
+  fallbackPlayerTag: Player
 --- !u!114 &1042426971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84194,6 +84217,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55e6a39a10aac9c499e74f0e05b975d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1042426972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1042426965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Priority:
+    Enabled: 0
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 40
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 5000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
 --- !u!1 &1042486907
 GameObject:
   m_ObjectHideFlags: 0
@@ -84341,7 +84407,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1042550866
 GameObject:
   m_ObjectHideFlags: 0
@@ -84623,6 +84688,11 @@ MonoBehaviour:
   cancelAction: Cancel
   healthBarToggle: {fileID: 202507397}
   manaBarToggle: {fileID: 1536798158}
+  controlsButton: {fileID: 0}
+  controlMapper: {fileID: 0}
+  controlMapperPrefab: {fileID: 0}
+  defaultSelectable: {fileID: 0}
+  returnToUIMenuWhenMapperCloses: 1
 --- !u!222 &1049342977
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -84823,6 +84893,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1051191343
 MonoBehaviour:
@@ -86651,6 +86722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 182f0b6c0595e0f4c9b538c8665e2752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 0}
   maxInventorySize: 18
   itemList: []
   merchantType: 0
@@ -88823,6 +88895,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1119707482
 MonoBehaviour:
@@ -89875,7 +89948,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -89923,7 +89996,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: -1034139120, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -90254,6 +90327,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1142954710
 MonoBehaviour:
@@ -90424,7 +90498,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1379488757
-  m_SortingLayer: -4
+  m_SortingLayer: 1
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -100674,6 +100748,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1148595813
 MonoBehaviour:
@@ -101762,7 +101837,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sexyTimeLogicObject: {fileID: 8931125114811120557}
-  startKey: 108
+  partnerOverride: {fileID: 0}
+  notEnoughGoldMessage: You need {0} gold.
+  allowKeyboardFallback: 0
+  fallbackKey: 108
 --- !u!1 &1166011209
 GameObject:
   m_ObjectHideFlags: 0
@@ -101869,7 +101947,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: 46
   m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -101940,6 +102018,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1166202675
 MonoBehaviour:
@@ -108785,7 +108864,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -109279,6 +109358,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1281604330
 MonoBehaviour:
@@ -109738,7 +109818,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: 662506596, guid: d4473f1ce4f076649aa03caceeb61640, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -110662,7 +110742,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1289721277}
   itemStackSize: {fileID: 1636314224}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 4
 --- !u!224 &1289721276
 RectTransform:
@@ -111367,7 +111449,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -112258,8 +112340,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96558fe42191fbd4495b4b75a3dbe000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  manaSlider: {fileID: 1309369336}
-  manaText: {fileID: 1615006230}
 --- !u!1 &1310080212
 GameObject:
   m_ObjectHideFlags: 0
@@ -113445,6 +113525,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1330709611
 MonoBehaviour:
@@ -114548,7 +114629,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1055223769
-  m_SortingLayer: -3
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 3f4c31abd07c97d488b6687bccd4a35b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -114828,6 +114909,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1346853653
 MonoBehaviour:
@@ -115791,7 +115873,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1361314363
 GameObject:
   m_ObjectHideFlags: 0
@@ -118932,7 +119013,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1390913847}
   itemStackSize: {fileID: 1702008338}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 3
 --- !u!1 &1392246786
 GameObject:
@@ -118986,8 +119069,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemNameText: {fileID: 589792640}
   amountInput: {fileID: 1982769280}
-  confirmButton: {fileID: 1232642037}
+  slot1Button: {fileID: 0}
+  slot2Button: {fileID: 0}
+  slot3Button: {fileID: 0}
+  slot4Button: {fileID: 0}
   cancelButton: {fileID: 1260928065}
+  audioSrc: {fileID: 0}
+  confirmSfx: {fileID: 0}
+  cancelSfx: {fileID: 0}
 --- !u!1 &1392892850
 GameObject:
   m_ObjectHideFlags: 0
@@ -119134,7 +119223,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -119182,7 +119271,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: -1034139120, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -122830,7 +122919,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!1 &1438017269
 GameObject:
   m_ObjectHideFlags: 0
@@ -137276,7 +137364,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1379488757
-  m_SortingLayer: -4
+  m_SortingLayer: 1
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -140508,7 +140596,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 1455743484}
   slotTypeLabel: {fileID: 831601411}
-  itemNameText: {fileID: 1765491912}
 --- !u!1 &1457862612
 GameObject:
   m_ObjectHideFlags: 0
@@ -140961,8 +141048,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 1464151732}
-  healthText: {fileID: 132373505}
 --- !u!114 &1464151734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141463,6 +141548,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d641e07aa9687d94bae4a67b8cbdc76d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 0}
   maxInventorySize: 10
   itemList: []
 --- !u!114 &1468730688
@@ -141559,6 +141645,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1471717971
 MonoBehaviour:
@@ -144638,8 +144725,8 @@ MonoBehaviour:
       baseValue: 100
       modifiers:
       - value: 0
-        source: EnemyLevelScale
         type: 0
+        source: EnemyLevelScale
     healthRegen:
       baseValue: 0
       modifiers: []
@@ -144657,8 +144744,8 @@ MonoBehaviour:
       baseValue: 0
       modifiers:
       - value: 1
-        source: EnemyLevelScale
         type: 0
+        source: EnemyLevelScale
     critPower:
       baseValue: 0
       modifiers: []
@@ -144685,8 +144772,8 @@ MonoBehaviour:
       baseValue: 0
       modifiers:
       - value: 0
-        source: EnemyLevelScale
         type: 0
+        source: EnemyLevelScale
     evasion:
       baseValue: 0
       modifiers: []
@@ -145053,6 +145140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8baffce4016e15c4bbd165a1b30bd511, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 0}
   maxInventorySize: 10
   itemList: []
   materialStash: []
@@ -157107,6 +157195,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1711972171
 MonoBehaviour:
@@ -157497,7 +157586,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -157545,7 +157634,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: 183573810413276680, guid: 29462d75b30723e49bbe389a899f90cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -162462,8 +162551,6 @@ MonoBehaviour:
   sexBonus_StrokePerLevel: 1
   sexBonus_ResiliencePerLevel: 0.5
   sexBonus_SexualRestraintPerLevel: 0.5
-  BASE_SEX_EXP_REQUIREMENT: 50
-  SEX_EXP_GROWTH_RATE: 1.35
   lastMoveDirection: {x: 0, y: -1}
   playerID: 0
   attackMovement:
@@ -162480,6 +162567,11 @@ MonoBehaviour:
   dashSpeed: 20
   ThrustDuration: 1
   ThrustSpeed: 20
+  grassTag: GrassVolume
+  grassLayerName: TallGrass
+  grassRustlePrefab: {fileID: 0}
+  feetPivot: {fileID: 1793421253}
+  grassRustleInterval: 0.18
 --- !u!4 &1793421253
 Transform:
   m_ObjectHideFlags: 0
@@ -162562,6 +162654,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1796832398
 MonoBehaviour:
@@ -166556,7 +166649,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIcon: {fileID: 1857073279}
   itemStackSize: {fileID: 779433056}
-  defaultSprite: {fileID: 640112068, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  emptySprite: {fileID: 0}
+  emptyIconColor: {r: 1, g: 1, b: 1, a: 0.25}
+  filledIconColor: {r: 1, g: 1, b: 1, a: 1}
   slotNumber: 2
 --- !u!114 &1857073278
 MonoBehaviour:
@@ -167854,11 +167949,17 @@ MonoBehaviour:
   partnerStats: {fileID: 1530223336}
   pussySqueeze: 0
   pussySqueezeCooldown: 5
+  autoUnlockDeepBreath: 0
+  debugDeepBreathKey: 98
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59
   blueBarExp: 50
   pinkBarExp: 100
+  blueBarAffectionAdd: 5
+  blueBarAffectionSubtract: 0
+  pinkBarAffectionAdd: 10
+  pinkBarAffectionSubtract: 0
   OnPlayerBarFull:
     m_PersistentCalls:
       m_Calls:
@@ -168084,6 +168185,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1872976307
 MonoBehaviour:
@@ -168462,7 +168564,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_Sprite: {fileID: -5346903199351845522, guid: ea9b7bfb66816924d9e41da69cc58ad6, type: 3}
   m_Color: {r: 1, g: 0.95660377, b: 0.95660377, a: 1}
@@ -170037,7 +170139,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 3.3637447, y: 8.119983, z: 0}
+  m_ChunkCullingBounds: {x: 1.4318724, y: 3.8099914, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 2
@@ -172664,6 +172766,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1940849927
 MonoBehaviour:
@@ -174380,6 +174483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profileButton: {fileID: 8457004131283246003}
+  closeWhenOutOfItem: 1
 --- !u!1 &1957355821
 GameObject:
   m_ObjectHideFlags: 0
@@ -174552,6 +174656,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &1957441477
 MonoBehaviour:
@@ -177125,8 +177230,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5766bc1c13b334448873c3a9f183ea18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthSlider: {fileID: 2013526204}
-  healthText: {fileID: 784159075}
 --- !u!114 &2013526204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181760,6 +181863,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profileButton: {fileID: 4567960}
+  closeWhenOutOfItem: 1
 --- !u!1 &2099981490
 GameObject:
   m_ObjectHideFlags: 0
@@ -187523,7 +187627,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &483230158999840367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188703,6 +188806,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &617995827675021516
 CanvasRenderer:
@@ -189476,6 +189580,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &730657751482845554
 RectTransform:
@@ -190113,6 +190218,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!1 &857946387410202618
 GameObject:
@@ -190576,7 +190682,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -8900005401159255355, guid: 0f6ff2d79ef492c4bb1ebd376089f815, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -191988,6 +192094,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &1110671901424650973
 CanvasRenderer:
@@ -193430,6 +193537,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &1253255503879334146
 CanvasRenderer:
@@ -196749,6 +196857,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &1533422559930731796
 CanvasRenderer:
@@ -197753,6 +197862,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &1636703046795538294
 RectTransform:
@@ -202442,6 +202552,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &2255442959539018034
 MonoBehaviour:
@@ -203581,6 +203692,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &2389174730728385115
 CanvasRenderer:
@@ -204050,6 +204162,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &2452864231765686399
 CanvasRenderer:
@@ -206441,7 +206554,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 33.696274, y: -97.861206}
+  m_AnchoredPosition: {x: 33.696335, y: -97.861206}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &2755811619889569438
@@ -206736,6 +206849,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &2815757372788491865
 MonoBehaviour:
@@ -209316,7 +209430,7 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1998129361
-  m_SortingLayer: 2
+  m_SortingLayer: 8
   m_SortingOrder: 5
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!224 &3190620298844413149
@@ -210621,6 +210735,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &3353827424149355836
 RectTransform:
@@ -211032,7 +211147,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 8670051218635251587}
   slotTypeLabel: {fileID: 695304016}
-  itemNameText: {fileID: 6732004048801328837}
 --- !u!224 &3395079662717022641
 RectTransform:
   m_ObjectHideFlags: 0
@@ -211166,6 +211280,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &3421616523298912704
 RectTransform:
@@ -212478,6 +212593,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!1 &3540999523947557730
 GameObject:
@@ -213195,6 +213311,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &3690557703014353794
 CanvasRenderer:
@@ -213456,7 +213573,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &3751195818328948537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216142,7 +216258,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: -1
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_Sprite: {fileID: 577655699, guid: 7b60d3b81fd22804f897393fd944ae4e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -221832,6 +221948,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &4985096954419366488
 MonoBehaviour:
@@ -222505,6 +222622,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &5057005810583892635
 RectTransform:
@@ -223544,6 +223662,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!1 &5203113276094909858
 GameObject:
@@ -225234,7 +225353,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!224 &5462667690203601880
 RectTransform:
   m_ObjectHideFlags: 0
@@ -225255,7 +225373,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -159.72101, y: -6.144787}
+  m_AnchoredPosition: {x: -159.72101, y: -6.1448174}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5466092103496614922
@@ -226165,7 +226283,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -59.873917, y: -108.0155}
+  m_AnchoredPosition: {x: -59.873978, y: -108.0155}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5615033751166451952
@@ -226982,7 +227100,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -227561,7 +227679,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -36.22101, y: -6.144787}
+  m_AnchoredPosition: {x: -36.22101, y: -6.1448174}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5849874318425977165
@@ -227630,7 +227748,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1859501777
-  m_SortingLayer: 3
+  m_SortingLayer: 9
   m_SortingOrder: -1
   m_Sprite: {fileID: 21300000, guid: 2873d4309c29ed44c97de14327be679f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -228113,13 +228231,18 @@ MonoBehaviour:
   itemListPanel: {fileID: 976615517}
   actorSelectPanel: {fileID: 2099643959}
   assignPopupPanel: {fileID: 1392246786}
+  assignPopup: {fileID: 0}
   assignAmountInput: {fileID: 1982769280}
   actorButtons:
   - {fileID: 4567960}
+  actorSelectItemLabel: {fileID: 0}
   panelOpenSound: {fileID: 8300000, guid: c5e2a73ad4706440f93bf05df0b465fe, type: 3}
   panelCloseSound: {fileID: 8300000, guid: c5e2a73ad4706440f93bf05df0b465fe, type: 3}
   assignSound: {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+  noItemSound: {fileID: 0}
+  itemUsedSound: {fileID: 0}
   audioSource: {fileID: 471500940}
+  enableLegacyAssignSlot: 1
 --- !u!114 &5934342891341185694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229236,7 +229359,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1859501777
-  m_SortingLayer: 3
+  m_SortingLayer: 9
   m_SortingOrder: 7
   m_Sprite: {fileID: 21300000, guid: 2665219302f4a80439ae9a1639debdfd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -229752,6 +229875,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &6185470177230905165
 CanvasRenderer:
@@ -233260,6 +233384,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &6668666763289784293
 RectTransform:
@@ -235573,6 +235698,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!222 &6946666915531555607
 CanvasRenderer:
@@ -236586,6 +236712,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &7109216088555007263
 MonoBehaviour:
@@ -236635,6 +236762,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &7114051045015693035
 RectTransform:
@@ -237959,7 +238087,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -59.873917, y: -235.5155}
+  m_AnchoredPosition: {x: -59.873978, y: -235.5155}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7344479797751546377
@@ -238337,6 +238465,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &7395489090887332222
 MonoBehaviour:
@@ -238697,6 +238826,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!224 &7440758492235683218
 RectTransform:
@@ -240079,7 +240209,6 @@ MonoBehaviour:
   equipmentToolTip: {fileID: 356903721}
   button: {fileID: 0}
   slotTypeLabel: {fileID: 0}
-  itemNameText: {fileID: 0}
 --- !u!114 &7620272817189686815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240187,6 +240316,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!1 &7628549560256258267
 GameObject:
@@ -243366,6 +243496,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &8104427145983101489
 MonoBehaviour:
@@ -244096,7 +244227,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 33.696274, y: -232.3612}
+  m_AnchoredPosition: {x: 33.696335, y: -232.3612}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8206646368983220606
@@ -248368,6 +248499,7 @@ MonoBehaviour:
     m_Bits: 256
   battleMoveSpeed: 4.5
   moveAnimSpeedMultiplier: 1
+  startInParty: 0
 --- !u!1 &8708197497681171366
 GameObject:
   m_ObjectHideFlags: 0
@@ -248852,6 +248984,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!114 &8792206778942230051
 MonoBehaviour:
@@ -249479,6 +249612,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
   levelUpPopup: {fileID: 253658467}
   goldText: {fileID: 544388261}
@@ -249486,6 +249620,10 @@ MonoBehaviour:
   inventoryUI: {fileID: 5924272355250140655}
   skillTreeUI: {fileID: 8669449603233074225}
   statusPanel: {fileID: 566174305}
+  conquestUI: {fileID: 0}
+  defaultConquestProfile: {fileID: 0}
+  defaultConquestStats: {fileID: 0}
+  saveLoadPanel: {fileID: 0}
   storageUI: {fileID: 1815586401642412462}
   merchantUI: {fileID: 121554694508714161}
   craftUI: {fileID: 8805645719953799032}
@@ -249495,13 +249633,24 @@ MonoBehaviour:
   playerHealthBar: {fileID: 1464151733}
   playerManaBar: {fileID: 123969032}
   mainMenuPanel: {fileID: 308731681436267363}
+  menuHealthSlider: {fileID: 0}
+  menuHealthText: {fileID: 0}
+  menuManaSlider: {fileID: 0}
+  menuManaText: {fileID: 0}
+  locationLabel: {fileID: 0}
+  timePlayedLabel: {fileID: 0}
+  menuPollInterval: 0.1
   playerID: 0
   openSkillTreeAction: OpenSkillTree
   openInventoryAction: OpenInventory
   openEquipmentAction: OpenEquipmentInventory
+  openConquestAction: OpenConquest
   openOptionsAction: OpenOptions
   openMainMenuAction: OpenMainMenu
   cancelAction: UICancel
+  openSavePanelAction: OpenSavePanel
+  titleSceneName: Title Screen
+  ddolEssentials: []
 --- !u!1 &8886785148640163422
 GameObject:
   m_ObjectHideFlags: 0
@@ -251769,6 +251918,7 @@ MonoBehaviour:
   hoveredItem:
     itemData: {fileID: 0}
     stackSize: 0
+    instanceModifiers: []
     itemEffect: {fileID: 0}
 --- !u!1 &9164041981965786816
 GameObject:

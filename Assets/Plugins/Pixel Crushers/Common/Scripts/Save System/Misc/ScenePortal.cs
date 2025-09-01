@@ -68,18 +68,22 @@ namespace PixelCrushers
             SaveSystem.LoadScene(string.IsNullOrEmpty(spawnpointNameInDestinationScene) ? destinationSceneName : destinationSceneName + "@" + spawnpointNameInDestinationScene);
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void OnTriggerEnter(Collider other)
         {
-            Debug.Log($"[Portal] Triggered by: {other.name}");
-
             if (!other.CompareTag(requiredTag)) return;
-
-            Debug.Log("[Portal] Player matched required tag. Using portal.");
             UsePortal();
         }
 
+#if USE_PHYSICS2D
 
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (!other.CompareTag(requiredTag)) return;
+            UsePortal();
+        }
 
+#endif
 
     }
+
 }

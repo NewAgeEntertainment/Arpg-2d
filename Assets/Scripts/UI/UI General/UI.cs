@@ -1,18 +1,18 @@
-﻿using Rewired;
-using TMPro;
-using UnityEngine;
-using System.Linq;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using PixelCrushers;
-using UnityEngine.UI;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
+using Rewired;
+using PixelCrushers;
+using PixelCrushers.QuestMachine.Wrappers;
 
 public class UI : MonoBehaviour
 {
     // -------- Singleton Guard --------
-
     public static UI Instance { get; private set; }
 
     #region Components
@@ -40,6 +40,10 @@ public class UI : MonoBehaviour
     [SerializeField] private UI_StatusPanel statusPanel;
     public UI_StatusPanel StatusPanel => statusPanel;
 
+    [SerializeField] private UI_Conquest conquestUI;
+    [SerializeField] private CharacterProfileSO defaultConquestProfile; // optional
+    [SerializeField] private Entity_Stats defaultConquestStats;         // optional
+
     [SerializeField] private UI_SaveLoadPanel saveLoadPanel;   // assign in Inspector (or lazy find)
     private bool isSaveOpen = false;
 
@@ -64,6 +68,19 @@ public class UI : MonoBehaviour
     [Header("Main Menu Panel")]
     [SerializeField] private GameObject mainMenuPanel;
 
+    // ===== Quest Journal (Quest Machine) =====
+    [Header("Quest Journal (Quest Machine)")]
+    [Tooltip("Optional parent GameObject that contains the UnityUIQuestJournalUI; toggled with the journal.")]
+    [SerializeField] private GameObject questJournalRoot;
+    [Tooltip("Assign the UnityUIQuestJournalUI (wrapper) component here.")]
+    [SerializeField] private UnityUIQuestJournalUI questJournalUI;
+    [Tooltip("If true, re-open the main menu panel after closing the journal.")]
+    [SerializeField] private bool reopenMainMenuAfterJournalClose = true;
+
+
+
+    private bool isQuestJournalOpen = false;
+
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // New: Menu Health/Mana bindings (drag your MENU UI widgets here, not the HUD ones)
     [Header("Main Menu - Health & Mana (drag from Menu UI)")]
@@ -86,10 +103,13 @@ public class UI : MonoBehaviour
     [SerializeField] private string openSkillTreeAction = "OpenSkillTree";
     [SerializeField] private string openInventoryAction = "OpenInventory";
     [SerializeField] private string openEquipmentAction = "OpenEquipmentInventory";
+    [SerializeField] private string openConquestAction = "OpenConquest";
     [SerializeField] private string openOptionsAction = "OpenOptions";
     [SerializeField] private string openMainMenuAction = "OpenMainMenu";
     [SerializeField] private string cancelAction = "UICancel";
     [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // optional
+    // (Optional) You can add a mapped action to toggle the journal if you want:
+    //[SerializeField] private string toggleQuestJournalAction = "ToggleQuestJournal";
 
     private Rewired.Player player;
 
@@ -97,6 +117,7 @@ public class UI : MonoBehaviour
     private bool isSkillTreeOpen = false;
     private bool isEquipmentOpen = false;
     private bool isStatusPanelOpen = false;
+    private bool isConquestOpen = false;
     private bool isOptionsOpen = false;
     private bool isStorageOpen = false;
     private bool isMerchantOpen = false;
@@ -157,6 +178,10 @@ public class UI : MonoBehaviour
         craftUI?.gameObject.SetActive(false);
         mainMenuPanel?.SetActive(false);
         uiRoot?.SetActive(false);
+
+        // Journal off by default
+        if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
+        if (questJournalRoot != null) questJournalRoot.SetActive(false);
     }
 
     private void Start()
@@ -278,6 +303,7 @@ public class UI : MonoBehaviour
         if (player.GetButtonDown(openOptionsAction)) OpenOptions();
         if (player.GetButtonDown(openMainMenuAction)) OpenMainMenuDirect();
         if (player.GetButtonDown(cancelAction)) HandleBackAction();
+        // if (player.GetButtonDown(toggleQuestJournalAction)) ToggleQuestJournalFromUI();
 
         // optional: hotkey for save panel
         if (player.GetButtonDown(openSavePanelAction)) OpenSavePanel();
@@ -290,7 +316,6 @@ public class UI : MonoBehaviour
         ui.name = prefab != null ? prefab.name : "UI";
         return ui;
     }
-
 
     public void UpdateGoldUI(int newGoldAmount)
     {
@@ -386,7 +411,132 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
-    // UI.cs
+    public void OpenConquestPanel()
+    {
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        if (conquestUI == null)
+        {
+            Debug.LogWarning("[UI] Conquest UI not assigned.");
+            return;
+        }
+
+        conquestUI.gameObject.SetActive(true);
+        conquestUI.OpenRosterFirst();   // always show roster first
+        isConquestOpen = true;
+    }
+
+    public void CloseConquest()
+    {
+        isConquestOpen = false;
+        if (conquestUI != null) conquestUI.Close();
+        CheckStopPlayerControls();
+    }
+
+    private CharacterProfileSO TryGetProfile(Entity_Stats s)
+    {
+        if (s == null) return null;
+        var refComp = s.GetComponent<CharacterProfileRef>();
+        return refComp ? refComp.profile : null;
+    }
+
+    // ===== Quest Journal Open/Close/Toggle =====
+
+    // --- Replace this ---
+    public void ToggleQuestJournalFromUI()
+    {
+        if (!TryFindQuestJournalUI())
+        {
+            Debug.LogWarning("[UI] questJournalUI not assigned and could not be found.");
+            return;
+        }
+
+        bool opening = !questJournalUI.gameObject.activeInHierarchy;
+        if (opening) StartCoroutine(OpenJournal_Co());
+        else CloseQuestJournalFromUI();
+    }
+
+    // --- Replace this ---
+    public void OpenQuestJournalFromUI()
+    {
+        // keep for API compatibility; just call the coroutine path
+        if (!TryFindQuestJournalUI()) return;
+        StartCoroutine(OpenJournal_Co());
+    }
+
+    // --- NEW: open deferred next frame ---
+    private IEnumerator OpenJournal_Co()
+    {
+        EnsureUIRootIsActive();
+        CloseAllPanels(); // close others first
+
+        if (questJournalRoot != null) questJournalRoot.SetActive(true);
+        questJournalUI.gameObject.SetActive(true);
+
+        // Wait one frame so QuestMachine UI can run OnEnable/Start/layout first.
+        yield return null;
+
+        // Safely try common open/show methods without ambiguity:
+        if (!SafeInvokeNoArgs(questJournalUI, "Show"))
+            if (!SafeInvokeNoArgs(questJournalUI, "OpenWindow"))
+                SafeInvokeBool(questJournalUI, "SetVisible", true);
+
+        isQuestJournalOpen = true;
+        StopPlayerControls(true);
+    }
+
+    // --- Replace this ---
+    public void CloseQuestJournalFromUI()
+    {
+        if (!TryFindQuestJournalUI()) return;
+
+        if (!SafeInvokeNoArgs(questJournalUI, "Hide"))
+            if (!SafeInvokeNoArgs(questJournalUI, "CloseWindow"))
+                SafeInvokeBool(questJournalUI, "SetVisible", false);
+
+        questJournalUI.gameObject.SetActive(false);
+        if (questJournalRoot != null) questJournalRoot.SetActive(false);
+
+        isQuestJournalOpen = false;
+
+        if (reopenMainMenuAfterJournalClose) OpenMainMenuDirect();
+        else CheckStopPlayerControls();
+    }
+
+    // --- Add these helpers anywhere inside UI.cs ---
+    private bool TryFindQuestJournalUI()
+    {
+        if (questJournalUI != null) return true;
+        questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(FindObjectsInactive.Include);
+        if (questJournalUI == null) return false;
+        if (questJournalRoot == null) questJournalRoot = questJournalUI.transform.root.gameObject;
+        return true;
+    }
+
+    private static bool SafeInvokeNoArgs(object target, string methodName)
+    {
+        if (target == null) return false;
+        var t = target.GetType();
+        var m = t.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+        if (m == null) return false;
+        m.Invoke(target, null);
+        return true;
+    }
+
+    private static bool SafeInvokeBool(object target, string methodName, bool arg)
+    {
+        if (target == null) return false;
+        var t = target.GetType();
+        var m = t.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(bool) }, null);
+        if (m == null) return false;
+        m.Invoke(target, new object[] { arg });
+        return true;
+    }
+
+
+    // ===== Save Panel =====
+
     public void OpenSavePanel()
     {
         EnsureUIRootIsActive();
@@ -513,7 +663,8 @@ public class UI : MonoBehaviour
     private bool IsAnySubPanelOpen()
     {
         return isInventoryOpen || isSkillTreeOpen || isEquipmentOpen || isOptionsOpen
-               || isStorageOpen || isMerchantOpen || isCraftOpen || isStatusPanelOpen;
+               || isStorageOpen || isMerchantOpen || isCraftOpen || isStatusPanelOpen
+               || isConquestOpen || isQuestJournalOpen || isSaveOpen;
     }
 
     private void EnsureUIRootIsActive()
@@ -529,11 +680,16 @@ public class UI : MonoBehaviour
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
         statusPanel?.gameObject.SetActive(false);
+        conquestUI?.gameObject.SetActive(false);
         optionsUI?.gameObject.SetActive(false);
         storageUI?.gameObject.SetActive(false);
         merchantUI?.gameObject.SetActive(false);
         craftUI?.gameObject.SetActive(false);
         mainMenuPanel?.SetActive(false);
+
+        // Quest Journal:
+        if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
+        if (questJournalRoot != null) questJournalRoot.SetActive(false);
 
         ResetStates();
         StopMenuPoll();
@@ -546,9 +702,12 @@ public class UI : MonoBehaviour
         isEquipmentOpen = false;
         isOptionsOpen = false;
         isStatusPanelOpen = false;
+        isConquestOpen = false;
         isStorageOpen = false;
         isMerchantOpen = false;
         isCraftOpen = false;
+        isQuestJournalOpen = false;
+        isSaveOpen = false;
     }
 
     public void HandleBackAction()
@@ -579,6 +738,19 @@ public class UI : MonoBehaviour
         if (optionsUI != null && isOptionsOpen)
         {
             CloseOptions();
+            return;
+        }
+
+        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy)
+        {
+            Debug.Log("[UI] Conquest panel handling cancel...");
+            if (conquestUI.HandleCancel()) return;
+        }
+
+        // Quest Journal close on cancel:
+        if (questJournalUI != null && questJournalUI.gameObject.activeInHierarchy)
+        {
+            CloseQuestJournalFromUI();
             return;
         }
 
@@ -721,7 +893,6 @@ public class UI : MonoBehaviour
     private Component AutoFindStats()
     {
         // Try to find by exact type name without hard dependencies
-        // Modern Unity: FindFirstObjectByType<T>() only takes an optional Inactive flag.
         var playerStats = FindFirstObjectByType<Component>(FindObjectsInactive.Include);
         if (playerStats != null && playerStats.GetType().Name == "Player_Stats")
             return playerStats;

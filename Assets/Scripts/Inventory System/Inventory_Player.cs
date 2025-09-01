@@ -254,6 +254,17 @@ public class Inventory_Player : Inventory_Base
         return added;
     }
 
+    // Inventory_Player.cs  — add this convenience overload
+    public bool AddItem(ItemDataSO data, int count = 1)
+    {
+        if (data == null || count <= 0) return false;
+
+        var item = new Inventory_Item(data);
+        item.stackSize = Mathf.Max(1, count);
+        return AddItem(item);   // routes to storage/equipment/backpack + NotifyInventoryChanged()
+    }
+
+
     public Inventory_Item GetEquippedItemByType(ItemType type)
     {
         if (equipList == null) return null;
