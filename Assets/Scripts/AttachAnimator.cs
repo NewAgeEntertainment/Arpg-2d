@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -12,11 +12,11 @@ public class AttachAnimator : MonoBehaviour
 
     void Awake()
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject model = GameObject.FindGameObjectWithTag("Player");
         int index = 0;
-        if (player != null)
+        if (model != null)
         {
-            animator = player.GetComponent<Animator>();
+            animator = model.GetComponent<Animator>();
         }
         TimelineAsset timelineAsset = playableDirector.playableAsset as TimelineAsset;
 
@@ -36,3 +36,4 @@ public class AttachAnimator : MonoBehaviour
         }
     }
 }
+

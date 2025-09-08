@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Playables;
 
 #if UNITY_CINEMACHINE
 using Unity.Cinemachine; // Cinemachine v3
@@ -12,6 +13,16 @@ public class PlayerSpawner : MonoBehaviour
 
     [Header("Optional spawn point (leave empty to use this GameObject's position)")]
     [SerializeField] private Transform spawnPoint;
+
+    [Header("Spawn Policy")]
+    [Tooltip("If true, ALWAYS spawn the prefab even if a Player exists (replaces existing).")]
+    [SerializeField] private bool preferPrefabOverExisting = true;
+
+    [Tooltip("If replacing, spawn the prefab at the existing Player's pose.")]
+    [SerializeField] private bool copyPoseFromExisting = true;
+
+    [Tooltip("If replacing, destroy any existing Players after the prefab is spawned.")]
+    [SerializeField] private bool destroyExistingOnReplace = true;
 
     [Header("Cinemachine v3 Auto-Bind")]
     [SerializeField] private bool bindCinemachine = true;
@@ -28,18 +39,49 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
-        // Find existing (including DDOL) or spawn a new one
-        _player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-        Vector3 pos = (spawnPoint != null ? spawnPoint.position : transform.position);
+        var existingPlayers = FindObjectsByType<Player>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        var haveExisting = existingPlayers != null && existingPlayers.Length > 0;
 
-        if (_player == null)
+        Vector3 targetPos = (spawnPoint ? spawnPoint.position : transform.position);
+        Quaternion targetRot = Quaternion.identity;
+        Vector3 targetScale = Vector3.one;
+
+        if (preferPrefabOverExisting)
         {
-            _player = Instantiate(playerPrefab, pos, Quaternion.identity);
-            _player.name = playerPrefab.name; // clean name in hierarchy
+            // Replace any existing Player(s)
+            if (haveExisting && copyPoseFromExisting)
+            {
+                // Use the first one's pose as the spawn pose
+                var first = existingPlayers[0].transform;
+                targetPos = first.position;
+                targetRot = first.rotation;
+                targetScale = first.localScale;
+            }
+
+            _player = Instantiate(playerPrefab, targetPos, targetRot);
+            _player.transform.localScale = targetScale;
+            _player.name = playerPrefab.name;
+
+            if (destroyExistingOnReplace && haveExisting)
+            {
+                foreach (var p in existingPlayers)
+                    if (p && p.gameObject != _player.gameObject)
+                        Destroy(p.gameObject);
+            }
         }
         else
         {
-            _player.TeleportPlayer(pos);
+            // Keep an existing Player if one is around; otherwise spawn new
+            if (haveExisting)
+            {
+                _player = existingPlayers[0];
+                _player.TeleportPlayer(targetPos);
+            }
+            else
+            {
+                _player = Instantiate(playerPrefab, targetPos, Quaternion.identity);
+                _player.name = playerPrefab.name;
+            }
         }
 
         // Let global systems know who the current player is
@@ -57,7 +99,6 @@ public class PlayerSpawner : MonoBehaviour
         float t = 0f;
         while (t < seconds)
         {
-            // Player can be reassigned by other systems; re-check
             var p = _player != null ? _player : FindFirstObjectByType<Player>(FindObjectsInactive.Include);
             if (TryBindCameraOnce(p))
                 yield break;
@@ -81,19 +122,15 @@ public class PlayerSpawner : MonoBehaviour
         {
             vcam.Follow = p.transform;
             if (alsoSetLookAt) vcam.LookAt = p.transform;
-            // Debug.Log($"[PlayerSpawner] CinemachineCamera bound to {p.name} (prio {vcam.Priority}).");
             return true;
         }
-        // If you want a log when no vcam is found, uncomment:
-        // Debug.LogWarning("[PlayerSpawner] No CinemachineCamera found to bind.");
 #endif
-        return false; // no CM v3 available or no camera found yet
+        return false;
     }
 
 #if UNITY_CINEMACHINE
     private CinemachineCamera PickBestVcam()
     {
-        // Choose the highest-priority active camera; fall back to any if none active
         var cams = FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         CinemachineCamera best = null;
         int bestPriority = int.MinValue;
@@ -114,4 +151,9 @@ public class PlayerSpawner : MonoBehaviour
         return best;
     }
 #endif
+
+
+
 }
+
+
