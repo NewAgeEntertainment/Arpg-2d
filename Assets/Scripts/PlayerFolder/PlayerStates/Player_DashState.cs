@@ -11,6 +11,8 @@ public class Player_DashState : PlayerState
     {
         base.Enter();
 
+
+
         // 1) pick a direction (like Thrust): current input, else last facing, else down
         dashDir = moveInput.sqrMagnitude > 0.0001f ? moveInput : player.lastMoveDirection;
         if (dashDir.sqrMagnitude < 0.0001f) dashDir = Vector2.down;

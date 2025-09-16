@@ -60,20 +60,21 @@ public class Enemy_Health : Entity_Health, IDamageable
 
     private void OnEnable()
     {
-        // If your Entity_Health exposes a Died event, hook it. Otherwise LateUpdate() handles the fallback.
-        try { Died += HandleDied; } catch { /* ok if event doesn't exist */ }
+        // Updated to match Entity_Health’s events
+        OnDied += HandleDied;
+        OnRevived += HandleRevived;
     }
 
     private void OnDisable()
     {
-        try { Died -= HandleDied; } catch { /* ok if event doesn't exist */ }
+        OnDied -= HandleDied;
+        OnRevived -= HandleRevived;
     }
 
     private void Update()
     {
         if (!enableKillOnInput || IsDead) return;
 
-        // Rewired first (if enabled), otherwise fall back to a KeyCode.
 #if REWIRED
         if (useRewired)
         {
@@ -91,7 +92,7 @@ public class Enemy_Health : Entity_Health, IDamageable
         }
     }
 
-    // Safety watcher: if Died wasn’t invoked for any reason, we still despawn when health reaches 0.
+    // Safety watcher: if OnDied wasn't caught for any reason, we still despawn when health reaches 0.
     private void LateUpdate()
     {
         if (!_despawnStarted && IsDead)
@@ -134,6 +135,15 @@ public class Enemy_Health : Entity_Health, IDamageable
         else if (debugLogs) Debug.LogWarning($"[{name}] No Animator found; using hard timeout.");
 
         StartCoroutine(DespawnAfterDeathAnim());
+    }
+
+    private void HandleRevived()
+    {
+        // Re-enable physics/colliders for reuse (pooling or revive flows)
+        _despawnStarted = false;
+        if (rb2d) rb2d.simulated = true;
+        if (cols != null) foreach (var c in cols) if (c) c.enabled = true;
+        if (debugLogs) Debug.Log($"[{name}] Revived; physics & colliders re-enabled.");
     }
 
     private IEnumerator DespawnAfterDeathAnim()

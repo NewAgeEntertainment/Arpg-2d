@@ -9,8 +9,12 @@ public class Enemy_AttackState : EnemyState
     public override void Enter()
     {
         base.Enter();
-        SyncAttackSpeed(); // Sync the attack speed with the enemy's stats
-        rb.velocity = Vector2.zero; // Stop the enemy's movement when entering attack state
+        SyncAttackSpeed();
+        rb.velocity = Vector2.zero;
+
+        var p = enemy.GetPlayerReference();
+        if (p != null)
+            enemy.SetFacing(p.position - enemy.transform.position);
     }
 
     public override void Exit()
@@ -22,6 +26,11 @@ public class Enemy_AttackState : EnemyState
     public override void Update()
     {
         base.Update();
+
+        // Keep looking at the player while attacking
+        var p = enemy.GetPlayerReference();
+        if (p != null)
+            enemy.SetFacing(p.position - enemy.transform.position);
 
         if (triggerCalled)
             stateMachine.ChangeState(enemy.battleState);

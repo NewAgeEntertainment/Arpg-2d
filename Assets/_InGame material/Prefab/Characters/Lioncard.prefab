@@ -417,7 +417,8 @@ GameObject:
   - component: {fileID: 1171000597807800476}
   - component: {fileID: 930229711367589515}
   - component: {fileID: 7645570407187769238}
-  - component: {fileID: -1511743511382129230}
+  - component: {fileID: 4977138483196313491}
+  - component: {fileID: 620084835912366469}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -1129,7 +1130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e934de1a262c41478a844f227d499e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_key: 
+  m_key: Quest Journal
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
@@ -1137,14 +1138,7 @@ MonoBehaviour:
   m_includeInSavedGameData: 1
   m_addNewQuestsSinceSavedGame: 0
   m_questList:
-  - {fileID: 11400000, guid: ca2f9018fc9a06246b3e8d06c1455688, type: 2}
-  - {fileID: 11400000, guid: 2c0f43a0a6080dd439e5e02e60683616, type: 2}
-  - {fileID: 11400000, guid: f41fb1a285a53854d8ddfb5e33bb3aeb, type: 2}
   - {fileID: 11400000, guid: 029417eb459893b4480eb5af04c05787, type: 2}
-  - {fileID: 11400000, guid: 58be1b21790ab4d4eb834b4bea827b79, type: 2}
-  - {fileID: 11400000, guid: 03e1b678ad4c6ae4dba04516df9fce73, type: 2}
-  - {fileID: 11400000, guid: d0538f1ff3775094dabf02a43e8aacd2, type: 2}
-  - {fileID: 0}
   m_deletedStaticQuests: []
   m_id:
     m_text: Player
@@ -1163,7 +1157,7 @@ MonoBehaviour:
   m_onlyRememberHandwrittenQuests: 0
   m_compressCompletedProcgenQuests: 0
   m_onlyTrackOneQuestAtATime: 0
---- !u!114 &-1511743511382129230
+--- !u!114 &4977138483196313491
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1172,16 +1166,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 3412577514713453343}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9af4cae7661fef4faca2fd927366c1b, type: 3}
+  m_Script: {fileID: 11500000, guid: 27e08d84e0884b149beba3951646a31d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  director: {fileID: 0}
-  path: {fileID: 0}
-  snapOnAttach: 1
-  matchRotation: 1
-  stayAtEndPosition: 1
-  disableInputDuringCutscene: 1
-  freezePhysicsDuringCutscene: 1
+  gameplayAnimator: {fileID: 4357201980242177343}
+  timelineAnimator: {fileID: 620084835912366469}
+  disableTimelineAnimatorWhenNotPlaying: 1
+--- !u!95 &620084835912366469
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0

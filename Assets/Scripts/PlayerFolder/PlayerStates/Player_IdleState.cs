@@ -10,6 +10,14 @@ public class Player_IdleState : Player_GroundedState
     {
         base.Enter();
 
+        // Ensure the gameplay animator is valid
+        if (player.anim == null || player.anim.runtimeAnimatorController == null)
+        {
+            player.ReacquireAnimatorIfNeeded();
+            if (player.anim == null || player.anim.runtimeAnimatorController == null)
+                return; // abort this frame
+        }
+
         player.SetVelocity(0, 0);
         UpdateAnimationParameters();
         anim.SetFloat("xInput", xInput);

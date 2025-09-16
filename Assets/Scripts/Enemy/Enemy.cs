@@ -53,6 +53,8 @@ public class Enemy : Entity
     public Vector2[] patrolPoints;
     public int currentPatrolIndex;
     public bool isPaused { get; set; }
+
+    public Vector2 LastDir { get; private set; } = Vector2.down;
     public Vector2 currentDirection { get; private set; }
     public Vector2 target;
     public Transform player { get; private set; }
@@ -193,5 +195,14 @@ public class Enemy : Entity
     private void OnDisable()
     {
         Player.OnPlayerDeath -= HandlePlayerDeath;
+    }
+
+    public void SetFacing(Vector2 dir)
+    {
+        if (dir.sqrMagnitude > 0.0001f)
+            LastDir = dir.normalized;
+
+        anim.SetFloat("xInput", LastDir.x);
+        anim.SetFloat("yInput", LastDir.y);
     }
 }

@@ -15,12 +15,25 @@ public class EnemyState : EntityState
     public override void UpdateAnimationParameters()
     {
         base.UpdateAnimationParameters();
-        float battleAnimSpeedMultiplier = enemy.battleMoveSpeed / enemy.moveSpeed;
 
+        float battleAnimSpeedMultiplier = enemy.battleMoveSpeed / enemy.moveSpeed;
         anim.SetFloat("battleAnimSpeedMultiplier", battleAnimSpeedMultiplier);
         anim.SetFloat("moveAnimSpeedMultiplier", enemy.moveAnimSpeedMultiplier);
 
-        anim.SetFloat("xInput", rb.velocity.x);
-        anim.SetFloat("yInput", rb.velocity.y);
+        // If we are moving, face movement. Otherwise keep last / face target.
+        if (rb.velocity.sqrMagnitude > 0.0001f)
+        {
+            enemy.SetFacing(rb.velocity);
+        }
+        else
+        {
+            // If we have a player, face them; else keep last.
+            var p = enemy.GetPlayerReference();
+            if (p != null)
+                enemy.SetFacing(p.position - enemy.transform.position);
+            else
+                enemy.SetFacing(enemy.LastDir);
+        }
     }
+
 }

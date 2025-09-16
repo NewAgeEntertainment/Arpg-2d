@@ -1048,31 +1048,31 @@ MonoBehaviour:
       - title: Title
         value: START
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Description
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Actor
-        value: 1
+        value: 4
         type: 5
         typeString: CustomFieldType_Actor
       - title: Conversant
-        value: 2
+        value: 1
         type: 5
         typeString: CustomFieldType_Actor
       - title: Menu Text
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Dialogue Text
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: Continue()
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       conversationID: 2
       isRoot: 1
       isGroup: 0
@@ -1094,7 +1094,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 264.42282
+        x: 265.27386
         y: 36.81196
         width: 160
         height: 30
@@ -1128,13 +1128,13 @@ MonoBehaviour:
         value: 'Timeline (speed, cs1, 0);
 
           required Timeline (speed, cs1,
-          1)@Message (Continued)'
+          1)@Message (Continued);'
         type: 0
         typeString: CustomFieldType_Text
       - title: Response Menu Sequence
         value: 
         type: 0
-        typeString: 
+        typeString: CustomFieldType_Text
       conversationID: 2
       isRoot: 0
       isGroup: 0
@@ -1156,8 +1156,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 280.24963
-        y: 102.7986
+        x: 288.43146
+        y: 105.52585
         width: 160
         height: 30
     - id: 2
@@ -1187,7 +1187,10 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: 'Timeline (speed, cs1, 0);
+
+          required Timeline (speed, cs1,
+          1)@Message (Continued);'
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 2
@@ -1205,13 +1208,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 274.87613
+        x: 275.7272
         y: 159.3186
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 153.98119, y: 14.597242}
-    canvasZoom: 1.2700006
+    canvasScrollPosition: {x: 11.641613, y: 90.273506}
+    canvasZoom: 1.0300009
   - id: 3
     fields:
     - title: Title
@@ -1442,7 +1445,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 4
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -1462,8 +1465,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 29
-        y: 20
+        x: 1335.6224
+        y: 331.72028
         width: 160
         height: 30
     - id: 1
@@ -1517,8 +1520,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 30
-        y: 69.8022
+        x: 1335.6224
+        y: 381.72028
         width: 160
         height: 30
     - id: 2
@@ -1572,8 +1575,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 32.197807
-        y: 122
+        x: 1335.6224
+        y: 431.72028
         width: 160
         height: 30
     - id: 3
@@ -1628,8 +1631,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 32.197807
-        y: 172
+        x: 1335.6224
+        y: 481.72028
         width: 160
         height: 30
     - id: 4
@@ -1671,19 +1674,19 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: SendMessageSystem("Wrong", "way")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 32.197807
-        y: 222
+        x: 1335.6224
+        y: 531.7203
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.7000003
+    canvasScrollPosition: {x: 948.52625, y: 294.9726}
+    canvasZoom: 0.6700006
   - id: 5
     fields:
     - title: Title
@@ -6801,7 +6804,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 24
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -7579,7 +7582,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 636.1978
-        y: 197.79123
+        y: 196.69534
         width: 160
         height: 30
     - id: 14
@@ -7630,7 +7633,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 228.22668
+        x: 229.13577
         y: 188
         width: 160
         height: 30
@@ -7693,8 +7696,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 2.4390259}
-    canvasZoom: 0.8200002
+    canvasScrollPosition: {x: 0, y: 0}
+    canvasZoom: 0.7300004
   - id: 25
     fields:
     - title: Title
@@ -38646,7 +38649,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 99.2
+        x: 98.34894
         y: 141.2
         width: 160
         height: 30
@@ -38700,8 +38703,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 0, y: 68.93618}
+    canvasZoom: 0.94000006
   - id: 114
     fields:
     - title: Title
@@ -39022,7 +39025,7 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 57.600006}
+    canvasScrollPosition: {x: 0, y: 57.599995}
     canvasZoom: 1
   syncInfo:
     syncActors: 0

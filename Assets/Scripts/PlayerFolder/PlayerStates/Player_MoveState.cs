@@ -19,6 +19,14 @@ public class Player_MoveState : Player_GroundedState
     {
         base.Update();
 
+        // Ensure the gameplay animator is valid
+        if (player.anim == null || player.anim.runtimeAnimatorController == null)
+        {
+            player.ReacquireAnimatorIfNeeded();
+            if (player.anim == null || player.anim.runtimeAnimatorController == null)
+                return; // abort this frame
+        }
+
         // Use Rewired for input handling  
 
         // Update animator parameters  

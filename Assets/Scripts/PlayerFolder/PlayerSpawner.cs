@@ -51,7 +51,6 @@ public class PlayerSpawner : MonoBehaviour
             // Replace any existing Player(s)
             if (haveExisting && copyPoseFromExisting)
             {
-                // Use the first one's pose as the spawn pose
                 var first = existingPlayers[0].transform;
                 targetPos = first.position;
                 targetRot = first.rotation;
@@ -68,6 +67,19 @@ public class PlayerSpawner : MonoBehaviour
                     if (p && p.gameObject != _player.gameObject)
                         Destroy(p.gameObject);
             }
+
+            // >>> Rebind Timeline to the spawned Player <<<
+            var dualA = _player.GetComponent<TimelineOnlyAnimator>();
+            if (dualA == null) dualA = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+
+            var bindersA = FindObjectsByType<TimelineAnimatorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var b in bindersA)
+            {
+                if (b == null) continue;
+                b.SetPlayerRoot(_player.gameObject);
+                b.RebindNow(); // (optionally) auto-plays depending on binder setting
+            }
+            // <<< end rebind <<<
         }
         else
         {
@@ -76,17 +88,44 @@ public class PlayerSpawner : MonoBehaviour
             {
                 _player = existingPlayers[0];
                 _player.TeleportPlayer(targetPos);
+
+                // >>> Rebind Timeline to the existing Player <<<
+                var dualB = _player.GetComponent<TimelineOnlyAnimator>();
+                if (dualB == null) dualB = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+
+                var bindersB = FindObjectsByType<TimelineAnimatorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var b in bindersB)
+                {
+                    if (b == null) continue;
+                    b.SetPlayerRoot(_player.gameObject);
+                    b.RebindNow();
+                }
+                // <<< end rebind <<<
             }
             else
             {
                 _player = Instantiate(playerPrefab, targetPos, Quaternion.identity);
                 _player.name = playerPrefab.name;
+
+                // >>> Rebind Timeline to the spawned Player <<<
+                var dualC = _player.GetComponent<TimelineOnlyAnimator>();
+                if (dualC == null) dualC = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+
+                var bindersC = FindObjectsByType<TimelineAnimatorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var b in bindersC)
+                {
+                    if (b == null) continue;
+                    b.SetPlayerRoot(_player.gameObject);
+                    b.RebindNow();
+                }
+                // <<< end rebind <<<
             }
         }
 
         // Let global systems know who the current player is
         GameManager.Instance?.RegisterPlayer(_player);
     }
+
 
     private void Start()
     {
