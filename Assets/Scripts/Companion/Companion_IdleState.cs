@@ -18,7 +18,7 @@ public class Companion_IdleState : CompanionState
     {
         base.Update();
 
-        // --- DO NOTHING UNTIL RECRUITED ---
+        // Wait until recruited & bound to a player
         if (!companion.InParty) return;
         if (companion.playerTarget == null) return;
 
@@ -34,6 +34,4 @@ public class Companion_IdleState : CompanionState
             return;
         }
     }
-
-
 }

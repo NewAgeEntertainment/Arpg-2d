@@ -85,6 +85,20 @@ public class SexyTimeLogic : MonoBehaviour
     private bool expGranted = false;
     private bool affectionGranted = false;
 
+    // ─────────────────────────────────────────────────────────────
+    // Placement: CENTER ON CAMERA
+    [Header("Placement (Center On Camera)")]
+    [SerializeField] private bool centerOnCamera = true;        // position when starting
+    [SerializeField] private bool followCamera = true;          // keep centered while active (world-space)
+    [SerializeField] private Vector2 screenCenterOffset = Vector2.zero;  // px offset for screen-space
+    [SerializeField] private Vector3 worldSpaceCameraOffset = new Vector3(0f, 0f, 2f); // local to camera
+    [SerializeField] private bool faceCamera = true;            // world-space: face the camera
+
+    private Canvas targetCanvas;              // canvas hosting the SexyTime UI
+    private RectTransform uiRoot;             // rect to move (root panel)
+    private Camera uiCamera;                  // for Screen Space - Camera
+    // ─────────────────────────────────────────────────────────────
+
     private void OnEnable()
     {
         Current = this;
@@ -137,6 +151,9 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (!isSexyTimeGoingOn) return;
 
+        // Keep centered while active (esp. important for world-space canvases)
+        if (followCamera) CenterMiniGameOnCamera();
+
         HandleInput();
         UpdateNPCAttack();
         UpdateUI();
@@ -176,6 +193,11 @@ public class SexyTimeLogic : MonoBehaviour
         ui.InitBars(playerMax, partnerMax);
         ui.UpdatePower(arousalPerStroke, arousalPerStroke);
         ui.Show();
+
+        // ── placement right after showing the UI
+        TryResolveUIBits();
+        CenterMiniGameOnCamera();
+        // ───────────────────────────────────────
 
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
@@ -239,7 +261,7 @@ public class SexyTimeLogic : MonoBehaviour
     public void ResetSexyTime()
     {
         GrantSexExpIfNeeded();
-        GrantAffectionIfNeeded();   // <-- affection added/subtracted here
+        GrantAffectionIfNeeded();
 
         inputRouter?.DisableSexyTimeMaps();
 
@@ -423,7 +445,6 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (affectionGranted) return;
 
-        // Compute net affection delta based on the winner
         int delta = 0;
         switch (winner)
         {
@@ -457,4 +478,68 @@ public class SexyTimeLogic : MonoBehaviour
              ?? partnerStats.GetComponentInChildren<CharacterProfileRef>(true);
         return r ? r.profile : null;
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Placement helpers (center on camera)
+
+    private bool TryResolveUIBits()
+    {
+        if (ui == null) return false;
+
+        if (targetCanvas == null)
+            targetCanvas = ui.GetComponentInParent<Canvas>(true);
+
+        if (uiRoot == null)
+        {
+            uiRoot = ui.transform as RectTransform;
+            if (uiRoot == null)
+                uiRoot = ui.GetComponentInChildren<RectTransform>(true);
+        }
+
+        if (uiCamera == null)
+        {
+            if (targetCanvas != null && targetCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+                uiCamera = targetCanvas.worldCamera;
+            if (uiCamera == null) uiCamera = Camera.main;
+        }
+
+        return targetCanvas != null && uiRoot != null;
+    }
+
+    private void CenterMiniGameOnCamera()
+    {
+        if (!centerOnCamera) return;
+        if (!TryResolveUIBits()) return;
+
+        var cam = uiCamera != null ? uiCamera : Camera.main;
+        if (cam == null) return;
+
+        if (targetCanvas.renderMode == RenderMode.WorldSpace)
+        {
+            // Place canvas in front of camera at an offset in camera-local space.
+            Vector3 worldPos = cam.transform.TransformPoint(worldSpaceCameraOffset);
+            targetCanvas.transform.position = worldPos;
+
+            if (faceCamera)
+                targetCanvas.transform.rotation = cam.transform.rotation;
+
+            return;
+        }
+
+        // Screen Space (Overlay/Camera): anchor to the canvas center.
+        RectTransform canvasRect = targetCanvas.transform as RectTransform;
+        if (canvasRect == null) return;
+
+        Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            screenCenter,
+            targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : cam,
+            out localPoint
+        );
+
+        uiRoot.anchoredPosition = localPoint + screenCenterOffset;
+    }
+    // ─────────────────────────────────────────────────────────────
 }

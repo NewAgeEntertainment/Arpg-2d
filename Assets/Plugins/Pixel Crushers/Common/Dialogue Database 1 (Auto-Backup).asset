@@ -1213,8 +1213,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 13.186754, y: 0}
-    canvasZoom: 0.9400009
+    canvasScrollPosition: {x: 11.641613, y: 90.273506}
+    canvasZoom: 1.0300009
   - id: 3
     fields:
     - title: Title
@@ -1685,8 +1685,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 988.24255, y: 299.86554}
-    canvasZoom: 0.73000056
+    canvasScrollPosition: {x: 948.52625, y: 294.9726}
+    canvasZoom: 0.6700006
   - id: 5
     fields:
     - title: Title
@@ -3800,8 +3800,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 1201.0961, y: 214.3887}
-    canvasZoom: 0.5799999
+    canvasScrollPosition: {x: 1269.4906, y: 224.50035}
+    canvasZoom: 0.63999987
   - id: 13
     fields:
     - title: Title
@@ -4818,7 +4818,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 18
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -5011,7 +5011,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 433
+        x: 434.14282
         y: 81
         width: 160
         height: 30
@@ -5069,13 +5069,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 433
+        x: 434.14288
         y: 125
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.52000046
+    canvasScrollPosition: {x: 164.80028, y: 0}
+    canvasZoom: 0.7600002
   - id: 19
     fields:
     - title: Title
@@ -5153,7 +5153,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 19
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -5872,7 +5872,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 21
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -6067,8 +6067,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 417, y: 52}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 171.96863, y: 41.418583}
+    canvasZoom: 0.8200002
   - id: 22
     fields:
     - title: Title
@@ -6804,7 +6804,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 24
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -7582,7 +7582,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 636.1978
-        y: 197.79123
+        y: 196.69534
         width: 160
         height: 30
     - id: 14
@@ -7625,7 +7625,13 @@ MonoBehaviour:
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
-      outgoingLinks: []
+      outgoingLinks:
+      - originConversationID: 24
+        originDialogueID: 14
+        destinationConversationID: 24
+        destinationDialogueID: 17
+        isConnector: 0
+        priority: 2
       conditionsString: 
       userScript: 
       onExecute:
@@ -7633,7 +7639,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 228.22668
+        x: 229.13577
         y: 188
         width: 160
         height: 30
@@ -7695,9 +7701,168 @@ MonoBehaviour:
         y: 195.21088
         width: 160
         height: 30
+    - id: 17
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: collect your reward.
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 24
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 24
+        originDialogueID: 17
+        destinationConversationID: 24
+        destinationDialogueID: 18
+        isConnector: 0
+        priority: 2
+      - originConversationID: 24
+        originDialogueID: 17
+        destinationConversationID: 24
+        destinationDialogueID: 19
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 229.13577
+        y: 238
+        width: 160
+        height: 30
+    - id: 18
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: Yes
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: SetActive(NewSexy time,true)
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 24
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 141.63577
+        y: 304.25
+        width: 160
+        height: 30
+    - id: 19
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: No
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 24
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 322.88577
+        y: 300.5
+        width: 160
+        height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 2.4390259}
-    canvasZoom: 0.8200002
+    canvasScrollPosition: {x: 0, y: 221.40446}
+    canvasZoom: 0.64000005
   - id: 25
     fields:
     - title: Title
@@ -7775,7 +7940,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 25
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -8125,8 +8290,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 570.9011
-        y: 114.95625
+        x: 571.7522
+        y: 113.25412
         width: 160
         height: 30
     - id: 7
@@ -8168,19 +8333,19 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: PartyRecruit("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 370.9012
+        x: 372.60333
         y: 117.897446
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.8200004
+    canvasScrollPosition: {x: 12.0738735, y: 5.0772085}
+    canvasZoom: 0.79000044
   - id: 26
     fields:
     - title: Title
@@ -11333,7 +11498,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 34
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -16636,7 +16801,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 46
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -22936,7 +23101,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 70
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -23048,7 +23213,7 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: SetActive(Rest CS1,true)
+        value: 
         type: 0
         typeString: CustomFieldType_Text
       - title: EventGuid
@@ -23132,12 +23297,12 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 258
-        y: 117
+        y: 116.09093
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 0, y: 68.705864}
+    canvasZoom: 0.85000014
   - id: 71
     fields:
     - title: Title
@@ -33209,7 +33374,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 98
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -38380,14 +38545,14 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: PartyRecruit("Rabbie")
+      userScript: PartyRecruit("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 84.8
-        y: 130.80002
+        x: 85.59999
+        y: 130.00002
         width: 160
         height: 30
     - id: 3
@@ -38440,8 +38605,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 0, y: 2.1773157}
+    canvasZoom: 0.97
   - id: 113
     fields:
     - title: Title
@@ -38649,7 +38814,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 99.2
+        x: 98.34894
         y: 141.2
         width: 160
         height: 30
@@ -38703,8 +38868,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 0, y: 68.93618}
+    canvasZoom: 0.94000006
   - id: 114
     fields:
     - title: Title
@@ -38903,6 +39068,10 @@ MonoBehaviour:
         value: SendMessage(StartSexyTimeIfPaid,800,listener)
         type: 0
         typeString: CustomFieldType_Text
+      - title: Response Menu Sequence
+        value: 
+        type: 0
+        typeString: 
       conversationID: 114
       isRoot: 0
       isGroup: 0
@@ -38918,7 +39087,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 13.599976
+        x: 15.375572
         y: 158.79999
         width: 160
         height: 30
@@ -39025,8 +39194,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 57.599995}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 0, y: 59.310287}
+    canvasZoom: 0.5800004
   syncInfo:
     syncActors: 0
     syncItems: 0

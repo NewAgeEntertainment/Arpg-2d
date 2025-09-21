@@ -24,10 +24,15 @@ public class Companion_ChaseState : CompanionState
             return;
         }
 
+        // Reacquire if lost, else fall back to following
         if (target == null || !companion.IsEnemyInChaseRadius(target))
         {
-            stateMachine.ChangeState(companion.followState);
-            return;
+            target = companion.GetNearestEnemy();
+            if (target == null)
+            {
+                stateMachine.ChangeState(companion.followState);
+                return;
+            }
         }
 
         if (companion.IsEnemyInAttackRange(target))
@@ -36,6 +41,8 @@ public class Companion_ChaseState : CompanionState
             return;
         }
 
+        // Move toward the target
         companion.MoveTo(target.position);
+        companion.FaceTarget(target.position);
     }
 }

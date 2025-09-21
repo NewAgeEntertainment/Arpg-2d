@@ -1,38 +1,53 @@
-#if PIXELCRUSHERS
 using UnityEngine;
 using PixelCrushers;
 using PixelCrushers.DialogueSystem;
 
+[DefaultExecutionOrder(-500)]     // register early
+[DisallowMultipleComponent]
 public class DS_PartyBridge : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        Lua.RegisterFunction("PartyRecruit", this, SymbolExtensions.GetMethodInfo(() => PartyRecruit(string.Empty)));
-        Lua.RegisterFunction("PartyDismiss", this, SymbolExtensions.GetMethodInfo(() => PartyDismiss(string.Empty)));
-    }
+    private static bool registered;
+
+    private void Awake() { TryRegister(); }
+    private void OnEnable() { TryRegister(); }
 
     private void OnDisable()
     {
+        // Optional to keep functions available even if this gets disabled:
+        // Leave them registered. If you prefer to unregister, uncomment below.
+        // Unregister();
+    }
+
+    private void TryRegister()
+    {
+        if (registered) return;
+
+        Lua.RegisterFunction("PartyRecruit", this,
+            SymbolExtensions.GetMethodInfo(() => PartyRecruit(string.Empty)));
+        Lua.RegisterFunction("PartyDismiss", this,
+            SymbolExtensions.GetMethodInfo(() => PartyDismiss(string.Empty)));
+
+        registered = true;
+        // Debug.Log("[DS_PartyBridge] Registered Lua: PartyRecruit / PartyDismiss");
+    }
+
+    private void Unregister()
+    {
+        if (!registered) return;
         Lua.UnregisterFunction("PartyRecruit");
         Lua.UnregisterFunction("PartyDismiss");
+        registered = false;
     }
 
-    // Lua: PartyRecruit("Rabbie")
+    // Lua: PartyRecruit("Elaina")
     public void PartyRecruit(string id)
     {
-        var go = CompanionPartyManager.Instance?.Recruit(id, silent: false);
-        // If you gated AI with a flag, you could also do:
-        // go?.GetComponent<Companion>()?.SetInParty(true);
+        CompanionPartyManager.Instance?.Recruit(id, silent: false);
     }
 
-    // Lua: PartyDismiss("Rabbie")
+    // Lua: PartyDismiss("Elaina")
     public void PartyDismiss(string id)
     {
-        // If you gated AI, flip it before hiding:
-        // var inst = CompanionPartyManager.Instance?.FindActiveInstance(id);
-        // inst?.GetComponent<Companion>()?.SetInParty(false);
-
         CompanionPartyManager.Instance?.Dismiss(id, destroy: false);
     }
 }
-#endif

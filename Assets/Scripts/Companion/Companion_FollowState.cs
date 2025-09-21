@@ -3,14 +3,30 @@
 // Follow Player
 public class Companion_FollowState : CompanionState
 {
-    public Companion_FollowState(Companion c, StateMachine sm)
-        : base(c, sm, "move") { }
+    private const float EnemyCheckInterval = 0.2f;
+    private float _nextEnemyCheckTime;
+
+    public Companion_FollowState(Companion companion, StateMachine stateMachine)
+        : base(companion, stateMachine, "move") { }
+
+    public override void Enter()
+    {
+        base.Enter();
+        _nextEnemyCheckTime = 0f;
+        companion.StopMovement();
+    }
+
+    public override void Exit()
+    {
+        companion.StopMovement();
+        base.Exit();
+    }
 
     public override void Update()
     {
         base.Update();
 
-        // --- hard gate ---
+        // Hard gates / safety
         if (!companion.InParty || companion.playerTarget == null)
         {
             companion.StopMovement();
@@ -18,10 +34,20 @@ public class Companion_FollowState : CompanionState
             return;
         }
 
-        if (companion.HasEnemyInChaseRadius())
+        if (companion.IsTooFarFromPlayer())
         {
-            stateMachine.ChangeState(companion.chaseState);
+            stateMachine.ChangeState(companion.returnState);
             return;
+        }
+
+        if (Time.time >= _nextEnemyCheckTime)
+        {
+            _nextEnemyCheckTime = Time.time + EnemyCheckInterval;
+            if (companion.HasEnemyInChaseRadius())
+            {
+                stateMachine.ChangeState(companion.chaseState);
+                return;
+            }
         }
 
         if (companion.IsCloseEnoughToPlayer())
@@ -31,8 +57,8 @@ public class Companion_FollowState : CompanionState
             return;
         }
 
-        companion.MoveTo(companion.playerTarget.position);
-        companion.FaceTarget(companion.playerTarget.position);
+        Vector2 targetPos = companion.playerTarget.position;
+        companion.MoveTo(targetPos);
+        companion.FaceTarget(targetPos);
     }
-
 }
