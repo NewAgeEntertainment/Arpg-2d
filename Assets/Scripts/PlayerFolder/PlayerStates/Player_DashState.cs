@@ -1,10 +1,9 @@
+// Player_DashState.cs
 using UnityEngine;
 
 public class Player_DashState : PlayerState
 {
     private Vector2 dashDir;
-
-    [SerializeField] private float stickDeadzone = 0.25f; // input must exceed this to override facing
 
     public Player_DashState(Player player, StateMachine stateMachine, string animBoolName)
         : base(player, stateMachine, animBoolName) { }
@@ -13,13 +12,15 @@ public class Player_DashState : PlayerState
     {
         base.Enter();
 
-        // 1) Resolve dash direction: input if strong enough, else facing (currentDir/lastMoveDirection), else down.
-        dashDir = ResolveDashDirection();
+        // 1) Resolve dash direction: input if present, else facing, else down
+        dashDir = moveInput.sqrMagnitude > 0.0001f ? moveInput : player.lastMoveDirection;
+        if (dashDir.sqrMagnitude < 0.0001f) dashDir = Vector2.down;
+        dashDir = dashDir.normalized;
 
-        // 2) Can we dash? Spend resources & start cooldown (if you use a skill system)
+        // 2) Skill gate (if using a skill system)
         if (!skillManager.dash.CanUseSkillCheck(out var why))
         {
-            // Optional: play denied SFX
+            Debug.LogWarning($"[Dash] blocked in Enter: {why}");
             stateMachine.ChangeState(player.idleState);
             return;
         }
@@ -29,14 +30,17 @@ public class Player_DashState : PlayerState
             return;
         }
 
-        // 3) VFX/SFX hooks
+        // 3) Grant i-frames for dash (+ tiny buffer)
+        (player.health as Player_Health)?.GrantInvulnerabilityFor("Dash", player.dashDuration + 0.05f);
+
+        // 4) Effects / VFX
         skillManager.dash.OnStartEffect();
         player.vfx?.DoImageEchoEffect(player.dashDuration);
 
-        // 4) run for the configured duration
+        // 5) run for duration
         stateTimer = player.dashDuration;
 
-        // Optional: stamp animator dir (rounded 8-way/4-way as your controller expects)
+        // (Optional) stamp animator dir
         anim.SetFloat("xInput", Mathf.Round(dashDir.x));
         anim.SetFloat("yInput", Mathf.Round(dashDir.y));
     }
@@ -56,22 +60,10 @@ public class Player_DashState : PlayerState
     {
         base.Exit();
 
+        // Ensure i-frames are cleared (safe even if timer already removed them)
+        (player.health as Player_Health)?.RemoveInvulnerability("Dash");
+
         skillManager.dash.OnEndEffect();
         player.SetVelocity(0f, 0f);
-    }
-
-    private Vector2 ResolveDashDirection()
-    {
-        // Prefer live input if it beats the deadzone
-        Vector2 input = player.moveInput;
-        if (input.sqrMagnitude >= (stickDeadzone * stickDeadzone))
-            return input.normalized;
-
-        // Otherwise, use facing. Prefer currentDir (kept by Idle/Move), else lastMoveDirection, else down.
-        Vector2 facing = player.currentDir.sqrMagnitude > 0.0001f
-            ? player.currentDir
-            : (player.lastMoveDirection.sqrMagnitude > 0.0001f ? player.lastMoveDirection : Vector2.down);
-
-        return facing.normalized;
     }
 }

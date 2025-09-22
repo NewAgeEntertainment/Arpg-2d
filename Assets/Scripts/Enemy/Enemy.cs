@@ -37,6 +37,13 @@ public class Enemy : Entity
     [HideInInspector] public float lastTimeAttacked;
     public float battleMoveSpeed = 3f;
 
+    [Header("Attack Lunge")]
+    [Tooltip("How fast the enemy lunges at the start of an attack.")]
+    public float attackLungeSpeed = 6f;
+
+    [Tooltip("How long the lunge push lasts (seconds). After this, movement is locked to zero until the attack finishes.")]
+    public float attackLungeDuration = 0.12f;
+
     [Header("Stunned State details")]
     public float stunnedDuration = 1;
     public Vector2 stunnedVelocity = new Vector2(7, 7);
