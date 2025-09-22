@@ -86,17 +86,9 @@ public class Entity : MonoBehaviour
         if (rb == null) return;
         if (isKnocked) return;
 
-        if (_hasDesiredVelocityThisFrame)
-        {
-            Vector2 next = rb.position + _desiredVelocity * Time.fixedDeltaTime;
-            rb.MovePosition(next);
-        }
-        else
-        {
-            rb.velocity = Vector2.zero;
-        }
-
-        _hasDesiredVelocityThisFrame = false;
+        // Always move using the last requested velocity
+        Vector2 next = rb.position + _desiredVelocity * Time.fixedDeltaTime;
+        rb.MovePosition(next);
     }
 
     // ---------------- Movement API ----------------
@@ -104,14 +96,12 @@ public class Entity : MonoBehaviour
     {
         if (isKnocked) return;
         _desiredVelocity = Vector2.zero;
-        _hasDesiredVelocityThisFrame = true;
     }
 
     public void SetVelocity(float xVelocity, float yVelocity)
     {
         if (isKnocked) return;
         _desiredVelocity = new Vector2(xVelocity, yVelocity);
-        _hasDesiredVelocityThisFrame = true;
     }
 
     // ---------------- Knockback ----------------

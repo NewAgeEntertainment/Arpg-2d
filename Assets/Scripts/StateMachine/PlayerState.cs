@@ -1,6 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System.Collections;
 using Rewired;
 
 public abstract class PlayerState : EntityState
@@ -10,33 +8,35 @@ public abstract class PlayerState : EntityState
     protected Player_SkillManager skillManager;
     protected Entity_Mana mana;
 
-    public float attackSpeed { get; protected set; }
-
-    // Because PlayerState is NOT a MonoBehaviour, SerializeField won't show in Inspector.
-    // We support an overridable ID via SetRewiredPlayerId; otherwise default 0.
+    // Rewired
     private int _cachedRewiredId = 0;
     public Rewired.Player rPlayer { get; protected set; }
 
+    // Movement input (filled every Update by this base class)
     protected Vector2 moveInput;
 
-    // Action names are strings; keep them in one place
+    // Action names (match your Rewired setup)
+    protected virtual string HorizontalAction => "Horizontal";
+    protected virtual string VerticalAction => "Vertical";
     protected virtual string DashAction => "Dash";
     protected virtual string ThrustAction => "Thrust";
     protected virtual string ShardAction => "Shard";
 
-    public PlayerState(Player player, StateMachine stateMachine, string animBoolName) : base(stateMachine, animBoolName)
+    public PlayerState(Player player, StateMachine stateMachine, string animBoolName)
+        : base(stateMachine, animBoolName)
     {
         this.player = player;
 
         anim = player.anim;
         rb = player.rb;
-        input = player.input;
         stats = player.stats;
+
+        input = player.input;
         skillManager = player.skillManager;
         mana = player.GetComponent<Entity_Mana>();
     }
 
-    /// <summary>Call this from your Player when constructing states to override the default (0).</summary>
+    /// Call when constructing states from Player to set the Rewired player id.
     public void SetRewiredPlayerId(int id) => _cachedRewiredId = Mathf.Max(0, id);
 
     public override void Enter()
@@ -52,50 +52,48 @@ public abstract class PlayerState : EntityState
         if (!EnsureRewiredPlayer())
             return;
 
-        // Axes
-        xInput = rPlayer.GetAxis("Horizontal");
-        yInput = rPlayer.GetAxis("Vertical");
+        // ----- Read processed axes from Rewired (deadzone handled in Input Behavior) -----
+        float x = GetAxisSafe(rPlayer, HorizontalAction);
+        float y = GetAxisSafe(rPlayer, VerticalAction);
 
-        moveInput = new Vector2(xInput, yInput);
-        if (moveInput.sqrMagnitude > 0.01f)
+        moveInput = new Vector2(x, y);
+        player.moveInput = moveInput; // mirror for other systems/states
+
+        // Keep facing fresh when there is meaningful input
+        if (moveInput.sqrMagnitude > 0.0001f)
             player.lastMoveDirection = moveInput.normalized;
 
-        // --- Skills ---
-        // --- Skills ---
-        // in PlayerState input:
+        // ----- Skills (edge-triggered) -----
         if (rPlayer.GetButtonDown(DashAction))
         {
-            if (skillManager.dash.CanUseSkillCheck(out var why))
+            if (skillManager != null && skillManager.dash != null && skillManager.dash.CanUseSkillCheck(out var whyDash))
                 stateMachine.ChangeState(player.dashState);
-            else
-                Debug.LogWarning($"Dash blocked: {why}");
+            
         }
 
         if (rPlayer.GetButtonDown(ThrustAction))
         {
-            if (skillManager.thrust.CanUseSkillCheck(out var why))
+            if (skillManager != null && skillManager.thrust != null && skillManager.thrust.CanUseSkillCheck(out var whyThrust))
                 stateMachine.ChangeState(player.thrustState);
-            else
-                Debug.LogWarning($"Thrust blocked: {why}");
+            
         }
-
-
 
         if (rPlayer.GetButtonDown(ShardAction))
         {
-            Debug.Log("[Input] Shard pressed");
-            if (skillManager.shard != null)
+            if (skillManager != null && skillManager.shard != null)
                 skillManager.shard.TryUseSkill();
             else
                 Debug.LogError("[Skill] Shard component missing on player!");
         }
     }
 
-
     public override void UpdateAnimationParameters()
     {
         base.UpdateAnimationParameters();
+        // states that need to write animator floats should do so explicitly
     }
+
+    // ---------------- Helpers ----------------
 
     private bool EnsureRewiredPlayer()
     {
@@ -103,45 +101,22 @@ public abstract class PlayerState : EntityState
 
         try
         {
-            // If your Player exposes a public 'rewiredPlayerId', use it; otherwise fall back to cached/default (0).
-            int id = _cachedRewiredId;
-            // If you *do* have player.rewiredPlayerId in your Player class, uncomment:
-            // id = player != null ? player.rewiredPlayerId : _cachedRewiredId;
-
+            // Prefer Player.rewiredPlayerId if present; fall back to cached
+            int id = (player != null ? player.rewiredPlayerId : _cachedRewiredId);
             rPlayer = ReInput.players.GetPlayer(id);
-            if (rPlayer == null)
-            {
-                // Rewired not ready yet or wrong ID
-                return false;
-            }
-            return true;
+            return rPlayer != null;
         }
         catch
         {
-            // ReInput might not be initialized yet
-            return false;
+            return false; // ReInput not ready yet
         }
     }
 
-    private bool CanDash(out string reason)
+    private static float GetAxisSafe(Rewired.Player p, string actionName)
     {
-        reason = "";
-        if (skillManager == null) { reason = "skillManager null"; return false; }
-        if (skillManager.dash == null) { reason = "dash missing"; return false; }
-        if (!skillManager.dash.CanUseSkill()) { reason = "dash on cooldown/locked"; return false; }
-        if (stateMachine.currentState == player.dashState) { reason = "already dashing"; return false; }
-        return true;
+        if (p == null || string.IsNullOrEmpty(actionName)) return 0f;
+        int actionId = ReInput.mapping.GetActionId(actionName);
+        if (actionId < 0) return 0f;
+        return p.GetAxis(actionId); // processed axis (uses Rewired deadzone/sensitivity)
     }
-
-    private bool CanThrust(out string reason)
-    {
-        reason = "";
-        if (skillManager == null) { reason = "skillManager null"; return false; }
-        if (skillManager.thrust == null) { reason = "thrust missing"; return false; }
-        if (!skillManager.thrust.CanUseSkill()) { reason = "thrust on cooldown/locked"; return false; }
-        if (stateMachine.currentState == player.thrustState) { reason = "already thrusting"; return false; }
-        return true;
-    }
-
-
 }

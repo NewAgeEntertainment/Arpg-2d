@@ -3,47 +3,48 @@ using UnityEngine;
 
 public class Player_MoveState : Player_GroundedState
 {
-    public Player_MoveState(Player player, StateMachine stateMachine, string stateName) : base(player, stateMachine, stateName)
-    {
-    }
+    // Small deadzone so tiny stick noise doesn't change facing
+    private const float stickDeadzone = 0.25f;
+    private static readonly float stickDeadzoneSqr = stickDeadzone * stickDeadzone;
 
-    //protected override void FixedUpdate()
-    //{
-    //    base.FixedUpdate();
-
-    //    player.anim.SetFloat("xInput", player.moveInput.x);
-    //    player.anim.SetFloat("yInput", player.moveInput.y);
-    //}
+    public Player_MoveState(Player player, StateMachine stateMachine, string stateName)
+        : base(player, stateMachine, stateName) { }
 
     public override void Update()
     {
         base.Update();
 
-        // Ensure the gameplay animator is valid
+        Vector2 input = player.moveInput;
+        bool hasInput = input.sqrMagnitude > 0.0001f;
+
+        if (!hasInput)
+        {
+            player.SetVelocity(0f, 0f);
+            stateMachine.ChangeState(player.idleState);
+            return; // <-- don't execute movement below
+        }
+
+        // Movement first (independent of animator availability)
+        player.SetVelocity(input.x * player.moveSpeed, input.y * player.moveSpeed);
+
+        // Update facing
+        Vector2 facing = input.normalized;
+        player.currentDir = facing;
+        player.lastMoveDirection = facing;
+
+        // Animator (safe, but don't early-return if missing)
         if (player.anim == null || player.anim.runtimeAnimatorController == null)
         {
             player.ReacquireAnimatorIfNeeded();
-            if (player.anim == null || player.anim.runtimeAnimatorController == null)
-                return; // abort this frame
-        }
-
-        // Use Rewired for input handling  
-
-        // Update animator parameters  
-        anim.SetFloat("xInput", xInput);
-        anim.SetFloat("yInput", yInput);
-
-        // Transition to idle state if no input  
-        if (moveInput.x == 0 && moveInput.y == 0)
-        {
-            stateMachine.ChangeState(player.idleState);
         }
         else
         {
-            player.currentDir = new Vector2(moveInput.x, moveInput.y); // Update current direction  
+            anim.SetFloat("xInput", Mathf.Round(facing.x));
+            anim.SetFloat("yInput", Mathf.Round(facing.y));
         }
-
-        // Set player velocity based on input  
-        player.SetVelocity(moveInput.x * player.moveSpeed, moveInput.y * player.moveSpeed);
     }
+
+
+
+
 }

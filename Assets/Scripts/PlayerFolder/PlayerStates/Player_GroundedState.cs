@@ -1,32 +1,40 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Rewired;
 
 public class Player_GroundedState : PlayerState
 {
-    public Player_GroundedState(Player player, StateMachine stateMachine, string animBoolName) : base(player, stateMachine, animBoolName)
-    {
-    }
+    // one-per-frame guards so a single press can’t trigger multiple ChangeState calls
+    private int _lastAttackStartFrame = -1;
+    private int _lastCounterStartFrame = -1;
+
+    private const string AttackAction = "Attack";
+    private const string CounterAction = "Counter";
+
+    public Player_GroundedState(Player player, StateMachine stateMachine, string animBoolName)
+        : base(player, stateMachine, animBoolName) { }
 
     public override void Update()
     {
         base.Update();
 
-        //if (rb.linearVelocity.y < 0 && player.groundDetected == false)
-        //    stateMachine.ChangeState(player.fallState);
+        if (!ReInput.isReady || rPlayer == null) return;
 
-        //if (input.Player.Jump.WasPerformedThisFrame())
-        //    stateMachine.ChangeState(player.jumpState);
-
-        //if (input.Player.Attack.WasPerformedThisFrame())
-        //    stateMachine.ChangeState(player.basicAttackState);
-
-        if (rPlayer.GetButton("Attack")) // Replaced 'input.GetKeyDown' with 'Input.GetKeyDown' from UnityEngine
+        // ---- START BASIC ATTACK (edge only, once per frame) ----
+        if (rPlayer.GetButtonDown(AttackAction) && Time.frameCount != _lastAttackStartFrame)
+        {
+            _lastAttackStartFrame = Time.frameCount;
             stateMachine.ChangeState(player.basicAttackState);
-    
-        //if (input.Player.Attack.WasPerformedThisFrame()) // Using the new input system
-        //    stateMachine.ChangeState(player.counterAttackState);
+            return;
+        }
 
-        if (rPlayer.GetButtonDown("Counter")) // Replaced 'input.GetKeyDown' with 'Input.GetKeyDown' from UnityEngine
+        // ---- START COUNTER (edge only, once per frame) ----
+        if (rPlayer.GetButtonDown(CounterAction) && Time.frameCount != _lastCounterStartFrame)
+        {
+            _lastCounterStartFrame = Time.frameCount;
             stateMachine.ChangeState(player.counterAttackState);
+            return;
+        }
+
+        // (your move / jump checks would go here if needed)
     }
 }
