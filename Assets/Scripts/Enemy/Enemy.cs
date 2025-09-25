@@ -37,12 +37,24 @@ public class Enemy : Entity
     [HideInInspector] public float lastTimeAttacked;
     public float battleMoveSpeed = 3f;
 
+    // --- Attack Lunge (simple, constant) ---
     [Header("Attack Lunge")]
     [Tooltip("How fast the enemy lunges at the start of an attack.")]
     public float attackLungeSpeed = 6f;
 
-    [Tooltip("How long the lunge push lasts (seconds). After this, movement is locked to zero until the attack finishes.")]
+    [Tooltip("How long the lunge push lasts (seconds). After this, movement is locked until the attack finishes.")]
     public float attackLungeDuration = 0.12f;
+
+    // --- Attack Super-Armor / Stun override ---
+    [Header("Attack Super-Armor / Overrides")]
+    [Tooltip("If true, knockback is ignored while attacking.")]
+    public bool superArmorDuringAttack = true;
+
+    [Tooltip("If true, stun is ignored/cancelled while attacking.")]
+    public bool ignoreStunDuringAttack = true;
+
+    // set true in Attack.Enter, false in Attack.Exit
+    public bool IsAttacking { get; set; }
 
     [Header("Stunned State details")]
     public float stunnedDuration = 1;
@@ -192,6 +204,12 @@ public class Enemy : Entity
             else
                 Gizmos.DrawLine(patrolPoints[i], patrolPoints[i + 1]);
         }
+    }
+
+    // helper checked by damage/KB code
+    public bool ShouldIgnoreKnockback()
+    {
+        return superArmorDuringAttack && IsAttacking;
     }
 
     private void InEnable()

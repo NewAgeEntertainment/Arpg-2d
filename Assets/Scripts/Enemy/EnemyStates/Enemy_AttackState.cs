@@ -14,10 +14,16 @@ public class Enemy_AttackState : EnemyState
 
         SyncAttackSpeed();
 
-        // Hard-stop any residual motion (important with your persistent desired-velocity system)
+        // mark attacking (enables super-armor checks)
+        enemy.IsAttacking = true;
+
+        // cancel any ongoing knockback immediately so attack truly overrides it
+        enemy.CancelKnockbackImmediate();
+
+        // hard-stop before lunge (you use persistent desired-velocity)
         enemy.SetVelocity(0f, 0f);
 
-        // Face the player & pick lunge direction
+        // face the player & pick lunge dir
         var p = enemy.GetPlayerReference();
         if (p != null)
         {
@@ -30,7 +36,7 @@ public class Enemy_AttackState : EnemyState
             enemy.SetFacing(lungeDir);
         }
 
-        // Start the lunge timer
+        // start lunge window (constant, no curve)
         lungeTimer = Mathf.Max(0f, enemy.attackLungeDuration);
     }
 
@@ -38,35 +44,28 @@ public class Enemy_AttackState : EnemyState
     {
         base.Update();
 
-        // Keep looking at the player while attacking
+        // keep looking at the player while attacking
         var p = enemy.GetPlayerReference();
         if (p != null)
             enemy.SetFacing(p.position - enemy.transform.position);
 
-        // --- Adjustable lunge window ---
+        // lunge for the configured duration (constant push)
         if (lungeTimer > 0f)
         {
-            float duration = Mathf.Max(0.0001f, enemy.attackLungeDuration);
-            float t = 1f - (lungeTimer / duration);            // 0 -> 1 over the lunge
-            float mult = 1f;
-
-            Vector2 v = lungeDir * enemy.attackLungeSpeed * mult;
+            Vector2 v = lungeDir * enemy.attackLungeSpeed;
             enemy.SetVelocity(v.x, v.y);
 
             lungeTimer -= Time.deltaTime;
             if (lungeTimer <= 0f)
-            {
-                // After the lunge window, keep the enemy locked in place until the attack ends
-                enemy.SetVelocity(0f, 0f);
-            }
+                enemy.SetVelocity(0f, 0f); // lock in place after the lunge
         }
         else
         {
-            // Movement locked during the rest of the attack animation
+            // movement locked during the rest of the attack
             enemy.SetVelocity(0f, 0f);
         }
 
-        // Animator will call AnimationTrigger() -> sets triggerCalled
+        // end when animation trigger fires
         if (triggerCalled)
             stateMachine.ChangeState(enemy.battleState);
     }
@@ -74,8 +73,11 @@ public class Enemy_AttackState : EnemyState
     public override void Exit()
     {
         base.Exit();
-        // Safety: stop on exit and stamp last attack time
+
         enemy.SetVelocity(0f, 0f);
         enemy.lastTimeAttacked = Time.time;
+
+        // clear super-armor flag
+        enemy.IsAttacking = false;
     }
 }

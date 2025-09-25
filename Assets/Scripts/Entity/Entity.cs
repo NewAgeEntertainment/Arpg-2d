@@ -5,6 +5,7 @@ public class Entity : MonoBehaviour
 {
     public Animator anim { get; private set; }     // gameplay (child) animator
     public Rigidbody2D rb { get; private set; }
+    public Entity_SFX sfx { get; private set; }
     public StateMachine stateMachine { get; protected set; }
 
     [HideInInspector] public Vector2 currentDir;
@@ -22,7 +23,7 @@ public class Entity : MonoBehaviour
     {
         // DO NOT: anim = GetComponentInChildren<Animator>();
         anim = ResolveGameplayAnimator();               // <-- key change
-
+        sfx = GetComponent<Entity_SFX>();
         rb = GetComponent<Rigidbody2D>();
         stateMachine = new StateMachine();
 
@@ -119,6 +120,14 @@ public class Entity : MonoBehaviour
         if (rb != null) rb.velocity = Vector2.zero;
         isKnocked = false;
     }
+
+    public void CancelKnockbackImmediate()
+    {
+        if (knockbakCo != null) StopCoroutine(knockbakCo);
+        isKnocked = false;
+        if (rb != null) rb.velocity = Vector2.zero;
+    }
+
 
     // --------------- States / Anim ---------------
     public void CurrentStateAnimationTrigger()

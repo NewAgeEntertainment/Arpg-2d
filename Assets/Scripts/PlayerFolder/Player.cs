@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class Player : Entity
 {
     public static event Action OnPlayerDeath;
-
+    public static Player instance;
     public UI ui { get; private set; }
 
     public int Level => stats != null ? stats.CurrentLevel : 1;

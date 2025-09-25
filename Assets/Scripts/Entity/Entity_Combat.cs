@@ -11,6 +11,7 @@ public abstract class Entity_Combat : MonoBehaviour
 
     public event Action<float> OnDoingPhysicalDamage;
     protected Entity _entity;
+    private Entity_SFX sfx;
     protected Entity_VFX vfx;
     protected Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
 
@@ -24,6 +25,7 @@ public abstract class Entity_Combat : MonoBehaviour
     {
         _entity = GetComponent<Entity>();
         vfx = GetComponent<Entity_VFX>();
+        sfx = GetComponent<Entity_SFX>();
         stats = GetComponent<Entity_Stats>();
         mana = GetComponent<Entity_Mana>(); // ✅ Get mana if available
     }
@@ -31,6 +33,8 @@ public abstract class Entity_Combat : MonoBehaviour
 
     public virtual void PerformAttack()
     {
+        bool targetGotHit = false;
+
         foreach (var target in GetDetectedCollider())
         {
             IDamageable damageable = target.GetComponent<IDamageable>();
@@ -44,7 +48,7 @@ public abstract class Entity_Combat : MonoBehaviour
             float elementalDamage = attackData.elementalDamage;
             ElementType element = attackData.element;
 
-            bool targetGotHit = damageable.TakeDamage(physicalDamage, elementalDamage, element, transform);
+            targetGotHit = damageable.TakeDamage(physicalDamage, elementalDamage, element, transform);
 
             if (element != ElementType.None)
                 statusHandler?.ApplyStatusEffect(element, attackData.effectData);
@@ -53,6 +57,7 @@ public abstract class Entity_Combat : MonoBehaviour
             {
                 OnDoingPhysicalDamage?.Invoke(physicalDamage);
                 vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
+                sfx?.PlayAttackHit();
 
                 // ✅ Restore mana on hit
                 if (_entity is Player player)
@@ -61,6 +66,9 @@ public abstract class Entity_Combat : MonoBehaviour
                 }
 
             }
+
+            if (targetGotHit == false)
+                sfx?.PlayAttackMiss();
         }
     }
 

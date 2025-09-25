@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Reflection; // << added
 
 #if REWIRED
 using Rewired;
@@ -41,10 +42,23 @@ public class Enemy_Health : Entity_Health, IDamageable
     [Header("Debug Logs")]
     [SerializeField] private bool debugLogs = true;
 
+    // ---------- NEW: Attack Super-Armor / Stun Override ----------
+    [Header("Attack Overrides")]
+    [Tooltip("Ignore/clear knockback while this enemy is in its Attack state.")]
+    [SerializeField] private bool superArmorDuringAttack = true;
+
+    [Tooltip("If something forces Stun during an attack, immediately leave Stunned and return to Battle.")]
+    [SerializeField] private bool ignoreStunDuringAttack = true;
+
+    private Enemy enemy;                   // cache to access states
     private Animator anim;
     private Rigidbody2D rb2d;
     private Collider2D[] cols;
-    private bool _despawnStarted;   // prevents double start
+    private bool _despawnStarted;          // prevents double start
+
+    // reflection cache to cancel knockback from Entity
+    private static FieldInfo _fiIsKnocked;
+    private static FieldInfo _fiKnockbackCo;
 
     protected override void Awake()
     {
@@ -52,6 +66,12 @@ public class Enemy_Health : Entity_Health, IDamageable
         anim = GetComponentInChildren<Animator>();
         rb2d = GetComponent<Rigidbody2D>();
         cols = GetComponentsInChildren<Collider2D>(true);
+        enemy = GetComponent<Enemy>();
+
+        if (_fiIsKnocked == null)
+            _fiIsKnocked = typeof(Entity).GetField("isKnocked", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+        if (_fiKnockbackCo == null)
+            _fiKnockbackCo = typeof(Entity).GetField("knockbakCo", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
 
 #if REWIRED
         TryCacheRewired();
@@ -99,6 +119,17 @@ public class Enemy_Health : Entity_Health, IDamageable
         {
             if (debugLogs) Debug.Log($"[{name}] LateUpdate saw IsDead=true; starting despawn.");
             HandleDied();
+        }
+
+        // If we should ignore Stun during attack and somehow ended up in Stunned, pop back to Battle.
+        if (ignoreStunDuringAttack && IsCurrentlyAttacking())
+        {
+            var cur = enemy != null ? enemy.stateMachine.currentState : null;
+            if (enemy != null && cur == enemy.stunnedState)
+            {
+                if (debugLogs) Debug.Log($"[{name}] Attack overrides Stunned -> returning to Battle.");
+                enemy.stateMachine.ChangeState(enemy.battleState);
+            }
         }
     }
 
@@ -227,9 +258,60 @@ public class Enemy_Health : Entity_Health, IDamageable
     }
 #endif
 
-    // Damage remains base behavior
+    // ---------------------- SUPER-ARMOR HOOK ----------------------
     public override bool TakeDamage(float damage, float elementalDamage, ElementType element, Transform damageDealer)
     {
-        return base.TakeDamage(damage, elementalDamage, element, damageDealer);
+        bool result = base.TakeDamage(damage, elementalDamage, element, damageDealer);
+
+        // If we're in the Attack state and super-armor is enabled, cancel / ignore knockback
+        if (result && superArmorDuringAttack && IsCurrentlyAttacking())
+        {
+            TryCancelKnockbackImmediate();
+        }
+
+        // If stun should be ignored during attack, kick out of Stunned right away (if something forced it)
+        if (ignoreStunDuringAttack && IsCurrentlyAttacking())
+        {
+            var cur = enemy != null ? enemy.stateMachine.currentState : null;
+            if (enemy != null && cur == enemy.stunnedState)
+            {
+                if (debugLogs) Debug.Log($"[{name}] Damage tried to stun during attack -> returning to Battle.");
+                enemy.stateMachine.ChangeState(enemy.battleState);
+            }
+        }
+
+        return result;
+    }
+
+    private bool IsCurrentlyAttacking()
+    {
+        return enemy != null
+            && enemy.stateMachine != null
+            && enemy.attackState != null
+            && enemy.stateMachine.currentState == enemy.attackState;
+    }
+
+    // Cancel knockback started by base.TakeDamage() (which runs entity.ReciveKnockback)
+    private void TryCancelKnockbackImmediate()
+    {
+        if (enemy == null) return;
+
+        try
+        {
+            // Stop the running knockback coroutine if present
+            var co = _fiKnockbackCo?.GetValue(enemy) as Coroutine;
+            if (co != null)
+                enemy.StopCoroutine(co);
+
+            // Clear the isKnocked flag so movement isn't blocked by Entity.FixedUpdate
+            _fiIsKnocked?.SetValue(enemy, false);
+        }
+        catch { /* reflection may fail in IL2CPP; fail-soft */ }
+
+        // Zero velocities either way
+        if (enemy.rb != null) enemy.rb.velocity = Vector2.zero;
+        enemy.SetVelocity(0f, 0f);
+
+        if (debugLogs) Debug.Log($"[{name}] Super-armor: canceled knockback during attack.");
     }
 }
