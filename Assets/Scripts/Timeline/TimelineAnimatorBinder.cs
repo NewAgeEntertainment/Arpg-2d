@@ -31,6 +31,13 @@ public class TimelineAnimatorBinder : MonoBehaviour
     [Tooltip("Animation Track name that drives the MODEL (gameplay) Animator for clips.")]
     public string modelTrackName = "LioncardModel";
 
+    [Header("Completion Behavior")]
+    [Tooltip("If true, the PlayableDirector GameObject will be SetActive(false) when the Timeline stops.")]
+    public bool deactivateDirectorOnStop = true;
+
+    [Tooltip("Optional delay before deactivating the PlayableDirector GameObject.")]
+    [Min(0f)] public float deactivateDelay = 0f;
+
     // internals
     private TimelineOnlyAnimator _dual;                       // holds both animators
     private readonly Dictionary<TrackAsset, Object> _saved = new();
@@ -40,6 +47,9 @@ public class TimelineAnimatorBinder : MonoBehaviour
     private Rigidbody2D _rb2d;
     private bool _hadRb2d;
     private bool _prevSimulated;
+
+    // completion
+    private Coroutine _deactivateCo;
 
     void Reset() => director = GetComponent<PlayableDirector>();
 
@@ -86,6 +96,10 @@ public class TimelineAnimatorBinder : MonoBehaviour
     /// Rebind tracks now (after a small delay), then optionally auto-play.
     public void RebindNow()
     {
+        // If this was deactivated on completion earlier, make sure it is active again
+        if (director != null && !director.gameObject.activeSelf)
+            director.gameObject.SetActive(true);
+
         StopAllCoroutines();
         StartCoroutine(RebindRoutine());
     }
@@ -119,6 +133,21 @@ public class TimelineAnimatorBinder : MonoBehaviour
     {
         if (_dual != null) _dual.DisableWhenIdle();
         if (freezePhysicsDuringPlay) UnfreezePhysics();
+
+        // Optionally deactivate the director's GameObject after a short configurable delay
+        if (deactivateDirectorOnStop && director != null)
+        {
+            if (_deactivateCo != null) StopCoroutine(_deactivateCo);
+            _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
+        }
+    }
+
+    private IEnumerator DeactivateDirectorAfter(float delay)
+    {
+        if (delay > 0f) yield return new WaitForSeconds(delay);
+        // Deactivate the whole GameObject (binder will OnDisable and clean up)
+        if (director != null) director.gameObject.SetActive(false);
+        _deactivateCo = null;
     }
 
     // ========= Binding logic =========

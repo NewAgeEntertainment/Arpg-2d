@@ -1685,8 +1685,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 948.52625, y: 294.9726}
-    canvasZoom: 0.6700006
+    canvasScrollPosition: {x: 902.9744, y: 288.20987}
+    canvasZoom: 0.5800007
   - id: 5
     fields:
     - title: Title
@@ -2129,7 +2129,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 7
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -6044,7 +6044,8 @@ MonoBehaviour:
           required Timeline
           (speed, BossFight End Cs, 1)@Message (Continued);
 
-          SetActive(BanditCaptain,false)'
+          SetActive(Dialogue
+          trigger,true)'
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 21
@@ -6056,7 +6057,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: SendMessageSystem("that", "way")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -6067,8 +6068,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 171.96863, y: 41.418583}
-    canvasZoom: 0.8200002
+    canvasScrollPosition: {x: 0, y: 5.1981792}
+    canvasZoom: 0.7000003
   - id: 22
     fields:
     - title: Title
@@ -6146,7 +6147,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 22
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -8333,7 +8334,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: PartyRecruit("Elaina")
+      userScript: 
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -10214,7 +10215,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 31
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -10428,7 +10429,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 32
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -10623,7 +10624,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 30
+        x: 31.01265
         y: 170
         width: 160
         height: 30
@@ -10675,7 +10676,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 30
+        x: 31.012665
         y: 220
         width: 160
         height: 30
@@ -11771,7 +11772,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 35
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -11822,7 +11823,10 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 
+        value: 'Timeline (speed, Cs1, 0);
+
+          required Timeline (speed, Cs1,
+          1)@Message (Continued)'
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 35

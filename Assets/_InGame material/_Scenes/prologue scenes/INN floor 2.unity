@@ -984,11 +984,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   director: {fileID: 170104090}
   playerRoot: {fileID: 0}
-  autoPlayAfterRebind: 0
+  autoPlayAfterRebind: 1
   freezePhysicsDuringPlay: 1
   bindDelayFrames: 2
   rootTrackName: Lioncard
   modelTrackName: LioncardModel
+  deactivateDirectorOnStop: 1
+  deactivateDelay: 0
 --- !u!1 &173890465
 GameObject:
   m_ObjectHideFlags: 0
@@ -5606,10 +5608,34 @@ MonoBehaviour:
   pinkBarAffectionSubtract: 0
   OnPlayerBarFull:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 556707076}
+        m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
+        m_MethodName: SendToMessageSystem
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Got:Laid
+          m_BoolArgument: 0
+        m_CallState: 2
   OnPartnerBarFull:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 556707076}
+        m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
+        m_MethodName: SendToMessageSystem
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Got:Laid
+          m_BoolArgument: 0
+        m_CallState: 2
   playerBarReachedOnce: 0
   partnerBarReachedOnce: 0
   centerOnCamera: 1
