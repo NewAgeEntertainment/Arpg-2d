@@ -2,7 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
+public class UI_TreeNode : MonoBehaviour,
+    IPointerEnterHandler, IPointerExitHandler,
+    IPointerDownHandler, IPointerClickHandler
 {
     private UI ui;
     private RectTransform rect;
@@ -31,7 +33,7 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (skillTree == null) skillTree = GetComponentInParent<UI_SkillTree>(true);
         if (ui == null) ui = GetComponentInParent<UI>();
         if (connectHandler == null) connectHandler = GetComponent<UI_TreeConnectHandler>();
-        // skillIcon is serialized; don't auto-find to avoid grabbing wrong child
+        // skillIcon is serialized
     }
 
     private Color LockedColor()
@@ -90,7 +92,7 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             else
                 skillTree?.AddSexSkillPoints(skillData.cost);
         }
-        // (If you have logic to remove skill effects, add here.)
+        // If you need to remove effects, add here.
     }
 
     private bool CanBeUnlocked()
@@ -145,7 +147,6 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         isLocked = true;
 
-        // Traverse connection graph if available
         var children = connectHandler != null ? connectHandler.GetChildNodes() : null;
         if (children == null) return;
 
@@ -163,18 +164,43 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (skillIcon != null) skillIcon.color = color;
     }
 
+    // LEFT CLICK = unlock flow only
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+
         if (CanBeUnlocked())
         {
             skillTree?.ShowSkillUnlockConfirmation(this);
         }
         else if (isLocked)
         {
-            // show "locked" feedback
             if (ui != null && ui.skillToolTip != null)
                 ui.skillToolTip.LockedSkillEffect();
         }
+    }
+
+    // RIGHT CLICK = open "Assign to Slot" popup (only if unlocked)
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+
+        EnsureWired();
+
+        if (skillData == null)
+        {
+            ui?.skillToolTip?.LockedSkillEffect();
+            return;
+        }
+
+        if (!isUnlocked)
+        {
+            ui?.skillToolTip?.LockedSkillEffect();
+            return;
+        }
+
+        skillTree?.ShowAssignToSlotOptions(this);
+        eventData.Use();
     }
 
     public void ForceUnlock()
@@ -190,16 +216,13 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         UpdateIconColor(Color.white);
         connectHandler?.UnlockConnectionImage(true);
 
-        // side effects: spend points handled by UI_SkillTree confirmation
         LockConflictNodes();
 
-        // Apply gameplay/UI upgrade hook
         if (skillTree != null && skillTree.skillManager != null)
         {
             var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
             if (skill != null)
             {
-                // If you have specific “unlock” hooks (e.g., DeepBreath.Unlock()), call here
                 skill.SetSkillUpgrade(skillData);
             }
         }
@@ -214,13 +237,9 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (skillIcon != null) skillIcon.color = LockedColor();
         connectHandler?.UnlockConnectionImage(false);
-        // no traversal here; LockChildNodes() handles cascade explicitly
     }
 
-    /// <summary>
-    /// Visual-only lock (used by ApplySaveState baseline pass).
-    /// No changes to isLocked/isUnlocked flags or traversal.
-    /// </summary>
+    /// Visual-only lock used during save-state baseline.
     public void SetLockedVisualOnly()
     {
         EnsureWired();
@@ -266,14 +285,12 @@ public class UI_TreeNode : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void OnDisable()
     {
-        // Restore proper color when the node is disabled/enabled (e.g., panel close/open)
         if (isLocked) UpdateIconColor(LockedColor());
         if (isUnlocked) UpdateIconColor(Color.white);
     }
 
     private void OnValidate()
     {
-        // Keep inspector & hierarchy synchronized
         if (skillData != null)
         {
             skillName = skillData.displayName;

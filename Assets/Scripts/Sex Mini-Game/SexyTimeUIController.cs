@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class SexyTimeUIController : MonoBehaviour
 {
     [Header("Root")]
-    [SerializeField] private GameObject panel;   // SexMiniGamePanel
+    [SerializeField] private GameObject panel;
 
     [Header("Bars")]
     [SerializeField] private Slider playerBar;
@@ -19,12 +19,17 @@ public class SexyTimeUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI npcCooldownText;
     [SerializeField] private TextMeshProUGUI critText;
 
+    [Header("Sex Hotbar (optional)")]
+    [SerializeField] private SexyTimeHotbar sexHotbar;
+
+    [Header("Single DeepBreath Slot (optional)")]
     [SerializeField] private UI_SkillSlot deepBreathSlot;
 
     public void Show()
     {
         if (panel != null) panel.SetActive(true);
         HideCrit();
+        RefreshAffordability(null); // clears fades until we get player mana
     }
 
     public void Hide()
@@ -32,6 +37,7 @@ public class SexyTimeUIController : MonoBehaviour
         if (panel != null) panel.SetActive(false);
     }
 
+    // ---------- Bars ----------
     public void InitBars(float playerMax, float partnerMax)
     {
         if (playerBar != null)
@@ -88,6 +94,60 @@ public class SexyTimeUIController : MonoBehaviour
         if (critText != null) critText.gameObject.SetActive(false);
     }
 
+    // ---------- Sex skill presentation ----------
+    /// Assigns a Sex-category skill to the sex hotbar (or the single slot fallback).
+    public void ShowSexSkill(Skill_DataSO sexSkill)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
+
+        bool assigned = false;
+
+        if (sexHotbar != null)
+            assigned = sexHotbar.TryAssign(sexSkill);
+
+        if (!assigned && deepBreathSlot != null)
+        {
+            deepBreathSlot.gameObject.SetActive(true);
+            deepBreathSlot.SetupSkillSlot(sexSkill);
+        }
+    }
+
+    public void HideSexSkills()
+    {
+        if (sexHotbar != null) sexHotbar.ClearAll();
+        if (deepBreathSlot != null) deepBreathSlot.gameObject.SetActive(false);
+    }
+
+    public void StartSexSkillCooldown(float cooldownSeconds)
+    {
+        if (sexHotbar != null && sexHotbar.Slots != null)
+        {
+            foreach (var s in sexHotbar.Slots)
+                if (s != null && s.HasSkill) s.StartCooldown(cooldownSeconds);
+        }
+        if (deepBreathSlot != null && deepBreathSlot.gameObject.activeSelf)
+            deepBreathSlot.StartCooldown(cooldownSeconds);
+    }
+
+    /// Call this whenever the player's mana changes so the hotbar reflects affordability.
+    public void RefreshAffordability(Entity_Mana playerMana)
+    {
+        if (sexHotbar != null && sexHotbar.Slots != null)
+        {
+            foreach (var s in sexHotbar.Slots)
+                if (s != null) s.UpdateAffordability(playerMana);
+        }
+        if (deepBreathSlot != null) deepBreathSlot.UpdateAffordability(playerMana);
+    }
+
+    public void ResetAll()
+    {
+        UpdateBars(0f, PlayerBarMax, 0f, PartnerBarMax);
+        UpdatePower(0f, 0f);
+        UpdateCooldown(0f);
+        HideCrit();
+    }
+
     // Small helpers so logic can read/write bar values via UI controller if desired
     public float PlayerBarValue => playerBar != null ? playerBar.value : 0f;
     public float PartnerBarValue => partnerBar != null ? partnerBar.value : 0f;
@@ -98,32 +158,9 @@ public class SexyTimeUIController : MonoBehaviour
     public Slider PlayerBar => playerBar;
     public Slider PartnerBar => partnerBar;
 
-    public void ShowDeepBreathSlot(Skill_DataSO skillData)
-    {
-        if (deepBreathSlot != null)
-        {
-            deepBreathSlot.gameObject.SetActive(true);
-            deepBreathSlot.SetupSkillSlot(skillData);
-        }
-    }
+    // ---------- Compatibility wrappers (so older scripts still compile) ----------
+    public void StartDeepBreathCooldown(float cooldown) => StartSexSkillCooldown(cooldown);
 
-    public void HideDeepBreathSlot()
-    {
-        if (deepBreathSlot != null)
-            deepBreathSlot.gameObject.SetActive(false);
-    }
-
-    public void StartDeepBreathCooldown(float cooldown)
-    {
-        if (deepBreathSlot != null)
-            deepBreathSlot.StartCooldown(cooldown);
-    }
-
-    public void ResetAll()
-    {
-        UpdateBars(0f, PlayerBarMax, 0f, PartnerBarMax);
-        UpdatePower(0f, 0f);
-        UpdateCooldown(0f);
-        HideCrit();
-    }
+    public void ShowDeepBreathSlot(Skill_DataSO skillData) => ShowSexSkill(skillData);
+    public void HideDeepBreathSlot() => HideSexSkills();
 }

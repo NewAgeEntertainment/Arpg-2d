@@ -18,7 +18,7 @@ public abstract class PlayerState : EntityState
     // Action names (match your Rewired setup)
     protected virtual string HorizontalAction => "Horizontal";
     protected virtual string VerticalAction => "Vertical";
-    protected virtual string DashAction => "Dash";
+    protected virtual string DashAction => "Dash";      // <-- standalone Dash here
     protected virtual string ThrustAction => "Thrust";
     protected virtual string ShardAction => "Shard";
 
@@ -63,21 +63,21 @@ public abstract class PlayerState : EntityState
         if (moveInput.sqrMagnitude > 0.0001f)
             player.lastMoveDirection = moveInput.normalized;
 
-        // ----- Skills (edge-triggered) -----
+        // ----- Standalone Dash (no modifier) -----
         if (rPlayer.GetButtonDown(DashAction))
         {
-            if (skillManager != null && skillManager.dash != null && skillManager.dash.CanUseSkillCheck(out var whyDash))
+            if (skillManager != null && skillManager.dash != null && skillManager.dash.CanUseSkillCheck(out _))
                 stateMachine.ChangeState(player.dashState);
-            
         }
 
+        // Optional: Thrust on its own button too (keep if you like; otherwise remove)
         if (rPlayer.GetButtonDown(ThrustAction))
         {
-            if (skillManager != null && skillManager.thrust != null && skillManager.thrust.CanUseSkillCheck(out var whyThrust))
+            if (skillManager != null && skillManager.thrust != null && skillManager.thrust.CanUseSkillCheck(out _))
                 stateMachine.ChangeState(player.thrustState);
-            
         }
 
+        // Example instant skill (no state): shard fires right away
         if (rPlayer.GetButtonDown(ShardAction))
         {
             if (skillManager != null && skillManager.shard != null)
@@ -101,7 +101,6 @@ public abstract class PlayerState : EntityState
 
         try
         {
-            // Prefer Player.rewiredPlayerId if present; fall back to cached
             int id = (player != null ? player.rewiredPlayerId : _cachedRewiredId);
             rPlayer = ReInput.players.GetPlayer(id);
             return rPlayer != null;

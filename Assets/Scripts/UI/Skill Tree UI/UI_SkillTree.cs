@@ -1,4 +1,3 @@
-// Assets/Scripts/UI/SkillTree/UI_SkillTree.cs
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -27,6 +26,17 @@ public class UI_SkillTree : UI_Panel
     [SerializeField] private Button noButton;
 
     private UI_TreeNode pendingSkillNode;
+
+    // ===== Assign-to-slot popup =====
+    [Header("Assign To Slot Popup")]
+    [SerializeField] private GameObject assignPopup;
+    [SerializeField] private TextMeshProUGUI assignTitleText;
+    [SerializeField] private Button assignSlotAButton;
+    [SerializeField] private Button assignSlotBButton;
+    [SerializeField] private Button assignSlotCButton;
+    [SerializeField] private Button assignSlotDButton;
+    [SerializeField] private Button assignCancelButton;
+    private UI_TreeNode _pendingAssignNode;
 
     #region State Type (matches GameDataSaver.SkillTreeState)
     [System.Serializable]
@@ -134,9 +144,7 @@ public class UI_SkillTree : UI_Panel
             n?.UpdateAllConnections();
     }
 
-    /// <summary>
-    /// NEW: Produce a serializable snapshot of the tree for saving.
-    /// </summary>
+    /// <summary>Create a serializable snapshot of the tree for saving.</summary>
     public SkillTreeState CreateSaveState()
     {
         var state = new SkillTreeState
@@ -158,9 +166,7 @@ public class UI_SkillTree : UI_Panel
         return state;
     }
 
-    /// <summary>
-    /// Apply saved state (unlocked/locked nodes + point pools).
-    /// </summary>
+    /// <summary>Apply saved state (unlocked/locked nodes + point pools).</summary>
     public void ApplySaveState(SkillTreeState state)
     {
         if (state == null) return;
@@ -242,7 +248,7 @@ public class UI_SkillTree : UI_Panel
 
     #endregion
 
-    #region Confirmation Popup Flow
+    #region Confirmation Popup Flow (Unlock)
 
     public void ShowSkillUnlockConfirmation(UI_TreeNode node)
     {
@@ -300,6 +306,60 @@ public class UI_SkillTree : UI_Panel
 
     #endregion
 
+    #region Assign-to-Slot Popup (Right click)
+
+    /// <summary>Compatibility alias if something calls the old name.</summary>
+    public void ShowAssignToSlot(UI_TreeNode node) => ShowAssignToSlotOptions(node);
+
+    /// <summary>Open the "Assign to Slot" popup for an unlocked node.</summary>
+    public void ShowAssignToSlotOptions(UI_TreeNode node)
+    {
+        if (node == null || node.skillData == null) return;
+        if (!node.isUnlocked) return;
+        if (assignPopup == null) return;
+
+        _pendingAssignNode = node;
+
+        if (assignTitleText != null)
+            assignTitleText.text = $"Assign <b>{node.skillData.displayName}</b> to slot:";
+
+        // wire buttons
+        assignSlotAButton?.onClick.RemoveAllListeners();
+        assignSlotBButton?.onClick.RemoveAllListeners();
+        assignSlotCButton?.onClick.RemoveAllListeners();
+        assignSlotDButton?.onClick.RemoveAllListeners();
+        assignCancelButton?.onClick.RemoveAllListeners();
+
+        if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotA));
+        if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotB));
+        if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotC));
+        if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotD));
+        if (assignCancelButton != null) assignCancelButton.onClick.AddListener(CloseAssignPopup);
+
+        assignPopup.SetActive(true);
+    }
+
+    private void AssignSelectedSkillToSlot(UISkillSlotId slot)
+    {
+        if (_pendingAssignNode == null || _pendingAssignNode.skillData == null)
+        {
+            CloseAssignPopup();
+            return;
+        }
+
+        var ui = FindFirstObjectByType<UI>();
+        ui?.inGameUI?.AssignSkillToSlot(_pendingAssignNode.skillData, slot);
+        CloseAssignPopup();
+    }
+
+    private void CloseAssignPopup()
+    {
+        if (assignPopup != null) assignPopup.SetActive(false);
+        _pendingAssignNode = null;
+    }
+
+    #endregion
+
     #region UI Helpers
 
     private void UpdateSkillPointsUI()
@@ -320,6 +380,14 @@ public class UI_SkillTree : UI_Panel
 
     public override bool HandleCancel()
     {
+        // Close assign popup first if open
+        if (assignPopup != null && assignPopup.activeSelf)
+        {
+            CloseAssignPopup();
+            return true;
+        }
+
+        // Then close unlock confirmation if open
         if (confirmationPopup != null && confirmationPopup.activeSelf)
         {
             CloseConfirmationPopup();

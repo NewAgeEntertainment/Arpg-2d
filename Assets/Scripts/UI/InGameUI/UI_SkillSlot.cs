@@ -1,78 +1,118 @@
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using System.Collections;
 using TMPro;
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+public enum UISkillSlotId { SlotA, SlotB, SlotC, SlotD }
+public enum UISkillCategory { Combat, Sex }   // UI-only category gate
 
 public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [Header("Slot Setup")]
+    public UISkillSlotId slotId = UISkillSlotId.SlotA;
+    public UISkillCategory slotCategory = UISkillCategory.Combat;
+
+    [Header("UI")]
+    [SerializeField] private Image cooldownImage;          // radial, fill 0..1
+    [SerializeField] private string inputKeyName = "";     // e.g. "Q", "R", "A"
+    [SerializeField] private TextMeshProUGUI inputKeyText;
+    [SerializeField] private GameObject conflictSlot;      // quick pulse when blocked
+    [SerializeField] private TextMeshProUGUI mpCostText;   // shows MP cost
+    [SerializeField] private CanvasGroup affordOverlay;     // fades when unaffordable (alpha to 1)
+
+    // Visual core
     private UI ui;
     private Image skillIcon;
     private RectTransform rect;
     private Button button;
 
+    // Data
     private Skill_DataSO skillData;
 
-    [Header("Slot Setup")]
-    public SkillType skillType;
-
-    [Header("UI")]
-    [SerializeField] private Image cooldownImage;       // radial image (Filled, 0..1)
-    [SerializeField] private string inputKeyName;       // e.g., "Q"
-    [SerializeField] private TextMeshProUGUI inputKeyText;
-    [SerializeField] private GameObject conflictSlot;   // flashes when unusable / empty
+    // Cache for mini pulses
+    private Coroutine pulseCo;
 
     private void Awake()
     {
-        ui = GetComponentInParent<UI>();
+        ui = GetComponentInParent<UI>(true);
         skillIcon = GetComponent<Image>();
         rect = GetComponent<RectTransform>();
         button = GetComponent<Button>();
+
+        if (inputKeyText != null) inputKeyText.text = inputKeyName;
+        if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+        if (conflictSlot != null) conflictSlot.SetActive(false);
+        if (mpCostText != null) mpCostText.text = "";
+        if (affordOverlay != null) affordOverlay.alpha = 0f;
     }
 
     private void OnValidate()
     {
-        gameObject.name = "UI_SkillSlot - " + skillType.ToString();
-    }
-
-    public void SetupSkillSlot(Skill_DataSO selectedSkill)
-    {
-        if (ui == null) ui = GetComponentInParent<UI>();
-        if (skillIcon == null) skillIcon = GetComponent<Image>();
-        if (rect == null) rect = GetComponent<RectTransform>();
-        if (button == null) button = GetComponent<Button>();
-
-        skillData = selectedSkill;
-
-        if (cooldownImage != null)
-        {
-            var c = Color.black; c.a = 0.6f;
-            cooldownImage.color = c;
-            cooldownImage.fillAmount = 0f; // ready
-        }
-
+        gameObject.name = $"UI_SkillSlot - {slotId}";
         if (inputKeyText != null) inputKeyText.text = inputKeyName;
-
-        if (skillIcon != null && selectedSkill != null)
-            skillIcon.sprite = selectedSkill.icon;
-
-        if (conflictSlot != null)
-            conflictSlot.SetActive(false);
     }
+
+    // ------------ Public API ------------
 
     public Skill_DataSO Data => skillData;
     public bool HasSkill => skillData != null;
     public bool IsReady => cooldownImage == null || cooldownImage.fillAmount <= 0.001f;
 
-    public float CooldownSeconds
-        => (skillData != null && skillData.upgradeData != null)
+    public float CooldownSeconds =>
+        (skillData != null && skillData.upgradeData != null)
             ? Mathf.Max(0f, skillData.upgradeData.cooldown)
             : 5f;
 
-    public float ManaCost
-        => (skillData != null && skillData.upgradeData != null)
+    public float ManaCostFromSO =>
+        (skillData != null && skillData.upgradeData != null)
             ? Mathf.Max(0f, skillData.upgradeData.manaCost)
             : 0f;
+
+    /// <summary>Assigns a skill to this slot if it matches the slotCategory.</summary>
+    public bool SetupSkillSlot(Skill_DataSO selectedSkill)
+    {
+        if (selectedSkill == null)
+        {
+            ClearSlot();
+            return false;
+        }
+
+        // Category gate (Combat slots ignore Sex skills; Sex slots ignore Combat)
+        if (!Accepts(selectedSkill))
+        {
+            PulseConflict(0.25f);
+            return false;
+        }
+
+        skillData = selectedSkill;
+
+        if (skillIcon != null) skillIcon.sprite = selectedSkill.icon;
+        if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+        if (conflictSlot != null) conflictSlot.SetActive(false);
+
+        RefreshText(null); // no manager yet – this will fall back to SO cost
+        return true;
+    }
+
+    /// <summary>Remove the current skill from the slot visually.</summary>
+    public void ClearSlot()
+    {
+        skillData = null;
+        if (skillIcon != null) skillIcon.sprite = null;
+        if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+        if (conflictSlot != null) conflictSlot.SetActive(false);
+        if (mpCostText != null) mpCostText.text = "";
+        if (affordOverlay != null) affordOverlay.alpha = 0f;
+    }
+
+    public bool Accepts(Skill_DataSO data)
+    {
+        if (data == null) return false;
+        if (slotCategory == UISkillCategory.Combat && data.category != SkillCategory.Combat) return false;
+        if (slotCategory == UISkillCategory.Sex && data.category != SkillCategory.Sex) return false;
+        return true;
+    }
 
     public void SetKeyLabel(string label)
     {
@@ -93,12 +133,69 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (cooldownImage != null) cooldownImage.fillAmount = 0f;
     }
 
+    /// <summary>
+    /// Refreshes the visible MP cost text using the runtime skill (if available).
+    /// Pass null to fall back to SO cost.
+    /// </summary>
+    public void RefreshText(Player_SkillManager manager)
+    {
+        if (mpCostText == null) return;
+
+        float cost = ManaCostFromSO;
+
+        if (manager != null && skillData != null)
+        {
+            var runtime = manager.GetSkillByType(skillData.skillType);
+            if (runtime != null)
+            {
+                // Needs: public float CurrentManaCost => manaCost; in Skill_Base
+                cost = Mathf.Max(cost, runtime.CurrentManaCost);
+            }
+        }
+
+        mpCostText.text = cost > 0f ? Mathf.FloorToInt(cost).ToString() : "";
+    }
+
+    /// <summary>Greys out (or not) based on affordability vs. Entity_Mana.</summary>
+    public void UpdateAffordability(Entity_Mana mana)
+    {
+        if (affordOverlay == null) return;
+        if (mana == null || !HasSkill)
+        {
+            affordOverlay.alpha = 0f;
+            return;
+        }
+
+        float need = ManaCostFromSO;
+        // If you want to prefer the runtime cost, you can inject it via RefreshText before this.
+
+        bool affordable = mana.GetCurrentMana() >= need;
+        affordOverlay.alpha = affordable ? 0f : 1f;
+    }
+
     public void PulseConflict(float seconds = 0.2f)
     {
         if (conflictSlot == null) return;
-        StopCoroutine(nameof(PulseCo));
-        StartCoroutine(PulseCo(seconds));
+        if (pulseCo != null) StopCoroutine(pulseCo);
+        pulseCo = StartCoroutine(PulseCo(seconds));
     }
+
+    // ------------ IPointer ------------
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (ui == null || ui.skillToolTip == null || rect == null) return;
+        if (!HasSkill) return;
+        ui.skillToolTip.ShowToolTip(true, rect, skillData, null);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (ui == null || ui.skillToolTip == null) return;
+        ui.skillToolTip.ShowToolTip(false, null);
+    }
+
+    // ------------ Coroutines ------------
 
     private IEnumerator CooldownCo(float duration)
     {
@@ -118,16 +215,5 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         conflictSlot.SetActive(true);
         yield return new WaitForSeconds(seconds);
         conflictSlot.SetActive(false);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (skillData == null) return;
-        ui.skillToolTip.ShowToolTip(true, rect, skillData, null);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        ui.skillToolTip.ShowToolTip(false, null);
     }
 }

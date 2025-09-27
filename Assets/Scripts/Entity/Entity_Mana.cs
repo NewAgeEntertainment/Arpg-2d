@@ -10,31 +10,49 @@ public class Entity_Mana : MonoBehaviour
 
     private Entity entity;
     private Entity_Stats entityStats;
-    private Skill_Base skill;
 
-    private bool miniManaBarActive;
+    [Header("Runtime")]
     [SerializeField] protected float currentMana;
     [SerializeField] protected bool isDead;
 
-    [SerializeField] protected float manaCost;
+    [Header("Flags")]
     [SerializeField] protected bool isManaDepleted;
-    [SerializeField] protected bool useMana;
 
     [Header("Mana regen")]
     [SerializeField] private float manaRegenInterval = 1f;
     [SerializeField] private bool canRegenerateMana = true;
+    [SerializeField] private float regenPerTick = 0f; // optional flat regen; leave 0 to rely on stats if you have one
 
     protected virtual void Awake()
     {
-        skill = GetComponent<Skill_Base>();
         entity = GetComponent<Entity>();
         entityStats = GetComponent<Entity_Stats>();
-        currentMana = entityStats.GetMaxMana();
-        OnManaUpdate += UpdateManaBar;
 
+        // Initialize to full if not already set by a loader
+        if (currentMana <= 0f)
+            currentMana = GetMaxMana();
+
+        OnManaUpdate += UpdateManaBar;
         UpdateManaBar();
-        Debug.Log("🧠 Mana script instance: " + gameObject.name);
+        // Debug.Log("🧠 Mana script instance: " + gameObject.name);
     }
+
+    private void OnEnable()
+    {
+        // paint once more (in case bar just got enabled)
+        OnManaUpdate?.Invoke();
+
+        // start regen loop if configured
+        if (manaRegenInterval > 0f)
+            InvokeRepeating(nameof(RegenerateMana), manaRegenInterval, manaRegenInterval);
+    }
+
+    private void OnDisable()
+    {
+        CancelInvoke(nameof(RegenerateMana));
+    }
+
+    // -------- Public API --------
 
     public virtual bool UseMana(float manaCost)
     {
@@ -43,7 +61,7 @@ public class Entity_Mana : MonoBehaviour
         if (currentMana >= manaCost)
         {
             currentMana -= manaCost;
-            Debug.Log("🟣 Mana used: " + manaCost);
+            if (currentMana <= 0f) { currentMana = 0f; isManaDepleted = true; }
             OnManaUpdate?.Invoke();
             return true;
         }
@@ -51,57 +69,80 @@ public class Entity_Mana : MonoBehaviour
         return false;
     }
 
-    public void RestoreManaOnHit(float amount)
+    public void IncreaseMana(float amount)
     {
         if (isDead) return;
-        IncreaseMana(amount);
-    }
-
-    public void RestoreManaOnHitWithScaling(int level)
-    {
-        int recovery = Mathf.Min(2 + ((level / 10) * 2), 8);
-        IncreaseMana(recovery);
-        Debug.Log($"🔋 Recovered {recovery} MP on hit (Level {level})");
-    }
-
-    public void IncreaseMana(float manaRecoveredAmount)
-    {
-        if (isDead) return;
-
-        float newMana = currentMana + manaRecoveredAmount;
-        float maxMana = entityStats.GetMaxMana();
-        currentMana = Mathf.Min(newMana, maxMana);
+        float max = GetMaxMana();
+        currentMana = Mathf.Clamp(currentMana + Mathf.Max(0f, amount), 0f, max);
+        if (currentMana > 0f) isManaDepleted = false;
         OnManaUpdate?.Invoke();
     }
 
     public void SetCurrentMana(float value)
     {
-        currentMana = Mathf.Clamp(value, 0, entityStats.GetMaxMana());
+        currentMana = Mathf.Clamp(value, 0, GetMaxMana());
+        if (currentMana > 0f) isManaDepleted = false;
         OnManaUpdate?.Invoke();
     }
 
-    public void ReduceMana(float manaCost)
+    public void ReduceMana(float amount)
     {
-        currentMana = currentMana - manaCost;
+        currentMana = Mathf.Max(0f, currentMana - Mathf.Max(0f, amount));
+        if (currentMana <= 0f) isManaDepleted = true;
         OnManaUpdate?.Invoke();
-        if (currentMana < 0) return;
     }
 
-    public float GetManaPercent() => currentMana / entityStats.GetMaxMana();
+    public float GetManaPercent() => GetMaxMana() > 0f ? currentMana / GetMaxMana() : 0f;
 
     public void SetManaToPercent(float percent)
     {
-        currentMana = entityStats.GetMaxMana() * Mathf.Clamp01(percent);
+        currentMana = GetMaxMana() * Mathf.Clamp01(percent);
+        if (currentMana > 0f) isManaDepleted = false;
         OnManaUpdate?.Invoke();
     }
 
     public float GetCurrentMana() => currentMana;
 
-    private void UpdateManaBar()
+    public float GetMaxMana() => (entityStats != null) ? entityStats.GetMaxMana() : 0f;
+
+    public bool CanAfford(float cost)
     {
-        if (manaBar == null || !manaBar.transform.parent.gameObject.activeSelf) return;
-        manaBar.value = currentMana / entityStats.GetMaxMana();
+        return !isDead && currentMana >= Mathf.Max(0f, cost);
     }
 
-    public void EnableManaBar(bool enable) => manaBar?.transform.parent.gameObject.SetActive(enable);
+
+    public void EnableManaBar(bool enable)
+    {
+        if (manaBar == null) return;
+        var root = manaBar.transform.parent ? manaBar.transform.parent.gameObject : null;
+        if (root != null) root.SetActive(enable);
+        if (enable) UpdateManaBar();
+    }
+
+    // -------- Internals --------
+
+    private void RegenerateMana()
+    {
+        if (isDead || !canRegenerateMana) return;
+
+        // Prefer a value from stats if you have one (e.g., stats.resources.manaRegen.GetValue())
+        float tick = regenPerTick;
+        if (tick <= 0f && entityStats != null && entityStats.resources != null && entityStats.resources.manaRegen != null)
+            tick = entityStats.resources.manaRegen.GetValue();
+
+        if (tick > 0f)
+            IncreaseMana(tick);
+    }
+
+    private void UpdateManaBar()
+    {
+        if (manaBar == null) return;
+        var parent = manaBar.transform.parent ? manaBar.transform.parent.gameObject : null;
+        if (parent != null && !parent.activeInHierarchy) return;
+
+        float max = GetMaxMana();
+        manaBar.value = (max > 0f) ? currentMana / max : 0f;
+    }
+
+
 }

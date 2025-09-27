@@ -5,6 +5,10 @@ public class Skill_Base : MonoBehaviour
     public Player_SkillManager skillManager { get; private set; }
     public Player player { get; private set; }
     public Entity_Mana mana { get; private set; }
+    
+    public float ManaCost => manaCost;   // <— now UI can read the live cost
+    public float CurrentManaCost => manaCost;
+    public float Cooldown => cooldown;   // (optional but handy)
 
     public DamageScaleData damageScaleData { get; private set; }
 
@@ -133,6 +137,9 @@ public class Skill_Base : MonoBehaviour
 
         // ⬇️ Important: make the skill READY immediately after unlock
         ResetCooldown();           // <-- use the READY version, not ResetCoolDown()
+
+        // ✅ NEW: tell the HUD a skill was (just) unlocked/ready
+        player?.ui?.inGameUI?.NotifySkillUnlocked(skillType, skillData);
     }
 
     /// <summary>Core unlock predicate.</summary>
