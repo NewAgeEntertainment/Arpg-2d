@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -101,7 +101,17 @@ public class UI_SkillTree : UI_Panel
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            // If we're in the click-to-assign flow, exit THAT first and do NOT fall through
+            var ui = UI.Instance;
+            if (ui != null && ui.IsAssignPreviewActive)
+            {
+                ui.RequestExitAssignPreview();
+                return; // <- prevents HandleCancel() from sending you to main menu
+            }
+
             HandleCancel();
+        }
     }
 
     #region Public API used by Saver/UI
@@ -378,7 +388,13 @@ public class UI_SkillTree : UI_Panel
 
         if (success)
         {
-            EndPickMode(true);
+            // ✅ Stay in pick mode. Do NOT close the preview here.
+            // Clear the pending skill so further clicks do nothing until the player exits or re-selects.
+            _pickSkill = null;
+
+            // (Optional) keep the highlight to show which node was assigned.
+            // If you prefer to remove highlight after assignment, uncomment:
+            // _pickNode?.SetAssignHighlight(false);
         }
         else
         {
@@ -387,10 +403,21 @@ public class UI_SkillTree : UI_Panel
         return success;
     }
 
+    // Public wrapper (UI can call this to exit on Esc)
+    public static void CancelPickModeFromUI()
+    {
+        EndPickMode(false);
+    }
 
     private static void EndPickMode(bool fromAssignment)
     {
-        if (!IsPicking) return;
+        if (!IsPicking && _pickNode == null && _pickOwner == null)
+        {
+            // also handle the case where _pickSkill was cleared after assignment
+            var uiA = Object.FindFirstObjectByType<UI>();
+            uiA?.HideHotbarAssignPreview();
+            return;
+        }
 
         // Clear node highlight
         _pickNode?.SetAssignHighlight(false);
@@ -404,7 +431,7 @@ public class UI_SkillTree : UI_Panel
         _pickSkill = null;
     }
 
-    private void CloseAssignPopup() // legacy path � also end pick mode if it was active
+    private void CloseAssignPopup() // legacy path – also end pick mode if it was active
     {
         var ui = FindFirstObjectByType<UI>();
         ui?.HideHotbarAssignPreview();
@@ -435,7 +462,7 @@ public class UI_SkillTree : UI_Panel
     public override bool HandleCancel()
     {
         // If we are in pick mode, cancel that first
-        if (IsPicking)
+        if (IsPicking || _pickNode != null || _pickOwner != null)
         {
             EndPickMode(false);
             return true;

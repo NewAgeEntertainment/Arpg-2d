@@ -194,14 +194,14 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         ui.skillToolTip.ShowToolTip(false, null);
     }
 
-    // NEW: left-click a slot to complete "pick a slot" mode
+    // NEW: left-click a slot to complete "pick a slot" mode (but DO NOT close pick mode)
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left) return;
 
         if (UI_SkillTree.TryCompleteSlotPick(this))
         {
-            eventData.Use();
+            eventData.Use();   // we assigned; pick mode stays active until Esc/back
         }
     }
 

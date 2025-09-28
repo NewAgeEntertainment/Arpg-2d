@@ -19,6 +19,18 @@ public class SexyTimeUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI npcCooldownText;
     [SerializeField] private TextMeshProUGUI critText;
 
+    [Header("Bars Group (optional)")]
+    [SerializeField] private GameObject barsGroup; // drag a parent that contains BOTH sliders + all bar texts
+
+    // Internal restore state
+    private bool _barsHiddenForAssign;
+    private bool _prevBarsGroupActive;
+    private bool _prevPlayerBarActive, _prevPartnerBarActive;
+    private bool _prevPlayerFillTextActive, _prevPartnerFillTextActive;
+    private bool _prevPlayerPowerTextActive, _prevPartnerPowerTextActive;
+    private bool _prevNpcCooldownTextActive;
+
+
     [Header("Sex Hotbar (optional)")]
     [SerializeField] private SexyTimeHotbar sexHotbar;
 
@@ -198,21 +210,71 @@ public class SexyTimeUIController : MonoBehaviour
         if (critText != null) critText.gameObject.SetActive(false);
     }
 
-  
+
 
     public void ShowAssignPreview()
     {
-        if (IsOpen) return;
-        _openedByAssignPreview = true;
-        Show();     // your existing method that enables the panel
+        // Ensure panel is open while picking
+        if (!IsOpen) { _openedByAssignPreview = true; Show(); }
+        else { _openedByAssignPreview = false; }
+
+        // Hide the pleasure bars during assignment to avoid clutter
+        HideBarsForAssign();
     }
 
     public void HideAssignPreview()
     {
+        // Restore bars visibility first
+        RestoreBarsAfterAssign();
+
+        // Only hide the whole panel if we opened it just for preview
         if (!_openedByAssignPreview) return;
         _openedByAssignPreview = false;
-        Hide();     // your existing method that disables the panel
+        Hide();
     }
+
+
+    public void HideBarsForAssign()
+    {
+        if (_barsHiddenForAssign) return;
+        _barsHiddenForAssign = true;
+
+        if (barsGroup != null)
+        {
+            _prevBarsGroupActive = barsGroup.activeSelf;
+            barsGroup.SetActive(false);
+            return;
+        }
+
+        if (playerBar != null) { _prevPlayerBarActive = playerBar.gameObject.activeSelf; playerBar.gameObject.SetActive(false); }
+        if (partnerBar != null) { _prevPartnerBarActive = partnerBar.gameObject.activeSelf; partnerBar.gameObject.SetActive(false); }
+        if (playerBarFillText != null) { _prevPlayerFillTextActive = playerBarFillText.gameObject.activeSelf; playerBarFillText.gameObject.SetActive(false); }
+        if (partnerBarFillText != null) { _prevPartnerFillTextActive = partnerBarFillText.gameObject.activeSelf; partnerBarFillText.gameObject.SetActive(false); }
+        if (playerPowerText != null) { _prevPlayerPowerTextActive = playerPowerText.gameObject.activeSelf; playerPowerText.gameObject.SetActive(false); }
+        if (partnerPowerText != null) { _prevPartnerPowerTextActive = partnerPowerText.gameObject.activeSelf; partnerPowerText.gameObject.SetActive(false); }
+        if (npcCooldownText != null) { _prevNpcCooldownTextActive = npcCooldownText.gameObject.activeSelf; npcCooldownText.gameObject.SetActive(false); }
+    }
+
+    public void RestoreBarsAfterAssign()
+    {
+        if (!_barsHiddenForAssign) return;
+        _barsHiddenForAssign = false;
+
+        if (barsGroup != null)
+        {
+            barsGroup.SetActive(_prevBarsGroupActive);
+            return;
+        }
+
+        if (playerBar != null) playerBar.gameObject.SetActive(_prevPlayerBarActive);
+        if (partnerBar != null) partnerBar.gameObject.SetActive(_prevPartnerBarActive);
+        if (playerBarFillText != null) playerBarFillText.gameObject.SetActive(_prevPlayerFillTextActive);
+        if (partnerBarFillText != null) partnerBarFillText.gameObject.SetActive(_prevPartnerFillTextActive);
+        if (playerPowerText != null) playerPowerText.gameObject.SetActive(_prevPlayerPowerTextActive);
+        if (partnerPowerText != null) partnerPowerText.gameObject.SetActive(_prevPartnerPowerTextActive);
+        if (npcCooldownText != null) npcCooldownText.gameObject.SetActive(_prevNpcCooldownTextActive);
+    }
+
 
 
     // ---------- Sex skill presentation ----------
