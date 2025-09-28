@@ -27,8 +27,8 @@ public class UI_SkillTree : UI_Panel
 
     private UI_TreeNode pendingSkillNode;
 
-    // ===== Assign-to-slot popup =====
-    [Header("Assign To Slot Popup")]
+    // ===== Assign-to-slot popup ===== (kept for back-compat, not used in pick mode)
+    [Header("Assign To Slot Popup (legacy)")]
     [SerializeField] private GameObject assignPopup;
     [SerializeField] private TextMeshProUGUI assignTitleText;
     [SerializeField] private Button assignSlotAButton;
@@ -37,6 +37,17 @@ public class UI_SkillTree : UI_Panel
     [SerializeField] private Button assignSlotDButton;
     [SerializeField] private Button assignCancelButton;
     private UI_TreeNode _pendingAssignNode;
+
+    // ===== NEW: Click-to-assign pick mode =====
+    private static UI_SkillTree _pickOwner;
+    private static UI_TreeNode _pickNode;
+    private static Skill_DataSO _pickSkill;
+
+    public static bool IsPicking => _pickOwner != null && _pickNode != null && _pickSkill != null;
+    public static Skill_DataSO PendingPickSkill => _pickSkill;
+
+    [Header("Assign Pick Visuals")]
+    [SerializeField] private Color nodePickColor = new Color(1f, 0.9f, 0.4f, 1f);
 
     #region State Type (matches GameDataSaver.SkillTreeState)
     [System.Serializable]
@@ -306,104 +317,99 @@ public class UI_SkillTree : UI_Panel
 
     #endregion
 
-    #region Assign-to-Slot Popup (Right click)
+    #region Assign-to-Slot CLICK MODE (Right click)
 
-    /// <summary>Compatibility alias if something calls the old name.</summary>
+    /// <summary>Compatibility alias; we now start pick mode instead of legacy popup.</summary>
     public void ShowAssignToSlot(UI_TreeNode node) => ShowAssignToSlotOptions(node);
 
-    /// <summary>Open the "Assign to Slot" popup for an unlocked node.</summary>
+    /// <summary>Begin pick mode: highlight node, show relevant hotbar, wait for slot click.</summary>
     public void ShowAssignToSlotOptions(UI_TreeNode node)
     {
         if (node == null || node.skillData == null) return;
         if (!node.isUnlocked) return;
-        if (assignPopup == null) return;
 
-        _pendingAssignNode = node;
+        // End any existing pick first
+        EndPickMode(false);
 
-        if (assignTitleText != null)
-            assignTitleText.text = node.skillData.category == SkillCategory.Sex
-                ? $"Assign <b>{node.skillData.displayName}</b> to <b>Sex</b> slot:"
-                : $"Assign <b>{node.skillData.displayName}</b> to slot:";
+        _pickOwner = this;
+        _pickNode = node;
+        _pickSkill = node.skillData;
 
-        // wire buttons
-        assignSlotAButton?.onClick.RemoveAllListeners();
-        assignSlotBButton?.onClick.RemoveAllListeners();
-        assignSlotCButton?.onClick.RemoveAllListeners();
-        assignSlotDButton?.onClick.RemoveAllListeners();
-        assignCancelButton?.onClick.RemoveAllListeners();
+        // Visual highlight on node
+        _pickNode.SetAssignHighlight(true);
 
-        if (node.skillData.category == SkillCategory.Sex)
-        {
-            // Map A/B/C/D to Sex indices 0/1/2/3
-            if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(0));
-            if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(1));
-            if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(2));
-            if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(3));
-        }
-        else
-        {
-            if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotA));
-            if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotB));
-            if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotC));
-            if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotD));
-        }
-
-        if (assignCancelButton != null) assignCancelButton.onClick.AddListener(CloseAssignPopup);
-
-        assignPopup.SetActive(true);
-    }
-
-    private void AssignSelectedSkillToSlot(UISkillSlotId slot)
-    {
-        if (_pendingAssignNode == null || _pendingAssignNode.skillData == null)
-        {
-            CloseAssignPopup();
-            return;
-        }
-
+        // Show the relevant hotbar for visual placement
         var ui = FindFirstObjectByType<UI>();
-        ui?.inGameUI?.AssignSkillToSlot(_pendingAssignNode.skillData, slot);
-        CloseAssignPopup();
+        ui?.ShowHotbarAssignPreview(_pickSkill.category);
     }
 
-    // NEW: Sex skill assignment to a chosen Sex hotbar index
-    private void AssignSelectedSexSkillToSexIndex(int index)
+    /// <summary>Called by UI_SkillSlot when a slot is clicked.</summary>
+    public static bool TryCompleteSlotPick(UI_SkillSlot clickedSlot)
     {
-        if (_pendingAssignNode == null || _pendingAssignNode.skillData == null)
+        if (!IsPicking || clickedSlot == null) return false;
+
+        // Wrong bar type? refuse but stay in pick mode
+        if (!clickedSlot.Accepts(_pickSkill))
         {
-            CloseAssignPopup();
-            return;
+            clickedSlot.PulseConflict(0.2f);
+            return false;
         }
 
-        var sexSkill = _pendingAssignNode.skillData;
-        if (sexSkill.category != SkillCategory.Sex)
-        {
-            CloseAssignPopup();
-            return;
-        }
+        var ui = Object.FindFirstObjectByType<UI>();
+        if (ui == null) return false;
 
-        // Try to assign immediately if SexyTime UI is around; otherwise persist for later
-        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-        bool ok = false;
+        bool success = false;
 
-        if (sexUI != null)
+        if (clickedSlot.slotCategory == UISkillCategory.Combat)
         {
-            ok = sexUI.AssignSexSkillToIndex(sexSkill, index);
-            if (!ok) Debug.LogWarning($"[SkillTree] Failed to assign '{sexSkill.displayName}' to Sex slot {index}.");
+            ui.inGameUI?.AssignSkillToSlot(_pickSkill, clickedSlot.slotId);
+            success = true;
         }
         else
         {
-            SexyTimeUIController.SetPersistentSexSkillAtIndex(index, sexSkill);
-            ok = true;
+            var sexUI = Object.FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+            var hotbar = sexUI != null ? sexUI.Hotbar : null;
+            if (hotbar != null)
+            {
+                int idx = hotbar.IndexOf(clickedSlot);
+                if (idx >= 0) success = hotbar.TryAssignToIndex(idx, _pickSkill);
+            }
         }
 
-        CloseAssignPopup();
+        if (success)
+        {
+            EndPickMode(true);
+        }
+        else
+        {
+            clickedSlot.PulseConflict(0.2f);
+        }
+        return success;
     }
 
-    private void CloseAssignPopup()
+
+    private static void EndPickMode(bool fromAssignment)
     {
-        if (assignPopup != null) assignPopup.SetActive(false);
+        if (!IsPicking) return;
+
+        // Clear node highlight
+        _pickNode?.SetAssignHighlight(false);
+
+        // Hide preview hotbar
+        var ui = Object.FindFirstObjectByType<UI>();
+        ui?.HideHotbarAssignPreview();
+
+        _pickOwner = null;
+        _pickNode = null;
+        _pickSkill = null;
+    }
+
+    private void CloseAssignPopup() // legacy path – also end pick mode if it was active
+    {
+        var ui = FindFirstObjectByType<UI>();
+        ui?.HideHotbarAssignPreview();
         _pendingAssignNode = null;
+        EndPickMode(false);
     }
 
     #endregion
@@ -428,7 +434,14 @@ public class UI_SkillTree : UI_Panel
 
     public override bool HandleCancel()
     {
-        // Close assign popup first if open
+        // If we are in pick mode, cancel that first
+        if (IsPicking)
+        {
+            EndPickMode(false);
+            return true;
+        }
+
+        // Close assign (legacy) popup first if open
         if (assignPopup != null && assignPopup.activeSelf)
         {
             CloseAssignPopup();

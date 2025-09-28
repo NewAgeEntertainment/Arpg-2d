@@ -77,8 +77,6 @@ public class UI : MonoBehaviour
     [Tooltip("If true, re-open the main menu panel after closing the journal.")]
     [SerializeField] private bool reopenMainMenuAfterJournalClose = true;
 
-
-
     private bool isQuestJournalOpen = false;
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -143,6 +141,17 @@ public class UI : MonoBehaviour
     private PropertyInfo pCurHP, pMaxHP, pCurMP, pMaxMP;
     private EventInfo eHP, eMP;
     private Coroutine menuPollCo;
+
+    // ============================ Assign-preview (fade the tree) ===========================
+    // We only fade and disable tree raycasts; no need to mess with sorting orders.
+    private bool _assignPreviewActive = false;
+    private bool _sexUIOpenedByPreview = false;
+    private bool _combatHUDActivatedByPreview = false;
+
+    private CanvasGroup _treeCg;
+    private float _treePrevAlpha = 1f;
+    private bool _treePrevInteractable = true;
+    private bool _treePrevBlocks = true;
 
     private void Awake()
     {
@@ -534,7 +543,6 @@ public class UI : MonoBehaviour
         return true;
     }
 
-
     // ===== Save Panel =====
 
     public void OpenSavePanel()
@@ -712,6 +720,9 @@ public class UI : MonoBehaviour
 
     public void HandleBackAction()
     {
+        // If in assign pick mode, exit that first (don't auto-exit on assign).
+        if (_assignPreviewActive) { HideHotbarAssignPreview(); return; }
+
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
 
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel())
@@ -1082,6 +1093,90 @@ public class UI : MonoBehaviour
         if (locationLabel != null)
             locationLabel.text = $"Location: {SceneManager.GetActiveScene().name}";
     }
+
+    // ====================== Assign preview (fade tree / pass-through) ======================
+
+    // Call this when you ENTER pick mode (right-click an unlocked node)
+    public void ShowHotbarAssignPreview(SkillCategory category)
+    {
+        _assignPreviewActive = true;
+
+        // 1) Fade the Skill Tree and make it stop intercepting clicks.
+        if (skillTreeUI != null)
+        {
+            _treeCg = skillTreeUI.GetComponent<CanvasGroup>();
+            if (_treeCg == null) _treeCg = skillTreeUI.gameObject.AddComponent<CanvasGroup>();
+
+            _treePrevAlpha = _treeCg.alpha;
+            _treePrevInteractable = _treeCg.interactable;
+            _treePrevBlocks = _treeCg.blocksRaycasts;
+
+            _treeCg.alpha = 0.2f;   // or 0f for fully invisible
+            _treeCg.interactable = false;
+            _treeCg.blocksRaycasts = false;
+        }
+
+        // 2) Ensure the appropriate hotbar is visible if needed.
+        if (category == SkillCategory.Sex)
+        {
+            var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+            if (sexUI != null)
+            {
+                if (!sexUI.IsOpen)
+                {
+                    _sexUIOpenedByPreview = true;
+                    sexUI.ShowAssignPreview();
+                }
+                else
+                {
+                    _sexUIOpenedByPreview = false;
+                }
+            }
+        }
+        else // Combat
+        {
+            if (inGameUI != null)
+            {
+                if (!inGameUI.gameObject.activeSelf)
+                {
+                    _combatHUDActivatedByPreview = true;
+                    inGameUI.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _combatHUDActivatedByPreview = false;
+                }
+            }
+        }
+    }
+
+    // Call this when the PLAYER EXITS (Esc/Back/Done). Do NOT call automatically after assigning.
+    public void HideHotbarAssignPreview()
+    {
+        if (!_assignPreviewActive) return;
+        _assignPreviewActive = false;
+
+        // Restore tree appearance and raycast behavior.
+        if (_treeCg != null)
+        {
+            _treeCg.alpha = _treePrevAlpha;
+            _treeCg.interactable = _treePrevInteractable;
+            _treeCg.blocksRaycasts = _treePrevBlocks;
+            _treeCg = null;
+        }
+
+        // Close Sex UI if we opened it only for preview.
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        if (sexUI != null && _sexUIOpenedByPreview) sexUI.HideAssignPreview();
+        _sexUIOpenedByPreview = false;
+
+        // Hide Combat HUD if we showed it only for preview.
+        if (inGameUI != null && _combatHUDActivatedByPreview)
+            inGameUI.gameObject.SetActive(false);
+        _combatHUDActivatedByPreview = false;
+    }
+
+    public bool IsAssignPreviewActive => _assignPreviewActive;
 
     // ===== NEW: Sex skill routing helper (used by SkillTree) =====
     public void AssignSexSkillToSexyTimeHotbar(Skill_DataSO sexSkill)

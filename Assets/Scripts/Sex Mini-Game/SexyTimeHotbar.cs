@@ -10,7 +10,7 @@ public class SexyTimeHotbar : MonoBehaviour
 
     public UI_SkillSlot[] Slots => slots;
 
-    // NEW: expose count and allow targeted assignment
+    /// Count helper (used by SexyTimeUIController)
     public int SlotCount => slots != null ? slots.Length : 0;
 
     /// Assign the skill into the first empty slot (or replace the first slot if all full).
@@ -19,12 +19,15 @@ public class SexyTimeHotbar : MonoBehaviour
         if (data == null || data.category != SkillCategory.Sex) return false;
 
         // First empty
-        foreach (var s in slots)
+        if (slots != null)
         {
-            if (s != null && !s.HasSkill)
+            foreach (var s in slots)
             {
-                s.SetupSkillSlot(data);
-                return true;
+                if (s != null && !s.HasSkill)
+                {
+                    s.SetupSkillSlot(data);
+                    return true;
+                }
             }
         }
 
@@ -38,7 +41,7 @@ public class SexyTimeHotbar : MonoBehaviour
         return false;
     }
 
-    /// NEW: assign directly to a specific index (0-based)
+    /// Assign to a specific index (used by click-to-place)
     public bool TryAssignToIndex(int index, Skill_DataSO data)
     {
         if (data == null || data.category != SkillCategory.Sex) return false;
@@ -46,8 +49,16 @@ public class SexyTimeHotbar : MonoBehaviour
 
         var s = slots[index];
         if (s == null) return false;
-
         return s.SetupSkillSlot(data);
+    }
+
+    /// Find a slot's index in this hotbar (used when the user clicks a UI_SkillSlot)
+    public int IndexOf(UI_SkillSlot slot)
+    {
+        if (slot == null || slots == null) return -1;
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i] == slot) return i;
+        return -1;
     }
 
     public void ClearAll()

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public enum UISkillSlotId { SlotA, SlotB, SlotC, SlotD }
 public enum UISkillCategory { Combat, Sex }   // UI-only category gate
 
-public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("Slot Setup")]
     public UISkillSlotId slotId = UISkillSlotId.SlotA;
@@ -167,7 +167,6 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         }
 
         float need = ManaCostFromSO;
-        // If you want to prefer the runtime cost, you can inject it via RefreshText before this.
 
         bool affordable = mana.GetCurrentMana() >= need;
         affordOverlay.alpha = affordable ? 0f : 1f;
@@ -193,6 +192,17 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         if (ui == null || ui.skillToolTip == null) return;
         ui.skillToolTip.ShowToolTip(false, null);
+    }
+
+    // NEW: left-click a slot to complete "pick a slot" mode
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+
+        if (UI_SkillTree.TryCompleteSlotPick(this))
+        {
+            eventData.Use();
+        }
     }
 
     // ------------ Coroutines ------------

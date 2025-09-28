@@ -33,6 +33,11 @@ public class SexyTimeUIController : MonoBehaviour
     public bool IsOpen => panel != null && panel.activeInHierarchy;
     public int SexSlotCount => sexHotbar != null ? sexHotbar.SlotCount : 0;
 
+    // --- Assign-preview helpers ---
+    private bool _openedByAssignPreview = false;
+
+ 
+
     public UI_SkillSlot GetSexSlotByIndex(int index)
     {
         if (sexHotbar == null || sexHotbar.Slots == null) return null;
@@ -192,6 +197,23 @@ public class SexyTimeUIController : MonoBehaviour
     {
         if (critText != null) critText.gameObject.SetActive(false);
     }
+
+  
+
+    public void ShowAssignPreview()
+    {
+        if (IsOpen) return;
+        _openedByAssignPreview = true;
+        Show();     // your existing method that enables the panel
+    }
+
+    public void HideAssignPreview()
+    {
+        if (!_openedByAssignPreview) return;
+        _openedByAssignPreview = false;
+        Hide();     // your existing method that disables the panel
+    }
+
 
     // ---------- Sex skill presentation ----------
     /// Assigns a Sex-category skill to the sex hotbar (or the single slot fallback).

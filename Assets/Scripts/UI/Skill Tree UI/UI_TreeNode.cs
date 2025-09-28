@@ -25,7 +25,9 @@ public class UI_TreeNode : MonoBehaviour,
 
     [Header("Colors")]
     [SerializeField] private string lockedColorHex = "#9F9797";
+    [SerializeField] private Color assignHighlightColor = new Color(1f, 0.9f, 0.4f, 1f);
     private Color lastColor;
+    private bool assignHighlight;
 
     private void EnsureWired()
     {
@@ -180,7 +182,7 @@ public class UI_TreeNode : MonoBehaviour,
         }
     }
 
-    // RIGHT CLICK = open "Assign to Slot" popup (only if unlocked)
+    // RIGHT CLICK = open assign PICK MODE (only if unlocked)
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Right) return;
@@ -199,6 +201,7 @@ public class UI_TreeNode : MonoBehaviour,
             return;
         }
 
+        // Start click-to-assign mode
         skillTree?.ShowAssignToSlotOptions(this);
         eventData.Use();
     }
@@ -254,7 +257,7 @@ public class UI_TreeNode : MonoBehaviour,
         if (ui != null && ui.skillToolTip != null)
             ui.skillToolTip.ShowToolTip(true, rect, skillData, this);
 
-        if (isUnlocked || isLocked) return;
+        if (isUnlocked || isLocked || assignHighlight) return;
 
         ToggleNodeHighlight(true);
     }
@@ -269,7 +272,7 @@ public class UI_TreeNode : MonoBehaviour,
             ui.skillToolTip.StopLockedSkillEffect();
         }
 
-        if (isUnlocked || isLocked) return;
+        if (isUnlocked || isLocked || assignHighlight) return;
 
         ToggleNodeHighlight(false);
     }
@@ -281,6 +284,22 @@ public class UI_TreeNode : MonoBehaviour,
 
         var colorToApply = highlight ? highlightColor : (skillIcon != null ? skillIcon.color : Color.white);
         UpdateIconColor(colorToApply);
+    }
+
+    // === NEW: Assign-pick highlighting ===
+    public void SetAssignHighlight(bool on)
+    {
+        assignHighlight = on;
+        if (on)
+        {
+            UpdateIconColor(assignHighlightColor);
+        }
+        else
+        {
+            if (isLocked) UpdateIconColor(LockedColor());
+            else if (isUnlocked) UpdateIconColor(Color.white);
+            else UpdateIconColor(LockedColor());
+        }
     }
 
     private void OnDisable()
