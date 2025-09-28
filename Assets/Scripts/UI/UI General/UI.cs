@@ -1082,4 +1082,25 @@ public class UI : MonoBehaviour
         if (locationLabel != null)
             locationLabel.text = $"Location: {SceneManager.GetActiveScene().name}";
     }
+
+    // ===== NEW: Sex skill routing helper (used by SkillTree) =====
+    public void AssignSexSkillToSexyTimeHotbar(Skill_DataSO sexSkill)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
+
+        // Persist regardless of UI presence
+        SexyTimeUIController.AddPersistentSexSkill(sexSkill);
+
+        // If controller exists, reflect immediately
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        if (sexUI != null)
+        {
+            sexUI.ShowSexSkill(sexSkill);
+            Debug.Log($"[UI] Routed Sex skill '{sexSkill.displayName}' to SexyTime hotbar (and persisted).");
+        }
+        else
+        {
+            Debug.Log($"[UI] SexyTimeUIController not found yet — persisted Sex skill '{sexSkill.displayName}' for later.");
+        }
+    }
 }

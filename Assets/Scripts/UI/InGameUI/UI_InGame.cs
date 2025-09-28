@@ -226,16 +226,98 @@ public class UI_InGame : MonoBehaviour
         if (rplayer.GetButtonDown(quickSlot3Action)) playerInventory.TryUseQuickItemInSlot(3);
         if (rplayer.GetButtonDown(quickSlot4Action)) playerInventory.TryUseQuickItemInSlot(4);
 
-        // Ys-style combat skills: hold modifier then press A/B/C/D
+        // Ys-style skills via modifier
         bool mod = rplayer.GetButton(skillModifierAction);
         if (!mod) return;
 
-        if (rplayer.GetButtonDown(skillSlotAAction)) TryUseSkillFromSlot(UISkillSlotId.SlotA);
-        if (rplayer.GetButtonDown(skillSlotBAction)) TryUseSkillFromSlot(UISkillSlotId.SlotB);
-        if (rplayer.GetButtonDown(skillSlotCAction)) TryUseSkillFromSlot(UISkillSlotId.SlotC);
-        if (rplayer.GetButtonDown(skillSlotDAction)) TryUseSkillFromSlot(UISkillSlotId.SlotD);
+        // Determine if SexyTime UI is visible (if so, prefer sex hotbar first)
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        bool preferSex = sexUI != null && sexUI.IsVisible;
+
+        if (rplayer.GetButtonDown(skillSlotAAction)) HandleSkillHotkeys(0, UISkillSlotId.SlotA, preferSex);
+        if (rplayer.GetButtonDown(skillSlotBAction)) HandleSkillHotkeys(1, UISkillSlotId.SlotB, preferSex);
+        if (rplayer.GetButtonDown(skillSlotCAction)) HandleSkillHotkeys(2, UISkillSlotId.SlotC, preferSex);
+        if (rplayer.GetButtonDown(skillSlotDAction)) HandleSkillHotkeys(3, UISkillSlotId.SlotD, preferSex);
     }
 
+    private void HandleSkillHotkeys(int sexIndex, UISkillSlotId combatId, bool preferSex)
+    {
+        if (preferSex)
+        {
+            // Try Sex first; then fall back to Combat with pulse
+            if (!TryUseSexSkillFromIndex(sexIndex))
+                TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: true);
+        }
+        else
+        {
+            // Try Combat first (no pulse yet); then Sex (which pulses on its own failures)
+            if (!TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: false))
+                TryUseSexSkillFromIndex(sexIndex);
+        }
+    }
+
+    /// <summary>
+    /// New: Use a combat skill from bar, returning success. Optionally pulse on failure.
+    /// Keeps original behavior intact elsewhere.
+    /// </summary>
+    private bool TryUseCombatSkillFromSlotSmart(UISkillSlotId id, bool pulseOnFail)
+    {
+        var slot = FindSlotById(id);
+        if (slot == null) return false;
+        if (!slot.HasSkill) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
+        if (slot.slotCategory != UISkillCategory.Combat) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
+
+        var data = slot.Data;
+        if (player == null || player.skillManager == null || data == null) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
+
+        var sm = player.skillManager;
+
+        // Route stateful skills to states — do not manually Commit here.
+        switch (data.skillType)
+        {
+            case SkillType.Dash:
+                if (sm.dash != null && sm.dash.CanUseSkillCheck(out _))
+                {
+                    player.stateMachine.ChangeState(player.dashState);
+                    return true;
+                }
+                else
+                {
+                    if (pulseOnFail) slot.PulseConflict(0.2f);
+                    return false;
+                }
+
+            case SkillType.Thrust:
+                if (sm.thrust != null && sm.thrust.CanUseSkillCheck(out _))
+                {
+                    player.stateMachine.ChangeState(player.thrustState);
+                    return true;
+                }
+                else
+                {
+                    if (pulseOnFail) slot.PulseConflict(0.2f);
+                    return false;
+                }
+        }
+
+        // Instant skills (projectiles, heals, etc.)
+        var runtime = sm.GetSkillByType(data.skillType);
+        if (runtime == null) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
+
+        // TryUseSkill usually does its own gating + commit
+        runtime.TryUseSkill();
+
+        // UI feedback
+        slot.StartCooldown(slot.CooldownSeconds);
+        slot.RefreshText(sm);
+        slot.UpdateAffordability(player.mana);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Original method (kept intact). Now unused by Update(), but preserved as requested.
+    /// </summary>
     private void TryUseSkillFromSlot(UISkillSlotId id)
     {
         var slot = FindSlotById(id);
@@ -271,6 +353,49 @@ public class UI_InGame : MonoBehaviour
         var runtime = sm.GetSkillByType(data.skillType);
         if (runtime == null) { slot.PulseConflict(0.2f); return; }
         runtime.TryUseSkill(); // does its own checks+commit if implemented
+    }
+
+    // New: Try to use a Sex skill from SexyTime hotbar at given index.
+    private bool TryUseSexSkillFromIndex(int index)
+    {
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        if (sexUI == null) { PulseSexConflict(index, 0.2f); return false; }
+
+        var hotbar = sexUI.Hotbar;
+        if (hotbar == null || hotbar.Slots == null) { PulseSexConflict(index, 0.2f); return false; }
+        if (index < 0 || index >= hotbar.Slots.Length) { PulseSexConflict(index, 0.2f); return false; }
+
+        var slot = hotbar.Slots[index];
+        if (slot == null || !slot.HasSkill) { PulseSexConflict(index, 0.2f); return false; }
+        if (slot.slotCategory != UISkillCategory.Sex) { PulseSexConflict(index, 0.2f); return false; }
+
+        var data = slot.Data;
+        if (player == null || player.skillManager == null || data == null) { PulseSexConflict(index, 0.2f); return false; }
+
+        var sm = player.skillManager;
+        var runtime = sm.GetSkillByType(data.skillType);
+        if (runtime == null) { PulseSexConflict(index, 0.2f); return false; }
+
+        // Use the skill (runtime handles gating/commit). Then reflect UI (cooldown/affordability).
+        runtime.TryUseSkill();
+
+        slot.StartCooldown(slot.CooldownSeconds);
+        slot.RefreshText(sm);
+        sexUI.RefreshAffordability(player.mana);
+
+        return true;
+    }
+
+    private void PulseSexConflict(int index, float seconds)
+    {
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        var hotbar = sexUI != null ? sexUI.Hotbar : null;
+
+        if (hotbar != null && hotbar.Slots != null && index >= 0 && index < hotbar.Slots.Length)
+        {
+            var s = hotbar.Slots[index];
+            if (s != null) { s.PulseConflict(seconds); return; }
+        }
     }
 
     // ============== GOLD UI ==============

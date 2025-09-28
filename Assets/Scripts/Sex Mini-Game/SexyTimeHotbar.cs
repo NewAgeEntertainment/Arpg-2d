@@ -10,6 +10,9 @@ public class SexyTimeHotbar : MonoBehaviour
 
     public UI_SkillSlot[] Slots => slots;
 
+    // NEW: expose count and allow targeted assignment
+    public int SlotCount => slots != null ? slots.Length : 0;
+
     /// Assign the skill into the first empty slot (or replace the first slot if all full).
     public bool TryAssign(Skill_DataSO data)
     {
@@ -33,6 +36,18 @@ public class SexyTimeHotbar : MonoBehaviour
         }
 
         return false;
+    }
+
+    /// NEW: assign directly to a specific index (0-based)
+    public bool TryAssignToIndex(int index, Skill_DataSO data)
+    {
+        if (data == null || data.category != SkillCategory.Sex) return false;
+        if (slots == null || index < 0 || index >= slots.Length) return false;
+
+        var s = slots[index];
+        if (s == null) return false;
+
+        return s.SetupSkillSlot(data);
     }
 
     public void ClearAll()

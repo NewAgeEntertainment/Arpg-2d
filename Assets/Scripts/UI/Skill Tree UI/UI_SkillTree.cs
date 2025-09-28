@@ -321,7 +321,9 @@ public class UI_SkillTree : UI_Panel
         _pendingAssignNode = node;
 
         if (assignTitleText != null)
-            assignTitleText.text = $"Assign <b>{node.skillData.displayName}</b> to slot:";
+            assignTitleText.text = node.skillData.category == SkillCategory.Sex
+                ? $"Assign <b>{node.skillData.displayName}</b> to <b>Sex</b> slot:"
+                : $"Assign <b>{node.skillData.displayName}</b> to slot:";
 
         // wire buttons
         assignSlotAButton?.onClick.RemoveAllListeners();
@@ -330,10 +332,22 @@ public class UI_SkillTree : UI_Panel
         assignSlotDButton?.onClick.RemoveAllListeners();
         assignCancelButton?.onClick.RemoveAllListeners();
 
-        if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotA));
-        if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotB));
-        if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotC));
-        if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotD));
+        if (node.skillData.category == SkillCategory.Sex)
+        {
+            // Map A/B/C/D to Sex indices 0/1/2/3
+            if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(0));
+            if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(1));
+            if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(2));
+            if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSexSkillToSexIndex(3));
+        }
+        else
+        {
+            if (assignSlotAButton != null) assignSlotAButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotA));
+            if (assignSlotBButton != null) assignSlotBButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotB));
+            if (assignSlotCButton != null) assignSlotCButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotC));
+            if (assignSlotDButton != null) assignSlotDButton.onClick.AddListener(() => AssignSelectedSkillToSlot(UISkillSlotId.SlotD));
+        }
+
         if (assignCancelButton != null) assignCancelButton.onClick.AddListener(CloseAssignPopup);
 
         assignPopup.SetActive(true);
@@ -349,6 +363,40 @@ public class UI_SkillTree : UI_Panel
 
         var ui = FindFirstObjectByType<UI>();
         ui?.inGameUI?.AssignSkillToSlot(_pendingAssignNode.skillData, slot);
+        CloseAssignPopup();
+    }
+
+    // NEW: Sex skill assignment to a chosen Sex hotbar index
+    private void AssignSelectedSexSkillToSexIndex(int index)
+    {
+        if (_pendingAssignNode == null || _pendingAssignNode.skillData == null)
+        {
+            CloseAssignPopup();
+            return;
+        }
+
+        var sexSkill = _pendingAssignNode.skillData;
+        if (sexSkill.category != SkillCategory.Sex)
+        {
+            CloseAssignPopup();
+            return;
+        }
+
+        // Try to assign immediately if SexyTime UI is around; otherwise persist for later
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        bool ok = false;
+
+        if (sexUI != null)
+        {
+            ok = sexUI.AssignSexSkillToIndex(sexSkill, index);
+            if (!ok) Debug.LogWarning($"[SkillTree] Failed to assign '{sexSkill.displayName}' to Sex slot {index}.");
+        }
+        else
+        {
+            SexyTimeUIController.SetPersistentSexSkillAtIndex(index, sexSkill);
+            ok = true;
+        }
+
         CloseAssignPopup();
     }
 

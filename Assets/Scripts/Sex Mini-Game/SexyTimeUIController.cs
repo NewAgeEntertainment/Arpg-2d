@@ -25,11 +25,110 @@ public class SexyTimeUIController : MonoBehaviour
     [Header("Single DeepBreath Slot (optional)")]
     [SerializeField] private UI_SkillSlot deepBreathSlot;
 
+    // ===== NEW: Persistent sticky sex skills =====
+    private static readonly System.Collections.Generic.List<Skill_DataSO> s_pendingSexSkills = new();
+    private static readonly System.Collections.Generic.Dictionary<int, Skill_DataSO> s_indexedSexSkills = new();
+
+    // ===== NEW: Quick state helpers =====
+    public bool IsOpen => panel != null && panel.activeInHierarchy;
+    public int SexSlotCount => sexHotbar != null ? sexHotbar.SlotCount : 0;
+
+    public UI_SkillSlot GetSexSlotByIndex(int index)
+    {
+        if (sexHotbar == null || sexHotbar.Slots == null) return null;
+        if (index < 0 || index >= sexHotbar.Slots.Length) return null;
+        return sexHotbar.Slots[index];
+    }
+
+    private static bool SameSkill(Skill_DataSO a, Skill_DataSO b)
+    {
+        if (a == null || b == null) return false;
+        if (!string.IsNullOrEmpty(a.id) && !string.IsNullOrEmpty(b.id)) return a.id == b.id;
+        return ReferenceEquals(a, b);
+    }
+
+    public static void AddPersistentSexSkill(Skill_DataSO sexSkill)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
+
+        // de-dupe by id if set, else by ref
+        if (!string.IsNullOrEmpty(sexSkill.id))
+        {
+            for (int i = 0; i < s_pendingSexSkills.Count; i++)
+            {
+                var s = s_pendingSexSkills[i];
+                if (s != null && s.id == sexSkill.id)
+                {
+                    s_pendingSexSkills[i] = sexSkill;
+                    return;
+                }
+            }
+        }
+        else
+        {
+            if (s_pendingSexSkills.Contains(sexSkill)) return;
+        }
+
+        s_pendingSexSkills.Add(sexSkill);
+    }
+
+    public static void SetPersistentSexSkillAtIndex(int index, Skill_DataSO sexSkill)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
+        s_indexedSexSkills[index] = sexSkill;
+        AddPersistentSexSkill(sexSkill);
+    }
+
+    public static void ClearPersistentSexSkills()
+    {
+        s_pendingSexSkills.Clear();
+        s_indexedSexSkills.Clear();
+    }
+
+    private void ApplyPendingSexSkillsToHotbar()
+    {
+        if (sexHotbar == null || sexHotbar.Slots == null) return;
+
+        // 1) Place explicit indexed skills first
+        foreach (var kvp in s_indexedSexSkills)
+        {
+            int idx = kvp.Key;
+            var skill = kvp.Value;
+            if (skill != null) sexHotbar.TryAssignToIndex(idx, skill);
+        }
+
+        // 2) Fill remaining empty slots with any leftover pending skills
+        foreach (var skill in s_pendingSexSkills)
+        {
+            if (skill == null) continue;
+
+            bool already = false;
+            foreach (var s in sexHotbar.Slots)
+            {
+                if (s != null && s.HasSkill && SameSkill(s.Data, skill))
+                {
+                    already = true;
+                    break;
+                }
+            }
+            if (!already) sexHotbar.TryAssign(skill);
+        }
+    }
+
+    private void Awake()
+    {
+        // Ensure stickies are applied even if this UI spawns after assignments were chosen.
+        ApplyPendingSexSkillsToHotbar();
+    }
+
     public void Show()
     {
         if (panel != null) panel.SetActive(true);
         HideCrit();
         RefreshAffordability(null); // clears fades until we get player mana
+
+        // Make sure persisteds are applied when showing
+        ApplyPendingSexSkillsToHotbar();
     }
 
     public void Hide()
@@ -100,6 +199,9 @@ public class SexyTimeUIController : MonoBehaviour
     {
         if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
 
+        // Keep persistent record up to date
+        AddPersistentSexSkill(sexSkill);
+
         bool assigned = false;
 
         if (sexHotbar != null)
@@ -148,6 +250,16 @@ public class SexyTimeUIController : MonoBehaviour
         HideCrit();
     }
 
+    public bool IsVisible => IsOpen;
+
+    // Expose the hotbar so code like sexUI.Hotbar.Slots works:
+    public SexyTimeHotbar Hotbar => sexHotbar;
+
+    // Optional aliases if any code expects these:
+    public int SlotCount => SexSlotCount;
+    public UI_SkillSlot GetSlotByIndex(int index) => GetSexSlotByIndex(index);
+    public UI_SkillSlot GetSlot(int index) => GetSexSlotByIndex(index);
+
     // Small helpers so logic can read/write bar values via UI controller if desired
     public float PlayerBarValue => playerBar != null ? playerBar.value : 0f;
     public float PartnerBarValue => partnerBar != null ? partnerBar.value : 0f;
@@ -163,4 +275,15 @@ public class SexyTimeUIController : MonoBehaviour
 
     public void ShowDeepBreathSlot(Skill_DataSO skillData) => ShowSexSkill(skillData);
     public void HideDeepBreathSlot() => HideSexSkills();
+
+    // ===== NEW: direct assignment to a specific sex slot index + persistence =====
+    public bool AssignSexSkillToIndex(Skill_DataSO sexSkill, int index)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return false;
+        if (sexHotbar == null) return false;
+
+        bool ok = sexHotbar.TryAssignToIndex(index, sexSkill);
+        if (ok) SetPersistentSexSkillAtIndex(index, sexSkill);
+        return ok;
+    }
 }
