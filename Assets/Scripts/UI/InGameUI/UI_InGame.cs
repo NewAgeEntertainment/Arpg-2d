@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Rewired;
+using System.Linq;
 
 public class UI_InGame : MonoBehaviour
 {
@@ -114,6 +115,16 @@ public class UI_InGame : MonoBehaviour
         UpdateHealthBar();
         UpdateManaBar();
         UpdateQuickSlots();
+
+        // Example: A/B/C/D in a row
+        var selects = skillSlots
+            .Where(s => s != null)
+            .Select(s => s.GetComponent<Selectable>())
+            .Where(s => s != null)
+            .ToArray();
+        UI ui = UI.Instance;
+        if (ui != null) UI.WireLinearNav(selects, horizontal: true);
+
 
         StartCoroutine(ForceOneMorePaintNextFrame());
     }

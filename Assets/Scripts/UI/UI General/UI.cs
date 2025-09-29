@@ -2,10 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
+using UnityEngine.EventSystems;
 using Rewired;
 using PixelCrushers;
 using PixelCrushers.QuestMachine.Wrappers;
@@ -27,7 +29,6 @@ public class UI : MonoBehaviour
 
     // Only allow assign-preview to close when we intentionally exit (Esc/Back/Done)
     private bool _allowAssignPreviewHide = false;
-
 
     [SerializeField] private TextMeshProUGUI goldText;
 
@@ -81,6 +82,17 @@ public class UI : MonoBehaviour
     [Tooltip("If true, re-open the main menu panel after closing the journal.")]
     [SerializeField] private bool reopenMainMenuAfterJournalClose = true;
 
+    // === UI Theme – Button Colors ===
+    [Header("UI Theme – Buttons")]
+    [SerializeField] private Color btnNormal = new Color(1f, 1f, 1f, 1f);
+    [SerializeField] private Color btnHighlighted = new Color(0.95f, 0.95f, 0.95f, 1f);
+    [SerializeField] private Color btnSelected = new Color(1f, 0.85f, 0.35f, 1f); // <- selected via gamepad/keys
+    [SerializeField] private Color btnPressed = new Color(0.85f, 0.85f, 0.85f, 1f);
+    [SerializeField] private Color btnDisabled = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+    [SerializeField] private float btnFade = 0.08f;
+    [SerializeField] private float btnMultiplier = 1f;
+
+
     private bool isQuestJournalOpen = false;
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -115,6 +127,17 @@ public class UI : MonoBehaviour
 
     private Rewired.Player player;
 
+    // --- Rewired cache for map switching (Gameplay/UI) ---
+    private Rewired.Player rplayerUI;
+    private void CacheRewired()
+    {
+        if (rplayerUI == null)
+        {
+            try { rplayerUI = ReInput.players.GetPlayer(playerID); }
+            catch { }
+        }
+    }
+
     private bool isInventoryOpen = false;
     private bool isSkillTreeOpen = false;
     private bool isEquipmentOpen = false;
@@ -146,25 +169,15 @@ public class UI : MonoBehaviour
     private EventInfo eHP, eMP;
     private Coroutine menuPollCo;
 
-    // ============================ Assign-preview (fade the tree) ===========================
-    // We only fade and disable tree raycasts; no need to mess with sorting orders.
+    // ============================ Assign-preview (hide the tree) ===========================
     private bool _assignPreviewActive = false;
     private bool _sexUIOpenedByPreview = false;
     private bool _combatHUDActivatedByPreview = false;
 
-    private CanvasGroup _treeCg;
-    private float _treePrevAlpha = 1f;
-    private bool _treePrevInteractable = true;
-    private bool _treePrevBlocks = true;
-
-    // --- Assign-preview state (deactivate tree while picking) ---
-
+    // we now hide/show the tree instead of fading it
     private bool _skillTreeWasActive = false;
 
-
-
     public bool IsAssignPreviewActive => _assignPreviewActive;
-
 
     private void Awake()
     {
@@ -465,7 +478,6 @@ public class UI : MonoBehaviour
 
     // ===== Quest Journal Open/Close/Toggle =====
 
-    // --- Replace this ---
     public void ToggleQuestJournalFromUI()
     {
         if (!TryFindQuestJournalUI())
@@ -479,15 +491,12 @@ public class UI : MonoBehaviour
         else CloseQuestJournalFromUI();
     }
 
-    // --- Replace this ---
     public void OpenQuestJournalFromUI()
     {
-        // keep for API compatibility; just call the coroutine path
         if (!TryFindQuestJournalUI()) return;
         StartCoroutine(OpenJournal_Co());
     }
 
-    // --- NEW: open deferred next frame ---
     private IEnumerator OpenJournal_Co()
     {
         EnsureUIRootIsActive();
@@ -508,7 +517,6 @@ public class UI : MonoBehaviour
         StopPlayerControls(true);
     }
 
-    // --- Replace this ---
     public void CloseQuestJournalFromUI()
     {
         if (!TryFindQuestJournalUI()) return;
@@ -526,7 +534,6 @@ public class UI : MonoBehaviour
         else CheckStopPlayerControls();
     }
 
-    // --- Add these helpers anywhere inside UI.cs ---
     private bool TryFindQuestJournalUI()
     {
         if (questJournalUI != null) return true;
@@ -555,6 +562,30 @@ public class UI : MonoBehaviour
         m.Invoke(target, new object[] { arg });
         return true;
     }
+
+    public void ApplyButtonTheme(Transform root = null)
+    {
+        if (root == null)
+            root = mainMenuPanel != null ? mainMenuPanel.transform : transform;
+
+        var selectables = root.GetComponentsInChildren<UnityEngine.UI.Selectable>(true);
+        foreach (var s in selectables)
+        {
+            // Make sure it's using ColorTint so selectedColor is used
+            s.transition = UnityEngine.UI.Selectable.Transition.ColorTint;
+
+            var cb = s.colors;
+            cb.normalColor = btnNormal;
+            cb.highlightedColor = btnHighlighted; // mouse hover / pointer
+            cb.selectedColor = btnSelected;    // keyboard/controller focus
+            cb.pressedColor = btnPressed;
+            cb.disabledColor = btnDisabled;
+            cb.fadeDuration = btnFade;
+            cb.colorMultiplier = btnMultiplier;
+            s.colors = cb;
+        }
+    }
+
 
     // ===== Save Panel =====
 
@@ -656,28 +687,37 @@ public class UI : MonoBehaviour
         CloseAllPanels();
         mainMenuPanel?.SetActive(true);
 
+        ApplyButtonTheme(mainMenuPanel?.transform);
+
         // Refresh menu HP/MP immediately and start polling if needed
         ForceRefreshMenuBars();
         StartMenuPollIfNeeded();
 
-        StopPlayerControls(true);
+        // Switch maps to UI and pause while main menu is open
+        EnterUIMode();
     }
 
     #endregion
 
     #region Input Control
 
+    // NOTE: used by panels other than the main menu to simply disable movement (no map swap)
     public void StopPlayerControls(bool stopGameplay)
     {
-        player.controllers.maps.SetMapsEnabled(!stopGameplay, "Default");
+        CacheRewired();
+        if (rplayerUI != null)
+            rplayerUI.controllers.maps.SetMapsEnabled(!stopGameplay, "Gameplay");
     }
 
     private void CheckStopPlayerControls()
     {
         if (!IsAnySubPanelOpen() && (mainMenuPanel == null || !mainMenuPanel.activeSelf))
         {
-            StopPlayerControls(false);
+            StopPlayerControls(false);     // re-enable Gameplay map for non-menu panels
             StopMenuPoll();
+
+            // If we just closed the main menu, restore maps & unpause
+            ExitUIMode();
         }
     }
 
@@ -692,7 +732,7 @@ public class UI : MonoBehaviour
     {
         uiRoot?.SetActive(true);
         if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-        StopPlayerControls(true);
+        StopPlayerControls(true); // disable Gameplay while any panel is open
     }
 
     public void CloseAllPanels()
@@ -733,15 +773,12 @@ public class UI : MonoBehaviour
 
     public void HandleBackAction()
     {
-
         // If we’re picking a slot, Esc exits assign mode (restores the Skill Tree)
         if (_assignPreviewActive)
         {
             HideHotbarAssignPreview();
             return;
         }
-
-
 
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
 
@@ -802,7 +839,9 @@ public class UI : MonoBehaviour
 
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
+            // Closing the main menu: turn off panel, restore gameplay map + unpause
             mainMenuPanel.SetActive(false);
+            ExitUIMode();
             CheckStopPlayerControls();
             return;
         }
@@ -866,6 +905,7 @@ public class UI : MonoBehaviour
         mainMenuPanel?.SetActive(false);
         uiRoot?.SetActive(false);
         StopPlayerControls(true);
+        ExitUIMode();
         yield return null;
 
         // 2) optional suspend save
@@ -1116,15 +1156,14 @@ public class UI : MonoBehaviour
             locationLabel.text = $"Location: {SceneManager.GetActiveScene().name}";
     }
 
-    // ====================== Assign preview (fade tree / pass-through) ======================
+    // ====================== Assign preview (hide tree / pick on hotbar) ======================
 
-    // Call this when you ENTER pick mode (right-click an unlocked node)
     // Call this when you ENTER assign mode (right-click an unlocked node)
     public void ShowHotbarAssignPreview(SkillCategory category)
     {
         _assignPreviewActive = true;
 
-        // 1) Hide the Skill Tree completely
+        // 1) Hide the Skill Tree completely (store previous)
         if (skillTreeUI != null)
         {
             _skillTreeWasActive = skillTreeUI.gameObject.activeSelf;
@@ -1135,10 +1174,27 @@ public class UI : MonoBehaviour
         if (category == SkillCategory.Sex)
         {
             var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-            if (sexUI != null && !sexUI.IsOpen)
+            if (sexUI != null)
             {
-                sexUI.ShowAssignPreview();      // also hides pleasure bars during preview
-                _sexUIOpenedByPreview = true;
+                if (!sexUI.IsOpen)
+                {
+                    sexUI.ShowAssignPreview();
+                    _sexUIOpenedByPreview = true;
+                }
+
+                var slots = sexUI.Hotbar?.Slots;
+                if (slots != null)
+                {
+                    var selects = slots.Where(s => s != null)
+                                       .Select(s => s.GetComponent<Selectable>())
+                                       .Where(s => s != null)
+                                       .ToArray();
+                    WireLinearNav(selects, horizontal: true);
+
+                    // Select first empty slot (or first slot)
+                    var first = slots.FirstOrDefault(s => s != null && !s.HasSkill) ?? slots.FirstOrDefault(s => s != null);
+                    SelectGO(first != null ? first.gameObject : null);
+                }
             }
         }
         else // Combat
@@ -1151,19 +1207,18 @@ public class UI : MonoBehaviour
         }
     }
 
-
     // Call this ONLY when the PLAYER EXITS (Esc/Back/Done). Don't call automatically after assigning.
     public void HideHotbarAssignPreview()
     {
         if (!_assignPreviewActive) return;
         _assignPreviewActive = false;
 
-        // 1) Restore the Skill Tree panel
+        // 1) Restore the Skill Tree panel if it was visible before
         if (skillTreeUI != null && _skillTreeWasActive == true)
             skillTreeUI.gameObject.SetActive(true);
         _skillTreeWasActive = false;
 
-        // Let UI state know the tree is open so the next Esc goes to main menu
+        // Sync state so next Esc goes to main menu
         isSkillTreeOpen = skillTreeUI != null && skillTreeUI.gameObject.activeSelf;
 
         // 2) Close Sex UI if we opened it only for preview
@@ -1178,35 +1233,9 @@ public class UI : MonoBehaviour
         _combatHUDActivatedByPreview = false;
     }
 
-
-
-
-
-    // ===== NEW: Sex skill routing helper (used by SkillTree) =====
-    public void AssignSexSkillToSexyTimeHotbar(Skill_DataSO sexSkill)
-    {
-        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
-
-        // Persist regardless of UI presence
-        SexyTimeUIController.AddPersistentSexSkill(sexSkill);
-
-        // If controller exists, reflect immediately
-        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-        if (sexUI != null)
-        {
-            sexUI.ShowSexSkill(sexSkill);
-            Debug.Log($"[UI] Routed Sex skill '{sexSkill.displayName}' to SexyTime hotbar (and persisted).");
-        }
-        else
-        {
-            Debug.Log($"[UI] SexyTimeUIController not found yet — persisted Sex skill '{sexSkill.displayName}' for later.");
-        }
-    }
-
     // The only blessed way to exit assign mode
     public void RequestExitAssignPreview()
     {
-        // Let the hotbar preview close & restore
         HideHotbarAssignPreview();
 
         // Always bring the Skill Tree back after leaving assign mode
@@ -1231,6 +1260,120 @@ public class UI : MonoBehaviour
         }
     }
 
+    // ===== NEW: Sex skill routing helper (used by SkillTree) =====
+    public void AssignSexSkillToSexyTimeHotbar(Skill_DataSO sexSkill)
+    {
+        if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return;
 
+        // Persist regardless of UI presence
+        SexyTimeUIController.AddPersistentSexSkill(sexSkill);
 
+        // If controller exists, reflect immediately
+        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+        if (sexUI != null)
+        {
+            sexUI.ShowSexSkill(sexSkill);
+            Debug.Log($"[UI] Routed Sex skill '{sexSkill.displayName}' to SexyTime hotbar (and persisted).");
+        }
+        else
+        {
+            Debug.Log($"[UI] SexyTimeUIController not found yet — persisted Sex skill '{sexSkill.displayName}' for later.");
+        }
+    }
+
+    // ====================== UI Navigation helpers ======================
+
+    public static void WireLinearNav(Selectable[] items, bool horizontal)
+    {
+        if (items == null) return;
+        for (int i = 0; i < items.Length; i++)
+        {
+            var s = items[i];
+            if (s == null) continue;
+            var n = s.navigation;
+            n.mode = Navigation.Mode.Explicit;
+
+            var left = i > 0 ? items[i - 1] : null;
+            var right = i < items.Length - 1 ? items[i + 1] : null;
+
+            if (horizontal)
+            {
+                n.selectOnLeft = left;
+                n.selectOnRight = right;
+            }
+            else
+            {
+                n.selectOnUp = left;
+                n.selectOnDown = right;
+            }
+
+            s.navigation = n;
+        }
+    }
+
+    public static void WireGridNav(Selectable[] items, int cols)
+    {
+        if (items == null || cols <= 0) return;
+        for (int i = 0; i < items.Length; i++)
+        {
+            var s = items[i];
+            if (s == null) continue;
+
+            int row = i / cols;
+            int col = i % cols;
+
+            var n = s.navigation;
+            n.mode = Navigation.Mode.Explicit;
+
+            // left/right
+            n.selectOnLeft = col > 0 ? items[i - 1] : null;
+            n.selectOnRight = col < cols - 1 && i + 1 < items.Length ? items[i + 1] : null;
+
+            // up/down
+            int upIdx = i - cols;
+            int downIdx = i + cols;
+            n.selectOnUp = upIdx >= 0 ? items[upIdx] : null;
+            n.selectOnDown = downIdx < items.Length ? items[downIdx] : null;
+
+            s.navigation = n;
+        }
+    }
+
+    private static void SelectGO(GameObject go)
+    {
+        if (go == null) return;
+        EventSystem.current?.SetSelectedGameObject(go);
+    }
+
+    // ====================== Rewired Map swap for Main Menu ======================
+
+    private void EnterUIMode()
+    {
+        CacheRewired();
+        if (rplayerUI != null)
+        {
+            rplayerUI.controllers.maps.SetMapsEnabled(false, "Gameplay"); // disable gameplay
+            rplayerUI.controllers.maps.SetMapsEnabled(true, "UI");       // enable UI navigation
+        }
+
+        var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        p?.SetInputEnabled(false); // optional: hard stop custom input in your states
+
+        Time.timeScale = 0f; // pause while menu is open
+    }
+
+    private void ExitUIMode()
+    {
+        CacheRewired();
+        if (rplayerUI != null)
+        {
+            rplayerUI.controllers.maps.SetMapsEnabled(true, "Gameplay"); // restore gameplay
+            rplayerUI.controllers.maps.SetMapsEnabled(false, "UI");       // disable UI map
+        }
+
+        var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        p?.SetInputEnabled(true);
+
+        if (Mathf.Approximately(Time.timeScale, 0f)) Time.timeScale = 1f;
+    }
 }

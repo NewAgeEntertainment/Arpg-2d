@@ -91,6 +91,69 @@ public class Player : Entity
     public event Action<bool> OnGrassStateChanged;
     // ========================================================================
 
+    // ===================== Input/Animation gating for menus =================
+    private bool _inputEnabled = true;
+    private float _animSpeedBeforePause = 1f;
+    public bool InputEnabled => _inputEnabled;
+
+    /// <summary>
+    /// Called by UI when opening/closing menus. Disables gameplay input,
+    /// zeroes velocity, and freezes animator while false.
+    /// </summary>
+    public void SetInputEnabled(bool enabled)
+    {
+        _inputEnabled = enabled;
+
+        // Stop motion immediately when disabled
+        if (!enabled)
+        {
+            moveInput = Vector2.zero;
+
+            if (rb != null) rb.velocity = Vector2.zero;
+
+            if (anim != null)
+            {
+                _animSpeedBeforePause = Mathf.Approximately(anim.speed, 0f) ? 1f : anim.speed;
+                anim.updateMode = AnimatorUpdateMode.Normal; // ensure scaled time
+                anim.speed = 0f;
+
+                // Reset common movement params to avoid "sliding" anim while paused
+                SafeSetAnimFloat("X", 0f);
+                SafeSetAnimFloat("Y", 0f);
+                SafeSetAnimFloat("Speed", 0f);
+            }
+        }
+        else
+        {
+            if (anim != null)
+            {
+                anim.updateMode = AnimatorUpdateMode.Normal;
+                anim.speed = (_animSpeedBeforePause <= 0f) ? 1f : _animSpeedBeforePause;
+            }
+        }
+    }
+
+    private void SafeSetAnimFloat(string param, float value)
+    {
+        if (anim == null) return;
+        try
+        {
+            // Avoid errors if controller doesn't have this param
+            if (HasAnimatorParameter(param, AnimatorControllerParameterType.Float))
+                anim.SetFloat(param, value);
+        }
+        catch { /* ignore */ }
+    }
+
+    private bool HasAnimatorParameter(string name, AnimatorControllerParameterType type)
+    {
+        if (anim == null) return false;
+        foreach (var p in anim.parameters)
+            if (p.type == type && p.name == name) return true;
+        return false;
+    }
+    // ========================================================================
+
     protected override void Awake()
     {
         base.Awake();
@@ -147,6 +210,21 @@ public class Player : Entity
 
     protected override void Update()
     {
+        // When input is disabled by UI, hard-freeze motion/anim and skip gameplay Update.
+        if (!_inputEnabled)
+        {
+            if (rb != null) rb.velocity = Vector2.zero;
+
+            if (anim != null)
+            {
+                anim.speed = 0f;
+                SafeSetAnimFloat("X", 0f);
+                SafeSetAnimFloat("Y", 0f);
+                SafeSetAnimFloat("Speed", 0f);
+            }
+            return;
+        }
+
         base.Update();
 
         if (rPlayer == null) TryCacheRewiredPlayer();
@@ -160,6 +238,13 @@ public class Player : Entity
 
         // --- Tall grass ambient VFX while moving ---
         HandleGrassFootstepsVFX();
+    }
+
+    private void LateUpdate()
+    {
+        // Safety net: ensure velocity stays zero while paused
+        if (!_inputEnabled && rb != null)
+            rb.velocity = Vector2.zero;
     }
 
     public void InitializeAfterSpawn()
@@ -328,11 +413,10 @@ public class Player : Entity
         try
         {
             var rp = ReInput.players.GetPlayer(playerID);
-            rp.controllers.maps.SetMapsEnabled(true, "Default");
+            rp.controllers.maps.SetMapsEnabled(true, "Gameplay");
         }
         catch { /* Rewired not ready yet */ }
     }
-
 
     // --- Compatibility shim for old UI code ---
     // Old UI calls Player.GetNextSexLevelRequirementSex(); forward to Player_Stats now.
@@ -340,7 +424,6 @@ public class Player : Entity
     {
         return stats != null ? stats.GetNextSexLevelRequirement() : 0f;
     }
-
 
     // ===== EXP APIs =====
 
@@ -480,7 +563,6 @@ public class Player : Entity
         if (value) EnterGrass();
         else ExitGrass();
     }
-
 
     private void SpawnGrassRustleVFX()
     {
