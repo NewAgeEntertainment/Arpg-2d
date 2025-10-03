@@ -303,6 +303,29 @@ MonoBehaviour:
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
   m_questIndicatorState: 5
+--- !u!114 &-2741437629197127915
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b543cc48d60f94eaf19a02d5f46611, type: 3}
+  m_Name: SetIndicatorQuestAction
+  m_EditorClassIdentifier: 
+  m_questID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_entityID:
+    m_text: Shori
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_questIndicatorState: 4
 --- !u!114 &-2594941205632860341
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -456,24 +479,6 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
---- !u!114 &-1199323279554759515
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8dd425597ce38647ade6025cfd66c5e, type: 3}
-  m_Name: ActivateGameObjectQuestAction
-  m_EditorClassIdentifier: 
-  m_gameObjectName:
-    m_text: Lvl 3 Quest Icon 1
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_state: 1
 --- !u!114 &-1059024232610892778
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -493,6 +498,27 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &-834979776281848159
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 732e99ba3b575dc4dad61a69b0417c96, type: 3}
+  m_Name: QuestStateQuestCondition
+  m_EditorClassIdentifier: 
+  m_alreadyTrue: 0
+  m_requiredQuest: {fileID: 11400000}
+  m_requiredQuestID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_isNot: 0
+  m_requiredState: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,12 +568,14 @@ MonoBehaviour:
     m_minConditionCount: 0
     m_numTrueConditions: 0
   m_offerConditionSet:
-    m_conditionList: []
+    m_conditionList:
+    - {fileID: -834979776281848159}
     m_conditionCountMode: 0
     m_minConditionCount: 0
     m_numTrueConditions: 0
   m_offerConditionsUnmetContentList: []
   m_offerContentList: []
+  m_infinitelyRepeatable: 0
   m_maxTimes: 1
   m_timesAccepted: 0
   m_cooldownSeconds: 3600
@@ -556,7 +584,8 @@ MonoBehaviour:
   m_saveAllIfWaitingToStart: 0
   m_state: 0
   m_stateInfoList:
-  - m_actionList: []
+  - m_actionList:
+    - {fileID: -2741437629197127915}
     m_categorizedContentList:
     - m_contentList: []
     - m_contentList: []
@@ -1328,8 +1357,7 @@ MonoBehaviour:
       - m_contentList: []
       - m_contentList: []
     m_conditionSet:
-      m_conditionList:
-      - {fileID: 8497018044965339490}
+      m_conditionList: []
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
@@ -1369,15 +1397,13 @@ MonoBehaviour:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
-    - m_actionList:
-      - {fileID: -1199323279554759515}
+    - m_actionList: []
       m_categorizedContentList:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
     m_conditionSet:
-      m_conditionList:
-      - {fileID: 8470943443605237862}
+      m_conditionList: []
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
@@ -1911,81 +1937,3 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
---- !u!114 &8470943443605237862
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5682394e55a192147a020b9edf624e51, type: 3}
-  m_Name: MessageQuestCondition
-  m_EditorClassIdentifier: 
-  m_alreadyTrue: 0
-  m_senderSpecifier: 0
-  m_senderID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_targetSpecifier: 0
-  m_targetID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_message:
-    m_text: Icon
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_parameter:
-    m_text: activate
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_value:
-    m_valueType: 0
-    m_intValue: 0
-    m_stringValue: 
---- !u!114 &8497018044965339490
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5682394e55a192147a020b9edf624e51, type: 3}
-  m_Name: MessageQuestCondition
-  m_EditorClassIdentifier: 
-  m_alreadyTrue: 0
-  m_senderSpecifier: 0
-  m_senderID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_targetSpecifier: 0
-  m_targetID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_message:
-    m_text: open
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_parameter:
-    m_text: inn
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_value:
-    m_valueType: 0
-    m_intValue: 0
-    m_stringValue: 

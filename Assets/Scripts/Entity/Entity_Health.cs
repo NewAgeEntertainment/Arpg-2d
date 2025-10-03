@@ -19,6 +19,9 @@ public class Entity_Health : MonoBehaviour, IDamageable
     /// <summary>Optional: same as OnDied, but includes the last damage dealer Transform.</summary>
     public event Action<Transform> OnDiedWithKiller;
 
+    public float MaxHealth => (entityStats != null) ? entityStats.GetMaxHealth() : Mathf.Max(1f, currentHealth);
+    public float GetMaxHealth() => MaxHealth;
+
     // --------------- References ---------------
     private Slider healthBar;
     private Entity entity;

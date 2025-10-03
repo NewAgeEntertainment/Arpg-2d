@@ -819,7 +819,7 @@ MonoBehaviour:
   - id: 12
     fields:
     - title: Name
-      value: Wolf Subjugation
+      value: slay wolves
       type: 0
       typeString: CustomFieldType_Text
     - title: Pictures
@@ -846,6 +846,10 @@ MonoBehaviour:
       value: False
       type: 2
       typeString: CustomFieldType_Boolean
+    - title: Group
+      value: Guild Quest
+      type: 0
+      typeString: CustomFieldType_Text
   - id: 13
     fields:
     - title: Name
@@ -929,7 +933,7 @@ MonoBehaviour:
       type: 0
       typeString: CustomFieldType_Text
     - title: State
-      value: active
+      value: unassigned
       type: 0
       typeString: CustomFieldType_QuestState
     - title: Is Item
@@ -940,6 +944,70 @@ MonoBehaviour:
     fields:
     - title: Name
       value: exampleCircle
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Success Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Failure Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: State
+      value: unassigned
+      type: 0
+      typeString: CustomFieldType_QuestState
+    - title: Is Item
+      value: False
+      type: 2
+      typeString: CustomFieldType_Boolean
+  - id: 17
+    fields:
+    - title: Name
+      value: slay7Rabbies
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Pictures
+      value: '[]'
+      type: 3
+      typeString: CustomFieldType_Files
+    - title: Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Success Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: Failure Description
+      value: 
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: State
+      value: unassigned
+      type: 0
+      typeString: CustomFieldType_QuestState
+    - title: Is Item
+      value: False
+      type: 2
+      typeString: CustomFieldType_Boolean
+    - title: Group
+      value: Guild Quest
+      type: 0
+      typeString: CustomFieldType_Text
+  - id: 18
+    fields:
+    - title: Name
+      value: slay wolves
       type: 0
       typeString: CustomFieldType_Text
     - title: Pictures
@@ -10681,8 +10749,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 30.37973}
-    canvasZoom: 0.7900002
+    canvasScrollPosition: {x: 0, y: 13.816559}
+    canvasZoom: 0.73000026
   - id: 33
     fields:
     - title: Title
@@ -10760,7 +10828,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 33
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -11409,7 +11477,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: SendMessageSystem("Quest", "Complete")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -11420,8 +11488,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.40000045
+    canvasScrollPosition: {x: 328.5071, y: 507.76245}
+    canvasZoom: 1.03
   - id: 34
     fields:
     - title: Title
@@ -12084,7 +12152,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 37
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -12626,7 +12694,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 39
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -13807,8 +13875,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 321.2861, y: 13.485186}
-    canvasZoom: 1.1500002
+    canvasScrollPosition: {x: 173.38055, y: 745.8172}
+    canvasZoom: 0.5200008
   - id: 40
     fields:
     - title: Title
@@ -13886,7 +13954,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 40
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -13899,6 +13967,12 @@ MonoBehaviour:
         destinationDialogueID: 1
         isConnector: 0
         priority: 2
+      - originConversationID: 40
+        originDialogueID: 0
+        destinationConversationID: 40
+        destinationDialogueID: 16
+        isConnector: 0
+        priority: 2
       conditionsString: 
       userScript: 
       onExecute:
@@ -13906,8 +13980,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 648.60034
-        y: 3.5119705
+        x: 1823.3031
+        y: 309.02548
         width: 160
         height: 30
     - id: 1
@@ -13954,15 +14028,16 @@ MonoBehaviour:
         destinationDialogueID: 2
         isConnector: 0
         priority: 2
-      conditionsString: 
+      conditionsString: CurrentQuestState("slay7Rabbies") == "unassigned" and (CurrentQuestState("slay
+        wolves") == "unassigned")
       userScript: 
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 56.36364
+        x: 1703.5663
+        y: 361.87717
         width: 160
         height: 30
     - id: 2
@@ -14016,8 +14091,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 106.36364
+        x: 1703.5663
+        y: 411.87717
         width: 160
         height: 30
     - id: 3
@@ -14071,8 +14146,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 156.36359
+        x: 1703.5663
+        y: 461.8771
         width: 160
         height: 30
     - id: 4
@@ -14126,8 +14201,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 206.36359
+        x: 1703.5663
+        y: 511.87714
         width: 160
         height: 30
     - id: 5
@@ -14181,8 +14256,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 256.3636
+        x: 1703.5663
+        y: 561.87714
         width: 160
         height: 30
     - id: 6
@@ -14236,8 +14311,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 306.3636
+        x: 1703.5663
+        y: 611.87714
         width: 160
         height: 30
     - id: 7
@@ -14292,8 +14367,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 356.3636
+        x: 1703.5663
+        y: 661.87714
         width: 160
         height: 30
     - id: 8
@@ -14347,8 +14422,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 406.3636
+        x: 1703.5663
+        y: 711.87714
         width: 160
         height: 30
     - id: 9
@@ -14403,8 +14478,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 456.3636
+        x: 1703.5663
+        y: 761.87714
         width: 160
         height: 30
     - id: 10
@@ -14458,8 +14533,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 506.3636
+        x: 1703.5663
+        y: 811.87714
         width: 160
         height: 30
     - id: 11
@@ -14513,8 +14588,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 556.3636
+        x: 1703.5663
+        y: 861.87714
         width: 160
         height: 30
     - id: 12
@@ -14568,8 +14643,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 607.85614
+        x: 1703.5663
+        y: 913.3697
         width: 160
         height: 30
     - id: 13
@@ -14624,8 +14699,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 528.8635
-        y: 656.21674
+        x: 1703.5663
+        y: 961.73016
         width: 160
         height: 30
     - id: 14
@@ -14679,8 +14754,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 527.2242
-        y: 706.21674
+        x: 1701.9269
+        y: 1011.73016
         width: 160
         height: 30
     - id: 15
@@ -14727,19 +14802,179 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
+      userScript: SendMessageSystem("The", "Board");
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 1700.6144
+        y: 1058.8716
+        width: 160
+        height: 30
+    - id: 16
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: Turning in a hunt?
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 40
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 40
+        originDialogueID: 16
+        destinationConversationID: 40
+        destinationDialogueID: 17
+        isConnector: 0
+        priority: 2
+      - originConversationID: 40
+        originDialogueID: 16
+        destinationConversationID: 40
+        destinationDialogueID: 18
+        isConnector: 0
+        priority: 2
+      conditionsString: CurrentQuestState("slay7Rabbies") == "active" and (CurrentQuestState("slay
+        wolves") == "active") and (CurrentQuestState("slay wolves") == "unassigned")
       userScript: 
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 525.91156
-        y: 753.35785
+        x: 2087.8247
+        y: 386.41934
+        width: 160
+        height: 30
+    - id: 17
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: 'yes '
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 40
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 2332.3
+        y: 347.39496
+        width: 160
+        height: 30
+    - id: 18
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: no
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 40
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 2365.7812
+        y: 440.07788
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 258.16116, y: 54.22683}
-    canvasZoom: 0.37000057
+    canvasScrollPosition: {x: 1641.4664, y: 214.02808}
+    canvasZoom: 0.7000003
   - id: 41
     fields:
     - title: Title
@@ -14817,7 +15052,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 41
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -15278,7 +15513,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 1599.5355
-        y: 271.8602
+        y: 274.02237
         width: 160
         height: 30
     - id: 9
@@ -15331,8 +15566,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 164.49164}
-    canvasZoom: 0.6700004
+    canvasScrollPosition: {x: 0, y: 55.28679}
+    canvasZoom: 0.3700005
   - id: 42
     fields:
     - title: Title
@@ -15685,7 +15920,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 43
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -15738,7 +15973,7 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: Happy Hunting!
+        value: Turning in a hunt?
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
@@ -15765,7 +16000,7 @@ MonoBehaviour:
         destinationDialogueID: 3
         isConnector: 0
         priority: 2
-      conditionsString: 
+      conditionsString: QuesterHasQuest("Guild Quest", "Lioncard")  == true
       userScript: 
       onExecute:
         m_PersistentCalls:
@@ -15806,6 +16041,10 @@ MonoBehaviour:
         value: 
         type: 0
         typeString: CustomFieldType_Text
+      - title: EventGuid
+        value: d886e790-89c8-485e-8b4c-c992b69fa158
+        type: 0
+        typeString: 
       conversationID: 43
       isRoot: 0
       isGroup: 0
@@ -15818,10 +16057,22 @@ MonoBehaviour:
       userScript: 
       onExecute:
         m_PersistentCalls:
-          m_Calls: []
+          m_Calls:
+          - m_Target: {fileID: 0}
+            m_TargetAssemblyTypeName: 
+            m_MethodName: 
+            m_Mode: 1
+            m_Arguments:
+              m_ObjectArgument: {fileID: 0}
+              m_ObjectArgumentAssemblyTypeName: 
+              m_IntArgument: 0
+              m_FloatArgument: 0
+              m_StringArgument: 
+              m_BoolArgument: 0
+            m_CallState: 2
       canvasRect:
         serializedVersion: 2
-        x: 597.4633
+        x: 599.34796
         y: 85.29271
         width: 160
         height: 30
@@ -15925,7 +16176,7 @@ MonoBehaviour:
         height: 30
     entryGroups: []
     canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.8200002
+    canvasZoom: 0.7600002
   - id: 44
     fields:
     - title: Title
@@ -16003,7 +16254,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 44
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -16518,8 +16769,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 146.8134, y: 25.660534}
-    canvasZoom: 0.96999997
+    canvasScrollPosition: {x: 60.231033, y: 41.998802}
+    canvasZoom: 0.79000014
   - id: 45
     fields:
     - title: Title
@@ -16597,7 +16848,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 45
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -16726,8 +16977,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 0.73000026
+    canvasScrollPosition: {x: 97.32939, y: 17.775076}
+    canvasZoom: 0.9100001
   - id: 46
     fields:
     - title: Title
@@ -39198,8 +39449,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 59.310287}
-    canvasZoom: 0.5800004
+    canvasScrollPosition: {x: 46.115055, y: 118.186035}
+    canvasZoom: 0.94000006
   syncInfo:
     syncActors: 0
     syncItems: 0

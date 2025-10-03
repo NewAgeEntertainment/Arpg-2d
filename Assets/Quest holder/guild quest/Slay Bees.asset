@@ -1,44 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7747315141353680656
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5682394e55a192147a020b9edf624e51, type: 3}
-  m_Name: MessageQuestCondition
-  m_EditorClassIdentifier: 
-  m_alreadyTrue: 0
-  m_senderSpecifier: 0
-  m_senderID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_targetSpecifier: 0
-  m_targetID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_message:
-    m_text: Discussed Quest
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_parameter:
-    m_text: Bee Subjagation
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_value:
-    m_valueType: 0
-    m_intValue: 0
-    m_stringValue: 
 --- !u!114 &-7565444088991711452
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -166,6 +127,45 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &-2554033852372643841
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5682394e55a192147a020b9edf624e51, type: 3}
+  m_Name: MessageQuestCondition
+  m_EditorClassIdentifier: 
+  m_alreadyTrue: 0
+  m_senderSpecifier: 2
+  m_senderID:
+    m_text: '{QUESTGIVERID}'
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_targetSpecifier: 0
+  m_targetID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_message:
+    m_text: Discussed Quest
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_parameter:
+    m_text: Slay Rabbie
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_value:
+    m_valueType: 0
+    m_intValue: 0
+    m_stringValue: 
 --- !u!114 &-149896381559333722
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -231,7 +231,7 @@ MonoBehaviour:
     m_textTableFieldID: 0
   m_icon: {fileID: 603136284, guid: 19c4bcec51089104da7c078c39238b59, type: 3}
   m_group:
-    m_text: Guild Rank D
+    m_text: Guild Quest
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
@@ -262,6 +262,7 @@ MonoBehaviour:
   - {fileID: 1171742293335767863}
   - {fileID: -4635032683153438400}
   - {fileID: 7959610384982296644}
+  m_infinitelyRepeatable: 0
   m_maxTimes: 999
   m_timesAccepted: 0
   m_cooldownSeconds: 1
@@ -477,7 +478,7 @@ MonoBehaviour:
       - m_contentList: []
     m_conditionSet:
       m_conditionList:
-      - {fileID: -7747315141353680656}
+      - {fileID: -2554033852372643841}
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
@@ -698,8 +699,7 @@ MonoBehaviour:
   m_onExecute:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddGold
         m_Mode: 3
@@ -711,8 +711,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddXP
         m_Mode: 3

@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
@@ -30,6 +30,11 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
 
     private void OnEnable()
     {
+        // Paint once immediately so the numbers are correct the first frame the menu opens.
+        TryFindPlayer();
+        RefreshHealth();
+        RefreshMana();
+
         watchCo = StartCoroutine(WatchAndBindLoop());
     }
 
@@ -39,23 +44,24 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
         if (watchCo != null) { StopCoroutine(watchCo); watchCo = null; }
     }
 
+
+
     private IEnumerator WatchAndBindLoop()
     {
-        var wait = new WaitForSeconds(pollIntervalWhileOpen);
+        var wait = new WaitForSecondsRealtime(pollIntervalWhileOpen); // ✅ unscaled time (works while paused)
 
         while (true)
         {
-            // Only try to bind when the menu panel is actually in use (if provided)
+            // Only try to bind/repaint while the menu is visible (if a root was assigned)
             if (menuPanelRoot == null || menuPanelRoot.activeInHierarchy)
             {
-                // If player missing or replaced, (re)bind
                 if (player == null)
                 {
                     TryFindPlayer();
                 }
                 else
                 {
-                    // Check if components still valid
+                    // Bind events once
                     if (!boundHealth && player.health != null)
                     {
                         player.health.OnHealthUpdate += RefreshHealth;
@@ -70,11 +76,8 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
                         if (logBinding) Debug.Log("[MenuBars] Bound Mana event");
                         RefreshMana();
                     }
-                }
 
-                // Fallback repaint while open (covers cases where events didn�t fire yet)
-                if (player != null)
-                {
+                    // Fallback repaint every tick (covers edge cases)
                     RefreshHealth();
                     RefreshMana();
                 }
@@ -90,7 +93,6 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
 
     private void TryFindPlayer()
     {
-        // Find active or inactive Player (handles spawn after UI enabled)
         var found = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
         if (found != null && found != player)
         {
@@ -113,7 +115,6 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
                 if (logBinding) Debug.Log("[MenuBars] Bound Mana event (initial)");
             }
 
-            // First paint
             RefreshHealth();
             RefreshMana();
         }
@@ -137,7 +138,11 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
         if (player == null || player.health == null) return;
 
         float cur = Mathf.RoundToInt(player.health.GetCurrentHealth());
-        float max = stats != null ? stats.GetMaxHealth() : cur;
+
+        // ✅ Prefer live max from Health; fallback to stats if needed
+        float max = player.health.GetMaxHealth();
+        if (max <= 0 && stats != null) max = stats.GetMaxHealth();
+        if (max <= 0) max = Mathf.Max(cur, 1); // final safety
 
         if (useNormalizedSliders)
         {
@@ -163,7 +168,11 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
         if (player == null || player.mana == null) return;
 
         float cur = Mathf.RoundToInt(player.mana.GetCurrentMana());
-        float max = stats != null ? stats.GetMaxMana() : cur;
+
+        // ✅ Prefer live max from Mana; fallback to stats if needed
+        float max = player.mana.GetMaxMana();
+        if (max <= 0 && stats != null) max = stats.GetMaxMana();
+        if (max <= 0) max = Mathf.Max(cur, 1); // final safety
 
         if (useNormalizedSliders)
         {
@@ -182,5 +191,13 @@ public class UI_MenuHealthManaBinder : MonoBehaviour
 
         if (manaText != null)
             manaText.text = $"{(int)cur}/{(int)max}";
+    }
+
+    // Optional: expose a manual nudge if you want to call it from UI.OpenMainMenuDirect()
+    public void ForceFindAndRefresh()
+    {
+        TryFindPlayer();
+        RefreshHealth();
+        RefreshMana();
     }
 }

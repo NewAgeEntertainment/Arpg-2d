@@ -14,8 +14,10 @@ public class UI_ItemSlotParent : MonoBehaviour
 
         foreach (var slot in slots)
         {
-            slot.OnSubmit += HandleSlotSubmit;
-            slot.OnRightClick += HandleSlotRightClick;
+            // in Awake():
+            slot.OnSlotSubmit += HandleSlotSubmit;
+            slot.OnSlotRightClick += HandleSlotRightClick;
+
         }
     }
 

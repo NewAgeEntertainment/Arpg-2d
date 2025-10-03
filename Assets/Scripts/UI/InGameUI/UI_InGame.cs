@@ -397,6 +397,15 @@ public class UI_InGame : MonoBehaviour
         return true;
     }
 
+    public bool AnySkillSlotHasSkill()
+    {
+        var slots = GetComponentsInChildren<UI_SkillSlot>(true);
+        foreach (var s in slots)
+            if (s != null && s.HasSkill) return true;
+        return false;
+    }
+
+
     private void PulseSexConflict(int index, float seconds)
     {
         var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);

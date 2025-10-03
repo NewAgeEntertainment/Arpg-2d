@@ -41,11 +41,27 @@ public class UI_Inventory : UI_Panel
     [SerializeField] private AudioClip itemUsedSound;
     [SerializeField] private AudioSource audioSource;
 
+    [SerializeField] private InventoryMenuController menuController; // <- drag in Inspector
+
+
     // -------- Legacy compatibility: assignslot / AssignSlot (uses UI_ItemSlot) --------
     [Header("Legacy Slot Binding (optional)")]
     [Tooltip("Enables AssignSlot/assignslot compatibility for older code paths.")]
     [SerializeField] private bool enableLegacyAssignSlot = true;
     private readonly List<UI_ItemSlot> _legacySlots = new();
+
+    // ======== NEW: Main Menu Controller-style navigation ========
+    [Header("Navigation (Main Menu Controller)")]
+    [SerializeField] private InventoryMenuController menuNav;
+
+    private void EnsureMenuNav()
+    {
+        if (menuNav == null)
+            menuNav = GetComponent<InventoryMenuController>();
+        if (menuNav == null)
+            menuNav = FindFirstObjectByType<InventoryMenuController>(FindObjectsInactive.Include);
+    }
+    // ============================================================
 
     private bool _playedNoItemSFXThisOpen = false;
 
@@ -83,6 +99,7 @@ public class UI_Inventory : UI_Panel
     private void Start()
     {
         rPlayer = ReInput.players.GetPlayer(playerID);
+        EnsureMenuNav();
     }
 
     private void OnDestroy()
@@ -128,13 +145,22 @@ public class UI_Inventory : UI_Panel
         _dirty = true;
 
         if (isOpen && currentState == PanelState.ItemList)
+        {
             ForceRefresh();
+            // Rebuild item grid nav if visible & changed
+            EnsureMenuNav();
+            menuNav?.BuildForItemGrid();
+        }
 
         if (currentState == PanelState.ActorSelect)
         {
             UpdateActorSelectButtons();
             UpdateActorSelectHeader();
             MaybePlayNoItemSFX();
+
+            // keep actor grid nav fresh
+            EnsureMenuNav();
+            menuNav?.BuildForActorGrid();
         }
 
         if (goldText != null && inventory != null)
@@ -149,6 +175,16 @@ public class UI_Inventory : UI_Panel
         _dirty = false;
         UpdateUI(force: true);
         RefreshAllLegacySlots();
+
+        // Rebuild nav for whichever panel is active
+        EnsureMenuNav();
+        switch (currentState)
+        {
+            case PanelState.Category: menuNav?.BuildForCategory(); break;
+            case PanelState.ItemList: menuNav?.BuildForItemGrid(); break;
+            case PanelState.ActorSelect: menuNav?.BuildForActorGrid(); break;
+            case PanelState.AssignPopup: menuNav?.BuildForAssignPopup(); break;
+        }
     }
 
     public void OpenInventory()
@@ -284,6 +320,9 @@ public class UI_Inventory : UI_Panel
         categoryPanel.SetActive(true);
         currentState = PanelState.Category;
         PlayOpenSound();
+
+        // build & focus category row
+        menuController?.BuildForCategory();
     }
 
     public void OpenItemListPanel()
@@ -291,8 +330,12 @@ public class UI_Inventory : UI_Panel
         CloseAllPanels();
         itemListPanel.SetActive(true);
         currentState = PanelState.ItemList;
+
+        // make sure slots exist first, THEN wire/focus
         ForceRefresh();
         PlayOpenSound();
+
+        menuNav?.BuildForItemGrid();
     }
 
     public void OpenActorSelectPanel(Inventory_Item item)
@@ -312,26 +355,11 @@ public class UI_Inventory : UI_Panel
             btn.SetUseItemContext(itemBeingAssigned, inventory, () =>
             {
                 int remainingBefore = inventory.CountItem(itemBeingAssigned.itemData);
-
-                bool used = false;
-                if (remainingBefore > 0)
-                {
-                    used = true;
-                    PlayItemUsedSFX();
-                }
-                else
-                {
-                    PlayNoItemSFX();
-                }
+                bool used = remainingBefore > 0;
+                if (used) PlayItemUsedSFX(); else PlayNoItemSFX();
 
                 UpdateActorSelectButtons();
                 UpdateActorSelectHeader();
-
-                int remainingAfter = inventory.CountItem(itemBeingAssigned.itemData);
-                if (used && remainingAfter <= 0)
-                {
-                    // optional: feedback when last one is consumed
-                }
             });
 
             btn.SetSelected(false);
@@ -339,28 +367,35 @@ public class UI_Inventory : UI_Panel
 
         UpdateActorSelectButtons();
         UpdateActorSelectHeader();
+
+        // wire/focus actor grid
+        menuNav?.BuildForActorGrid();
     }
 
-    // UI_Inventory.cs
     public void OpenAssignPopup(Inventory_Item item)
     {
-        // hide other subpanels (optional)
         CloseAllPanels();
-
-        // move state machine
         currentState = PanelState.AssignPopup;
 
-        // ensure the component is hooked in the Inspector
         if (assignPopup == null)
         {
             Debug.LogError("[UI_Inventory] assignPopup is not set in the Inspector.");
             return;
         }
 
-        // make sure the GO is visible, then open with a callback
         assignPopup.gameObject.SetActive(true);
-        assignPopup.Open(item, OnAssignConfirmedToSlot); // (item, amount, slotIndex1Based)
+        assignPopup.Open(item, OnAssignConfirmedToSlot);
+
+        // Let the popup become active this frame, then wire (in case it spawns buttons on Open)
+        StartCoroutine(DelayBuildAssignPopup());
     }
+
+    private System.Collections.IEnumerator DelayBuildAssignPopup()
+    {
+        yield return null; // next frame after elements exist
+        menuNav?.BuildForAssignPopup();
+    }
+
 
 
     // ------------------------------
@@ -417,6 +452,8 @@ public class UI_Inventory : UI_Panel
         OpenItemListPanel();
         ForceRefresh();
     }
+
+
 
 
     // ------------------------------
@@ -524,6 +561,13 @@ public class UI_Inventory : UI_Panel
         }
 
         backpackSlotsParent.UpdateSlots(filtered);
+
+        // Keep nav in sync if we changed the items while on ItemList
+        if (currentState == PanelState.ItemList)
+        {
+            EnsureMenuNav();
+            menuNav?.BuildForItemGrid();
+        }
     }
 
     private void OnActorPicked(Player p)

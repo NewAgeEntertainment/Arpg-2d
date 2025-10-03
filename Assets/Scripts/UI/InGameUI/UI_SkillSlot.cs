@@ -226,4 +226,15 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         yield return new WaitForSeconds(seconds);
         conflictSlot.SetActive(false);
     }
+
+    private void OnEnable()
+    {
+        // Re-fetch the new scene's manager & mana so the cost/afford overlay are correct.
+        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+        RefreshText(mgr);
+
+        var manaRef = FindFirstObjectByType<Entity_Mana>(FindObjectsInactive.Include);
+        UpdateAffordability(manaRef);
+    }
+
 }

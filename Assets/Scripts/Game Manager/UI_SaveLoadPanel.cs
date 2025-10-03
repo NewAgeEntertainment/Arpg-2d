@@ -55,6 +55,8 @@ public class UI_SaveLoadPanel : MonoBehaviour
     private Coroutine _dotsRoutine;
     private Mode _mode = Mode.Save;
 
+    public Mode CurrentMode => _mode;
+
     public bool IsOpen => panel != null && panel.activeSelf;
     public bool IsOverwriteOpen => overwritePanel != null && overwritePanel.activeSelf;
 
@@ -220,6 +222,26 @@ public class UI_SaveLoadPanel : MonoBehaviour
         overwritePanel?.SetActive(true);
     }
 
+    private static void WriteSceneNamesToPrefs(int slotIndex)
+    {
+        // Internal, unique scene name (prefer PixelCrushers if present)
+        string sceneName;
+        try { sceneName = SaveSystem.GetCurrentSceneName(); }
+        catch { sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name; }
+
+        // Pretty display title (from a provider in the scene, else fall back to name)
+        string sceneDisplay = sceneName;
+        var provider = UnityEngine.Object.FindFirstObjectByType<SceneDisplayNameProvider>(FindObjectsInactive.Include);
+        if (provider != null && !string.IsNullOrWhiteSpace(provider.DisplayName))
+            sceneDisplay = provider.DisplayName;
+
+        // Persist both
+        PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);          // unique internal
+        PlayerPrefs.SetString($"SaveSlot_{slotIndex}_sceneDisplay", sceneDisplay); // pretty title
+        PlayerPrefs.Save();
+    }
+
+
     private void OnClickOverwriteYes()
     {
         if (_mode != Mode.Save) return;
@@ -237,6 +259,7 @@ public class UI_SaveLoadPanel : MonoBehaviour
         _pendingSlotIndex = -1;
     }
 
+    // UI_SaveLoadPanel.cs
     private IEnumerator SaveToSlotFlow(int slotIndex)
     {
         if (_mode != Mode.Save) yield break;
@@ -255,7 +278,7 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
         float startTime = Time.unscaledTime;
 
-        // Do the actual save and write some metadata
+        // Do the actual save and write metadata
         try
         {
             SaveSystem.SaveToSlot(slotIndex);
@@ -265,7 +288,14 @@ public class UI_SaveLoadPanel : MonoBehaviour
             try { sceneName = SaveSystem.GetCurrentSceneName(); }
             catch { sceneName = SceneManager.GetActiveScene().name; }
 
-            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);
+            // Find a nice display title if available (pretty name for the UI)
+            string sceneDisplay = SceneManager.GetActiveScene().name;
+            var provider = FindFirstObjectByType<SceneDisplayNameProvider>(FindObjectsInactive.Include);
+            if (provider != null && !string.IsNullOrEmpty(provider.DisplayName))
+                sceneDisplay = provider.DisplayName;
+
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);                 // unique internal
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_sceneDisplay", sceneDisplay);       // pretty title
             PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_playSeconds", PlayTimeTracker.TotalSecondsInt);
             PlayerPrefs.SetString($"SaveSlot_{slotIndex}_time", DateTime.Now.ToString(TimeFormat, CultureInfo.InvariantCulture));
             PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_exists", 1);
@@ -292,6 +322,7 @@ public class UI_SaveLoadPanel : MonoBehaviour
         SetSlotsInteractable(true);
         RefreshAllSlots();
     }
+
 
     private IEnumerator AnimateSavingDots()
     {

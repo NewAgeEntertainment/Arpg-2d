@@ -30,6 +30,7 @@ public class SaveSlotUI : MonoBehaviour
     // Storage formats/keys
     private const string StoredTimeFmt = "yyyy-MM-dd HH:mm"; // how you store timestamp
     private static string KeyScene(int s) => $"SaveSlot_{s}_scene";
+    private static string KeySceneDisplay(int s) => $"SaveSlot_{s}_sceneDisplay"; // <-- ADDED (friendly title)
     private static string KeyPlaySec(int s) => $"SaveSlot_{s}_playSeconds";
     private static string KeyTime(int s) => $"SaveSlot_{s}_time";
     private static string KeyExists(int s) => $"SaveSlot_{s}_exists";
@@ -41,6 +42,11 @@ public class SaveSlotUI : MonoBehaviour
     }
 
     private void Start()
+    {
+        UpdateSlotUI();
+    }
+
+    private void OnEnable()  // <-- ADDED: refresh when panel reopens
     {
         UpdateSlotUI();
     }
@@ -60,9 +66,18 @@ public class SaveSlotUI : MonoBehaviour
             SafeSetActive(dateText, true);
             SafeSetActive(clockText, true);
 
-            // Location
-            string scene = PlayerPrefs.GetString(KeyScene(slotID), "Unknown");
-            if (locationText) locationText.text = $"Location: {scene}";
+            // Location (prefer friendly display name)
+            if (locationText)
+            {
+                string display = PlayerPrefs.GetString(KeySceneDisplay(slotID), string.Empty);
+                if (!string.IsNullOrEmpty(display))
+                    locationText.text = $"Location: {display}";
+                else
+                {
+                    string scene = PlayerPrefs.GetString(KeyScene(slotID), "Unknown");
+                    locationText.text = $"Location: {scene}";
+                }
+            }
 
             // Time Played (HH:MM)
             int playSeconds = PlayerPrefs.GetInt(KeyPlaySec(slotID), 0);
@@ -133,6 +148,26 @@ public class SaveSlotUI : MonoBehaviour
     {
         if (saveButton) saveButton.interactable = interactable;
         if (loadButton) loadButton.interactable = interactable;
+    }
+
+    // ======== ADDED: public helper if you want to refresh only this line ========
+    public void RefreshLocationLabelOnly()
+    {
+        if (!locationText) return;
+
+        if (!HasData(slotID))
+        {
+            SafeSetActive(locationText, false);
+            return;
+        }
+
+        SafeSetActive(locationText, true);
+
+        string display = PlayerPrefs.GetString(KeySceneDisplay(slotID), string.Empty);
+        if (!string.IsNullOrEmpty(display))
+            locationText.text = $"Location: {display}";
+        else
+            locationText.text = $"Location: {PlayerPrefs.GetString(KeyScene(slotID), "Unknown")}";
     }
 
     // --- helpers ---

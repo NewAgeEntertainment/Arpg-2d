@@ -73,6 +73,12 @@ public class UI : MonoBehaviour
     [Header("Main Menu Panel")]
     [SerializeField] private GameObject mainMenuPanel;
 
+    // UI.cs
+[SerializeField] private float skillRefreshRetrySeconds = 0.1f;
+[SerializeField] private int   skillRefreshMaxTries    = 10;
+private Coroutine _skillRefreshCo;
+
+
     // ===== Quest Journal (Quest Machine) =====
     [Header("Quest Journal (Quest Machine)")]
     [Tooltip("Optional parent GameObject that contains the UnityUIQuestJournalUI; toggled with the journal.")]
@@ -92,6 +98,7 @@ public class UI : MonoBehaviour
     [SerializeField] private float btnFade = 0.08f;
     [SerializeField] private float btnMultiplier = 1f;
 
+    private bool _openedJournalFromMainMenu = false;
 
     private bool isQuestJournalOpen = false;
 
@@ -143,6 +150,7 @@ public class UI : MonoBehaviour
     private bool isEquipmentOpen = false;
     private bool isStatusPanelOpen = false;
     private bool isConquestOpen = false;
+    private bool _journalOpenedFromMainMenu = false;
     private bool isOptionsOpen = false;
     private bool isStorageOpen = false;
     private bool isMerchantOpen = false;
@@ -276,13 +284,47 @@ public class UI : MonoBehaviour
 
     private void OnSceneLoaded_UIRefresh(Scene scene, LoadSceneMode mode)
     {
-        // ensure we have current stats reference after spawns
         StartCoroutine(AfterSceneLoad_Co());
         StartCoroutine(RefreshHUDOnceCo());
 
-        // update location label when scene loads
+        // NEW: make sure hotbar skills show up even if tree/player init late
+        if (_skillRefreshCo != null) StopCoroutine(_skillRefreshCo);
+        _skillRefreshCo = StartCoroutine(EnsureSkillsVisibleCo());
+
         UpdateLocationLabel();
     }
+
+    private IEnumerator EnsureSkillsVisibleCo()
+    {
+        // give spawners & tree a couple of frames
+        yield return null;
+        yield return null;
+
+        for (int i = 0; i < skillRefreshMaxTries; i++)
+        {
+            TryRefreshSkillSlotsOnce();
+
+            // stop as soon as at least one slot has a skill
+            if (inGameUI != null && inGameUI.AnySkillSlotHasSkill())
+                break;
+
+            yield return new WaitForSecondsRealtime(skillRefreshRetrySeconds);
+        }
+
+        _skillRefreshCo = null;
+    }
+
+    private void TryRefreshSkillSlotsOnce()
+    {
+        if (inGameUI == null) return;
+
+        if (skillTreeUI == null)
+            skillTreeUI = FindFirstObjectByType<UI_SkillTree>(FindObjectsInactive.Include);
+
+        if (skillTreeUI != null)
+            inGameUI.RefreshSkillSlotsFromTree(skillTreeUI);
+    }
+
 
     private IEnumerator AfterSceneLoad_Co()
     {
@@ -293,19 +335,23 @@ public class UI : MonoBehaviour
 
     private IEnumerator RefreshHUDOnceCo()
     {
-        // Let spawners create Player/Inventory this frame
         yield return null;
 
-        // Ensure we’re listening to the current Inventory for gold updates
         TrySubscribeGold();
-
-        // Force HUD to pull current state (gold, quick slots, exp/sex exp, HP/MP)
         inGameUI?.ForceRefreshFromCurrentState();
 
-        // Populate skill slots from the current skill tree
         if (skillTreeUI != null)
             inGameUI?.RefreshSkillSlotsFromTree(skillTreeUI);
+
+        // ⬇️ New: after player is spawned, force skill slots to use the live manager values
+        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+        if (inGameUI != null && mgr != null)
+        {
+            var allSlots = inGameUI.GetComponentsInChildren<UI_SkillSlot>(true);
+            foreach (var s in allSlots) s.RefreshText(mgr);
+        }
     }
+
 
     private void TrySubscribeGold()
     {
@@ -476,6 +522,14 @@ public class UI : MonoBehaviour
         return refComp ? refComp.profile : null;
     }
 
+    private void SetUIMapEnabled(bool enable)
+    {
+        CacheRewired();
+        if (rplayerUI != null)
+            rplayerUI.controllers.maps.SetMapsEnabled(enable, "UI");
+    }
+
+
     // ===== Quest Journal Open/Close/Toggle =====
 
     public void ToggleQuestJournalFromUI()
@@ -499,49 +553,94 @@ public class UI : MonoBehaviour
 
     private IEnumerator OpenJournal_Co()
     {
+        // Remember if we are coming from Main Menu
+        _openedJournalFromMainMenu = (mainMenuPanel != null && mainMenuPanel.activeSelf);
+
         EnsureUIRootIsActive();
         CloseAllPanels(); // close others first
+
+        // Try to locate journal if not wired
+        if (!TryFindQuestJournalUI())
+        {
+            Debug.LogError("[UI] Quest Journal UI not found in scene. Recovering to Main Menu.");
+            OpenMainMenuDirect();
+            yield break;
+        }
 
         if (questJournalRoot != null) questJournalRoot.SetActive(true);
         questJournalUI.gameObject.SetActive(true);
 
-        // Wait one frame so QuestMachine UI can run OnEnable/Start/layout first.
+        // Let the journal initialize its UI
         yield return null;
 
-        // Safely try common open/show methods without ambiguity:
+        // Call a safe “show” on whatever API is present
         if (!SafeInvokeNoArgs(questJournalUI, "Show"))
             if (!SafeInvokeNoArgs(questJournalUI, "OpenWindow"))
                 SafeInvokeBool(questJournalUI, "SetVisible", true);
 
         isQuestJournalOpen = true;
-        StopPlayerControls(true);
+
+        // IMPORTANT: enter full UI mode (enable UI map, disable Gameplay map, pause time).
+        EnterUIMode();
     }
+
+
 
     public void CloseQuestJournalFromUI()
     {
-        if (!TryFindQuestJournalUI()) return;
+        bool hadJournal = TryFindQuestJournalUI();
 
-        if (!SafeInvokeNoArgs(questJournalUI, "Hide"))
-            if (!SafeInvokeNoArgs(questJournalUI, "CloseWindow"))
-                SafeInvokeBool(questJournalUI, "SetVisible", false);
+        if (hadJournal)
+        {
+            // Hide using whatever API is available
+            if (!SafeInvokeNoArgs(questJournalUI, "Hide"))
+                if (!SafeInvokeNoArgs(questJournalUI, "CloseWindow"))
+                    SafeInvokeBool(questJournalUI, "SetVisible", false);
 
-        questJournalUI.gameObject.SetActive(false);
-        if (questJournalRoot != null) questJournalRoot.SetActive(false);
+            questJournalUI.gameObject.SetActive(false);
+            if (questJournalRoot != null) questJournalRoot.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("[UI] CloseQuestJournalFromUI: Journal UI not found; recovering.");
+        }
 
         isQuestJournalOpen = false;
 
-        if (reopenMainMenuAfterJournalClose) OpenMainMenuDirect();
-        else CheckStopPlayerControls();
+        // If we were on the Main Menu when opening (or the option is set), go back there.
+        if (reopenMainMenuAfterJournalClose || _openedJournalFromMainMenu)
+        {
+            OpenMainMenuDirect(); // this keeps UI map enabled & time paused by design
+        }
+        else
+        {
+            // No menu requested; just restore gameplay input & unpause if nothing else is open.
+            CheckStopPlayerControls();
+        }
+
+        // Reset flag for next open
+        _openedJournalFromMainMenu = false;
     }
+
+
+
 
     private bool TryFindQuestJournalUI()
     {
         if (questJournalUI != null) return true;
+
+        // Look in active and inactive objects
         questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(FindObjectsInactive.Include);
         if (questJournalUI == null) return false;
-        if (questJournalRoot == null) questJournalRoot = questJournalUI.transform.root.gameObject;
+
+        // If no root was wired, treat the journal’s topmost object as its root
+        if (questJournalRoot == null)
+            questJournalRoot = questJournalUI.transform.root.gameObject;
+
         return true;
     }
+
+
 
     private static bool SafeInvokeNoArgs(object target, string methodName)
     {
@@ -603,22 +702,42 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // Ensure the holder object is active so its inner 'panel' can show
+        // Make sure the holder object is active so its inner 'panel' can show
         saveLoadPanel.gameObject.SetActive(true);
 
-        saveLoadPanel.OpenForSave();   // or OpenForLoad();
+        // Determine where we're opening from (Title/Main Menu panel showing or not)
+        var ctx = (mainMenuPanel != null && mainMenuPanel.activeSelf)
+            ? UI_SaveLoadPanel.OpenContext.TitleMenu
+            : UI_SaveLoadPanel.OpenContext.PauseMenu;
+
+        // Subscribe once to the panel's close event (so we can bounce back to main menu)
+        saveLoadPanel.Closed -= OnSaveLoadClosed;
+        saveLoadPanel.Closed += OnSaveLoadClosed;
+
+        // Open in Save mode (or use OpenForLoad(ctx) if you need a load entry)
+        saveLoadPanel.OpenForSave(ctx);
+
+        // Apply your theme colors to buttons under the save panel root
+        ApplyButtonTheme(saveLoadPanel.transform);
+
+        // Mark state and ensure we’re in UI input map + paused
         isSaveOpen = true;
+        EnterUIMode();   // disables Gameplay map, enables UI map, pauses time
     }
+
 
     public void CloseSavePanel()
     {
         isSaveOpen = false;
         if (saveLoadPanel != null)
         {
+            // Unhook to avoid duplicate handlers over time
+            saveLoadPanel.Closed -= OnSaveLoadClosed;
             saveLoadPanel.ClosePanel();
         }
         CheckStopPlayerControls();
     }
+
 
     public void OpenCraft()
     {
@@ -692,6 +811,9 @@ public class UI : MonoBehaviour
         // Refresh menu HP/MP immediately and start polling if needed
         ForceRefreshMenuBars();
         StartMenuPollIfNeeded();
+
+        var binder = FindFirstObjectByType<UI_MenuHealthManaBinder>(FindObjectsInactive.Include);
+        binder?.ForceFindAndRefresh();
 
         // Switch maps to UI and pause while main menu is open
         EnterUIMode();
@@ -771,83 +893,88 @@ public class UI : MonoBehaviour
         isSaveOpen = false;
     }
 
+    // HandleBackAction.cs — drop-in snippet (paste into your UI class)
     public void HandleBackAction()
     {
-        // If we’re picking a slot, Esc exits assign mode (restores the Skill Tree)
+        // If we’re in the hotbar assign-preview, Esc exits that first.
         if (_assignPreviewActive)
         {
             HideHotbarAssignPreview();
             return;
         }
 
+        // Inventory
         if (inventoryUI != null && inventoryUI.IsOpen() && inventoryUI.HandleCancel()) return;
 
+        // Equipment
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen && equipmentInventoryPanel.HandleCancel())
-        {
-            Debug.Log("[UI] Equipment panel handled cancel.");
             return;
-        }
 
-        if (craftUI != null && isCraftOpen && craftUI.HandleCancel())
-        {
-            Debug.Log("[UI] Craft panel handled cancel.");
-            return;
-        }
+        // Crafting
+        if (craftUI != null && isCraftOpen && craftUI.HandleCancel()) return;
 
-        if (merchantUI != null && merchantUI.IsOpen && merchantUI.HandleCancel())
-        {
-            Debug.Log("[UI] Merchant panel handled cancel.");
-            return;
-        }
+        // Merchant
+        if (merchantUI != null && merchantUI.IsOpen && merchantUI.HandleCancel()) return;
 
-        // Let the tree close itself if it’s visible
+        // Skill tree
         if (skillTreeUI != null && skillTreeUI.gameObject.activeInHierarchy && skillTreeUI.HandleCancel()) return;
 
+        // Status panel
         if (statusPanel != null && isStatusPanelOpen && statusPanel.HandleCancel()) return;
 
+        // Options
         if (optionsUI != null && isOptionsOpen)
         {
             CloseOptions();
             return;
         }
 
-        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy)
-        {
-            Debug.Log("[UI] Conquest panel handling cancel...");
-            if (conquestUI.HandleCancel()) return;
-        }
+        // Conquest
+        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy && conquestUI.HandleCancel()) return;
 
-        // Quest Journal close on cancel:
-        if (questJournalUI != null && questJournalUI.gameObject.activeInHierarchy)
+        // ---------- Quest Journal (robust close) ----------
+        // Close if we *think* it's open, OR if the UI exists and is active.
+        if (isQuestJournalOpen ||
+            (questJournalUI != null && questJournalUI.gameObject.activeInHierarchy))
         {
-            CloseQuestJournalFromUI();
+            CloseQuestJournalFromUI(); // This method bounces to Main Menu or restores gameplay/unpause
             return;
         }
+        // ---------------------------------------------------
 
-        // Save/Load panel handles cancel
+        // Save/Load panel
         if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.HandleCancel())
         {
             if (!saveLoadPanel.IsOpen) isSaveOpen = false;
             return;
         }
 
+        // Merchant panel (fallback) — may be redundant with .IsOpen above
         if (merchantUI != null && isMerchantOpen)
         {
             CloseMerchant();
             return;
         }
 
+        // Main Menu panel
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
-            // Closing the main menu: turn off panel, restore gameplay map + unpause
             mainMenuPanel.SetActive(false);
-            ExitUIMode();
+            ExitUIMode();           // restores gameplay map + Time.timeScale=1
             CheckStopPlayerControls();
+            return;
+        }
+
+        if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen())
+        {
+            Debug.LogWarning("[UI] Failsafe: UI paused but no panels active. Returning to Main Menu.");
+            OpenMainMenuDirect();
             return;
         }
 
         Debug.Log("[UI] No panels handled cancel.");
     }
+
 
     #endregion
 
@@ -960,6 +1087,20 @@ public class UI : MonoBehaviour
     {
         onYes?.Invoke();
     }
+
+    // Gets called when UI_SaveLoadPanel closes (via its Closed event)
+    private void OnSaveLoadClosed(UI_SaveLoadPanel.OpenContext ctx)
+    {
+        isSaveOpen = false;
+
+        // If the Save/Load was opened from Game Over, the panel itself will re-show GameOver.
+        // In all other cases, bounce to the Main Menu UI.
+        if (ctx != UI_SaveLoadPanel.OpenContext.GameOver)
+        {
+            OpenMainMenuDirect();   // pauses, switches to UI map, applies button theme, etc.
+        }
+    }
+
 
     // ============================ Menu Bars: internals =====================================
 
@@ -1099,6 +1240,7 @@ public class UI : MonoBehaviour
         int max = SafeGetInt(statsComp, pMaxMP);
         SetMenuMana(cur, max);
     }
+
 
     private void SetMenuHealth(int current, int max)
     {

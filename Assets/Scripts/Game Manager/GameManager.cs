@@ -53,6 +53,17 @@ public class GameManager : MonoBehaviour
             var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
             if (p != null) RegisterPlayer(p);
         }
+
+        // NEW: also try for a short window in case the Player is spawned later this frame.
+        StartCoroutine(FindPlayerForAFewFrames());
+    }
+
+    // GameManager.cs
+    public void AddOnPlayerRegisteredListener(System.Action<Player> listener, bool fireImmediately = true)
+    {
+        OnPlayerRegistered += listener;
+        if (fireImmediately && Player != null) // if we already have one, deliver it now
+            listener(Player);
     }
 
     /// <summary>Call this after you instantiate the Player (e.g., in your PlayerSpawner).</summary>
@@ -68,5 +79,62 @@ public class GameManager : MonoBehaviour
     public void ClearCachedRefs()
     {
         player = null;
+    }
+
+    // ==================== ADDED: Bootstrap to guarantee a GM exists ====================
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void EnsureExists_BeforeSceneLoad()
+    {
+        if (Instance != null) return;
+
+        var found = Object.FindObjectOfType<GameManager>(true);
+        if (found != null)
+        {
+            Instance = found;
+            Object.DontDestroyOnLoad(found.gameObject);
+            return;
+        }
+
+        var go = new GameObject("GameManager");
+        go.AddComponent<GameManager>(); // Awake will set Instance + DDOL
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureExists_AfterSceneLoad()
+    {
+        if (Instance != null) return;
+
+        var found = Object.FindObjectOfType<GameManager>(true);
+        if (found != null)
+        {
+            Instance = found;
+            Object.DontDestroyOnLoad(found.gameObject);
+            return;
+        }
+
+        var go = new GameObject("GameManager");
+        go.AddComponent<GameManager>();
+    }
+
+    // ==================== ADDED: Delayed Player discovery after scene load ====================
+
+    private System.Collections.IEnumerator FindPlayerForAFewFrames()
+    {
+        const float timeout = 2f; // seconds (unscaled)
+        float t = 0f;
+
+        while (player == null && t < timeout)
+        {
+            var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+            if (p != null)
+            {
+                RegisterPlayer(p);
+                yield break;
+            }
+
+            yield return null;
+            t += Time.unscaledDeltaTime;
+        }
     }
 }

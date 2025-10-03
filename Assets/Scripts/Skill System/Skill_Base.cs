@@ -10,6 +10,8 @@ public class Skill_Base : MonoBehaviour
     public float CurrentManaCost => manaCost;
     public float Cooldown => cooldown;   // (optional but handy)
 
+    private string PrefKey(string field) => $"Skill_{skillType}_{field}";
+
     public DamageScaleData damageScaleData { get; private set; }
 
     [Header("General details")]
@@ -32,6 +34,9 @@ public class Skill_Base : MonoBehaviour
 
         // Allow immediate use at startup
         lastTimeUsed = -cooldown;
+
+        // ⬇️ restore per-skill snapshot if present
+        LoadRuntimeSnapshotIfAny();
     }
 
     /// <summary>Pure check: does NOT spend mana or start cooldown.</summary>
@@ -140,6 +145,45 @@ public class Skill_Base : MonoBehaviour
 
         // ✅ NEW: tell the HUD a skill was (just) unlocked/ready
         player?.ui?.inGameUI?.NotifySkillUnlocked(skillType, skillData);
+
+        // ⬇️ persist new live values so the next scene picks them up
+        SaveRuntimeSnapshot();
+    }
+
+    public void SaveRuntimeSnapshot()
+    {
+        PlayerPrefs.SetInt(PrefKey("unlocked"), IsUnlocked() ? 1 : 0);
+        PlayerPrefs.SetFloat(PrefKey("manaCost"), manaCost);
+        PlayerPrefs.SetFloat(PrefKey("cooldown"), cooldown);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadRuntimeSnapshotIfAny()
+    {
+        if (!PlayerPrefs.HasKey(PrefKey("unlocked"))) return;
+
+        if (PlayerPrefs.GetInt(PrefKey("unlocked"), 0) == 1)
+            ForceUnlock(true);  // sets unlockedByDefault = true (your IsUnlocked() already checks this)
+
+
+        manaCost = PlayerPrefs.GetFloat(PrefKey("manaCost"), manaCost);
+        cooldown = PlayerPrefs.GetFloat(PrefKey("cooldown"), cooldown);
+
+        // Ensure UI cooldown ring & slot are consistent
+        ResetCooldown();
+    }
+
+    private void RestoreBaseUpgradeForThisSkill()
+    {
+        switch (skillType)
+        {
+            case SkillType.Dash: upgradeType = SkillUpgradeType.Dash; break;
+            case SkillType.Thrust: upgradeType = SkillUpgradeType.Thrust; break;
+            case SkillType.Shard: upgradeType = SkillUpgradeType.Shard; break;
+            case SkillType.SwordSpin: upgradeType = SkillUpgradeType.SwordSpin; break;
+            case SkillType.DeepBreath: upgradeType = SkillUpgradeType.DeepBreath; break;
+            default: ForceUnlock(true); break; // fallback if you add new skills later
+        }
     }
 
     /// <summary>Core unlock predicate.</summary>

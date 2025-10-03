@@ -1,34 +1,79 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 using System.Collections;
+using Rewired;
 
-public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
+[DisallowMultipleComponent]
+public class UI_ItemSlot :
+    MonoBehaviour,
+    IPointerDownHandler,
+    IPointerEnterHandler,
+    IPointerExitHandler,
+    ISelectHandler,
+    IDeselectHandler,
+    ISubmitHandler,
+    IUpdateSelectedHandler
 {
+    // ====== Inventory data ======
     public Inventory_Item itemInSlot { get; protected set; }
     protected Inventory_Player inventory;
     protected UI ui;
     protected RectTransform rect;
 
-    public event Action<Inventory_Item> OnSubmit;         // Left click
-    public event Action<Inventory_Item> OnRightClick;     // Right click
+    // Renamed to avoid clash with ISubmitHandler.OnSubmit(...)
+    public event Action<Inventory_Item> OnSlotSubmit;      // primary (left click / Submit)
+    public event Action<Inventory_Item> OnSlotRightClick;  // secondary (right click / alt)
 
     [Header("UI Slot Setup")]
     [SerializeField] protected TMPro.TextMeshProUGUI itemNameText;
-    [SerializeField] protected UnityEngine.UI.Image itemIcon;
+    [SerializeField] protected Image itemIcon;
     [SerializeField] protected TMPro.TextMeshProUGUI itemStackSize;
     [SerializeField] protected Sprite defaultIconSprite;
     [SerializeField] protected GameObject highlighter;
 
+    // ====== Rewired (optional alt-submit) ======
+    [Header("Rewired (optional alt-submit)")]
+    [SerializeField] private bool enableAltSubmit = true;
+    [SerializeField] private int rewiredPlayerId = 0;
+    [SerializeField] private string altSubmitAction = "AssignPopup";
+
+    private Rewired.Player rPlayer;
+
+    // ====== Internal ======
     private Coroutine blinkCoroutine;
     private bool isSelected = false;
+    private Selectable selectable;
 
     protected virtual void Awake()
     {
         ui = FindFirstObjectByType<UI>();
         inventory = FindFirstObjectByType<Inventory_Player>();
         rect = GetComponent<RectTransform>();
+
+        EnsureSelectable();
+        TryGetRewired();
     }
+
+    private void EnsureSelectable()
+    {
+        selectable = GetComponent<Selectable>();
+        if (selectable == null)
+        {
+            var btn = gameObject.AddComponent<Button>();
+            btn.transition = Selectable.Transition.None;
+            selectable = btn;
+        }
+    }
+
+    private void TryGetRewired()
+    {
+        if (!enableAltSubmit) return;
+        try { rPlayer = ReInput.players.GetPlayer(rewiredPlayerId); } catch { rPlayer = null; }
+    }
+
+    // ================== Data/UI refresh ==================
 
     public virtual void UpdateSlot(Inventory_Item item)
     {
@@ -65,17 +110,12 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
             itemIcon.enabled = defaultIconSprite != null;
         }
 
-        if (itemNameText)
-            itemNameText.text = "";
-
-        ApplyStackSizeText(); // will clear it by default
+        if (itemNameText) itemNameText.text = "";
+        ApplyStackSizeText();
         StopBlinkingHighlight();
         SetSelected(false);
     }
 
-    /// <summary>
-    /// Override this in derived classes (e.g., Merchant) to suppress stack display.
-    /// </summary>
     protected virtual void ApplyStackSizeText()
     {
         if (!itemStackSize) return;
@@ -86,6 +126,8 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
             itemStackSize.text = "";
     }
 
+    // ================== Mouse (Pointer) ==================
+
     public virtual void OnPointerDown(PointerEventData eventData)
     {
         if (itemInSlot == null || itemInSlot.itemData == null) return;
@@ -94,35 +136,67 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
 
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            OnSubmit?.Invoke(itemInSlot);
+            OnSlotSubmit?.Invoke(itemInSlot);
         }
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke(itemInSlot);
+            OnSlotRightClick?.Invoke(itemInSlot);
 
             if (data.itemType == ItemType.Consumable)
             {
                 var uiInventory = FindObjectOfType<UI_Inventory>();
                 uiInventory?.OpenAssignPopup(itemInSlot);
             }
-            else
-            {
-                Debug.Log($"[ItemSlot] {data.itemName} cannot be assigned. Only consumables are assignable.");
-            }
         }
 
         SetSelected(true);
     }
 
-    public virtual void OnPointerEnter(PointerEventData eventData)
+    public virtual void OnPointerEnter(PointerEventData eventData) => StartBlinkingHighlight();
+    public virtual void OnPointerExit(PointerEventData eventData) => StopBlinkingHighlight();
+
+    // ================== Keyboard/Controller (EventSystem) ==================
+
+    public void OnSelect(BaseEventData eventData) { SetSelected(true); HighlightOn(); }
+    public void OnDeselect(BaseEventData eventData) { SetSelected(false); HighlightOff(); }
+
+    // ISubmitHandler — fires on “Submit” while focused
+    public void OnSubmit(BaseEventData eventData)
     {
-        StartBlinkingHighlight();
+        SubmitFromKeyboard();
     }
 
-    public virtual void OnPointerExit(PointerEventData eventData)
+    // Called every frame while selected — poll Rewired alt action here
+    public void OnUpdateSelected(BaseEventData eventData)
     {
-        StopBlinkingHighlight();
+        if (!enableAltSubmit) return;
+        if (rPlayer == null) TryGetRewired();
+        if (rPlayer != null && rPlayer.GetButtonDown(altSubmitAction))
+            RightClickFromKeyboard();
     }
+
+    // Keyboard/controller helpers
+    public void SubmitFromKeyboard()
+    {
+        if (itemInSlot != null)
+            OnSlotSubmit?.Invoke(itemInSlot);
+    }
+
+    public void RightClickFromKeyboard()
+    {
+        if (itemInSlot == null) return;
+
+        OnSlotRightClick?.Invoke(itemInSlot);
+
+        var data = itemInSlot.itemData;
+        if (data != null && data.itemType == ItemType.Consumable)
+        {
+            var uiInventory = FindObjectOfType<UI_Inventory>();
+            uiInventory?.OpenAssignPopup(itemInSlot);
+        }
+    }
+
+    // ================== Highlight visuals ==================
 
     public virtual void HighlightOn() => StartBlinkingHighlight();
     public virtual void HighlightOff() => StopBlinkingHighlight();
@@ -156,6 +230,8 @@ public class UI_ItemSlot : MonoBehaviour, IPointerDownHandler, IPointerEnterHand
             yield return new WaitForSeconds(0.5f);
         }
     }
+
+    // ================== Selection state ==================
 
     public bool IsSelected() => isSelected;
 

@@ -6,6 +6,7 @@ public enum SkillType
     TimeEcho,
     Thrust,
     TimeShard,
+    Shard = TimeShard,
     SwordSpin,
     DomainExpansion,
     DeepBreath, // Skill to heal the player

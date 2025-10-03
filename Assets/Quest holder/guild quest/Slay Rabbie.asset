@@ -107,6 +107,29 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &-2313770235934697387
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b543cc48d60f94eaf19a02d5f46611, type: 3}
+  m_Name: SetIndicatorQuestAction
+  m_EditorClassIdentifier: 
+  m_questID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_entityID:
+    m_text: Guild
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_questIndicatorState: 5
 --- !u!114 &-2304801036404089860
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -190,13 +213,13 @@ MonoBehaviour:
     m_textTableFieldID: 0
   m_icon: {fileID: 577655699, guid: 7b60d3b81fd22804f897393fd944ae4e, type: 3}
   m_group:
-    m_text: Guild Rank D
+    m_text: Guild Quest
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
   m_labels: []
   m_questGiverID:
-    m_text: 
+    m_text: Quest Board
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
@@ -221,6 +244,7 @@ MonoBehaviour:
   - {fileID: 2318053143677741074}
   - {fileID: 1688519301988002033}
   - {fileID: -8141943042266374647}
+  m_infinitelyRepeatable: 1
   m_maxTimes: 999
   m_timesAccepted: 0
   m_cooldownSeconds: 1
@@ -392,7 +416,7 @@ MonoBehaviour:
     m_childIndexList: 02000000
     m_canvasRect:
       serializedVersion: 2
-      x: 198.06381
+      x: 198.97287
       y: 92.998215
       width: 120
       height: 48
@@ -420,7 +444,8 @@ MonoBehaviour:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
-    - m_actionList: []
+    - m_actionList:
+      - {fileID: -2313770235934697387}
       m_categorizedContentList:
       - m_contentList:
         - {fileID: -3675421514621256087}
@@ -443,8 +468,8 @@ MonoBehaviour:
     m_childIndexList: 03000000
     m_canvasRect:
       serializedVersion: 2
-      x: 194.21951
-      y: 157.96709
+      x: 196.7286
+      y: 156.15442
       width: 120
       height: 48
   - m_id:
@@ -489,7 +514,7 @@ MonoBehaviour:
     m_childIndexList: 
     m_canvasRect:
       serializedVersion: 2
-      x: 194.21951
+      x: 192.6195
       y: 227
       width: 120
       height: 35
@@ -562,7 +587,7 @@ MonoBehaviour:
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
   m_message:
-    m_text: Discussed Quest
+    m_text: TurnIn_MyQuest
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
@@ -664,8 +689,7 @@ MonoBehaviour:
   m_onExecute:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddGold
         m_Mode: 3
@@ -677,8 +701,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddXP
         m_Mode: 3

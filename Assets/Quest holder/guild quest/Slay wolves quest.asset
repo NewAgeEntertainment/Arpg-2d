@@ -205,9 +205,9 @@ MonoBehaviour:
   m_Name: MessageQuestCondition
   m_EditorClassIdentifier: 
   m_alreadyTrue: 0
-  m_senderSpecifier: 0
+  m_senderSpecifier: 2
   m_senderID:
-    m_text: 
+    m_text: '{QUESTGIVERID}'
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
@@ -264,8 +264,7 @@ MonoBehaviour:
   m_onExecute:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddGold
         m_Mode: 3
@@ -277,8 +276,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be,
-          type: 3}
+      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
         m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
         m_MethodName: AddXP
         m_Mode: 3
@@ -335,7 +333,7 @@ MonoBehaviour:
     m_textTableFieldID: 0
   m_icon: {fileID: -562225867, guid: 8e8d42feceaf0f64a9d214e2ca1cde01, type: 3}
   m_group:
-    m_text: Guild Rank D
+    m_text: Guild Quest
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 1
@@ -366,13 +364,14 @@ MonoBehaviour:
   - {fileID: 8505451847718854980}
   - {fileID: 920460728740742402}
   - {fileID: -1125217179965482263}
+  m_infinitelyRepeatable: 0
   m_maxTimes: 999
   m_timesAccepted: 0
   m_cooldownSeconds: 1
   m_cooldownSecondsRemaining: 0
   m_noRepeatIfSuccessful: 0
   m_saveAllIfWaitingToStart: 0
-  m_state: 0
+  m_state: 1
   m_stateInfoList:
   - m_actionList: []
     m_categorizedContentList:

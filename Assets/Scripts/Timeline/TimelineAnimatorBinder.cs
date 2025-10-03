@@ -4,8 +4,6 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-/// Attach to the same GameObject as your PlayableDirector.
-/// Your PlayerSpawner should call SetPlayerRoot() and RebindNow() after the player is instantiated.
 [DefaultExecutionOrder(-50)]
 public class TimelineAnimatorBinder : MonoBehaviour
 {
@@ -47,6 +45,7 @@ public class TimelineAnimatorBinder : MonoBehaviour
     private Rigidbody2D _rb2d;
     private bool _hadRb2d;
     private bool _prevSimulated;
+    private bool _frozenByBinder;      // <— NEW: only unfreeze if we froze it
 
     // completion
     private Coroutine _deactivateCo;
@@ -79,8 +78,41 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
         RestoreOriginalBindings();
         _bound = false;
+
+        // Failsafe: always unfreeze if we had frozen
         UnfreezePhysics();
+
         if (_dual != null) _dual.DisableWhenIdle();
+    }
+
+    void LateUpdate()
+    {
+        // ---------- Failsafe watchdog ----------
+        // If we froze physics and the director is no longer actively playing,
+        // or we're at/after duration (e.g., WrapMode=Hold -> Paused), restore simulation.
+        if (_frozenByBinder && freezePhysicsDuringPlay)
+        {
+            bool shouldUnfreeze = false;
+
+            if (director == null)
+            {
+                shouldUnfreeze = true;
+            }
+            else
+            {
+                var isPlaying = director.state == PlayState.Playing;
+                // duration can be 0 for some assets; guard with epsilon
+                double dur = director.duration;
+                double t = director.time;
+                bool atOrPastEnd = (dur > 0.0001) && (t >= dur - 0.0001);
+
+                if (!isPlaying || atOrPastEnd)
+                    shouldUnfreeze = true;
+            }
+
+            if (shouldUnfreeze)
+                UnfreezePhysics();
+        }
     }
 
     // ========= Public API (call from PlayerSpawner) =========
@@ -170,7 +202,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
                 _dual.timelineAnimator != null)
             {
                 SaveAndBind(track, _dual.timelineAnimator);
-                // Debug.Log($"[Binder] Bound '{track.name}' -> ROOT ({_dual.timelineAnimator.gameObject.name})");
             }
 
             // Model animation track -> gameplay/model animator
@@ -179,7 +210,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
                 _dual.gameplayAnimator != null)
             {
                 SaveAndBind(track, _dual.gameplayAnimator);
-                // Debug.Log($"[Binder] Bound '{track.name}' -> MODEL ({_dual.gameplayAnimator.gameObject.name})");
             }
         }
 
@@ -235,18 +265,24 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     private void FreezePhysics()
     {
-        if (!_hadRb2d) return;
+        if (!_hadRb2d || _rb2d == null || _frozenByBinder) return;
+
         _prevSimulated = _rb2d.simulated;
         _rb2d.velocity = Vector2.zero;
         _rb2d.angularVelocity = 0f;
         _rb2d.simulated = false;
+        _frozenByBinder = true;
+        // Debug.Log("[Binder] Physics frozen by binder.");
     }
 
     private void UnfreezePhysics()
     {
-        if (!_hadRb2d) return;
+        if (!_hadRb2d || _rb2d == null || !_frozenByBinder) return;
+
         _rb2d.simulated = _prevSimulated;
         _rb2d.velocity = Vector2.zero;
         _rb2d.angularVelocity = 0f;
+        _frozenByBinder = false;
+        // Debug.Log("[Binder] Physics restored by binder.");
     }
 }
