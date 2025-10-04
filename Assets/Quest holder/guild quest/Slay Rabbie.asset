@@ -1,5 +1,23 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-9080661024587089208
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0ed0c4e68ee98946bb5016adda42373, type: 3}
+  m_Name: BodyTextQuestContent
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_bodyText:
+    m_text: kjdsnalkfjlksjdfljans,mnzxmxzvlkjlk;zjfaldks
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
 --- !u!114 &-8694287832561463358
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -50,6 +68,96 @@ MonoBehaviour:
   m_contentID: -1
   m_bodyText:
     m_text: 30 xp
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+--- !u!114 &-7601074196647538510
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285a0cf9c914ae847852a4a97a4c9fd0, type: 3}
+  m_Name: DialogueSystemConversationQuestContent
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_conversation: New Conversation 115
+  m_entryID: -1
+--- !u!114 &-4643546719584042674
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ee4704e504d8e4fb70d867aafbeece, type: 3}
+  m_Name: text
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_bodyText:
+    m_text: Return to {QUESTGIVER}
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+--- !u!114 &-4191728525659321503
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e375154654a2a3e45a617dd4a412510c, type: 3}
+  m_Name: messageCondition
+  m_EditorClassIdentifier: 
+  m_alreadyTrue: 0
+  m_senderSpecifier: 0
+  m_senderID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_targetSpecifier: 2
+  m_targetID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_message:
+    m_text: Discuss Quest
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_parameter:
+    m_text: slay7Rabbies
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_value:
+    m_valueType: 0
+    m_intValue: 0
+    m_stringValue: 
+--- !u!114 &-4160174311150082006
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ee4704e504d8e4fb70d867aafbeece, type: 3}
+  m_Name: text
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_bodyText:
+    m_text: Return to {QUESTGIVER}
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
@@ -148,6 +256,24 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &-1120183143372962745
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8dd425597ce38647ade6025cfd66c5e, type: 3}
+  m_Name: ActivateGameObjectQuestAction
+  m_EditorClassIdentifier: 
+  m_gameObjectName:
+    m_text: Conversation Trigger 2
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_state: 1
 --- !u!114 &-532180373793328640
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -186,6 +312,24 @@ MonoBehaviour:
     m_valueType: 0
     m_intValue: 0
     m_stringValue: 
+--- !u!114 &-246628295894273241
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ee4704e504d8e4fb70d867aafbeece, type: 3}
+  m_Name: text
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_bodyText:
+    m_text: Thanks for completing the quest.
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,9 +390,9 @@ MonoBehaviour:
   - {fileID: -8141943042266374647}
   m_infinitelyRepeatable: 1
   m_maxTimes: 999
-  m_timesAccepted: 0
+  m_timesAccepted: 2
   m_cooldownSeconds: 1
-  m_cooldownSecondsRemaining: 0
+  m_cooldownSecondsRemaining: 1
   m_noRepeatIfSuccessful: 0
   m_saveAllIfWaitingToStart: 0
   m_state: 0
@@ -270,7 +414,8 @@ MonoBehaviour:
     - {fileID: 5318512005537059496}
     - {fileID: 4323656947582455133}
     m_categorizedContentList:
-    - m_contentList: []
+    - m_contentList:
+      - {fileID: -9080661024587089208}
     - m_contentList: []
     - m_contentList: []
   - m_actionList:
@@ -413,7 +558,7 @@ MonoBehaviour:
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
-    m_childIndexList: 02000000
+    m_childIndexList: 04000000
     m_canvasRect:
       serializedVersion: 2
       x: 198.97287
@@ -450,6 +595,7 @@ MonoBehaviour:
       - m_contentList:
         - {fileID: -3675421514621256087}
         - {fileID: 8585165693751645403}
+        - {fileID: -7601074196647538510}
       - m_contentList:
         - {fileID: -2304801036404089860}
       - m_contentList:
@@ -465,11 +611,11 @@ MonoBehaviour:
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
-    m_childIndexList: 03000000
+    m_childIndexList: 
     m_canvasRect:
       serializedVersion: 2
-      x: 196.7286
-      y: 156.15442
+      x: 424.7286
+      y: 60.15442
       width: 120
       height: 48
   - m_id:
@@ -501,7 +647,8 @@ MonoBehaviour:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
-    - m_actionList: []
+    - m_actionList:
+      - {fileID: 2263166340182333359}
       m_categorizedContentList:
       - m_contentList: []
       - m_contentList: []
@@ -518,9 +665,76 @@ MonoBehaviour:
       y: 227
       width: 120
       height: 35
+  - m_id:
+      m_text: Return to {QUESTGIVER}.
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    m_internalName:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    m_nodeType: 4
+    m_isOptional: 0
+    m_state: 0
+    m_speaker:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    m_stateInfoList:
+    - m_actionList: []
+      m_categorizedContentList:
+      - m_contentList: []
+      - m_contentList: []
+      - m_contentList: []
+    - m_actionList:
+      - {fileID: 85082458072980371}
+      - {fileID: -1120183143372962745}
+      m_categorizedContentList:
+      - m_contentList: []
+      - m_contentList:
+        - {fileID: 4173435542715429189}
+      - m_contentList:
+        - {fileID: -4160174311150082006}
+    - m_actionList: []
+      m_categorizedContentList:
+      - m_contentList:
+        - {fileID: -246628295894273241}
+      - m_contentList: []
+      - m_contentList: []
+    m_conditionSet:
+      m_conditionList:
+      - {fileID: -4191728525659321503}
+      m_conditionCountMode: 0
+      m_minConditionCount: 0
+      m_numTrueConditions: 0
+    m_childIndexList: 03000000
+    m_canvasRect:
+      serializedVersion: 2
+      x: 202.32864
+      y: 153.75441
+      width: 120
+      height: 48
   m_textTable: {fileID: 0}
   m_goalEntityTypeName: 
   m_nextContentID: 0
+--- !u!114 &85082458072980371
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a901dfd748ba448b353d0cfbca18ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_contentList:
+  - {fileID: -4643546719584042674}
+  m_contentListSerializationProxy: []
 --- !u!114 &1688519301988002033
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -543,6 +757,24 @@ MonoBehaviour:
     m_textTableFieldID: 0
   m_count: 0
   m_imageNameProxy: 
+--- !u!114 &2263166340182333359
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8dd425597ce38647ade6025cfd66c5e, type: 3}
+  m_Name: ActivateGameObjectQuestAction
+  m_EditorClassIdentifier: 
+  m_gameObjectName:
+    m_text: Conversation Trigger 2
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_state: 0
 --- !u!114 &2318053143677741074
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -636,6 +868,24 @@ MonoBehaviour:
   m_bodyText:
     m_text: theres been an enormous rate of Rabbies popping up lately making the
       area to dangerous to travel. cut down thier numbers.
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+--- !u!114 &4173435542715429189
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ee4704e504d8e4fb70d867aafbeece, type: 3}
+  m_Name: text
+  m_EditorClassIdentifier: 
+  m_contentID: -1
+  m_bodyText:
+    m_text: Return to {QUESTGIVER}.
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
