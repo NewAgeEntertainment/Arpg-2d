@@ -133,6 +133,17 @@ public class UI_Options : MonoBehaviour
             player.mana.EnableManaBar(isOn);
     }
 
+    public bool IsOpen
+    {
+        get
+        {
+            // active + interactable (so it doesn't count while hidden behind ControlMapper)
+            if (!gameObject.activeInHierarchy) return false;
+            return cg == null ? true : cg.blocksRaycasts;
+        }
+    }
+
+
     // ---------- Control Mapper ----------
 
     private void OnClickOpenControlMapper()

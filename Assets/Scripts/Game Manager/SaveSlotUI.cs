@@ -12,7 +12,7 @@ public class SaveSlotUI : MonoBehaviour
 
     [Header("Labels (visible when the slot has data)")]
     [SerializeField] private TextMeshProUGUI locationText;   // "Location: Forest Area 0"
-    [SerializeField] private TextMeshProUGUI playTimeText;   // "Time Played: 16:00"
+    [SerializeField] private TextMeshProUGUI playTimeText;   // "Time played: 00:00:00"
     [SerializeField] private TextMeshProUGUI dateText;       // "10-12-2025"
     [SerializeField] private TextMeshProUGUI clockText;      // "4:25pm"
 
@@ -46,7 +46,7 @@ public class SaveSlotUI : MonoBehaviour
         UpdateSlotUI();
     }
 
-    private void OnEnable()  // <-- ADDED: refresh when panel reopens
+    private void OnEnable()  // <-- refresh when panel reopens
     {
         UpdateSlotUI();
     }
@@ -79,9 +79,9 @@ public class SaveSlotUI : MonoBehaviour
                 }
             }
 
-            // Time Played (HH:MM)
+            // Time Played (HH:MM:SS) — uses exact seconds saved by UI_SaveLoadPanel
             int playSeconds = PlayerPrefs.GetInt(KeyPlaySec(slotID), 0);
-            if (playTimeText) playTimeText.text = $"Time Played: {FormatHHMM(playSeconds)}";
+            if (playTimeText) playTimeText.text = $"Time played: {FormatHHMMSS(playSeconds)}";
 
             // Timestamp → display as DD-MM-YYYY and h:mm am/pm (lowercase)
             string ts = PlayerPrefs.GetString(KeyTime(slotID), string.Empty);
@@ -150,7 +150,7 @@ public class SaveSlotUI : MonoBehaviour
         if (loadButton) loadButton.interactable = interactable;
     }
 
-    // ======== ADDED: public helper if you want to refresh only this line ========
+    // ======== public helper if you want to refresh only this line ========
     public void RefreshLocationLabelOnly()
     {
         if (!locationText) return;
@@ -180,12 +180,23 @@ public class SaveSlotUI : MonoBehaviour
         return PlayerPrefs.GetInt(KeyExists(slot), 0) == 1;
     }
 
+    // keep old HH:MM (in case other UI uses it)
     private static string FormatHHMM(int totalSeconds)
     {
         if (totalSeconds < 0) totalSeconds = 0;
         int h = totalSeconds / 3600;
         int m = (totalSeconds % 3600) / 60;
         return $"{h:00}:{m:00}";
+    }
+
+    // NEW: HH:MM:SS for save slot display
+    private static string FormatHHMMSS(int totalSeconds)
+    {
+        if (totalSeconds < 0) totalSeconds = 0;
+        int h = totalSeconds / 3600;
+        int m = (totalSeconds % 3600) / 60;
+        int s = totalSeconds % 60;
+        return $"{h:00}:{m:00}:{s:00}";
     }
 
     private void AutoFindButtonsIfMissing()

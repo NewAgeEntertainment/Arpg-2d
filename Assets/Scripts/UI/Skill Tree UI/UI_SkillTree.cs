@@ -114,6 +114,9 @@ public class UI_SkillTree : UI_Panel
         }
     }
 
+    public bool IsOpen => gameObject.activeInHierarchy;
+
+
     #region Public API used by Saver/UI
 
     public int GetCombatSkillPoints() => skillPoints;

@@ -296,7 +296,11 @@ public class UI_SaveLoadPanel : MonoBehaviour
 
             PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);                 // unique internal
             PlayerPrefs.SetString($"SaveSlot_{slotIndex}_sceneDisplay", sceneDisplay);       // pretty title
-            PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_playSeconds", PlayTimeTracker.TotalSecondsInt);
+
+            // >>> CHANGED: save the exact time shown in the UI (falls back to tracker if UI not present)
+            int uiSeconds = UI.Instance != null ? UI.Instance.CurrentTimePlayedSeconds : PlayTimeTracker.TotalSecondsInt;
+            PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_playSeconds", uiSeconds);
+
             PlayerPrefs.SetString($"SaveSlot_{slotIndex}_time", DateTime.Now.ToString(TimeFormat, CultureInfo.InvariantCulture));
             PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_exists", 1);
             PlayerPrefs.Save();

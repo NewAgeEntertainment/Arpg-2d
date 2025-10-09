@@ -72,6 +72,9 @@ public class UI_Conquest : MonoBehaviour
 
     // -------------------- Open/Close --------------------
 
+    public bool IsOpen => gameObject.activeInHierarchy;
+
+
     public void Open()
     {
         gameObject.SetActive(true);

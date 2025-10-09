@@ -22,6 +22,9 @@ public class UI : MonoBehaviour
     public UI_ItemToolTip itemToolTip { get; private set; }
     public Inventory_Item hoveredItem;
 
+    // Cache of panels that actually exist at runtime, in cycle order.
+    private UIPanelKind[] _panelCycleCache;
+
     [Header("Popup References")]
     public UI_LevelUpPopup levelUpPopup;
 
@@ -74,9 +77,9 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject mainMenuPanel;
 
     // UI.cs
-[SerializeField] private float skillRefreshRetrySeconds = 0.1f;
-[SerializeField] private int   skillRefreshMaxTries    = 10;
-private Coroutine _skillRefreshCo;
+    [SerializeField] private float skillRefreshRetrySeconds = 0.1f;
+    [SerializeField] private int skillRefreshMaxTries = 10;
+    private Coroutine _skillRefreshCo;
 
 
     // ===== Quest Journal (Quest Machine) =====
@@ -129,6 +132,19 @@ private Coroutine _skillRefreshCo;
     [SerializeField] private string openMainMenuAction = "OpenMainMenu";
     [SerializeField] private string cancelAction = "UICancel";
     [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // optional
+
+    [Header("Time Played – Unscaled")]
+    [SerializeField] private bool timePlayedUsesUnscaled = true;  // turn on to count while paused
+    private int _realSecondsPlayed = -1;
+    private Coroutine _realTimeTickerCo;
+
+    // Exact prefix you want to display
+    private const string TimePlayedPrefix = "played Time ";
+
+    // Cache the last full string we rendered (used to override stray writes)
+    private string _timePlayedRendered = null;
+
+
     // (Optional) You can add a mapped action to toggle the journal if you want:
     //[SerializeField] private string toggleQuestJournalAction = "ToggleQuestJournal";
 
@@ -187,6 +203,26 @@ private Coroutine _skillRefreshCo;
 
     public bool IsAssignPreviewActive => _assignPreviewActive;
 
+    // -------------------- ADDED: Panel Switching (Rewired) --------------------
+    [SerializeField] private string nextPanelAction = "NextUIPanel";
+    [SerializeField] private string prevPanelAction = "PrevUIPanel";
+
+    private enum UIPanelKind { Inventory, Equipment, SkillTree, Status, Conquest, Options, Save, QuestJournal }
+
+
+    [SerializeField]
+    private UIPanelKind[] panelCycleOrder = new UIPanelKind[]
+{
+    UIPanelKind.Inventory,
+    UIPanelKind.SkillTree,
+    UIPanelKind.Equipment,
+    UIPanelKind.Conquest,
+    UIPanelKind.QuestJournal,
+    UIPanelKind.Options,
+    UIPanelKind.Save,
+};
+    // -------------------------------------------------------------------------
+
     private void Awake()
     {
         // ---- Singleton/DDOL guard ----
@@ -225,7 +261,11 @@ private Coroutine _skillRefreshCo;
         // Journal off by default
         if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
         if (questJournalRoot != null) questJournalRoot.SetActive(false);
+
+        AutoFindUIPanelsIfMissing();
+        EnsureValidPanelCycle();
     }
+
 
     private void Start()
     {
@@ -252,15 +292,23 @@ private Coroutine _skillRefreshCo;
         TrySubscribeGold();
 
         // Rebind stats after scene loads
-        SceneManager.sceneLoaded += OnSceneLoaded_UIRefresh;
+        PlayTimeTracker.OnSecondChanged -= HandleSecondTick;
 
-        // NEW: hook playtime + scene change to keep the top bar hot
-        PlayTimeTracker.OnSecondChanged += HandleSecondTick;
+        if (timePlayedUsesUnscaled)
+        {
+            EnsureRealSecondsInit();
+            if (_realTimeTickerCo == null) _realTimeTickerCo = StartCoroutine(RealTimeTicker_Co());
+        }
+        else
+        {
+            PlayTimeTracker.OnSecondChanged += HandleSecondTick;
+        }
+
         SceneManager.activeSceneChanged += HandleActiveSceneChanged;
 
-        // immediate refresh
-        HandleSecondTick(PlayTimeTracker.TotalSecondsInt);
+        UpdateTimePlayedLabelImmediate();
         UpdateLocationLabel();
+
     }
 
     private void OnDisable()
@@ -270,9 +318,17 @@ private Coroutine _skillRefreshCo;
         UnhookStatEvents();
         StopMenuPoll();
 
-        // NEW: unhook
-        PlayTimeTracker.OnSecondChanged -= HandleSecondTick;
+        if (timePlayedUsesUnscaled)
+        {
+            if (_realTimeTickerCo != null) { StopCoroutine(_realTimeTickerCo); _realTimeTickerCo = null; }
+        }
+        else
+        {
+            PlayTimeTracker.OnSecondChanged -= HandleSecondTick;
+        }
+
         SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
+
     }
 
     private void OnDestroy()
@@ -286,13 +342,15 @@ private Coroutine _skillRefreshCo;
     {
         StartCoroutine(AfterSceneLoad_Co());
         StartCoroutine(RefreshHUDOnceCo());
-
-        // NEW: make sure hotbar skills show up even if tree/player init late
         if (_skillRefreshCo != null) StopCoroutine(_skillRefreshCo);
         _skillRefreshCo = StartCoroutine(EnsureSkillsVisibleCo());
-
         UpdateLocationLabel();
+
+        // NEW: re-scan for panels and rebuild cycle on scene change
+        AutoFindUIPanelsIfMissing();
+        EnsureValidPanelCycle();
     }
+
 
     private IEnumerator EnsureSkillsVisibleCo()
     {
@@ -388,7 +446,23 @@ private Coroutine _skillRefreshCo;
 
         // optional: hotkey for save panel
         if (player.GetButtonDown(openSavePanelAction)) OpenSavePanel();
+
+        // -------------------- ADDED: Cycle between panels --------------------
+        if (player.GetButtonDown(nextPanelAction)) SwitchUIPanel(+1);
+        if (player.GetButtonDown(prevPanelAction)) SwitchUIPanel(-1);
+        // --------------------------------------------------------------------
     }
+
+    private void LateUpdate()
+    {
+        if (!timePlayedLabel) return;
+        if (!string.IsNullOrEmpty(_timePlayedRendered) && timePlayedLabel.text != _timePlayedRendered)
+        {
+            // Re-assert our authoritative text (prevents “numbers-only” overrides)
+            timePlayedLabel.text = _timePlayedRendered;
+        }
+    }
+
 
     public static UI EnsureExists(UI prefab)
     {
@@ -515,6 +589,7 @@ private Coroutine _skillRefreshCo;
         CheckStopPlayerControls();
     }
 
+
     private CharacterProfileSO TryGetProfile(Entity_Stats s)
     {
         if (s == null) return null;
@@ -544,6 +619,35 @@ private Coroutine _skillRefreshCo;
         if (opening) StartCoroutine(OpenJournal_Co());
         else CloseQuestJournalFromUI();
     }
+
+    private bool EnsureQuestJournalVisibleImmediate()
+    {
+        // Find refs
+        if (!TryFindQuestJournalUI())
+        {
+            Debug.LogWarning("[UI] Quest Journal UI not found in scene.");
+            return false;
+        }
+
+        // Make sure the root is active first
+        if (questJournalRoot == null)
+            questJournalRoot = questJournalUI.transform.root.gameObject;
+
+        if (questJournalRoot != null) questJournalRoot.SetActive(true);
+        if (questJournalUI != null) questJournalUI.gameObject.SetActive(true);
+
+        // Try Quest Machine API methods synchronously
+        if (!SafeInvokeNoArgs(questJournalUI, "Show"))
+            if (!SafeInvokeNoArgs(questJournalUI, "OpenWindow"))
+                SafeInvokeBool(questJournalUI, "SetVisible", true);
+
+        isQuestJournalOpen = true;
+
+        // Enter UI mode (pause, maps)
+        EnterUIMode();
+        return true;
+    }
+
 
     public void OpenQuestJournalFromUI()
     {
@@ -588,41 +692,46 @@ private Coroutine _skillRefreshCo;
 
     public void CloseQuestJournalFromUI()
     {
+        // Try to locate the journal first (handles scene changes / lazy wiring)
         bool hadJournal = TryFindQuestJournalUI();
 
         if (hadJournal)
         {
-            // Hide using whatever API is available
+            // Ask Quest Machine to hide using whatever API is available
             if (!SafeInvokeNoArgs(questJournalUI, "Hide"))
                 if (!SafeInvokeNoArgs(questJournalUI, "CloseWindow"))
                     SafeInvokeBool(questJournalUI, "SetVisible", false);
 
-            questJournalUI.gameObject.SetActive(false);
+            // Ensure the objects are actually inactive
+            if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
             if (questJournalRoot != null) questJournalRoot.SetActive(false);
         }
         else
         {
-            Debug.LogWarning("[UI] CloseQuestJournalFromUI: Journal UI not found; recovering.");
+            Debug.LogWarning("[UI] CloseQuestJournalFromUI: Journal UI not found; continuing cleanup.");
         }
 
+        // Mark state
         isQuestJournalOpen = false;
 
-        // If we were on the Main Menu when opening (or the option is set), go back there.
+        // If we opened the journal from the main menu (or the option is set), bounce back there.
         if (reopenMainMenuAfterJournalClose || _openedJournalFromMainMenu)
         {
-            OpenMainMenuDirect(); // this keeps UI map enabled & time paused by design
+            OpenMainMenuDirect();   // keeps UI map enabled & Time.timeScale = 0
         }
         else
         {
-            // No menu requested; just restore gameplay input & unpause if nothing else is open.
+            // Otherwise, restore gameplay input/unpause if nothing else is open.
             CheckStopPlayerControls();
+
+            // Failsafe: if paused and no panels are open, unpause explicitly.
+            if (!IsAnySubPanelOpen() && Mathf.Approximately(Time.timeScale, 0f))
+                ExitUIMode();
         }
 
         // Reset flag for next open
         _openedJournalFromMainMenu = false;
     }
-
-
 
 
     private bool TryFindQuestJournalUI()
@@ -873,6 +982,9 @@ private Coroutine _skillRefreshCo;
         // Quest Journal:
         if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
         if (questJournalRoot != null) questJournalRoot.SetActive(false);
+
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen)
+            saveLoadPanel.ClosePanel();
 
         ResetStates();
         StopMenuPoll();
@@ -1276,21 +1388,75 @@ private Coroutine _skillRefreshCo;
 
     // ============================ Top Bar helpers =====================================
 
+    private static string FormatHHMMSS(int totalSeconds)
+    {
+        if (totalSeconds < 0) totalSeconds = 0;
+        int h = totalSeconds / 3600;
+        int m = (totalSeconds % 3600) / 60;
+        int s = totalSeconds % 60;
+        return $"{h:00}:{m:00}:{s:00}";
+    }
+
+    public int CurrentTimePlayedSeconds
+    {
+        get
+        {
+            return timePlayedUsesUnscaled
+                ? (_realSecondsPlayed < 0 ? PlayTimeTracker.TotalSecondsInt : _realSecondsPlayed)
+                : PlayTimeTracker.TotalSecondsInt;
+        }
+    }
+
+
+    // replaces your existing handler
     private void HandleSecondTick(int _)
     {
+        if (timePlayedUsesUnscaled) return;  // ignore scaled ticks when using unscaled
         UpdateTimePlayedLabelImmediate();
     }
+
 
     private void HandleActiveSceneChanged(Scene oldScene, Scene newScene)
     {
         UpdateLocationLabel();
     }
 
+    private void EnsureRealSecondsInit()
+    {
+        if (_realSecondsPlayed < 0) // not set yet
+            _realSecondsPlayed = PlayTimeTracker.TotalSecondsInt; // start from current saved/scaled total
+    }
+
+
     private void UpdateTimePlayedLabelImmediate()
     {
-        if (timePlayedLabel != null)
-            timePlayedLabel.text = $"Time Played: {PlayTimeTracker.FormatHHMM(PlayTimeTracker.TotalSecondsInt)}";
+        if (timePlayedLabel == null) return;
+
+        int secs = timePlayedUsesUnscaled
+            ? (_realSecondsPlayed < 0 ? PlayTimeTracker.TotalSecondsInt : _realSecondsPlayed)
+            : PlayTimeTracker.TotalSecondsInt;
+
+        string full = TimePlayedPrefix + FormatHHMMSS(secs);
+        _timePlayedRendered = full;
+        timePlayedLabel.text = full;
     }
+
+
+
+
+    private IEnumerator RealTimeTicker_Co()
+    {
+        var wait = new WaitForSecondsRealtime(1f);
+        EnsureRealSecondsInit();                 // make sure it isn’t -1
+        while (true)
+        {
+            _realSecondsPlayed++;                // real second, even while paused
+            UpdateTimePlayedLabelImmediate();
+            yield return wait;
+        }
+    }
+
+
 
     private void UpdateLocationLabel()
     {
@@ -1518,4 +1684,177 @@ private Coroutine _skillRefreshCo;
 
         if (Mathf.Approximately(Time.timeScale, 0f)) Time.timeScale = 1f;
     }
+
+    // -------------------- ADDED: Panel Switch helpers --------------------
+    private void SwitchUIPanel(int direction) // +1 = next, -1 = prev
+    {
+        if (direction == 0 || panelCycleOrder == null || panelCycleOrder.Length == 0) return;
+
+        // Block switching while overwrite confirmation is up
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.IsOverwriteOpen)
+            return;
+
+        // Disallow switching during special flows (Save panel itself is allowed)
+        if (isMerchantOpen || isCraftOpen || isStorageOpen || _assignPreviewActive)
+            return;
+
+        // You MUST be currently on one of the panels in the list
+        var active = GetActivePanelKind();
+        if (!active.HasValue) return;
+
+        int curIndex = Array.IndexOf(panelCycleOrder, active.Value);
+        if (curIndex < 0) return; // not in the order list (shouldn't happen)
+
+        EnsureUIRootIsActive();
+        EnterUIMode();
+
+        // Walk forward/backward to the next available panel in the fixed order (wrap)
+        for (int tries = 0; tries < panelCycleOrder.Length; tries++)
+        {
+            curIndex = Mod(curIndex + direction, panelCycleOrder.Length);
+            if (OpenPanelByKind(panelCycleOrder[curIndex])) return;
+        }
+
+        // Fallback (shouldn't hit if at least one panel is openable)
+        OpenMainMenuDirect();
+    }
+
+
+
+
+
+    private int FindCurrentPanelIndex()
+    {
+        UIPanelKind? active = GetActivePanelKind();
+        if (active.HasValue)
+        {
+            for (int i = 0; i < panelCycleOrder.Length; i++)
+                if (panelCycleOrder[i] == active.Value) return i;
+        }
+        return -1;
+    }
+
+    private UIPanelKind? GetActivePanelKind()
+    {
+        // Save first: it’s not a plain GameObject toggle
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen) return UIPanelKind.Save;
+
+        // Use real active state so we don’t depend on any stale flags
+        if (inventoryUI != null && inventoryUI.gameObject.activeInHierarchy) return UIPanelKind.Inventory;
+        if (skillTreeUI != null && skillTreeUI.gameObject.activeInHierarchy) return UIPanelKind.SkillTree;
+        if (equipmentInventoryPanel != null && equipmentInventoryPanel.gameObject.activeInHierarchy) return UIPanelKind.Equipment;
+        if ((questJournalUI != null && questJournalUI.gameObject.activeInHierarchy) || isQuestJournalOpen)
+            return UIPanelKind.QuestJournal;
+        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy) return UIPanelKind.Conquest;
+        if (optionsUI != null && optionsUI.gameObject.activeInHierarchy) return UIPanelKind.Options;
+
+        return null;
+    }
+
+
+
+    private bool IsPanelAvailable(UIPanelKind kind)
+    {
+        switch (kind)
+        {
+            case UIPanelKind.Inventory: return inventoryUI != null;
+            case UIPanelKind.Equipment: return equipmentInventoryPanel != null;
+            case UIPanelKind.SkillTree: return skillTreeUI != null;
+            case UIPanelKind.Status: return statusPanel != null;
+            case UIPanelKind.Conquest: return conquestUI != null;
+            case UIPanelKind.Options: return optionsUI != null;
+            case UIPanelKind.Save: return true; // lazy-find inside OpenSavePanel
+            case UIPanelKind.QuestJournal: return questJournalUI != null || TryFindQuestJournalUI();
+            default: return false;
+        }
+    }
+
+
+    private void EnsureValidPanelCycle()
+    {
+        if (panelCycleOrder == null || panelCycleOrder.Length == 0)
+        {
+            _panelCycleCache = Array.Empty<UIPanelKind>();
+            return;
+        }
+
+        var list = new List<UIPanelKind>(panelCycleOrder.Length);
+        foreach (var k in panelCycleOrder)
+        {
+            if (IsPanelAvailable(k)) list.Add(k);
+        }
+        _panelCycleCache = list.Count > 0 ? list.ToArray() : Array.Empty<UIPanelKind>();
+
+#if UNITY_EDITOR
+        // Helpful debug: see what will actually cycle
+        var joined = string.Join(" -> ", _panelCycleCache.Select(x => x.ToString()));
+        Debug.Log($"[UI] Panel cycle (filtered): {joined}");
+#endif
+    }
+
+    private void AutoFindUIPanelsIfMissing()
+    {
+        var include = FindObjectsInactive.Include;
+
+        if (inventoryUI == null)
+            inventoryUI = FindFirstObjectByType<UI_Inventory>(include);
+
+        if (skillTreeUI == null)
+            skillTreeUI = FindFirstObjectByType<UI_SkillTree>(include);
+
+        if (conquestUI == null)
+            conquestUI = FindFirstObjectByType<UI_Conquest>(include);
+
+        if (questJournalUI == null) questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(include);
+    }
+
+
+
+    // Opens the requested panel and returns true if it succeeded.
+    private bool OpenPanelByKind(UIPanelKind kind)
+    {
+        CloseAllPanels();
+        EnsureUIRootIsActive();
+
+        switch (kind)
+        {
+            case UIPanelKind.Inventory:
+                if (inventoryUI != null) { OpenInventory(); return true; }
+                break;
+
+            case UIPanelKind.SkillTree:
+                if (skillTreeUI != null) { OpenSkillTree(); return true; }
+                break;
+
+            case UIPanelKind.Equipment:
+                if (equipmentInventoryPanel != null) { OpenEquipment(); return true; }
+                break;
+
+            case UIPanelKind.Conquest:
+                if (conquestUI != null) { OpenConquestPanel(); return true; }
+                break;
+
+            case UIPanelKind.QuestJournal: // ← use immediate path
+                if (EnsureQuestJournalVisibleImmediate()) return true;
+                break;
+
+            case UIPanelKind.Options:
+                if (optionsUI != null) { OpenOptions(); return true; }
+                break;
+
+            case UIPanelKind.Save:
+                OpenSavePanel();
+                return true;
+        }
+        return false;
+    }
+
+
+
+
+
+
+    private static int Mod(int x, int m) => (x % m + m) % m;
+
+    // ---------------------------------------------------------------------
 }
