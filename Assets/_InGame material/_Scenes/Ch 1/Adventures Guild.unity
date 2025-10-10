@@ -9888,7 +9888,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9216247904300650053, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000005722046
+      value: -0.00001898408
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -27411,7 +27411,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1321005233
 Transform:
   m_ObjectHideFlags: 0
@@ -27475,8 +27475,7 @@ MonoBehaviour:
   condition:
     luaConditions: []
     questConditions: []
-    acceptedTags:
-    - Player
+    acceptedTags: []
     acceptedGameObjects: []
     luaWizardIndex: -1
     lastEvaluationValue: 0
@@ -27519,7 +27518,7 @@ MonoBehaviour:
   exclusive: 0
   replace: 0
   queue: 0
-  skipIfNoValidEntries: 1
+  skipIfNoValidEntries: 0
   preventRestartOnSameFrameEnded: 1
   stopConversationOnTriggerExit: 0
   marginToAllowTriggerExit: 0.2
@@ -27975,8 +27974,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_requiredTag: Player
-  m_destinationSceneName: Town Plaza
-  m_spawnpointNameInDestinationScene: SpawnPoint
+  m_destinationSceneName: Town Plaza Night
+  m_spawnpointNameInDestinationScene: SpawnPoint 3
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
@@ -38848,7 +38847,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1842656696}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c593457cd8105e148906690e1707c592, type: 3}
   m_Name: 
@@ -38893,7 +38892,7 @@ MonoBehaviour:
   allowBarksDuringConversations: 0
   skipBarkIfNoValidEntries: 0
   cacheBarkLines: 0
-  conversation: 
+  conversation: Adventures Guild/Receptionist/happy hunting
   conversationConversant: {fileID: 2068432091}
   conversationActor: {fileID: 2068432091}
   startConversationEntryID: -1
@@ -38990,19 +38989,7 @@ MonoBehaviour:
         m_Calls: []
     onUse:
       m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 2068432094}
-          m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
-          m_MethodName: SendToMessageSystem
-          m_Mode: 5
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: TurnIn_MyQuest:slay7Rabbies
-            m_BoolArgument: 0
-          m_CallState: 2
+        m_Calls: []
 --- !u!213 &1866673362
 Sprite:
   m_ObjectHideFlags: 0
@@ -39643,7 +39630,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2068432089}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
   m_Name: 
@@ -39660,19 +39647,7 @@ MonoBehaviour:
         m_Calls: []
     onUse:
       m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 0}
-          m_TargetAssemblyTypeName: 
-          m_MethodName: 
-          m_Mode: 0
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: 
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
+        m_Calls: []
 --- !u!61 &2068432093
 BoxCollider2D:
   m_ObjectHideFlags: 0

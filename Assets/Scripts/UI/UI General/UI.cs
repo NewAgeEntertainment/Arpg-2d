@@ -890,9 +890,12 @@ public class UI : MonoBehaviour
         {
             MerchantUI.gameObject.SetActive(true);
             MerchantUI.SetUpMerchantUI(merchant, playerInv);
+            isMerchantOpen = true;
         }
 
-        StopPlayerControls(true);
+        // 🔁 Switch Rewired maps to UI and (optionally) pause
+        EnterUIMode(); // disables "Gameplay" map, enables "UI", sets Time.timeScale = 0
+
         Debug.Log("[UI] Merchant UI opened");
     }
 
@@ -906,8 +909,11 @@ public class UI : MonoBehaviour
             Debug.Log("[UI] Merchant panel closed");
         }
 
+        // 🔁 Restore Rewired maps and unpause if no other panels are up
+        ExitUIMode();      // re-enables "Gameplay", disables "UI", sets Time.timeScale = 1
         CheckStopPlayerControls();
     }
+
 
     public void OpenMainMenuDirect()
     {

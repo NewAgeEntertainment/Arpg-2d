@@ -233,7 +233,7 @@ MonoBehaviour:
   - id: 9
     fields:
     - title: Name
-      value: Guard
+      value: Guild
       type: 0
       typeString: CustomFieldType_Text
     - title: Pictures
@@ -993,7 +993,7 @@ MonoBehaviour:
       type: 0
       typeString: CustomFieldType_Text
     - title: State
-      value: unassigned
+      value: returnToNPC
       type: 0
       typeString: CustomFieldType_QuestState
     - title: Is Item
@@ -1002,6 +1002,10 @@ MonoBehaviour:
       typeString: CustomFieldType_Boolean
     - title: Group
       value: Guild Quest
+      type: 0
+      typeString: CustomFieldType_Text
+    - title: 
+      value: 
       type: 0
       typeString: CustomFieldType_Text
   - id: 18
@@ -14022,15 +14026,14 @@ MonoBehaviour:
         destinationDialogueID: 2
         isConnector: 0
         priority: 2
-      conditionsString: GetQuestNodeState("Gather Information", "Talk to Guilder") 
-        == "active"
+      conditionsString: 
       userScript: 
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 1703.5663
+        x: 1706.0664
         y: 361.87717
         width: 160
         height: 30
@@ -14807,8 +14810,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 1360.6685, y: 342.962}
-    canvasZoom: 0.6700003
+    canvasScrollPosition: {x: 1315.2051, y: 262.01886}
+    canvasZoom: 0.64000046
   - id: 41
     fields:
     - title: Title
@@ -15801,13 +15804,72 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: Happy hunting
+        value: do you want to take a quest
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
         value: 
         type: 0
         typeString: CustomFieldType_Text
+      conversationID: 43
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 43
+        originDialogueID: 1
+        destinationConversationID: 43
+        destinationDialogueID: 2
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 393.56097
+        y: 92.738144
+        width: 160
+        height: 30
+    - id: 2
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: SendMessage(StartDialogueWithPlayer, Speaker)
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Response Menu Sequence
+        value: 
+        type: 0
+        typeString: 
       conversationID: 43
       isRoot: 0
       isGroup: 0
@@ -15823,8 +15885,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 393.56097
-        y: 92.738144
+        x: 454.61368
+        y: 160.63289
         width: 160
         height: 30
     entryGroups: []
@@ -38285,9 +38347,7 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
-        value: 'SendMessage(Dialogue Manager, QuestTurnIn, slay7Rabbies)
-
-'
+        value: 
         type: 0
         typeString: CustomFieldType_Text
       conversationID: 115

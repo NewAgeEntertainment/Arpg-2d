@@ -56,4 +56,31 @@ public class Object_Merchant : Object_NPC, IInteractable
         //
         // Otherwise, just leave it open and let the player close it with UICancel.
     }
+
+    // in Object_Merchant
+    public void DS_OpenShop()
+    {
+        // Make sure we have refs even if conversation started before trigger wired them.
+        if (inventory == null)
+            inventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+
+        if (merchant == null)
+            merchant = GetComponent<Inventory_Merchant>();
+
+        if (ui == null)
+            ui = UI.Instance ?? FindFirstObjectByType<UI>(FindObjectsInactive.Include);
+
+        if (merchant != null && inventory != null && ui != null)
+        {
+            // optional: refresh the shop list if you want
+            // merchant.FillShopList();
+
+            ui.OpenMerchant(merchant, inventory);
+        }
+        else
+        {
+            Debug.LogWarning("[Object_Merchant] DS_OpenShop: missing refs (merchant/inventory/ui).");
+        }
+    }
+
 }
