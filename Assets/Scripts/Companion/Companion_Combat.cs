@@ -68,15 +68,22 @@ public class CompanionCombat : Entity_Combat
             if (element != ElementType.None)
                 statusHandler?.ApplyStatusEffect(element, attackData.effectData);
 
+            // After a successful hit:
             if (targetGotHit)
             {
-                
-                vfx?.CreateOnHitVFX(target.transform, attackData.isCrit, element);
-
-                // Optional: mana restore if companion ever uses mana
+                // Existing player case (keep if you want)
                 if (_entity is Player player)
                     player.mana.RestoreManaOnHitWithScaling(player.Level);
+
+                // NEW: Companion case
+                var cMana = GetComponent<Companion_Mana>();
+                if (cMana != null)
+                {
+                    // if you have a level on your companion, pass it; otherwise omit
+                    cMana.RestoreManaOnHitWithScaling();
+                }
             }
+
         }
     }
 

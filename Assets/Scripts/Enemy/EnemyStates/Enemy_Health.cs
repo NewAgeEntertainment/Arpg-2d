@@ -1,11 +1,16 @@
+ï»¿// Enemy_Health.cs
 using UnityEngine;
 using System.Collections;
-using System.Reflection; // << added
+using System.Reflection;   // for safe, flexible EXP calls
 
 #if REWIRED
 using Rewired;
 #endif
 
+/// <summary>
+/// Health for enemies. Plays death anim, despawns, and now grants EXP to the Player
+/// and (if applicable) to the Companion who dealt the killing blow.
+/// </summary>
 public class Enemy_Health : Entity_Health, IDamageable
 {
     [Header("Despawn After Death Animation")]
@@ -42,7 +47,7 @@ public class Enemy_Health : Entity_Health, IDamageable
     [Header("Debug Logs")]
     [SerializeField] private bool debugLogs = true;
 
-    // ---------- NEW: Attack Super-Armor / Stun Override ----------
+    // ---------- Attack Super-Armor / Stun Override ----------
     [Header("Attack Overrides")]
     [Tooltip("Ignore/clear knockback while this enemy is in its Attack state.")]
     [SerializeField] private bool superArmorDuringAttack = true;
@@ -50,11 +55,12 @@ public class Enemy_Health : Entity_Health, IDamageable
     [Tooltip("If something forces Stun during an attack, immediately leave Stunned and return to Battle.")]
     [SerializeField] private bool ignoreStunDuringAttack = true;
 
-    private Enemy enemy;                   // cache to access states
+    // ----- caches -----
+    private Enemy enemy;         // to peek at states
     private Animator anim;
     private Rigidbody2D rb2d;
     private Collider2D[] cols;
-    private bool _despawnStarted;          // prevents double start
+    private bool _despawnStarted;
 
     // reflection cache to cancel knockback from Entity
     private static FieldInfo _fiIsKnocked;
@@ -80,15 +86,19 @@ public class Enemy_Health : Entity_Health, IDamageable
 
     private void OnEnable()
     {
-        // Updated to match Entity_Health’s events
+        // Base raises these:
         OnDied += HandleDied;
         OnRevived += HandleRevived;
+
+        // NEW: includes the last damage dealer transform so we can reward companions
+        OnDiedWithKiller += HandleDiedWithKiller;
     }
 
     private void OnDisable()
     {
         OnDied -= HandleDied;
         OnRevived -= HandleRevived;
+        OnDiedWithKiller -= HandleDiedWithKiller;
     }
 
     private void Update()
@@ -107,9 +117,7 @@ public class Enemy_Health : Entity_Health, IDamageable
         }
 #endif
         if (Input.GetKeyDown(fallbackKillKey))
-        {
             KillNow();
-        }
     }
 
     // Safety watcher: if OnDied wasn't caught for any reason, we still despawn when health reaches 0.
@@ -138,27 +146,24 @@ public class Enemy_Health : Entity_Health, IDamageable
     {
         if (IsDead) return;
         if (debugLogs) Debug.Log($"[{name}] KillNow() invoked.");
-        // Reduce exactly current health to reach 0 and trigger Die().
-        ReduceHealth(GetCurrentHealth());
+        ReduceHealth(GetCurrentHealth()); // triggers Die() in base
     }
+
+    // ========================= Death / Despawn =========================
 
     private void HandleDied()
     {
         if (_despawnStarted) return;
         _despawnStarted = true;
 
-        // Freeze physics & make corpse non-interactive
         if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.simulated = false; }
         if (cols != null) foreach (var c in cols) if (c) c.enabled = false;
 
         if (anim)
         {
-            // Ensure the anim keeps updating even if you change timeScale on death
             anim.updateMode = AnimatorUpdateMode.UnscaledTime;
-
             if (forcePlayDeathState && !string.IsNullOrEmpty(deathStateName))
             {
-                // If name is wrong, CrossFade does nothing—fallback below handles timing.
                 anim.CrossFadeInFixedTime(deathStateName, 0f, animatorLayer, 0f);
                 if (debugLogs) Debug.Log($"[{name}] CrossFade to '{deathStateName}' on layer {animatorLayer}.");
             }
@@ -170,7 +175,6 @@ public class Enemy_Health : Entity_Health, IDamageable
 
     private void HandleRevived()
     {
-        // Re-enable physics/colliders for reuse (pooling or revive flows)
         _despawnStarted = false;
         if (rb2d) rb2d.simulated = true;
         if (cols != null) foreach (var c in cols) if (c) c.enabled = true;
@@ -191,7 +195,7 @@ public class Enemy_Health : Entity_Health, IDamageable
                 if (!string.IsNullOrEmpty(deathStateName) && st.IsName(deathStateName))
                 {
                     matchedDeadState = true;
-                    if (debugLogs) Debug.Log($"[{name}] Entered state '{deathStateName}'. Waiting for completion…");
+                    if (debugLogs) Debug.Log($"[{name}] Entered state '{deathStateName}'. Waiting for completionâ€¦");
 
                     float clipLen = GetCurrentClipLength(anim, animatorLayer);
 
@@ -212,7 +216,7 @@ public class Enemy_Health : Entity_Health, IDamageable
                 yield return null;
             }
 
-            // 2) Fallback: if we never matched the state name, wait clip length or timeout
+            // 2) Fallback if we never matched:
             if (!matchedDeadState)
             {
                 float clipLen = GetCurrentClipLength(anim, animatorLayer);
@@ -226,7 +230,6 @@ public class Enemy_Health : Entity_Health, IDamageable
         }
         else
         {
-            // No Animator at all — just wait the timeout
             yield return new WaitForSecondsRealtime(fallbackTimeout);
         }
 
@@ -258,7 +261,8 @@ public class Enemy_Health : Entity_Health, IDamageable
     }
 #endif
 
-    // ---------------------- SUPER-ARMOR HOOK ----------------------
+    // ========================= Super-Armor / Stun =========================
+
     public override bool TakeDamage(float damage, float elementalDamage, ElementType element, Transform damageDealer)
     {
         bool result = base.TakeDamage(damage, elementalDamage, element, damageDealer);
@@ -291,27 +295,179 @@ public class Enemy_Health : Entity_Health, IDamageable
             && enemy.stateMachine.currentState == enemy.attackState;
     }
 
-    // Cancel knockback started by base.TakeDamage() (which runs entity.ReciveKnockback)
     private void TryCancelKnockbackImmediate()
     {
         if (enemy == null) return;
 
         try
         {
-            // Stop the running knockback coroutine if present
             var co = _fiKnockbackCo?.GetValue(enemy) as Coroutine;
             if (co != null)
                 enemy.StopCoroutine(co);
 
-            // Clear the isKnocked flag so movement isn't blocked by Entity.FixedUpdate
             _fiIsKnocked?.SetValue(enemy, false);
         }
         catch { /* reflection may fail in IL2CPP; fail-soft */ }
 
-        // Zero velocities either way
         if (enemy.rb != null) enemy.rb.velocity = Vector2.zero;
         enemy.SetVelocity(0f, 0f);
 
         if (debugLogs) Debug.Log($"[{name}] Super-armor: canceled knockback during attack.");
+    }
+
+    // ========================= EXP distribution =========================
+
+    /// <summary>
+    /// Raised by base class when we die, including the last damage dealer Transform.
+    /// Here we grant EXP to Player (always) and the killer Companion (if any).
+    /// </summary>
+    private void HandleDiedWithKiller(Transform killer)
+    {
+        // ðŸ‘‰ call the reward hook (e.g., companion mana on kill)
+        TryGrantRewardsToKiller(killer);
+
+        var comp = killer ? killer.GetComponentInParent<Companion>() : null;
+
+        float exp = GetExpRewardSafe();
+        if (exp <= 0f) return;
+
+        RewardPlayer(exp);
+
+        if (comp != null)
+            RewardCompanion(comp, exp);
+    }
+
+
+    private void TryGrantRewardsToKiller(Transform killer)
+    {
+        if (!killer) return;
+
+        // Companion â†’ restore mana on kill
+        var comp = killer.GetComponentInParent<Companion>();
+        if (comp)
+        {
+            var cMana = comp.GetComponent<Companion_Mana>();
+            cMana?.RestoreManaOnKill();
+        }
+    }
+
+    private float GetExpRewardSafe()
+    {
+        try
+        {
+            var mi = typeof(Entity_Health).GetMethod("GetEXPReward",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+            if (mi != null)
+            {
+                object v = mi.Invoke(this, null);
+                if (v is float f) return f;
+            }
+
+            var fi = typeof(Entity_Health).GetField("expReward",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fi != null)
+            {
+                object v = fi.GetValue(this);
+                if (v is float f) return f;
+            }
+        }
+        catch { }
+        return 0f;
+    }
+
+    private void RewardPlayer(float exp)
+    {
+        // Your project has Player.GainEXP(float)
+        var player = FindAnyObjectByType<Player>();
+        if (player != null)
+        {
+            player.GainEXP(exp);
+            if (debugLogs) Debug.Log($"[Enemy_Health] Gave {exp} EXP to Player.");
+            return;
+        }
+
+        // Fallback: try Player_Stats (or similar) by reflection if needed
+        var pStats = FindAnyObjectByType<Player_Stats>();
+        if (!TryGrantExpViaReflection(pStats, exp) && debugLogs)
+            Debug.LogWarning("[Enemy_Health] Could not find a way to give EXP to Player.");
+    }
+
+    private void RewardCompanion(Companion comp, float exp)
+    {
+        // 1) Companion component might expose GainEXP
+        if (TryGrantExpViaReflection(comp, exp))
+        {
+            if (debugLogs) Debug.Log($"[Enemy_Health] Gave {exp} EXP to companion '{comp.name}'.");
+            return;
+        }
+
+        // 2) Else try the companion's stats
+        Component stats =
+            (Component)comp.GetComponent("Player_Stats") ??
+            (Component)comp.GetComponent("Companion_Stats") ??
+            comp.GetComponent<Entity_Stats>();
+
+        if (TryGrantExpViaReflection(stats, exp))
+        {
+            if (debugLogs) Debug.Log($"[Enemy_Health] Gave {exp} EXP to companion '{comp.name}' (via stats).");
+            return;
+        }
+
+        if (debugLogs) Debug.LogWarning($"[Enemy_Health] Could not grant EXP to companion '{comp.name}' (no GainEXP-like method).");
+    }
+
+    /// <summary>
+    /// Tries common EXP APIs by reflection:
+    /// - GainEXP(float), AddEXP(float), AddExperience(float), GainExperience(float)
+    /// - or, as a last resort, increments a CurrentEXP property/field.
+    /// </summary>
+    private static bool TryGrantExpViaReflection(object target, float exp)
+    {
+        if (target == null) return false;
+
+        // Try common method names first
+        string[] methodNames = { "GainEXP", "AddEXP", "AddExperience", "GainExperience" };
+        foreach (var m in methodNames)
+        {
+            var mi = target.GetType().GetMethod(m, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (mi != null)
+            {
+                try { mi.Invoke(target, new object[] { exp }); return true; }
+                catch { /* try next */ }
+            }
+        }
+
+        // Fallback: bump a CurrentEXP field/property if present
+        try
+        {
+            var pi = target.GetType().GetProperty("CurrentEXP", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (pi != null)
+            {
+                float cur = ConvertToFloat(pi.GetValue(target));
+                pi.SetValue(target, cur + exp);
+                return true;
+            }
+
+            var fi = target.GetType().GetField("CurrentEXP", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (fi != null)
+            {
+                float cur = ConvertToFloat(fi.GetValue(target));
+                fi.SetValue(target, cur + exp);
+                return true;
+            }
+        }
+        catch { }
+
+        return false;
+    }
+
+    private static float ConvertToFloat(object v)
+    {
+        if (v is float f) return f;
+        if (v is int i) return i;
+        if (v is double d) return (float)d;
+        if (v is long l) return l;
+        if (v is short s) return s;
+        return 0f;
     }
 }

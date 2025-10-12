@@ -9,6 +9,11 @@ public class CompanionPartyManager : MonoBehaviour
     public static CompanionPartyManager Instance { get; private set; }
     public static event System.Action<Transform> OnPlayerResolved;
 
+    public static event System.Action<string, GameObject> OnRecruited;
+    public static event System.Action<string> OnDismissed;
+    public static event System.Action OnPartyChanged;
+
+
     [Header("Lifetime")]
     [SerializeField] private bool dontDestroyOnLoad = true;
 
@@ -136,47 +141,70 @@ public class CompanionPartyManager : MonoBehaviour
         return (!string.IsNullOrEmpty(id) && _active.TryGetValue(id, out var go)) ? go : null;
     }
 
-    /// Recruit by id. If this is the first time, we look for a matching CompanionIdentity
-    /// in the current scene. If found, we promote THAT exact instance to DDOL.
-    /// If not found, we fall back to the prefab path.
     public GameObject Recruit(string id, bool silent = false)
     {
         var entry = GetEntry(id);
-        if (entry == null) { Debug.LogWarning($"[PartyManager] No roster entry '{id}'."); return null; }
+        if (entry == null)
+        {
+            Debug.LogWarning($"[PartyManager] No roster entry '{id}'.");
+            return null;
+        }
 
         // Already traveling?
         if (_active.TryGetValue(id, out var existing) && existing)
         {
+            // Ensure it’s in the right state.
+            if (reactivateIfAlreadyInScene && !existing.activeSelf) existing.SetActive(true);
             FlagInParty(existing, true);
-            if (!silent) Debug.Log($"[PartyManager] Recruit '{id}' → already active @{existing.transform.position}");
+
+            if (!silent && verboseLogs)
+                Debug.Log($"[PartyManager] Recruit '{id}' → already active @{existing.transform.position}");
+
+            // Do NOT raise OnRecruited for idempotent call.
             return existing;
         }
 
-        // 1) Scene instance in *current* scene? Promote it once.
-        var sceneInst = FindSceneInstanceById(id);   // or entry.sceneInstance if you kept that
+        // 1) Prefer an in-scene instance (promote to DDOL)
+        var sceneInst = FindSceneInstanceById(id);
         if (sceneInst != null)
         {
             var go = sceneInst;
             if (reactivateIfAlreadyInScene && !go.activeSelf) go.SetActive(true);
+
             PromoteToDDOL(go);
             SetupCompanion(go);
             if (forceFollowOnRecruit) ForceFollow(go);
             FlagInParty(go, true);
+
             _active[id] = go;
-            if (!silent) Debug.Log($"[PartyManager] Recruit '{id}' (promoted scene instance)");
+
+            OnRecruited?.Invoke(id, go);
+            OnPartyChanged?.Invoke();
+
+            if (!silent && verboseLogs)
+                Debug.Log($"[PartyManager] Recruit '{id}' (promoted scene instance)");
+
             return go;
         }
 
-        // 2) Prefab fallback (needed when loading into other scenes)
+        // 2) Prefab fallback
         if (entry.prefab != null)
         {
             var go = Instantiate(entry.prefab, partyRoot);
             go.transform.position = GetSpawnPosition();
+
             SetupCompanion(go);
             if (forceFollowOnRecruit) ForceFollow(go);
             FlagInParty(go, true);
+
             _active[id] = go;
-            if (!silent) Debug.Log($"[PartyManager] Recruit '{id}' (prefab fallback)");
+
+            OnRecruited?.Invoke(id, go);
+            OnPartyChanged?.Invoke();
+
+            if (!silent && verboseLogs)
+                Debug.Log($"[PartyManager] Recruit '{id}' (prefab fallback)");
+
             return go;
         }
 
@@ -184,20 +212,31 @@ public class CompanionPartyManager : MonoBehaviour
         return null;
     }
 
-
     public void Dismiss(string id, bool destroy = false)
     {
         var go = FindActiveInstance(id);
-        if (go == null) return;
+        if (go == null)
+        {
+            if (verboseLogs) Debug.LogWarning($"[PartyManager] Dismiss '{id}' ignored: not active.");
+            return;
+        }
 
+        // Clear party flag on the component if present
         FlagInParty(go, false);
 
+        // Remove from active set first so listeners see the new state
+        _active.Remove(id);
+
+        // Destroy or simply hide
         if (destroy) Destroy(go);
         else go.SetActive(false);
 
-        _active.Remove(id);
-        if (verboseLogs) Debug.Log($"[PartyManager] Dismissed '{id}'");
+        if (verboseLogs) Debug.Log($"[PartyManager] Dismissed '{id}' (destroy={destroy})");
+
+        OnDismissed?.Invoke(id);
+        OnPartyChanged?.Invoke();
     }
+
 
     public void DismissAll(bool destroy = false)
     {

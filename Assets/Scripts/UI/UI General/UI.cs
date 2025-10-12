@@ -91,6 +91,7 @@ public class UI : MonoBehaviour
     [Tooltip("If true, re-open the main menu panel after closing the journal.")]
     [SerializeField] private bool reopenMainMenuAfterJournalClose = true;
 
+
     // === UI Theme – Button Colors ===
     [Header("UI Theme – Buttons")]
     [SerializeField] private Color btnNormal = new Color(1f, 1f, 1f, 1f);
@@ -881,6 +882,14 @@ public class UI : MonoBehaviour
         CheckStopPlayerControls();
     }
 
+    // UI.cs
+    public void OnMerchantPanelClosed()
+    {
+        isMerchantOpen = false;   // <- clear the UI's idea of "shop open"
+        CheckStopPlayerControls(); // will unpause & swap maps if nothing else is open
+    }
+
+
     public void OpenMerchant(Inventory_Merchant merchant, Inventory_Player playerInv)
     {
         EnsureUIRootIsActive();
@@ -909,8 +918,7 @@ public class UI : MonoBehaviour
             Debug.Log("[UI] Merchant panel closed");
         }
 
-        // 🔁 Restore Rewired maps and unpause if no other panels are up
-        ExitUIMode();      // re-enables "Gameplay", disables "UI", sets Time.timeScale = 1
+        // Let this decide if gameplay should unpause / maps should swap.
         CheckStopPlayerControls();
     }
 
@@ -1774,6 +1782,8 @@ public class UI : MonoBehaviour
             default: return false;
         }
     }
+
+
 
 
     private void EnsureValidPanelCycle()

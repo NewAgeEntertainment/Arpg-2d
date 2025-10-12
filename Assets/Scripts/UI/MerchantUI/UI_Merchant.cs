@@ -130,7 +130,12 @@ public class UI_Merchant : MonoBehaviour
 
         gameObject.SetActive(false);
         Debug.Log("[UI] Merchant UI closed");
+
+        // >>> IMPORTANT: tell the UI we’re closed so it can unpause / re-enable gameplay
+        UI.Instance?.OnMerchantPanelClosed();
     }
+
+
 
     private void ResetPanels()
     {

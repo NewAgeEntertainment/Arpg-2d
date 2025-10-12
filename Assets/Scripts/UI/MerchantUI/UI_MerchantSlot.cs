@@ -4,7 +4,9 @@ using TMPro;
 using UnityEngine.UI;
 using Rewired;
 
-public class UI_MerchantSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHandler
+public class UI_MerchantSlot : UI_ItemSlot,
+    IPointerEnterHandler, IPointerExitHandler,
+    ISelectHandler, IDeselectHandler, ISubmitHandler, IMoveHandler
 {
     public enum MerchantSlotType { MerchantSlot, PlayerSlot }
     [Header("Type")]
@@ -130,6 +132,8 @@ public class UI_MerchantSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
             RefreshQtyAndTotal();
             return;
         }
+
+
         // --------------------------------------------------------------------
 
         if (isBuying)
@@ -160,6 +164,40 @@ public class UI_MerchantSlot : UI_ItemSlot, IPointerEnterHandler, IPointerExitHa
         RefreshQtyAndTotal();
     }
 
+    // When this slot becomes the selected UI element (gamepad/keyboard):
+    public void OnSelect(BaseEventData eventData)
+    {
+        SetFocused(true);               // enables Rewired input for this slot
+        if (itemInSlot != null) onHover?.Invoke(itemInSlot);
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        SetFocused(false);
+        onExit?.Invoke();
+    }
+
+    // Pressing “Submit” (A / Enter) confirms the transaction for the current quantity
+    public void OnSubmit(BaseEventData eventData)
+    {
+        Confirm();
+    }
+
+    // Optional: use LEFT/RIGHT on the d-pad/keys to change quantity without custom actions
+    public void OnMove(AxisEventData eventData)
+    {
+        if (eventData.moveDir == MoveDirection.Right)
+        {
+            ChangeQuantity(+1);
+            eventData.Use();            // consume so focus doesn’t jump
+        }
+        else if (eventData.moveDir == MoveDirection.Left)
+        {
+            ChangeQuantity(-1);
+            eventData.Use();
+        }
+        // Up/Down should fall through so the EventSystem can move to other rows.
+    }
 
     public override void Clear()
     {
