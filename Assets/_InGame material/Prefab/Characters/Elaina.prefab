@@ -72,7 +72,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 5
+  m_SortingLayer: 7
   m_SortingOrder: 0
   m_Sprite: {fileID: 8711177, guid: 3ef02fe988d86fe4cb197526f327180d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -298,10 +298,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 871326809236735106}
-  - component: {fileID: 439475555561165104}
   - component: {fileID: 5228444149971703623}
   - component: {fileID: 8320445127633882828}
-  - component: {fileID: 4383031656577790627}
   - component: {fileID: 8291246116589962730}
   - component: {fileID: 3029575330123377183}
   - component: {fileID: 4341516197683671429}
@@ -331,35 +329,6 @@ Transform:
   - {fileID: 4847524248144566961}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &439475555561165104
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3822433045253184017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c41de18ccab57524d9941d9d62314654, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentDir: {x: 0, y: 0}
-  combat: {fileID: 0}
-  playerTarget: {fileID: 0}
-  followStartDistance: 3
-  followStopDistance: 1.2
-  maxFollowDistance: 10
-  moveSpeed: 3.5
-  chaseRadius: 6
-  attackRange: 1.5
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  battleMoveSpeed: 4.5
-  moveAnimSpeedMultiplier: 1
-  startInParty: 0
-  alwaysAutoResolvePlayer: 1
-  recheckEvery: 0.5
 --- !u!95 &5228444149971703623
 Animator:
   serializedVersion: 5
@@ -454,108 +423,6 @@ MonoBehaviour:
   m_completedQuestDialogueMode: 0
   m_questDialogueUI: {fileID: 0}
   m_cooldownCheckFrequency: 0
---- !u!114 &4383031656577790627
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3822433045253184017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 691647f7eb53e894d845afdccc87c72d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultStatSetup: {fileID: 11400000, guid: bb8e035c55059424ca8cd07f3f99082d, type: 2}
-  resources:
-    maxHealth:
-      baseValue: 0
-      modifiers: []
-    healthRegen:
-      baseValue: 0
-      modifiers: []
-    maxMana:
-      baseValue: 0
-      modifiers: []
-    manaRegen:
-      baseValue: 0
-      modifiers: []
-  offense:
-    attackSpeed:
-      baseValue: 1
-      modifiers: []
-    damage:
-      baseValue: 10
-      modifiers: []
-    critPower:
-      baseValue: 0
-      modifiers: []
-    critChance:
-      baseValue: 0
-      modifiers: []
-    armorReduction:
-      baseValue: 0
-      modifiers: []
-    fireDamage:
-      baseValue: 0
-      modifiers: []
-    iceDamage:
-      baseValue: 0
-      modifiers: []
-    lightningDamage:
-      baseValue: 0
-      modifiers: []
-    poisonDamage:
-      baseValue: 0
-      modifiers: []
-  defense:
-    armor:
-      baseValue: 0
-      modifiers: []
-    evasion:
-      baseValue: 0
-      modifiers: []
-    fireRes:
-      baseValue: 0
-      modifiers: []
-    iceRes:
-      baseValue: 0
-      modifiers: []
-    lightningRes:
-      baseValue: 0
-      modifiers: []
-    poisonRes:
-      baseValue: 0
-      modifiers: []
-  major:
-    strength:
-      baseValue: 0
-      modifiers: []
-    luck:
-      baseValue: 0
-      modifiers: []
-    intelligence:
-      baseValue: 0
-      modifiers: []
-    vitality:
-      baseValue: 0
-      modifiers: []
-  sex:
-    maxArousal:
-      baseValue: 100
-      modifiers: []
-    stroke:
-      baseValue: 0
-      modifiers: []
-    sexualDamage:
-      baseValue: 0
-      modifiers: []
-    resilience:
-      baseValue: 0
-      modifiers: []
-    sexualRestraint:
-      baseValue: 0
-      modifiers: []
 --- !u!50 &8291246116589962730
 Rigidbody2D:
   serializedVersion: 4
@@ -596,7 +463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profile: {fileID: 11400000, guid: 6c401433d59fe0a4793bbf1ae4d166a5, type: 2}
-  stats: {fileID: 4383031656577790627}
+  stats: {fileID: 0}
 --- !u!114 &4341516197683671429
 MonoBehaviour:
   m_ObjectHideFlags: 0

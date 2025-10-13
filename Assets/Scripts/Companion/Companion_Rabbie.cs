@@ -10,6 +10,10 @@ public class Companion_Rabbie : Companion
         chaseState = new Companion_ChaseState(this, stateMachine);
         attackState = new Companion_AttackState(this, stateMachine);
         returnState = new Companion_ReturnState(this, stateMachine);
+
+        // ensure deadState exists with current settings
+        if (deadState == null)
+            deadState = new Companion_DeadState(this, stateMachine, "dead", 5f, 0.3f);
     }
 
     protected override void Start()

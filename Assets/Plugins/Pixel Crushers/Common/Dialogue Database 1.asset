@@ -2273,7 +2273,7 @@ MonoBehaviour:
         isConnector: 0
         priority: 2
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStop("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -2394,8 +2394,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 111.23449, y: 16.233345}
-    canvasZoom: 1.0300001
+    canvasScrollPosition: {x: 102.6465, y: 54.195152}
+    canvasZoom: 0.9400002
   - id: 8
     fields:
     - title: Title
@@ -8406,14 +8406,14 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStart("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 372.60333
-        y: 117.897446
+        x: 374.62866
+        y: 118.91008
         width: 160
         height: 30
     entryGroups: []
@@ -38318,7 +38318,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 163.2
+        x: 164.95827
         y: 113.600006
         width: 160
         height: 30
@@ -38361,14 +38361,14 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: SendMessageSystem("TurnIn_MyQuest", "slay7Rabbies")
+      userScript: NPCFollowStart("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 246.40001
-        y: 167.6
+        x: 246.40004
+        y: 166.72092
         width: 160
         height: 30
     - id: 3
@@ -38394,7 +38394,7 @@ MonoBehaviour:
         type: 0
         typeString: CustomFieldType_Text
       - title: Dialogue Text
-        value: 
+        value: no
         type: 0
         typeString: CustomFieldType_Text
       - title: Sequence
@@ -38410,7 +38410,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStop("Elaina")
       onExecute:
         m_PersistentCalls:
           m_Calls: []

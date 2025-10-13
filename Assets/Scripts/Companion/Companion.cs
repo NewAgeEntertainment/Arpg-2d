@@ -49,6 +49,16 @@ public class Companion : Entity
     [HideInInspector] public Companion_ReturnState returnState;
     [HideInInspector] public Companion_IdleState idleState;
 
+    // ── NEW: Dead State settings & instance ──────────────────────────────
+    [Header("Death / Auto-Revive")]
+    [SerializeField] private string deathAnimBool = "dead";
+    [SerializeField] private float reviveDelay = 5f;
+    [SerializeField, Range(0f, 1f)] private float reviveToPercent = 0.3f;
+
+    [HideInInspector] public Companion_DeadState deadState;
+
+    private Entity_Health _health;
+
     // ====================================================================
     // Unity lifecycle
     // ====================================================================
@@ -58,6 +68,7 @@ public class Companion : Entity
         base.Awake();
         stateMachine = new StateMachine();
         combat = GetComponent<CompanionCombat>();
+        _health = GetComponent<Entity_Health>();
     }
 
     private void OnEnable()
@@ -67,6 +78,10 @@ public class Companion : Entity
 
         // Optional: listen to PartyManager's player-resolved event if present
         CompanionPartyManager.OnPlayerResolved += HandleManagerResolved;
+
+        // NEW: react to death to enter DeadState
+        if (_health != null)
+            _health.OnDied += HandleDied;
 
         TryBindFromLocatorOrWorld(); // first attempt
         _nextResolveAt = 0f;
@@ -84,6 +99,9 @@ public class Companion : Entity
         PlayerLocator.OnChanged -= HandleLocatorChanged;
         CompanionPartyManager.OnPlayerResolved -= HandleManagerResolved;
 
+        if (_health != null)
+            _health.OnDied -= HandleDied;
+
         if (bindCo != null) StopCoroutine(bindCo);
         bindCo = null;
     }
@@ -96,6 +114,10 @@ public class Companion : Entity
         if (attackState == null) attackState = new Companion_AttackState(this, stateMachine);
         if (returnState == null) returnState = new Companion_ReturnState(this, stateMachine);
         if (idleState == null) idleState = new Companion_IdleState(this, stateMachine);
+
+        // NEW: create dead state
+        if (deadState == null)
+            deadState = new Companion_DeadState(this, stateMachine, deathAnimBool, reviveDelay, reviveToPercent);
 
         if (stateMachine.currentState == null)
             stateMachine.Initialize(idleState);
@@ -314,6 +336,18 @@ public class Companion : Entity
             if (!InParty && StartInParty) InParty = true; // keep event noise low
             stateMachine.ChangeState(followState);
         }
+    }
+
+    // ====================================================================
+    // Death hook → switch to DeadState
+    // ====================================================================
+
+    private void HandleDied()
+    {
+        if (deadState == null)
+            deadState = new Companion_DeadState(this, stateMachine, deathAnimBool, reviveDelay, reviveToPercent);
+
+        stateMachine.ChangeState(deadState);
     }
 
     // ====================================================================

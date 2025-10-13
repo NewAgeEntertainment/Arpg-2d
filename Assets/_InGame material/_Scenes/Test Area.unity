@@ -1830,9 +1830,6 @@ MonoBehaviour:
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
-  waitTimeoutSeconds: 6
-  waitForPlayer: 1
-  verbose: 1
 --- !u!114 &102014120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3309,7 +3306,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
   m_PrefabInstance: {fileID: 2121544075}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &335047421
+--- !u!114 &335047428
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3318,10 +3315,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 184800218}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1f50c76ec126d3418066d887042ffd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 6de9c69a5efa4c348940982b484b807a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 
+  currentDir: {x: 0, y: 0}
+  moveSpeed: 3
+  patrolPoints: []
+  loopPatrol: 1
+  waypointTolerance: 0.1
+  waitAtWaypoint: 0.25
+  autoStartPatrol: 1
+  followCommanded: 0
+  followTarget: {fileID: 0}
+  followStopDistance: 1.25
+--- !u!114 &335047429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184800218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b851369af52eb843b7c3c8130769e06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: Elaina
 --- !u!1 &347064106
 GameObject:
   m_ObjectHideFlags: 0
@@ -10955,6 +10974,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -249.57379
       objectReference: {fileID: 0}
+    - target: {fileID: 1422009224467509943, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1573708621051640523, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -11087,6 +11110,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -232.57379
       objectReference: {fileID: 0}
+    - target: {fileID: 2744833711469693236, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -11190,6 +11217,10 @@ PrefabInstance:
     - target: {fileID: 3924298719972313883, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 16.05706
+      objectReference: {fileID: 0}
+    - target: {fileID: 3984769195386052100, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4125645066848942086, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.x
@@ -11790,6 +11821,7 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 1009092472331831307, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
     - {fileID: 0}
+    - {fileID: 7344942113235678821, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -13091,7 +13123,7 @@ MonoBehaviour:
   allowBarksDuringConversations: 0
   skipBarkIfNoValidEntries: 0
   cacheBarkLines: 0
-  conversation: Party Recruit
+  conversation: New Conversation 115
   conversationConversant: {fileID: 781224195}
   conversationActor: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   startConversationEntryID: -1
@@ -23013,6 +23045,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3244157916588337409, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
+      propertyPath: expReward
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3244157916588337409, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: knockbackDuration
       value: 1
       objectReference: {fileID: 0}
@@ -23023,6 +23059,10 @@ PrefabInstance:
     - target: {fileID: 5013179976805225942, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: battleTime
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5013179976805225942, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
+      propertyPath: whatIsPlayer.m_Bits
+      value: 2176
       objectReference: {fileID: 0}
     - target: {fileID: 5013179976805225942, guid: c5c2628d32ba9dc4f81678349bf55d23, type: 3}
       propertyPath: moveAnimSpeedMultiplier
@@ -30875,6 +30915,7 @@ GameObject:
   - component: {fileID: 2014996988}
   - component: {fileID: 2014996987}
   - component: {fileID: 2014996986}
+  - component: {fileID: 2014996990}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -30957,6 +30998,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+--- !u!114 &2014996990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2014996984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2e00f73e94c0024e80d41ab1f5378bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2015877845
 GameObject:
   m_ObjectHideFlags: 0
@@ -32398,6 +32451,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: c62ace7fbec544a439f571fc94c6e031, type: 2}
+    - target: {fileID: 3029575330123377183, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+      propertyPath: stats
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_Name
       value: Elaina
@@ -32431,8 +32488,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 335047428}
+    - targetCorrespondingSourceObject: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 335047421}
+      addedObject: {fileID: 335047429}
   m_SourcePrefab: {fileID: 100100000, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
 --- !u!1 &2122786431
 GameObject:
@@ -32958,9 +33018,10 @@ GameObject:
   - component: {fileID: 8708059828482051172}
   - component: {fileID: 8708059828482051181}
   - component: {fileID: 8708059828482051182}
+  - component: {fileID: 8708059828482051186}
   m_Layer: 11
   m_Name: Enemy_Rabbie (1)
-  m_TagString: Untagged
+  m_TagString: Companion
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34274,6 +34335,9 @@ MonoBehaviour:
   startInParty: 0
   alwaysAutoResolvePlayer: 1
   recheckEvery: 0.5
+  deathAnimBool: dead
+  reviveDelay: 5
+  reviveToPercent: 0.3
 --- !u!114 &8708059828482051181
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34432,10 +34496,8 @@ MonoBehaviour:
     sexualRestraint:
       baseValue: 0
       modifiers: []
-  currentEXP: 0
-  baseNextLevel: 100
-  nextLevelGrowth: 1.25
-  currentLevel: 1
+  refillHealthOnLevel: 1
+  refillManaOnLevel: 1
 --- !u!114 &8708059828482051185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34459,6 +34521,22 @@ MonoBehaviour:
   killRestorePercent: 0.1
   minPerHit: 1
   minPerKill: 3
+--- !u!114 &8708059828482051186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2054271020251092148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c455d3a1ded44fa49833751ce6b6cf55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: Stat
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
 --- !u!224 &8765437683951931750
 RectTransform:
   m_ObjectHideFlags: 0
