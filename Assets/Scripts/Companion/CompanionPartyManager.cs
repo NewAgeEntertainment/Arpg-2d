@@ -13,7 +13,6 @@ public class CompanionPartyManager : MonoBehaviour
     public static event System.Action<string> OnDismissed;
     public static event System.Action OnPartyChanged;
 
-
     [Header("Lifetime")]
     [SerializeField] private bool dontDestroyOnLoad = true;
 
@@ -57,8 +56,27 @@ public class CompanionPartyManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool verboseLogs = true;
 
+    // ---------- Runtime ----------
     private readonly Dictionary<string, GameObject> _active = new Dictionary<string, GameObject>();
     private Coroutine resolveCo;
+
+    // ---------- NEW: origin remembering for scene instances ----------
+    [System.Serializable]
+    private struct OriginInfo
+    {
+        public string sceneName;
+        public string parentPath;   // transform path under that scene
+        public Vector3 position;
+        public Quaternion rotation;
+        public bool wasActive;
+        public bool wasPrefabSpawn; // prefab fallback (no origin to return to)
+    }
+
+    // id -> origin info
+    private readonly Dictionary<string, OriginInfo> _originById = new Dictionary<string, OriginInfo>();
+
+    // queue returns when target scene isn't loaded yet
+    private readonly List<(string id, GameObject go, OriginInfo origin)> _pendingReturns = new();
 
     // ─────────────────────────────────────────────────────────────────────
     private void Awake()
@@ -108,6 +126,24 @@ public class CompanionPartyManager : MonoBehaviour
         if (verboseLogs) Debug.Log($"[PartyManager] Scene loaded: {scene.name}");
         if (resolveCo != null) StopCoroutine(resolveCo);
         resolveCo = StartCoroutine(ResolvePlayerRebindAndSnap());
+
+        // Process any pending returns destined for this scene
+        if (_pendingReturns.Count > 0)
+        {
+            for (int i = _pendingReturns.Count - 1; i >= 0; i--)
+            {
+                var pr = _pendingReturns[i];
+                if (pr.origin.sceneName == scene.name)
+                {
+                    try { ReturnCompanionToOrigin(pr.go, pr.origin); }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[PartyManager] Pending return for '{pr.id}' failed: {ex}");
+                    }
+                    _pendingReturns.RemoveAt(i);
+                }
+            }
+        }
     }
 
     private IEnumerator ResolvePlayerRebindAndSnap(float timeout = 6f)
@@ -171,6 +207,9 @@ public class CompanionPartyManager : MonoBehaviour
             var go = sceneInst;
             if (reactivateIfAlreadyInScene && !go.activeSelf) go.SetActive(true);
 
+            // REMEMBER ORIGIN before promoting
+            RememberOrigin(id, go, wasPrefab: false);
+
             PromoteToDDOL(go);
             SetupCompanion(go);
             if (forceFollowOnRecruit) ForceFollow(go);
@@ -192,6 +231,9 @@ public class CompanionPartyManager : MonoBehaviour
         {
             var go = Instantiate(entry.prefab, partyRoot);
             go.transform.position = GetSpawnPosition();
+
+            // Mark as prefab-spawned (no origin to return)
+            RememberOrigin(id, go, wasPrefab: true);
 
             SetupCompanion(go);
             if (forceFollowOnRecruit) ForceFollow(go);
@@ -227,16 +269,30 @@ public class CompanionPartyManager : MonoBehaviour
         // Remove from active set first so listeners see the new state
         _active.Remove(id);
 
-        // Destroy or simply hide
-        if (destroy) Destroy(go);
-        else go.SetActive(false);
+        // Return or disable/destroy
+        if (_originById.TryGetValue(id, out var origin))
+        {
+            if (origin.wasPrefabSpawn)
+            {
+                if (destroy) Destroy(go);
+                else go.SetActive(false);
+            }
+            else
+            {
+                ReturnCompanionToOrigin(go, origin);
+            }
+        }
+        else
+        {
+            if (destroy) Destroy(go);
+            else go.SetActive(false);
+        }
 
-        if (verboseLogs) Debug.Log($"[PartyManager] Dismissed '{id}' (destroy={destroy})");
+        if (verboseLogs) Debug.Log($"[PartyManager] Dismissed '{id}'");
 
         OnDismissed?.Invoke(id);
         OnPartyChanged?.Invoke();
     }
-
 
     public void DismissAll(bool destroy = false)
     {
@@ -392,5 +448,93 @@ public class CompanionPartyManager : MonoBehaviour
             i++;
             if (verboseLogs) Debug.Log($"[PartyManager] Snapped '{go.name}' near player @ {target}");
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // NEW: origin tracking & returning
+    // ─────────────────────────────────────────────────────────────────────
+
+    private void RememberOrigin(string id, GameObject go, bool wasPrefab)
+    {
+        if (wasPrefab)
+        {
+            _originById[id] = new OriginInfo { wasPrefabSpawn = true };
+            return;
+        }
+
+        var t = go.transform;
+        var origin = new OriginInfo
+        {
+            sceneName = go.scene.name,
+            parentPath = GetTransformPath(t.parent),
+            position = t.position,
+            rotation = t.rotation,
+            wasActive = go.activeSelf,
+            wasPrefabSpawn = false
+        };
+        _originById[id] = origin;
+    }
+
+    private static string GetTransformPath(Transform tr)
+    {
+        if (tr == null) return string.Empty;
+        var stack = new System.Collections.Generic.Stack<string>();
+        while (tr != null && tr.gameObject.scene.name != "DontDestroyOnLoad")
+        {
+            stack.Push(tr.name);
+            tr = tr.parent;
+        }
+        return string.Join("/", stack.ToArray());
+    }
+
+    private static Transform FindByPathInScene(Scene scene, string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+        var roots = scene.GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            var child = r.transform.Find(path);
+            if (child != null) return child;
+        }
+        return null;
+    }
+
+    private void ReturnCompanionToOrigin(GameObject go, OriginInfo origin)
+    {
+        // If target scene isn't loaded, queue and hide
+        var targetScene = SceneManager.GetSceneByName(origin.sceneName);
+        if (!targetScene.IsValid() || !targetScene.isLoaded)
+        {
+            if (verboseLogs) Debug.LogWarning($"[PartyManager] Scene '{origin.sceneName}' not loaded; queuing return for '{go.name}'.");
+            _pendingReturns.Add((id: GetId(go), go: go, origin: origin));
+            go.SetActive(false);
+            return;
+        }
+
+        // Object MUST be a root before MoveGameObjectToScene
+        go.transform.SetParent(null, worldPositionStays: true);
+
+        // Move into original scene
+        SceneManager.MoveGameObjectToScene(go, targetScene);
+
+        // Restore parent if available
+        var newParent = FindByPathInScene(targetScene, origin.parentPath);
+        if (newParent != null)
+            go.transform.SetParent(newParent, worldPositionStays: true);
+
+        // Restore pose & active state
+        go.transform.position = origin.position;
+        go.transform.rotation = origin.rotation;
+        go.SetActive(origin.wasActive);
+
+        // Clear party state
+        var comp = go.GetComponent<Companion>();
+        if (comp) comp.SetInParty(false);
+    }
+
+    private string GetId(GameObject go)
+    {
+        var ci = go ? go.GetComponent<CompanionIdentity>() : null;
+        return ci != null ? ci.id : go ? go.name : "unknown";
     }
 }

@@ -103,17 +103,26 @@ public class CompanionHUDSlot : MonoBehaviour
 
     // ---------- internals ----------
 
+    // in CompanionHUDSlot.cs
     private IEnumerator PollLoop()
     {
         var wait = new WaitForSecondsRealtime(pollSeconds);
-        while (target)
+        while (target != null)
         {
+            // If the bound companion was disabled or destroyed, let go of the slot
+            if (!target.activeInHierarchy)
+            {
+                Unbind();                // this hides the slot
+                yield break;
+            }
+
             RefreshHP();
             RefreshMP();
             RefreshXP();
             yield return wait;
         }
     }
+
 
     private void RefreshHP()
     {
