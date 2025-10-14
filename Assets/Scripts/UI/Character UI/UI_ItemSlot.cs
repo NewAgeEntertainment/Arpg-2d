@@ -22,9 +22,13 @@ public class UI_ItemSlot :
     protected UI ui;
     protected RectTransform rect;
 
-    // Renamed to avoid clash with ISubmitHandler.OnSubmit(...)
+    // Events
     public event Action<Inventory_Item> OnSlotSubmit;      // primary (left click / Submit)
     public event Action<Inventory_Item> OnSlotRightClick;  // secondary (right click / alt)
+
+    // NEW: focus events to drive tooltip
+    public event Action<Inventory_Item> OnSlotFocus;       // when this slot is hovered/selected
+    public event Action OnSlotBlur;                        // when hover/selection leaves
 
     [Header("UI Slot Setup")]
     [SerializeField] protected TMPro.TextMeshProUGUI itemNameText;
@@ -114,6 +118,8 @@ public class UI_ItemSlot :
         ApplyStackSizeText();
         StopBlinkingHighlight();
         SetSelected(false);
+
+        OnSlotBlur?.Invoke(); // ensure tooltip hides
     }
 
     protected virtual void ApplyStackSizeText()
@@ -152,13 +158,33 @@ public class UI_ItemSlot :
         SetSelected(true);
     }
 
-    public virtual void OnPointerEnter(PointerEventData eventData) => StartBlinkingHighlight();
-    public virtual void OnPointerExit(PointerEventData eventData) => StopBlinkingHighlight();
+    public virtual void OnPointerEnter(PointerEventData eventData)
+    {
+        StartBlinkingHighlight();
+        if (itemInSlot != null) OnSlotFocus?.Invoke(itemInSlot);
+    }
+
+    public virtual void OnPointerExit(PointerEventData eventData)
+    {
+        StopBlinkingHighlight();
+        OnSlotBlur?.Invoke();
+    }
 
     // ================== Keyboard/Controller (EventSystem) ==================
 
-    public void OnSelect(BaseEventData eventData) { SetSelected(true); HighlightOn(); }
-    public void OnDeselect(BaseEventData eventData) { SetSelected(false); HighlightOff(); }
+    public void OnSelect(BaseEventData eventData)
+    {
+        SetSelected(true);
+        HighlightOn();
+        if (itemInSlot != null) OnSlotFocus?.Invoke(itemInSlot);
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        SetSelected(false);
+        HighlightOff();
+        OnSlotBlur?.Invoke();
+    }
 
     // ISubmitHandler — fires on “Submit” while focused
     public void OnSubmit(BaseEventData eventData)

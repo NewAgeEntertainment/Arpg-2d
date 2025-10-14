@@ -5326,7 +5326,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3491734651047168041
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5451,6 +5451,7 @@ MonoBehaviour:
   menuController: {fileID: 0}
   enableLegacyAssignSlot: 1
   menuNav: {fileID: 0}
+  itemTooltip: {fileID: 1574420497764537342}
 --- !u!212 &3920503140850495303
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -28442,13 +28443,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2924cf8e4a23fcf4c892e1b96742041f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  portraitSlots:
+  cards:
   - {fileID: 0}
-  - {fileID: 2377789267759784538}
-  - {fileID: 3049448888681199282}
+  - {fileID: 0}
+  - {fileID: 0}
   portraitMap: {fileID: 11400000, guid: 804ad248c4afa19469b47c020d7dfc21, type: 2}
-  emptySprite: {fileID: 0}
-  disableEmptySlots: 1
 --- !u!1 &1220163247938665684
 GameObject:
   m_ObjectHideFlags: 0
@@ -47205,8 +47204,6 @@ GameObject:
   - component: {fileID: 3834643128027751455}
   - component: {fileID: 6786382156007540841}
   - component: {fileID: 1108572104727784820}
-  - component: {fileID: 6768116554342215852}
-  - component: {fileID: 8955072203739708571}
   m_Layer: 5
   m_Name: Scrollbar Vertical
   m_TagString: Untagged
@@ -47318,53 +47315,6 @@ MonoBehaviour:
   m_Value: 1
   m_Size: 0.7077986
   m_NumberOfSteps: 0
-  m_OnValueChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &6768116554342215852
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045105238457613995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f746e676918ad8d439079fcb9be28112, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scrollDirection: 2
-  scrollSpeed: 10
-  YPadding: 20
-  cancelScrollOnInput: 0
-  cancelScrollKeycodes: 
---- !u!114 &8955072203739708571
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2045105238457613995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Content: {fileID: 0}
-  m_Horizontal: 1
-  m_Vertical: 1
-  m_MovementType: 1
-  m_Elasticity: 0.1
-  m_Inertia: 1
-  m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
-  m_Viewport: {fileID: 0}
-  m_HorizontalScrollbar: {fileID: 0}
-  m_VerticalScrollbar: {fileID: 0}
-  m_HorizontalScrollbarVisibility: 0
-  m_VerticalScrollbarVisibility: 0
-  m_HorizontalScrollbarSpacing: 0
-  m_VerticalScrollbarSpacing: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -62965,10 +62915,10 @@ RectTransform:
   - {fileID: 4018624311030654001}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 644.75, y: -66.935}
-  m_SizeDelta: {x: 230.54, y: 56.2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1225092334611269434
 CanvasRenderer:
@@ -75394,9 +75344,7 @@ MonoBehaviour:
   itemName: {fileID: 670256376312404322}
   itemType: {fileID: 1986717593420348587}
   itemInfo: {fileID: 4437625206663552841}
-  itemPrice: {fileID: 2461321540370781486}
-  merchantInfo: {fileID: 7638355934385952945}
-  inventoryInfo: {fileID: 7599738303399673674}
+  itemSellPrice: {fileID: 0}
 --- !u!114 &1356372501511629612
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88385,10 +88333,10 @@ RectTransform:
   - {fileID: 432548934068669179}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 408.03998, y: -66.935}
-  m_SizeDelta: {x: 230.54, y: 56.2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8290264164516888762
 CanvasRenderer:
@@ -115724,10 +115672,10 @@ RectTransform:
   - {fileID: 8484951585478777484}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 171.32999, y: -66.935}
-  m_SizeDelta: {x: 230.54, y: 56.2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5047248323777406395
 CanvasRenderer:
@@ -179654,7 +179602,6 @@ GameObject:
   - component: {fileID: 2744833711469693236}
   - component: {fileID: 3205022363303339792}
   - component: {fileID: 7603471746318584113}
-  - component: {fileID: 7344942113235678821}
   - component: {fileID: 2577000617683744530}
   m_Layer: 5
   m_Name: UI Menu
@@ -179834,19 +179781,6 @@ MonoBehaviour:
   affectionMin: 0
   affectionMax: 100
   unlocked: []
---- !u!114 &7344942113235678821
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7748382513506473255}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58464784ee6e9be40b65b4e58fdac109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  panel: {fileID: 4474265502145810675}
 --- !u!114 &2577000617683744530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182188,6 +182122,7 @@ GameObject:
   - component: {fileID: 4792533431548706726}
   - component: {fileID: 3376600824632229983}
   - component: {fileID: 8824019061413454621}
+  - component: {fileID: 520753664156377276}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -182273,17 +182208,34 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 10
   m_Viewport: {fileID: 8286836592484373472}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 1108572104727784820}
   m_HorizontalScrollbarVisibility: 2
-  m_VerticalScrollbarVisibility: 2
+  m_VerticalScrollbarVisibility: 1
   m_HorizontalScrollbarSpacing: -3
   m_VerticalScrollbarSpacing: -3
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &520753664156377276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7847495885998031576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f746e676918ad8d439079fcb9be28112, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scrollDirection: 2
+  scrollSpeed: 10
+  YPadding: 20
+  cancelScrollOnInput: 0
+  cancelScrollKeycodes: 
 --- !u!1 &7850057723254050069
 GameObject:
   m_ObjectHideFlags: 0
@@ -203234,10 +203186,10 @@ RectTransform:
   - {fileID: 3601155467144813493}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1118.1699, y: -66.935}
-  m_SizeDelta: {x: 230.54, y: 56.2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3327244214256804071
 CanvasRenderer:
@@ -205523,10 +205475,10 @@ RectTransform:
   - {fileID: 974304627249499173}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 881.46, y: -66.935}
-  m_SizeDelta: {x: 230.54, y: 56.2}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6897218991416216382
 CanvasRenderer:
