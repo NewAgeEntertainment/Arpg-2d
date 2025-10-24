@@ -72,6 +72,11 @@ public class Player : Entity
     public float ThrustSpeed;
     public Vector2 moveInput { get; set; }
 
+    [Header("Interact scan")]
+    [SerializeField] private float interactRadius = 1.8f;
+    [SerializeField] private LayerMask interactMask = ~0; // set in Inspector to your “Interactable” layers
+
+
     public int rewiredPlayerId => playerID;
 
     // ===================== Tall Grass (Volume + Overlay) =====================
@@ -321,22 +326,96 @@ public class Player : Entity
 
     private void TryInteract()
     {
-        Transform closest = null;
-        float closestDistance = Mathf.Infinity;
-        var objectAround = Physics2D.OverlapCircleAll(transform.position, 1.5f);
+        var hits = Physics2D.OverlapCircleAll(transform.position, interactRadius, interactMask);
+        if (hits == null || hits.Length == 0) return;
 
-        foreach (var target in objectAround)
+        Transform bestT = null;
+        float bestSqr = float.PositiveInfinity;
+        InteractionTooltipTrigger2D bestTrigger = null;
+        IInteractable bestInteractable = null;
+        PixelCrushers.DialogueSystem.Usable bestUsable = null;
+
+        foreach (var h in hits)
         {
-            var interactable = target.GetComponent<IInteractable>();
-            if (interactable == null) continue;
+            if (!h) continue;
 
-            float distance = Vector2.Distance(transform.position, target.transform.position);
-            if (distance < closestDistance) { closestDistance = distance; closest = target.transform; }
+            // Prefer components on parent too
+            var trig = h.GetComponentInParent<InteractionTooltipTrigger2D>();
+            var inter = h.GetComponentInParent<IInteractable>();
+            var usab = h.GetComponentInParent<PixelCrushers.DialogueSystem.Usable>();
+
+            if (trig == null && inter == null && usab == null) continue;
+
+            Transform t =
+                (trig != null) ? trig.transform :
+                (inter != null) ? (inter as Component).transform :
+                (usab != null) ? usab.transform : null;
+
+            if (t == null) continue;
+
+            float d = (t.position - transform.position).sqrMagnitude;
+            if (d < bestSqr)
+            {
+                bestSqr = d;
+                bestT = t;
+                bestTrigger = trig;
+                bestInteractable = inter;
+                bestUsable = usab;
+            }
         }
 
-        if (closest == null) return;
-        closest.GetComponent<IInteractable>()?.Interact();
+        if (bestT == null) return;
+
+        if (bestTrigger != null)
+        {
+            bestTrigger.Interact(transform);
+            return;
+        }
+
+        if (bestInteractable != null)
+        {
+            bestInteractable.Interact();
+            return;
+        }
+
+        if (bestUsable != null)
+        {
+            if (!TryInvokeOnUse(bestUsable, transform))
+            {
+                // Last resort so any matching handler still runs
+                bestUsable.gameObject.SendMessage("OnUse", transform, SendMessageOptions.DontRequireReceiver);
+            }
+        }
     }
+
+
+    private static bool TryInvokeOnUse(object usable, Transform actor)
+    {
+        if (usable == null) return false;
+        var t = usable.GetType();
+
+        // Dialogue System commonly uses OnUse(Transform actor)
+        var m = t.GetMethod("OnUse",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic,
+            null, new[] { typeof(Transform) }, null);
+        if (m != null) { m.Invoke(usable, new object[] { actor }); return true; }
+
+        // Some variants expose Use(Transform)
+        m = t.GetMethod("Use",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic,
+            null, new[] { typeof(Transform) }, null);
+        if (m != null) { m.Invoke(usable, new object[] { actor }); return true; }
+
+        // Or parameterless Use()
+        m = t.GetMethod("Use",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic,
+            null, System.Type.EmptyTypes, null);
+        if (m != null) { m.Invoke(usable, null); return true; }
+
+        return false;
+    }
+
+
 
     // --- Revive/anim safety after scene loads or new game ---
     private bool _reviveHooked;
@@ -579,6 +658,15 @@ public class Player : Entity
             Destroy(ps.gameObject, main.duration + main.startLifetime.constantMax + 0.25f);
         }
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.35f);
+        Gizmos.DrawWireSphere(transform.position, interactRadius);
+    }
+#endif
+
 
 #if UNITY_EDITOR
     private void OnValidate()

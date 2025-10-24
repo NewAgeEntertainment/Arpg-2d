@@ -86,18 +86,28 @@ public class SexyTimeLogic : MonoBehaviour
     private bool affectionGranted = false;
 
     // ─────────────────────────────────────────────────────────────
-    // Placement: CENTER ON CAMERA
-    [Header("Placement (Center On Camera)")]
-    [SerializeField] private bool centerOnCamera = true;        // position when starting
-    [SerializeField] private bool followCamera = true;          // keep centered while active (world-space)
-    [SerializeField] private Vector2 screenCenterOffset = Vector2.zero;  // px offset for screen-space
-    [SerializeField] private Vector3 worldSpaceCameraOffset = new Vector3(0f, 0f, 2f); // local to camera
-    [SerializeField] private bool faceCamera = true;            // world-space: face the camera
+    // Placement: Snap THIS mini-game object to the **Camera**
+    [Header("Placement (Snap GameObject To Camera)")]
+    [Tooltip("If true, when SexyTime starts, this GameObject snaps to the main camera (with a local offset).")]
+    [SerializeField] private bool snapObjectToCameraOnStart = true;
 
-    private Canvas targetCanvas;              // canvas hosting the SexyTime UI
-    private RectTransform uiRoot;             // rect to move (root panel)
-    private Camera uiCamera;                  // for Screen Space - Camera
+    [Tooltip("If true, while SexyTime is active, this GameObject follows the camera every frame.")]
+    [SerializeField] private bool followCameraWithObject = true;
+
+    [Tooltip("Offset in camera LOCAL space (x=right, y=up, z=forward). For 2D, set z ≈ distance from camera to gameplay plane (e.g., 10).")]
+    [SerializeField] private Vector3 cameraLocalObjectOffset = new Vector3(0f, 0f, 10f);
+
+    [Tooltip("Keep the object's Z on its original plane (useful for 2D so sorting/layers remain correct).")]
+    [SerializeField] private bool lockObjectZToStartPlane = true;
+
+    [Tooltip("If true, rotate this object to face/align with the camera.")]
+    [SerializeField] private bool rotateObjectToCamera = false;
+
+    private float _objectStartZ;
     // ─────────────────────────────────────────────────────────────
+
+    // Track map swap to avoid double toggles & ensure restore
+    private bool _mapsSwapped;
 
     private void OnEnable()
     {
@@ -113,8 +123,25 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (Current == this) Current = null;
 
+        // Failsafe: always restore gameplay maps if disabled mid-minigame
+        if (_mapsSwapped && inputRouter != null)
+        {
+            inputRouter.DisableSexyTimeMaps();
+            _mapsSwapped = false;
+        }
+
         OnPlayerBarFull.RemoveListener(OnBlueWinsFirst);
         OnPartnerBarFull.RemoveListener(OnPinkWinsFirst);
+    }
+
+    private void OnDestroy()
+    {
+        // Same failsafe as OnDisable
+        if (_mapsSwapped && inputRouter != null)
+        {
+            inputRouter.DisableSexyTimeMaps();
+            _mapsSwapped = false;
+        }
     }
 
     private void Awake()
@@ -131,6 +158,8 @@ public class SexyTimeLogic : MonoBehaviour
             skillManager = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
 
         ResolveSkillManager();
+
+        _objectStartZ = transform.position.z;
     }
 
     private void Start()
@@ -151,8 +180,8 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (!isSexyTimeGoingOn) return;
 
-        // Keep centered while active (esp. important for world-space canvases)
-        if (followCamera) CenterMiniGameOnCamera();
+        if (followCameraWithObject)
+            SnapObjectToCamera();
 
         HandleInput();
         UpdateNPCAttack();
@@ -180,7 +209,15 @@ public class SexyTimeLogic : MonoBehaviour
         deepBreatheTimestamp = Time.time - deepBreatheCooldown;
 
         Current = this;
-        inputRouter?.EnableSexyTimeMaps();
+
+        // 🔁 Switch Rewired maps: Gameplay OFF, SexyTime ON
+        if (inputRouter != null && !_mapsSwapped)
+        {
+            inputRouter.EnableSexyTimeMaps();
+            _mapsSwapped = true;
+        }
+
+
 
         winner = FinishWinner.None;
         expGranted = false;
@@ -188,16 +225,15 @@ public class SexyTimeLogic : MonoBehaviour
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
+        // Init / show UI
         float playerMax = playerStats != null ? playerStats.sex.maxArousal.GetValue() : 100f;
         float partnerMax = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : 100f;
         ui.InitBars(playerMax, partnerMax);
         ui.UpdatePower(arousalPerStroke, arousalPerStroke);
         ui.Show();
 
-        // ── placement right after showing the UI
-        TryResolveUIBits();
-        CenterMiniGameOnCamera();
-        // ───────────────────────────────────────
+        if (snapObjectToCameraOnStart)
+            SnapObjectToCamera();
 
         stateMachine.logic = this;
         stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
@@ -263,7 +299,12 @@ public class SexyTimeLogic : MonoBehaviour
         GrantSexExpIfNeeded();
         GrantAffectionIfNeeded();
 
-        inputRouter?.DisableSexyTimeMaps();
+        // 🔁 Switch Rewired maps back: SexyTime OFF, Gameplay ON
+        if (_mapsSwapped && inputRouter != null)
+        {
+            inputRouter.DisableSexyTimeMaps();
+            _mapsSwapped = false;
+        }
 
         isSexyTimeGoingOn = false;
         isCoroutineRunning = false;
@@ -305,8 +346,8 @@ public class SexyTimeLogic : MonoBehaviour
 
         float reduction = playerStats != null ? playerStats.GetResilienceReductionMultiplier() : 1f;
 
-        float newPlayerValue = Mathf.Clamp(ui.PlayerBarValue + (pussySqueeze * reduction), 0f, ui.PlayerBarMax);
-        ui.UpdateBars(newPlayerValue, ui.PlayerBarMax, ui.PartnerBarValue, ui.PartnerBarMax);
+        float newPlayerValue = Mathf.Clamp(UI.PlayerBarValue + (pussySqueeze * reduction), 0f, UI.PlayerBarMax);
+        UI.UpdateBars(newPlayerValue, UI.PlayerBarMax, UI.PartnerBarValue, UI.PartnerBarMax);
 
         npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
@@ -316,7 +357,7 @@ public class SexyTimeLogic : MonoBehaviour
     private void UpdateUI()
     {
         float remainingCooldown = Mathf.Max(0, npcAttackBarFillTimestamp - Time.time);
-        ui.UpdateCooldown(remainingCooldown);
+        UI.UpdateCooldown(remainingCooldown);
     }
 
     private void HandleClimaxTimer()
@@ -335,27 +376,27 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (cumReached || isFucking || barDecayPerSecond <= 0f) return;
 
-        float oldVal = ui.PlayerBarValue;
+        float oldVal = UI.PlayerBarValue;
         float newVal = Mathf.Max(0f, oldVal - barDecayPerSecond * Time.deltaTime);
         if (Mathf.Abs(newVal - oldVal) > Mathf.Epsilon)
-            ui.UpdateBars(newVal, ui.PlayerBarMax, ui.PartnerBarValue, ui.PartnerBarMax);
+            UI.UpdateBars(newVal, UI.PlayerBarMax, UI.PartnerBarValue, UI.PartnerBarMax);
     }
 
     private void CheckBarsForClimaxAndEvents()
     {
-        if (ui.PlayerBarValue >= ui.PlayerBarMax && !playerBarReachedOnce)
+        if (UI.PlayerBarValue >= UI.PlayerBarMax && !playerBarReachedOnce)
         {
             playerBarReachedOnce = true;
             OnPlayerBarFull?.Invoke();
         }
 
-        if (ui.PartnerBarValue >= ui.PartnerBarMax && !partnerBarReachedOnce)
+        if (UI.PartnerBarValue >= UI.PartnerBarMax && !partnerBarReachedOnce)
         {
             partnerBarReachedOnce = true;
             OnPartnerBarFull?.Invoke();
         }
 
-        if (ui.PlayerBarValue >= ui.PlayerBarMax || ui.PartnerBarValue >= ui.PartnerBarMax)
+        if (UI.PlayerBarValue >= UI.PlayerBarMax || UI.PartnerBarValue >= UI.PartnerBarMax)
         {
             cumReached = true;
             cumTimeElapsed = 0f;
@@ -375,7 +416,7 @@ public class SexyTimeLogic : MonoBehaviour
             winner = FinishWinner.PartnerPink;
     }
 
-    public void ShowCritFeedback() => ui.ShowCrit();
+    public void ShowCritFeedback() => UI.ShowCrit();
     public void PauseSexyTimeForDialogue() => stateMachine.PauseForDialogue();
     public void ResumeSexyTimeAfterDialogue() => stateMachine.ResumeAfterDialogue();
     public void SetIsFuckingFalse() => isFucking = false;
@@ -480,66 +521,24 @@ public class SexyTimeLogic : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Placement helpers (center on camera)
+    // Camera snap helpers (ONLY placement behavior kept)
 
-    private bool TryResolveUIBits()
+    private Camera ResolveGameCamera() => Camera.main;
+
+    private void SnapObjectToCamera()
     {
-        if (ui == null) return false;
-
-        if (targetCanvas == null)
-            targetCanvas = ui.GetComponentInParent<Canvas>(true);
-
-        if (uiRoot == null)
-        {
-            uiRoot = ui.transform as RectTransform;
-            if (uiRoot == null)
-                uiRoot = ui.GetComponentInChildren<RectTransform>(true);
-        }
-
-        if (uiCamera == null)
-        {
-            if (targetCanvas != null && targetCanvas.renderMode == RenderMode.ScreenSpaceCamera)
-                uiCamera = targetCanvas.worldCamera;
-            if (uiCamera == null) uiCamera = Camera.main;
-        }
-
-        return targetCanvas != null && uiRoot != null;
-    }
-
-    private void CenterMiniGameOnCamera()
-    {
-        if (!centerOnCamera) return;
-        if (!TryResolveUIBits()) return;
-
-        var cam = uiCamera != null ? uiCamera : Camera.main;
+        var cam = ResolveGameCamera();
         if (cam == null) return;
 
-        if (targetCanvas.renderMode == RenderMode.WorldSpace)
-        {
-            // Place canvas in front of camera at an offset in camera-local space.
-            Vector3 worldPos = cam.transform.TransformPoint(worldSpaceCameraOffset);
-            targetCanvas.transform.position = worldPos;
+        Vector3 worldPos = cam.transform.TransformPoint(cameraLocalObjectOffset);
 
-            if (faceCamera)
-                targetCanvas.transform.rotation = cam.transform.rotation;
+        if (lockObjectZToStartPlane)
+            worldPos.z = _objectStartZ; // keep on original plane (2D-friendly)
 
-            return;
-        }
+        transform.position = worldPos;
 
-        // Screen Space (Overlay/Camera): anchor to the canvas center.
-        RectTransform canvasRect = targetCanvas.transform as RectTransform;
-        if (canvasRect == null) return;
-
-        Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvasRect,
-            screenCenter,
-            targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : cam,
-            out localPoint
-        );
-
-        uiRoot.anchoredPosition = localPoint + screenCenterOffset;
+        if (rotateObjectToCamera)
+            transform.rotation = cam.transform.rotation;
     }
     // ─────────────────────────────────────────────────────────────
 }

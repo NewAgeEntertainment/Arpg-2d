@@ -30,25 +30,61 @@ public class SexyTimeUIController : MonoBehaviour
     private bool _prevPlayerPowerTextActive, _prevPartnerPowerTextActive;
     private bool _prevNpcCooldownTextActive;
 
-
     [Header("Sex Hotbar (optional)")]
     [SerializeField] private SexyTimeHotbar sexHotbar;
 
     [Header("Single DeepBreath Slot (optional)")]
     [SerializeField] private UI_SkillSlot deepBreathSlot;
 
-    // ===== NEW: Persistent sticky sex skills =====
+    // ===== Persistent sticky sex skills =====
     private static readonly System.Collections.Generic.List<Skill_DataSO> s_pendingSexSkills = new();
     private static readonly System.Collections.Generic.Dictionary<int, Skill_DataSO> s_indexedSexSkills = new();
 
-    // ===== NEW: Quick state helpers =====
+    // ===== Quick state helpers =====
     public bool IsOpen => panel != null && panel.activeInHierarchy;
     public int SexSlotCount => sexHotbar != null ? sexHotbar.SlotCount : 0;
 
     // --- Assign-preview helpers ---
     private bool _openedByAssignPreview = false;
 
- 
+    // ======== FOLLOW TARGET SUPPORT (kept from earlier) ========
+    [Header("Follow (optional)")]
+    [Tooltip("If set, the UI will follow this Transform (e.g., SexyTimeLogic.transform or Player.transform).")]
+    [SerializeField] private Transform followTarget;
+    [Tooltip("If true, UI keeps following every frame while open. If false, only snaps once on AttachTo/SetFollowTarget.")]
+    [SerializeField] private bool followWhileOpen = false;
+    [Tooltip("World offset when using a World Space canvas.")]
+    [SerializeField] private Vector3 worldOffset = Vector3.zero;
+    [Tooltip("Pixel offset when using a Screen Space canvas.")]
+    [SerializeField] private Vector2 screenOffset = Vector2.zero;
+
+    private Canvas _rootCanvas;
+    private RectTransform _uiRoot;
+    private Camera _uiCam;
+    // ===========================================================
+
+    // === NEW: tiny public helpers so logic can ask about the panel/canvas/camera ===
+    public RectTransform PanelRect => panel != null ? panel.transform as RectTransform : null;
+
+    public Canvas RootCanvas
+    {
+        get
+        {
+            if (_rootCanvas == null) _rootCanvas = GetComponentInParent<Canvas>(true);
+            return _rootCanvas;
+        }
+    }
+
+    public Camera UICamera
+    {
+        get
+        {
+            if (RootCanvas != null && RootCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+                return _uiCam != null ? _uiCam : RootCanvas.worldCamera;
+            return null; // null means Overlay (no UI camera)
+        }
+    }
+    // ===============================================================================
 
     public UI_SkillSlot GetSexSlotByIndex(int index)
     {
@@ -136,6 +172,70 @@ public class SexyTimeUIController : MonoBehaviour
     {
         // Ensure stickies are applied even if this UI spawns after assignments were chosen.
         ApplyPendingSexSkillsToHotbar();
+
+        // cache canvas bits for follow support
+        _rootCanvas = GetComponentInParent<Canvas>(true);
+        _uiRoot = (panel != null ? panel.transform : transform) as RectTransform;
+
+        if (_rootCanvas != null && _rootCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+            _uiCam = _rootCanvas.worldCamera;
+
+        if (_uiCam == null) _uiCam = Camera.main;
+    }
+
+    private void LateUpdate()
+    {
+        // Only run follow logic if enabled and visible.
+        if (!followWhileOpen || !IsOpen) return;
+        if (followTarget == null || RootCanvas == null || _uiRoot == null) return;
+
+        SnapToTarget();
+    }
+
+    /// <summary>Attach this UI to a SexyTimeLogic so it follows its Transform.</summary>
+    public void AttachTo(SexyTimeLogic logic)
+    {
+        if (logic == null) return;
+        followTarget = logic.transform;
+        followWhileOpen = true;  // safe default: stick while the panel is open
+        SnapToTarget();          // initial placement
+    }
+
+    /// <summary>Attach to any Transform. (One-time snap unless followWhileOpen is true.)</summary>
+    public void SetFollowTarget(Transform t, bool enableFollowWhileOpen = true)
+    {
+        followTarget = t;
+        followWhileOpen = enableFollowWhileOpen;
+        SnapToTarget();
+    }
+
+    /// <summary>Immediately re-position the UI to the current follow target.</summary>
+    public void SnapToTarget()
+    {
+        if (followTarget == null || RootCanvas == null || _uiRoot == null) return;
+
+        // WORLD SPACE CANVAS: move in world
+        if (RootCanvas.renderMode == RenderMode.WorldSpace)
+        {
+            RootCanvas.transform.position = followTarget.position + worldOffset;
+            return;
+        }
+
+        // SCREEN SPACE (Overlay or Camera): convert world → canvas local
+        var cam = (RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : (_uiCam != null ? _uiCam : Camera.main);
+        Vector3 screenPos;
+
+        if (Camera.main != null)
+            screenPos = Camera.main.WorldToScreenPoint(followTarget.position);
+        else
+            screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0);
+
+        RectTransform canvasRect = RootCanvas.transform as RectTransform;
+        if (canvasRect == null) return;
+
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, cam, out localPoint);
+        _uiRoot.anchoredPosition = localPoint + screenOffset;
     }
 
     public void Show()
@@ -146,6 +246,9 @@ public class SexyTimeUIController : MonoBehaviour
 
         // Make sure persisteds are applied when showing
         ApplyPendingSexSkillsToHotbar();
+
+        // If a follow target is already set and we just opened, do a one-time snap.
+        if (followTarget != null) SnapToTarget();
     }
 
     public void Hide()
@@ -210,8 +313,6 @@ public class SexyTimeUIController : MonoBehaviour
         if (critText != null) critText.gameObject.SetActive(false);
     }
 
-
-
     public void ShowAssignPreview()
     {
         // Ensure panel is open while picking
@@ -232,7 +333,6 @@ public class SexyTimeUIController : MonoBehaviour
         _openedByAssignPreview = false;
         Hide();
     }
-
 
     public void HideBarsForAssign()
     {
@@ -274,8 +374,6 @@ public class SexyTimeUIController : MonoBehaviour
         if (partnerPowerText != null) partnerPowerText.gameObject.SetActive(_prevPartnerPowerTextActive);
         if (npcCooldownText != null) npcCooldownText.gameObject.SetActive(_prevNpcCooldownTextActive);
     }
-
-
 
     // ---------- Sex skill presentation ----------
     /// Assigns a Sex-category skill to the sex hotbar (or the single slot fallback).
@@ -360,7 +458,7 @@ public class SexyTimeUIController : MonoBehaviour
     public void ShowDeepBreathSlot(Skill_DataSO skillData) => ShowSexSkill(skillData);
     public void HideDeepBreathSlot() => HideSexSkills();
 
-    // ===== NEW: direct assignment to a specific sex slot index + persistence =====
+    // ===== direct assignment to a specific sex slot index + persistence =====
     public bool AssignSexSkillToIndex(Skill_DataSO sexSkill, int index)
     {
         if (sexSkill == null || sexSkill.category != SkillCategory.Sex) return false;

@@ -168586,7 +168586,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 860325903
-  m_SortingLayer: 9
+  m_SortingLayer: 10
   m_SortingOrder: 2
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -192732,9 +192732,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 16384
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 16384
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!4 &131335147
 Transform:
   m_ObjectHideFlags: 0
@@ -355859,9 +355872,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!4 &501903714
 Transform:
   m_ObjectHideFlags: 0
@@ -357072,7 +357098,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &575028846 stripped
@@ -383187,15 +383213,47 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 778118790}
     m_Modifications:
+    - target: {fileID: 154692927591065974, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 154692927591065974, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1019160915448982365, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -410.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 1573708621051640523, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1573708621051640523, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1782628520407149292, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1782628520407149292, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916175940306292469, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916175940306292469, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949509180332231432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949509180332231432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
@@ -383307,6 +383365,14 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4673333760727168178, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4673333760727168178, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4890264941476685447, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -59.873917
@@ -383321,6 +383387,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933873044852750077, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6006461688608880539, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6006461688608880539, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6063913171784885233, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -383338,6 +383412,14 @@ PrefabInstance:
     - target: {fileID: 6187396031038509197, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -412.7931
+      objectReference: {fileID: 0}
+    - target: {fileID: 6256457275315778104, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6256457275315778104, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6909914858952081432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
@@ -383385,6 +383467,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6992216668060643069, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084311766887234344, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084311766887234344, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7552569847591205280, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -383510,6 +383600,14 @@ PrefabInstance:
     - target: {fileID: 8298621198214118396, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -400.79492
+      objectReference: {fileID: 0}
+    - target: {fileID: 8337066391833542358, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8337066391833542358, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8608480276473883196, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -423659,7 +423757,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1079705484
@@ -423732,7 +423830,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.1}
-    oldSize: {x: 1.3333334, y: 2.2222223}
+    oldSize: {x: 1, y: 1.6666666}
     newSize: {x: 1.5, y: 2.5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -423790,7 +423888,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1080931562
@@ -425492,7 +425590,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1205823094
@@ -450344,7 +450442,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 860325903
-  m_SortingLayer: 9
+  m_SortingLayer: 10
   m_SortingOrder: 3
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -484936,7 +485034,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 2.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1001 &1790405196
@@ -485861,9 +485959,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!4 &1882331019
 Transform:
   m_ObjectHideFlags: 0
@@ -487484,9 +487595,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!4 &2013709657
 Transform:
   m_ObjectHideFlags: 0

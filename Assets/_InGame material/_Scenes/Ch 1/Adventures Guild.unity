@@ -848,15 +848,16 @@ GameObject:
   - component: {fileID: 340859846}
   - component: {fileID: 340859850}
   - component: {fileID: 340859849}
-  - component: {fileID: 340859848}
   - component: {fileID: 340859847}
-  m_Layer: 0
+  - component: {fileID: 340859852}
+  - component: {fileID: 340859851}
+  m_Layer: 14
   m_Name: Exit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &340859846
 Transform:
   m_ObjectHideFlags: 0
@@ -891,18 +892,6 @@ MonoBehaviour:
   m_mode: 0
   m_destroyMode: 1
   m_destroyedVersionPrefab: {fileID: 0}
---- !u!114 &340859848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 340859845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0514923403e9914a8af28838e64a4f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!61 &340859849
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1000,6 +989,39 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &340859851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340859845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 169376c45d082d54f970818d7844c427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disableOnSceneLoadSeconds: 0.35
+  requireExitBeforeReuse: 1
+  logState: 0
+--- !u!114 &340859852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340859845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7203074dfbd78bc4fa51314c98bf4720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_requiredTag: Player
+  m_destinationSceneName: Ch1 Town Plaza
+  m_spawnpointNameInDestinationScene: SpawnPoint 3
+  m_onUsePortal:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &374153594
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5190,9 +5212,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!61 &555817540
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6792,7 +6827,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 860325903
-  m_SortingLayer: 9
+  m_SortingLayer: 10
   m_SortingOrder: 2
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -8830,6 +8865,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 499704299}
     m_Modifications:
+    - target: {fileID: 154692927591065974, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 154692927591065974, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 283691942542478736, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -8886,11 +8929,35 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1573708621051640523, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1573708621051640523, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1782628520407149292, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1782628520407149292, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916175940306292469, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916175940306292469, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949509180332231432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949509180332231432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
@@ -9078,6 +9145,14 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4673333760727168178, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4673333760727168178, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4806867129083039275, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_MatchWidthOrHeight
       value: 0.5
@@ -9118,6 +9193,14 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6006461688608880539, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6006461688608880539, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6063913171784885233, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -55.629105
@@ -9141,6 +9224,14 @@ PrefabInstance:
     - target: {fileID: 6191968913524682046, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -3.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 6256457275315778104, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6256457275315778104, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6839437197429059812, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
@@ -9208,6 +9299,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6992216668060643069, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084311766887234344, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084311766887234344, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7269171669220730488, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -9444,6 +9543,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8322838529908982029, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8337066391833542358, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8337066391833542358, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8608480276473883196, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -27641,9 +27748,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!4 &1398288966
 Transform:
   m_ObjectHideFlags: 0
@@ -32117,7 +32237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_requiredTag: Player
   m_destinationSceneName: Town Plaza
-  m_spawnpointNameInDestinationScene: SpawnPoint 2
+  m_spawnpointNameInDestinationScene: SpawnPoint 3
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
@@ -33420,7 +33540,8 @@ GameObject:
   - component: {fileID: 1618529356}
   - component: {fileID: 1618529359}
   - component: {fileID: 1618529358}
-  - component: {fileID: 1618529357}
+  - component: {fileID: 1618529361}
+  - component: {fileID: 1618529360}
   m_Layer: 0
   m_Name: Exit 2 (1)
   m_TagString: Untagged
@@ -33443,18 +33564,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1422112211}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1618529357
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1618529355}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0514923403e9914a8af28838e64a4f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!61 &1618529358
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -33552,6 +33661,39 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1618529360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618529355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 169376c45d082d54f970818d7844c427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disableOnSceneLoadSeconds: 0.35
+  requireExitBeforeReuse: 1
+  logState: 0
+--- !u!114 &1618529361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1618529355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7203074dfbd78bc4fa51314c98bf4720, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_requiredTag: Player
+  m_destinationSceneName: Ch1 Town Plaza Night
+  m_spawnpointNameInDestinationScene: SpawnPoint 3
+  m_onUsePortal:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &1630877346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38707,7 +38849,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 3}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &1822870262

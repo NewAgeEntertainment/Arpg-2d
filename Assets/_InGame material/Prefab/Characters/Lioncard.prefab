@@ -416,12 +416,12 @@ GameObject:
   - component: {fileID: 1655113877837431418}
   - component: {fileID: 6840930441195382171}
   - component: {fileID: 1171000597807800476}
-  - component: {fileID: 930229711367589515}
   - component: {fileID: 7645570407187769238}
   - component: {fileID: 4977138483196313491}
   - component: {fileID: 620084835912366469}
   - component: {fileID: 873019877890959062}
   - component: {fileID: 1532602733049190791}
+  - component: {fileID: 7625218139660621083}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -685,6 +685,10 @@ MonoBehaviour:
   dashSpeed: 20
   ThrustDuration: 1
   ThrustSpeed: 5
+  interactRadius: 1.8
+  interactMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   grassTag: GrassVolume
   grassLayerName: TallGrass
   grassRustlePrefab: {fileID: 0}
@@ -1085,55 +1089,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tagSpecificElements: []
   layerSpecificElements: []
---- !u!114 &930229711367589515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 963d6358c55a0f44d8de57bee560f184, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  useDefaultGUI: 1
-  guiSkin: {fileID: 11400000, guid: dbe874f440d0cf84cb5c28fd70e8123c, type: 2}
-  guiStyleName: label
-  alignment: 1
-  color: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  textStyle: 1
-  textStyleColor: {r: 0, g: 0, b: 0, a: 1}
-  m_defaultUseMessage: (spacebar to interact)
-  useKey: 32
-  useButton: Fire2
-  enableTouch: 0
-  touchArea:
-    origin: 0
-    alignment: 0
-    x:
-      scale: 0
-      value: 0
-    y:
-      scale: 0
-      value: 0
-    width:
-      scale: 0
-      value: 0
-    height:
-      scale: 0
-      value: 0
-    minPixelWidth: 0
-    minPixelHeight: 0
-  broadcastToChildren: 1
-  actorTransform: {fileID: 5852501936329725365}
-  onSelectedUsable:
-    m_PersistentCalls:
-      m_Calls: []
-  onDeselectedUsable:
-    m_PersistentCalls:
-      m_Calls: []
-  usablesInRange: []
 --- !u!114 &7645570407187769238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1238,6 +1193,19 @@ MonoBehaviour:
   attackMiss: player_attackMiss
   soundDistance: 15
   showGizmo: 0
+--- !u!114 &7625218139660621083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad8c9a6aabb7fe94c9cc6461cb0b0df0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cooldown: 0.3
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0

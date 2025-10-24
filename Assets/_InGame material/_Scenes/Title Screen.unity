@@ -2853,9 +2853,31 @@ MonoBehaviour:
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
-  waitTimeoutSeconds: 3
-  waitForPlayer: 1
-  verbose: 1
+--- !u!114 &702374311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702374309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92e04f826a7fd3c42996aceaa00009aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 1
+  player: {fileID: 0}
+  partyRoot: {fileID: 0}
+  roster: []
+  spawnOffset: 0.8
+  ringSpacing: 0.6
+  forceFollowOnRecruit: 1
+  reactivateIfAlreadyInScene: 1
+  snapIfFartherThan: 6
+  snapRingRadius: 1.4
+  snapExtraPerCompanion: 0.25
+  snapDelay: 0.05
+  verboseLogs: 1
 --- !u!1 &711540704
 GameObject:
   m_ObjectHideFlags: 0
@@ -8037,7 +8059,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11404330, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       propertyPath: pauseDuringTransition
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11404330, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       propertyPath: enterSceneTransition.animationDuration
@@ -8053,7 +8075,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11404330, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       propertyPath: leaveSceneTransition.minTransitionDuration
-      value: 0.7
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8062,6 +8084,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 702374310}
+    - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 702374311}
   m_SourcePrefab: {fileID: 100100000, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
 --- !u!1 &1594163806
 GameObject:
@@ -14548,6 +14573,11 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   lerpTime: 0
+  scrollRect: {fileID: 0}
+  content: {fileID: 0}
+  padding: 8
+  autoScrollVertical: 1
+  autoScrollHorizontal: 0
 --- !u!114 &6813102995918767325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15163,6 +15193,11 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   lerpTime: 0
+  scrollRect: {fileID: 0}
+  content: {fileID: 0}
+  padding: 8
+  autoScrollVertical: 1
+  autoScrollHorizontal: 0
 --- !u!222 &7830417189301268178
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15190,6 +15225,11 @@ MonoBehaviour:
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   selectedColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   lerpTime: 0
+  scrollRect: {fileID: 0}
+  content: {fileID: 0}
+  padding: 8
+  autoScrollVertical: 1
+  autoScrollHorizontal: 0
 --- !u!222 &7883528020639028459
 CanvasRenderer:
   m_ObjectHideFlags: 0
