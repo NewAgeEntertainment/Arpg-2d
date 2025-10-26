@@ -38097,22 +38097,9 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
-  avoidLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  clearance2D: 0.12
-  nudgeMultiplier: 1.15
-  maxResolveIterations: 8
-  disablePlayerCollidersWhileSolving: 1
-  portalTriggerLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
-  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
-  gizmoRadius: 0.25
 --- !u!1 &1141473057
 GameObject:
   m_ObjectHideFlags: 0
@@ -38130,7 +38117,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1141473058
 Transform:
   m_ObjectHideFlags: 0
@@ -38156,7 +38143,7 @@ PlayableDirector:
   m_Enabled: 1
   serializedVersion: 3
   m_PlayableAsset: {fileID: 11400000, guid: a906276d6bfb75b4a899ce3454157313, type: 2}
-  m_InitialState: 1
+  m_InitialState: 0
   m_WrapMode: 2
   m_DirectorUpdateMode: 1
   m_InitialTime: 0
@@ -87803,11 +87790,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -55.6
+      value: -98.1
       objectReference: {fileID: 0}
     - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -44
+      value: -25.9
       objectReference: {fileID: 0}
     - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_LocalPosition.z
