@@ -9089,7 +9089,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3904408737504316754, guid: 8bb5e2193860d874abc6bca50497751e, type: 3}
       propertyPath: m_SortingLayer
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 3904408737504316754, guid: 8bb5e2193860d874abc6bca50497751e, type: 3}
       propertyPath: m_SortingLayerID
@@ -22838,8 +22838,8 @@ Canvas:
   m_GameObject: {fileID: 376771048}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 1372673362}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -22849,8 +22849,8 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingLayerID: 1859501777
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1 &418603128
 GameObject:
@@ -23207,7 +23207,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &516753671
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25905,7 +25905,7 @@ MonoBehaviour:
   cacheBarkLines: 0
   conversation: Forest Camp/ rest
   conversationConversant: {fileID: 752567514}
-  conversationActor: {fileID: 752567514}
+  conversationActor: {fileID: 0}
   startConversationEntryID: -1
   startConversationEntryTitle: 
   overrideDialogueUI: {fileID: 0}
@@ -38097,9 +38097,22 @@ MonoBehaviour:
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
+  avoidLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  clearance2D: 0.12
+  nudgeMultiplier: 1.15
+  maxResolveIterations: 8
+  disablePlayerCollidersWhileSolving: 1
+  portalTriggerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
+  gizmoRadius: 0.25
 --- !u!1 &1141473057
 GameObject:
   m_ObjectHideFlags: 0
@@ -38110,13 +38123,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1141473058}
   - component: {fileID: 1141473060}
+  - component: {fileID: 1141473061}
   m_Layer: 0
   m_Name: Rest CS1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1141473058
 Transform:
   m_ObjectHideFlags: 0
@@ -38142,7 +38156,7 @@ PlayableDirector:
   m_Enabled: 1
   serializedVersion: 3
   m_PlayableAsset: {fileID: 11400000, guid: a906276d6bfb75b4a899ce3454157313, type: 2}
-  m_InitialState: 0
+  m_InitialState: 1
   m_WrapMode: 2
   m_DirectorUpdateMode: 1
   m_InitialTime: 0
@@ -38220,6 +38234,27 @@ PlayableDirector:
   m_ExposedReferences:
     m_References:
     - ff0e95c8f9a7fd24b87e015e8d249c63: {fileID: 0}
+--- !u!114 &1141473061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141473057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13696847912f5b4409ad04a83e5e9dbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  director: {fileID: 1141473060}
+  playerRoot: {fileID: 0}
+  autoPlayAfterRebind: 1
+  freezePhysicsDuringPlay: 1
+  bindDelayFrames: 2
+  rootTrackName: Lioncard
+  modelTrackName: LioncardModel
+  deactivateDirectorOnStop: 1
+  deactivateDelay: 0
 --- !u!1 &1143396206
 GameObject:
   m_ObjectHideFlags: 0
@@ -38231,6 +38266,7 @@ GameObject:
   - component: {fileID: 1143396209}
   - component: {fileID: 1143396208}
   - component: {fileID: 1143396210}
+  - component: {fileID: 1143396211}
   m_Layer: 0
   m_Name: heal Area
   m_TagString: Untagged
@@ -38316,19 +38352,37 @@ MonoBehaviour:
   m_onTriggerEnter:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 1143396211}
+        m_TargetAssemblyTypeName: RestPoint, Assembly-CSharp
+        m_MethodName: RestNow
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
   m_onTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1143396211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143396206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 054ba64447e444549803fda4ce48172d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  explicitActor: {fileID: 0}
+  briefFreeze: 1
+  freezeSeconds: 0.25
+  onRested:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1001 &1191361502
@@ -65517,11 +65571,11 @@ MonoBehaviour:
         m_CallState: 2
   playerBarReachedOnce: 0
   partnerBarReachedOnce: 0
-  centerOnCamera: 1
-  followCamera: 0
-  screenCenterOffset: {x: 0, y: 0}
-  worldSpaceCameraOffset: {x: 0, y: 0, z: 2}
-  faceCamera: 0
+  snapObjectToCameraOnStart: 1
+  followCameraWithObject: 1
+  cameraLocalObjectOffset: {x: 0, y: 0, z: 10}
+  lockObjectZToStartPlane: 1
+  rotateObjectToCamera: 0
 --- !u!33 &1364648837
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -86387,10 +86441,9 @@ MonoBehaviour:
     onExecute:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1714859316}
-          m_TargetAssemblyTypeName: MoreMountains.TopDownEngine.GoToLevelEntryPoint,
-            MoreMountains.TopDownEngine
-          m_MethodName: GoToNextLevel
+        - m_Target: {fileID: 1141473060}
+          m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+          m_MethodName: Play
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -86400,6 +86453,10 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+  - guid: b9a77dbc-f3df-4725-a301-1f3e5be3e8ec
+    onExecute:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!4 &1766280669
 Transform:
   m_ObjectHideFlags: 0

@@ -445776,7 +445776,6 @@ GameObject:
   - component: {fileID: 1306790104}
   - component: {fileID: 1306790103}
   - component: {fileID: 1306790102}
-  - component: {fileID: 1306790105}
   m_Layer: 0
   m_Name: East Gate
   m_TagString: Untagged
@@ -445812,8 +445811,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_requiredTag: Player
-  m_destinationSceneName: 
-  m_spawnpointNameInDestinationScene: 
+  m_destinationSceneName: Entertainment District Event
+  m_spawnpointNameInDestinationScene: SpawnPoint
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
@@ -445914,75 +445913,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1306790105
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1306790100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0514923403e9914a8af28838e64a4f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!1001 &1313511599
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 1.9548378
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -158.68785
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.72976863
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_Name
-      value: Elaina
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
 --- !u!1 &1334003760
 GameObject:
   m_ObjectHideFlags: 0
@@ -486609,6 +486539,8 @@ GameObject:
   - component: {fileID: 1959506826}
   - component: {fileID: 1959506828}
   - component: {fileID: 1959506829}
+  - component: {fileID: 1959506831}
+  - component: {fileID: 1959506830}
   m_Layer: 0
   m_Name: Inn Entrance
   m_TagString: Untagged
@@ -486760,11 +486692,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_requiredTag: Player
-  m_destinationSceneName: INN floor 1
+  m_destinationSceneName: Ch1 INN floor 1 Night
   m_spawnpointNameInDestinationScene: SpawnPoint
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1959506830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959506823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fa716b37b5ce0d4e819ad0c80481419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graceSeconds: 0.35
+--- !u!114 &1959506831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959506823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 169376c45d082d54f970818d7844c427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disableOnSceneLoadSeconds: 0.35
+  requireExitBeforeReuse: 1
+  logState: 0
 --- !u!1 &1963482887
 GameObject:
   m_ObjectHideFlags: 0
@@ -488169,5 +488129,4 @@ SceneRoots:
   - {fileID: 501903714}
   - {fileID: 131335147}
   - {fileID: 446800306}
-  - {fileID: 1313511599}
   - {fileID: 1756033985}

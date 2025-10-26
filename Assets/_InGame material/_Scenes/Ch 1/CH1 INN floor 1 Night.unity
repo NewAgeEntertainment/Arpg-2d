@@ -4967,7 +4967,7 @@ MonoBehaviour:
   maxConversationDistance: 5
   monitorConversationDistanceFrequency: 1
   showCursorDuringConversation: 0
-  pauseGameDuringConversation: 1
+  pauseGameDuringConversation: 0
   setActiveActions: []
   setEnabledActions: []
   setAnimatorStateActions: []
@@ -16214,7 +16214,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1412319959
 Transform:
   m_ObjectHideFlags: 0
@@ -16259,7 +16259,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0.8956723, y: 0}
@@ -16626,6 +16626,8 @@ GameObject:
   - component: {fileID: 1450301634}
   - component: {fileID: 1450301636}
   - component: {fileID: 1450301635}
+  - component: {fileID: 1450301638}
+  - component: {fileID: 1450301637}
   m_Layer: 0
   m_Name: SceneExit (1)
   m_TagString: Untagged
@@ -16706,11 +16708,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_requiredTag: Player
-  m_destinationSceneName: Ch1 Town Plaza
+  m_destinationSceneName: Ch1 Town Plaza Night
   m_spawnpointNameInDestinationScene: SpawnPoint 1
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1450301637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450301633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 169376c45d082d54f970818d7844c427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disableOnSceneLoadSeconds: 0.35
+  requireExitBeforeReuse: 1
+  logState: 0
+--- !u!114 &1450301638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450301633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fa716b37b5ce0d4e819ad0c80481419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graceSeconds: 0.35
 --- !u!1 &1455315268
 GameObject:
   m_ObjectHideFlags: 0

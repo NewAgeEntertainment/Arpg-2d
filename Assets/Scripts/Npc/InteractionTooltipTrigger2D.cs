@@ -4,10 +4,20 @@ using UnityEngine;
 using TMPro;
 using PixelCrushers.DialogueSystem; // OK if you use Dialogue System; harmless otherwise
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Collider2D))]
 public class InteractionTooltipTrigger2D : MonoBehaviour
 {
+    // ------------------ UnityEvents fallbacks (work w/o Usable) ------------------
+    [System.Serializable] public class TransformEvent : UnityEvent<Transform> { }
+
+    [Header("Fallback Events (used when no Usable is present)")]
+    public TransformEvent onSelect;   // fired with actor Transform
+    public UnityEvent onDeselect; // fired with no args
+    public TransformEvent onUse;      // fired with actor Transform
+
+    // ------------------ Detection ------------------
     [Header("Detection")]
     [Tooltip("Tag that can trigger this (usually 'Player').")]
     public string playerTag = "Player";
@@ -15,6 +25,7 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     [Tooltip("Optional: other tags that may trigger (companions, etc.).")]
     public List<string> extraAllowedTags = new List<string>();
 
+    // ------------------ Tooltip ------------------
     [Header("Tooltip")]
     [Tooltip("Root GameObject of the tooltip (usually a child Canvas).")]
     public GameObject tooltipRoot;
@@ -28,6 +39,7 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     [Tooltip("Use {name} and {msg} placeholders if you want formatting.")]
     public string format = "{msg}";
 
+    // ------------------ Positioning ------------------
     [Header("Positioning")]
     [Tooltip("World offset for the tooltip relative to this object.")]
     public Vector3 worldOffset = new Vector3(0f, 1.1f, 0f);
@@ -38,13 +50,31 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     [Tooltip("Keep the tooltip pinned/updated every frame while visible.")]
     public bool autoRepositionEachFrame = true;
 
+    // ------------------ Usable integration toggles ------------------
+    [Header("Usable Integration")]
+    [Tooltip("If true and a Usable is present, call OnSelect/OnDeselect/OnUse on it.")]
+    public bool useUsableIntegration = true;
+
+    [Tooltip("When true, OnTriggerEnter2D will call Usable.Select (via SendMessage).")]
+    public bool callSelectOnEnter = true;
+
+    [Tooltip("When true, OnTriggerExit2D will call Usable.Deselect (via SendMessage).")]
+    public bool callDeselectOnExit = true;
+
+    [Tooltip("When true, Interact() will call Usable.OnUse (via SendMessage).")]
+    public bool callOnUse = true;
+
+    // ------------------ Debug ------------------
     [Header("Debug")]
     [SerializeField] private bool logTextChanges = false;
+    [SerializeField] private bool verboseLogs = false;
 
     // Optional Dialogue System integration (won't error if not present in scene)
     private Usable usable;
 
     private readonly HashSet<Collider2D> occupants = new HashSet<Collider2D>();
+    private readonly List<Collider2D> scratchList = new List<Collider2D>(8);
+    private Transform _currentActor;                  // most-recent valid actor inside
     private Camera cam;
     private Collider2D trig;
     private string _lastLogged;
@@ -65,6 +95,7 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
             trig.isTrigger = true;
         }
 
+        // Dialogue System: Usable is optional
         usable = GetComponent<Usable>();
 
         // Respect explicit assignments; only auto-find if null:
@@ -114,6 +145,9 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
 
         if (occupants.Add(other))
         {
+            // Set/refresh current actor
+            _currentActor = other.transform;
+
             string uName = GetUsableName();
             string uMsg = GetUsableMessage();
             string final = format.Replace("{name}", uName).Replace("{msg}", uMsg);
@@ -121,9 +155,17 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
             Reposition();
             ShowWithText(final);
 
-            // Optional: tell Dialogue System a selection happened
-            if (usable)
-                usable.gameObject.SendMessage("OnSelect", other.transform, SendMessageOptions.DontRequireReceiver);
+            // Integration path: Usable or fallback event
+            if (useUsableIntegration && usable && callSelectOnEnter)
+            {
+                if (verboseLogs) Debug.Log($"[{name}] OnSelect -> Usable ({_currentActor?.name})");
+                usable.gameObject.SendMessage("OnSelect", _currentActor, SendMessageOptions.DontRequireReceiver);
+            }
+            else
+            {
+                if (verboseLogs) Debug.Log($"[{name}] onSelect.Invoke ({_currentActor?.name})");
+                onSelect?.Invoke(_currentActor);
+            }
         }
     }
 
@@ -131,13 +173,32 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     {
         if (!occupants.Remove(other)) return;
 
+        // If the actor leaving was our current actor, pick another still inside (if any)
+        if (_currentActor == other.transform)
+        {
+            _currentActor = FindAnyActorStillInside();
+        }
+
         if (occupants.Count == 0)
         {
             SetVisible(false);
 
-            // Optional: Dialogue System deselect
-            if (usable)
+            // Integration path: Usable or fallback event
+            if (useUsableIntegration && usable && callDeselectOnExit)
+            {
+                if (verboseLogs) Debug.Log($"[{name}] OnDeselect -> Usable");
                 usable.gameObject.SendMessage("OnDeselect", SendMessageOptions.DontRequireReceiver);
+            }
+            else
+            {
+                if (verboseLogs) Debug.Log($"[{name}] onDeselect.Invoke()");
+                onDeselect?.Invoke();
+            }
+        }
+        else
+        {
+            // Still at least one actor in; keep tooltip up and keep current actor reference
+            if (verboseLogs) Debug.Log($"[{name}] Occupant left, {occupants.Count} remain. CurrentActor={_currentActor?.name}");
         }
     }
 
@@ -146,11 +207,21 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     {
         if (occupants.Count == 0) return;
 
-        // Forward to Dialogue System if present
-        if (usable)
-            usable.gameObject.SendMessage("OnUse", actor, SendMessageOptions.DontRequireReceiver);
+        // Prefer the passed-in actor (from player controller), else use last known
+        var effectiveActor = actor ? actor : (_currentActor ? _currentActor : null);
 
-        // Hide tooltip on use (typical UX)
+        if (useUsableIntegration && usable && callOnUse)
+        {
+            if (verboseLogs) Debug.Log($"[{name}] OnUse -> Usable ({effectiveActor?.name})");
+            usable.gameObject.SendMessage("OnUse", effectiveActor, SendMessageOptions.DontRequireReceiver);
+        }
+        else
+        {
+            if (verboseLogs) Debug.Log($"[{name}] onUse.Invoke ({effectiveActor?.name})");
+            onUse?.Invoke(effectiveActor);
+        }
+
+        // Typical UX: hide after use (optional)
         SetVisible(false);
     }
 
@@ -161,6 +232,14 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
         for (int i = 0; i < extraAllowedTags.Count; i++)
             if (other.CompareTag(extraAllowedTags[i])) return true;
         return false;
+    }
+
+    private Transform FindAnyActorStillInside()
+    {
+        // Rebuild scratch list from occupants HashSet (HashSet has no indexer)
+        scratchList.Clear();
+        foreach (var c in occupants) if (c) scratchList.Add(c);
+        return scratchList.Count > 0 ? scratchList[0].transform : null;
     }
 
     private void Reposition()
