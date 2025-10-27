@@ -465,7 +465,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 645081442981567975}
-  - component: {fileID: 551751163807648125}
   - component: {fileID: 981092911189626236}
   - component: {fileID: 962040505371574532}
   - component: {fileID: 774239578798043669}
@@ -497,35 +496,6 @@ Transform:
   - {fileID: 8211232433697590777}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &551751163807648125
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3734643495383114408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c41de18ccab57524d9941d9d62314654, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentDir: {x: 0, y: 0}
-  combat: {fileID: 0}
-  playerTarget: {fileID: 0}
-  followStartDistance: 3
-  followStopDistance: 1.2
-  maxFollowDistance: 10
-  moveSpeed: 3.5
-  chaseRadius: 6
-  attackRange: 1.5
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  battleMoveSpeed: 4.5
-  moveAnimSpeedMultiplier: 1
-  startInParty: 0
-  alwaysAutoResolvePlayer: 1
-  recheckEvery: 0.5
 --- !u!95 &981092911189626236
 Animator:
   serializedVersion: 5

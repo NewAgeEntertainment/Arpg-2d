@@ -671,6 +671,10 @@ MonoBehaviour:
   dashSpeed: 20
   ThrustDuration: 1
   ThrustSpeed: 5
+  interactRadius: 1.8
+  interactMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   grassTag: GrassVolume
   grassLayerName: TallGrass
   grassRustlePrefab: {fileID: 0}
@@ -1078,7 +1082,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 963d6358c55a0f44d8de57bee560f184, type: 3}
   m_Name: 
