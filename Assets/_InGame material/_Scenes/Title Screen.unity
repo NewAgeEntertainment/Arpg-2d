@@ -2878,6 +2878,48 @@ MonoBehaviour:
   snapExtraPerCompanion: 0.25
   snapDelay: 0.05
   verboseLogs: 1
+--- !u!114 &702374318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702374309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecadd5a246af70f4d8cd2f50b8208dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportOffsetDistance: 1.2
+  use2DTopDown: 1
+--- !u!114 &702374319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702374309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2e00f73e94c0024e80d41ab1f5378bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &702374320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702374309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31768c1d38b493148a00f382d0eb15ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: safe
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 1
 --- !u!1 &711540704
 GameObject:
   m_ObjectHideFlags: 0
@@ -8063,7 +8105,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11404330, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       propertyPath: enterSceneTransition.animationDuration
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11404330, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       propertyPath: leaveSceneTransition.animationDuration
@@ -8087,6 +8129,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 702374311}
+    - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 702374319}
+    - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 702374318}
+    - targetCorrespondingSourceObject: {fileID: 164444, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 702374320}
   m_SourcePrefab: {fileID: 100100000, guid: 93079b229ac44ac4094cc1a1087b39b2, type: 3}
 --- !u!1 &1594163806
 GameObject:

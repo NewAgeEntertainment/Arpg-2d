@@ -676,7 +676,7 @@ MonoBehaviour:
     m_childIndexList: 010000000a000000
     m_canvasRect:
       serializedVersion: 2
-      x: 236.12906
+      x: 237.8312
       y: 10.579838
       width: 120
       height: 48
@@ -1158,15 +1158,13 @@ MonoBehaviour:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
-    - m_actionList:
-      - {fileID: 2952786095526895704}
+    - m_actionList: []
       m_categorizedContentList:
       - m_contentList: []
       - m_contentList: []
       - m_contentList: []
     m_conditionSet:
-      m_conditionList:
-      - {fileID: 5340745304017532834}
+      m_conditionList: []
       m_conditionCountMode: 1
       m_minConditionCount: 0
       m_numTrueConditions: 0
@@ -1386,19 +1384,6 @@ MonoBehaviour:
     m_valueType: 0
     m_intValue: 0
     m_stringValue: 
---- !u!114 &2952786095526895704
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c94e8fb3b9b54114cbe8185003729c1b, type: 3}
-  m_Name: SceneEventQuestAction
-  m_EditorClassIdentifier: 
-  m_guid: 6336ef05-c357-48b6-9a14-360d64642aba
 --- !u!114 &3038218947904801201
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1578,45 +1563,6 @@ MonoBehaviour:
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
   m_questIndicatorState: 5
---- !u!114 &5340745304017532834
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5682394e55a192147a020b9edf624e51, type: 3}
-  m_Name: MessageQuestCondition
-  m_EditorClassIdentifier: 
-  m_alreadyTrue: 0
-  m_senderSpecifier: 0
-  m_senderID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_targetSpecifier: 0
-  m_targetID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_message:
-    m_text: Unlock
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_parameter:
-    m_text: Area
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_value:
-    m_valueType: 0
-    m_intValue: 0
-    m_stringValue: 
 --- !u!114 &7508034364416727038
 MonoBehaviour:
   m_ObjectHideFlags: 1

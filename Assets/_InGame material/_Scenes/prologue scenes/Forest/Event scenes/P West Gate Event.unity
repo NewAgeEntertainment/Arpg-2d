@@ -15668,6 +15668,7 @@ GameObject:
   - component: {fileID: 1064925754}
   - component: {fileID: 1064925756}
   - component: {fileID: 1064925755}
+  - component: {fileID: 1064925757}
   m_Layer: 0
   m_Name: LevelManager
   m_TagString: Untagged
@@ -15747,6 +15748,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4e997f38a2e2884e89b9bd8ad830fee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1064925757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1064925753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecadd5a246af70f4d8cd2f50b8208dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportOffsetDistance: 1.2
+  use2DTopDown: 1
 --- !u!1 &1065340099
 GameObject:
   m_ObjectHideFlags: 0

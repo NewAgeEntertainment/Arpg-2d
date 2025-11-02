@@ -88,8 +88,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
     void LateUpdate()
     {
         // ---------- Failsafe watchdog ----------
-        // If we froze physics and the director is no longer actively playing,
-        // or we're at/after duration (e.g., WrapMode=Hold -> Paused), restore simulation.
         if (_frozenByBinder && freezePhysicsDuringPlay)
         {
             bool shouldUnfreeze = false;
@@ -101,7 +99,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
             else
             {
                 var isPlaying = director.state == PlayState.Playing;
-                // duration can be 0 for some assets; guard with epsilon
                 double dur = director.duration;
                 double t = director.time;
                 bool atOrPastEnd = (dur > 0.0001) && (t >= dur - 0.0001);
@@ -128,7 +125,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
     /// Rebind tracks now (after a small delay), then optionally auto-play.
     public void RebindNow()
     {
-        // If this was deactivated on completion earlier, make sure it is active again
         if (director != null && !director.gameObject.activeSelf)
             director.gameObject.SetActive(true);
 
@@ -166,7 +162,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
         if (_dual != null) _dual.DisableWhenIdle();
         if (freezePhysicsDuringPlay) UnfreezePhysics();
 
-        // Optionally deactivate the director's GameObject after a short configurable delay
         if (deactivateDirectorOnStop && director != null)
         {
             if (_deactivateCo != null) StopCoroutine(_deactivateCo);
@@ -177,7 +172,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
     private IEnumerator DeactivateDirectorAfter(float delay)
     {
         if (delay > 0f) yield return new WaitForSeconds(delay);
-        // Deactivate the whole GameObject (binder will OnDisable and clean up)
         if (director != null) director.gameObject.SetActive(false);
         _deactivateCo = null;
     }
@@ -247,7 +241,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
         _dual = root.GetComponent<TimelineOnlyAnimator>();
         if (_dual == null) _dual = root.AddComponent<TimelineOnlyAnimator>();
 
-        // Safety on the root Animator
         if (_dual.timelineAnimator != null)
         {
             _dual.timelineAnimator.runtimeAnimatorController = null;
@@ -272,7 +265,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
         _rb2d.angularVelocity = 0f;
         _rb2d.simulated = false;
         _frozenByBinder = true;
-        // Debug.Log("[Binder] Physics frozen by binder.");
     }
 
     private void UnfreezePhysics()
@@ -283,6 +275,79 @@ public class TimelineAnimatorBinder : MonoBehaviour
         _rb2d.velocity = Vector2.zero;
         _rb2d.angularVelocity = 0f;
         _frozenByBinder = false;
-        // Debug.Log("[Binder] Physics restored by binder.");
+    }
+
+    // ================= OPTIONAL: Auto-pick a director + tracks =================
+    // Not used automatically; call this if you want the binder (for player) to self-pick.
+    public bool TryAutoPickDirectorAndTracks(GameObject root, string[] rootNameCandidates, string[] modelNameCandidates)
+    {
+        var all = FindObjectsOfType<PlayableDirector>(true);
+        if (all == null || all.Length == 0) return false;
+
+        PlayableDirector best = null;
+        string bestRoot = null;
+        string bestModel = null;
+        int bestScore = 0;
+
+        for (int i = 0; i < all.Length; i++)
+        {
+            var d = all[i];
+            if (d == null || d.playableAsset == null) continue;
+            var asset = d.playableAsset as TimelineAsset;
+            if (asset == null) continue;
+
+            int score = 0;
+            string foundRoot = null;
+            string foundModel = null;
+
+            // scan tracks
+            foreach (var track in asset.GetOutputTracks())
+            {
+                if (track is not AnimationTrack) continue;
+
+                // name matches
+                if (rootNameCandidates != null)
+                {
+                    for (int r = 0; r < rootNameCandidates.Length; r++)
+                    {
+                        var n = rootNameCandidates[r];
+                        if (!string.IsNullOrEmpty(n) && track.name == n)
+                        {
+                            score += 2;
+                            foundRoot = n;
+                        }
+                    }
+                }
+                if (modelNameCandidates != null)
+                {
+                    for (int m = 0; m < modelNameCandidates.Length; m++)
+                    {
+                        var n = modelNameCandidates[m];
+                        if (!string.IsNullOrEmpty(n) && track.name == n)
+                        {
+                            score += 2;
+                            foundModel = n;
+                        }
+                    }
+                }
+            }
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                best = d;
+                bestRoot = foundRoot;
+                bestModel = foundModel;
+            }
+        }
+
+        if (best != null && bestScore > 0)
+        {
+            director = best;
+            if (!string.IsNullOrEmpty(bestRoot)) rootTrackName = bestRoot;
+            if (!string.IsNullOrEmpty(bestModel)) modelTrackName = bestModel;
+            return true;
+        }
+        return false;
     }
 }
