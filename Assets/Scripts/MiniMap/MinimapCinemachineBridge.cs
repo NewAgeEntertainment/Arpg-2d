@@ -17,17 +17,92 @@ public class MinimapCinemachineBridge : MonoBehaviour
     public bool autoBindPlayerLocator = true;  // uses PlayerLocator.Current
     public Transform followOverride;           // optional manual follow
 
+    [Header("Robust binding (added)")]
+    [Tooltip("How often to re-check for the player if none is bound yet.")]
+    public float retryInterval = 0.25f;
+    [Tooltip("Automatically add a CinemachineBrain on this Camera if missing.")]
+    public bool ensureBrainOnCamera = true;
+
     private bool _isFullscreen;
+    private Transform _currentFollow;
+    private Coroutine _bindLoop;
+
+    private void Awake()
+    {
+        // Optional: make sure this camera can drive Cinemachine VCams
+        if (ensureBrainOnCamera && GetComponent("CinemachineBrain") == null)
+        {
+            // AddComponent by string avoids direct CM namespace dependency
+            gameObject.AddComponent(System.Type.GetType("Cinemachine.CinemachineBrain, Cinemachine"));
+        }
+    }
+
+    private void OnEnable()
+    {
+        // Listen for player changes if your PlayerLocator exposes OnChanged
+        try { PlayerLocator.OnChanged += HandlePlayerChanged; } catch { /* safe if event missing */ }
+
+        // Start a small polling loop to catch late-spawned players
+        if (_bindLoop == null) _bindLoop = StartCoroutine(BindLoop());
+    }
+
+    private void OnDisable()
+    {
+        try { PlayerLocator.OnChanged -= HandlePlayerChanged; } catch { }
+        if (_bindLoop != null) { StopCoroutine(_bindLoop); _bindLoop = null; }
+    }
+
+    private System.Collections.IEnumerator BindLoop()
+    {
+        // Give other announcers (like PlayerLocator) a frame to set up
+        yield return null;
+
+        // Initial bind (keeps your original Start behavior but more robust)
+        RefreshFollow(true);
+
+        // Keep checking occasionally in case the player swaps/reloads
+        while (true)
+        {
+            // If we lost the target or it changed, rebind
+            var resolved = ResolveFollowTarget();
+            if (resolved != _currentFollow && resolved != null)
+                ApplyFollow(resolved);
+
+            yield return new WaitForSeconds(retryInterval);
+        }
+    }
 
     private void Start()
     {
-        var follow = ResolveFollowTarget();
-        SetFollow(singleVCam, follow);
-        SetFollow(miniVCam, follow);
-        SetFollow(fullscreenVCam, follow);
+        // Keep your original start-time bind for immediate cases
+        RefreshFollow(true);
 
         if (singleVCam != null)
             SetLensSize(singleVCam, orthoSizeMinimap);
+    }
+
+    /// <summary>Public: manually force a rebind (e.g., after spawning player).</summary>
+    public void RefreshFollow(bool snapLens = false)
+    {
+        var follow = ResolveFollowTarget();
+        ApplyFollow(follow);
+
+        if (snapLens && singleVCam != null)
+            SetLensSize(singleVCam, _isFullscreen ? orthoSizeFullscreen : orthoSizeMinimap);
+    }
+
+    private void HandlePlayerChanged(Transform newPlayer)
+    {
+        if (!autoBindPlayerLocator || newPlayer == null) return;
+        ApplyFollow(newPlayer);
+    }
+
+    private void ApplyFollow(Transform follow)
+    {
+        _currentFollow = follow;
+        SetFollow(singleVCam, follow);
+        SetFollow(miniVCam, follow);
+        SetFollow(fullscreenVCam, follow);
     }
 
     public void SetFullscreen(bool full)
@@ -46,7 +121,6 @@ public class MinimapCinemachineBridge : MonoBehaviour
     }
 
     // --------- Reflection helpers (CM2 & CM3 compatible) ----------
-
     private static void SetFollow(Component vcam, Transform t)
     {
         if (vcam == null) return;
@@ -111,7 +185,18 @@ public class MinimapCinemachineBridge : MonoBehaviour
     private Transform ResolveFollowTarget()
     {
         if (followOverride != null) return followOverride;
-        if (!autoBindPlayerLocator) return null;
-        return PlayerLocator.Current;
+        if (autoBindPlayerLocator && PlayerLocator.Current != null) return PlayerLocator.Current;
+
+        // Fallbacks if PlayerLocator isn't ready/available
+        var tagged = GameObject.FindGameObjectWithTag("Player");
+        if (tagged != null) return tagged.transform;
+
+        var named = GameObject.Find("Player");
+        if (named != null) return named.transform;
+
+        var playerComp = FindObjectOfType<Player>();
+        if (playerComp != null) return playerComp.transform;
+
+        return null;
     }
 }

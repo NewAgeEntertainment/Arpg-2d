@@ -1,23 +1,57 @@
+using System.Collections;
 using UnityEngine;
 
 public class MinimapRevealer : MonoBehaviour
 {
-    public MinimapSettings settings;
-    [Tooltip("Reveal radius in world units. If <= 0 uses settings.defaultRevealRadius.")]
-    public float revealRadius = 0f;
-    [Tooltip("How often to stamp the fog (seconds).")]
-    public float interval = 0.1f;
+    [Header("Reveal")]
+    public float revealRadius = 4f;
+    [Min(0.01f)] public float interval = 0.1f;
 
-    private float _next;
+    [Header("Follow target (optional)")]
+    public bool autoBindPlayerLocator = true;  // uses PlayerLocator.Current
+    public Transform followOverride;           // manually assign if needed
 
-    private void Update()
+    Transform _target;
+    Coroutine _loop;
+
+    void OnEnable()
     {
-        if (Time.time < _next) return;
-        _next = Time.time + Mathf.Max(0.02f, interval);
+        // Try to find our follow target
+        _target = followOverride != null
+            ? followOverride
+            : (autoBindPlayerLocator ? PlayerLocator.Current : transform);
 
-        if (MinimapFog.Instance == null || MinimapFog.Instance.settings == null) return;
-        var s = settings != null ? settings : MinimapFog.Instance.settings;
-        float r = (revealRadius > 0f) ? revealRadius : s.defaultRevealRadius;
-        MinimapFog.Instance.RevealCircle(transform.position, r);
+        if (_loop == null)
+            _loop = StartCoroutine(RevealLoop());
+
+        // re-bind if player respawns
+        PlayerLocator.OnChanged += OnPlayerChanged;
+    }
+
+    void OnDisable()
+    {
+        PlayerLocator.OnChanged -= OnPlayerChanged;
+        if (_loop != null) StopCoroutine(_loop);
+        _loop = null;
+    }
+
+    void OnPlayerChanged(Transform t)
+    {
+        if (autoBindPlayerLocator && t != null)
+            _target = t;
+    }
+
+    IEnumerator RevealLoop()
+    {
+        yield return null; // wait one frame for singletons to init
+
+        while (true)
+        {
+            var fog = MinimapFog.Instance;
+            if (fog != null && _target != null)
+                fog.RevealCircle(_target.position, revealRadius);
+
+            yield return new WaitForSeconds(interval);
+        }
     }
 }
