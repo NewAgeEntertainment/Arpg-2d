@@ -16502,7 +16502,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 196599
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -18335,7 +18335,7 @@ MonoBehaviour:
       Enabled: 1
       Size: {x: 0.48, y: 0.47}
       Offset: {x: 0, y: 0}
-  CenterOnActivate: 0
+  CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
   Damping: {x: 0.2, y: 0.2, z: 1}
   Lookahead:
@@ -23744,10 +23744,12 @@ MonoBehaviour:
   followStopDistance: 1.25
   lastFacing: {x: 0, y: -1}
   timelineDirector: {fileID: 0}
-  timelineTrackName: 
+  rootTrackName: 
+  modelTrackName: 
   bindToTimelineOnRebind: 1
   timelineAutoPlayAfterBind: 0
   timelineBindDelayFrames: 1
+  autoFindTimeline: 1
 --- !u!114 &1604859589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36824,10 +36826,12 @@ MonoBehaviour:
   followStopDistance: 1.25
   lastFacing: {x: 0, y: -1}
   timelineDirector: {fileID: 0}
-  timelineTrackName: 
+  rootTrackName: 
+  modelTrackName: 
   bindToTimelineOnRebind: 1
   timelineAutoPlayAfterBind: 0
   timelineBindDelayFrames: 1
+  autoFindTimeline: 1
 --- !u!1001 &8316032538359759600
 PrefabInstance:
   m_ObjectHideFlags: 0
