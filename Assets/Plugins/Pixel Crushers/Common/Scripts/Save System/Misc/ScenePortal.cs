@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Pixel Crushers. All rights reserved.
 
+using Rewired;
 using UnityEngine;
 
 namespace PixelCrushers
@@ -57,6 +58,7 @@ namespace PixelCrushers
 
         public virtual void UsePortal()
         {
+
             if (isLoadingScene) return;
             isLoadingScene = true;
             onUsePortal.Invoke();

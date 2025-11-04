@@ -228,9 +228,17 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     // ---------- Helpers ----------
     private bool IsAllowed(Collider2D other)
     {
-        if (other.CompareTag(playerTag)) return true;
+        if (other.CompareTag(playerTag))
+        {
+            // Player player = other.GetComponent<Player>();
+            return true;
+        }
+
         for (int i = 0; i < extraAllowedTags.Count; i++)
+        {
             if (other.CompareTag(extraAllowedTags[i])) return true;
+        }
+
         return false;
     }
 

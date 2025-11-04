@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Playables;
+using UnityEditor;
+using System.Threading.Tasks;
 
 #if UNITY_CINEMACHINE
 using Unity.Cinemachine; // Cinemachine v3
@@ -31,46 +33,47 @@ public class PlayerSpawner : MonoBehaviour
 
     private Player _player;
 
-    private void Awake()
+    private async void Awake()
     {
+        await Task.Delay(500);
         if (playerPrefab == null)
         {
-            Debug.LogError("[PlayerSpawner] No player prefab assigned!");
             return;
         }
 
-        var existingPlayers = FindObjectsByType<Player>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        var haveExisting = existingPlayers != null && existingPlayers.Length > 0;
+        Player[] existingPlayers = FindObjectsByType<Player>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        bool haveExisting = existingPlayers != null && existingPlayers.Length > 0;
 
-        Vector3 targetPos = (spawnPoint ? spawnPoint.position : transform.position);
+        Vector3 targetPos = spawnPoint ? spawnPoint.position : transform.position;
         Quaternion targetRot = Quaternion.identity;
         Vector3 targetScale = Vector3.one;
-
         if (preferPrefabOverExisting)
         {
-            // Replace any existing Player(s)
             if (haveExisting && copyPoseFromExisting)
             {
-                var first = existingPlayers[0].transform;
-                targetPos = first.position;
-                targetRot = first.rotation;
+                Transform first = existingPlayers[0].transform;
+                first.GetPositionAndRotation(out targetPos, out targetRot);
                 targetScale = first.localScale;
             }
 
             _player = Instantiate(playerPrefab, targetPos, targetRot);
             _player.transform.localScale = targetScale;
             _player.name = playerPrefab.name;
-
             if (destroyExistingOnReplace && haveExisting)
             {
                 foreach (var p in existingPlayers)
+                {
                     if (p && p.gameObject != _player.gameObject)
+                    {
                         Destroy(p.gameObject);
+                    }
+                }
             }
 
-            // >>> Rebind Timeline to the spawned Player <<<
-            var dualA = _player.GetComponent<TimelineOnlyAnimator>();
-            if (dualA == null) dualA = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+            if (!_player.TryGetComponent(out TimelineOnlyAnimator dualA))
+            {
+                dualA = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+            }
 
             var bindersA = FindObjectsByType<TimelineAnimatorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var b in bindersA)
@@ -90,8 +93,10 @@ public class PlayerSpawner : MonoBehaviour
                 _player.TeleportPlayer(targetPos);
 
                 // >>> Rebind Timeline to the existing Player <<<
-                var dualB = _player.GetComponent<TimelineOnlyAnimator>();
-                if (dualB == null) dualB = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+                if (!_player.TryGetComponent(out TimelineOnlyAnimator dualB))
+                {
+                    dualB = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
+                }
 
                 var bindersB = FindObjectsByType<TimelineAnimatorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 foreach (var b in bindersB)
