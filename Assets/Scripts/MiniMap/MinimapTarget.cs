@@ -11,6 +11,10 @@ public class MinimapTarget : MonoBehaviour
     [Tooltip("If true, this target will rotate the blip arrow to face its direction from center when offscreen.")]
     public bool rotateArrow = true;
 
-    [HideInInspector] public RectTransform blipRect; // set by controller
+    [Header("Visibility Rules")]
+    [Tooltip("When ON, the blip shows only while this GameObject is activeInHierarchy and the component is enabled.")]
+    public bool requireActiveInHierarchy = true;
+
+    [HideInInspector] public RectTransform blipRect;   // set by controller
     [HideInInspector] public Transform arrowTransform; // set by controller
 }
