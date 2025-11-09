@@ -39,6 +39,7 @@ public class MinimapCameraFollow : MonoBehaviour
         }
     }
 
+
     public void SetFullscreen(bool full)
     {
         _cam.orthographicSize = full ? orthoSizeFullscreen : orthoSizeMinimap;

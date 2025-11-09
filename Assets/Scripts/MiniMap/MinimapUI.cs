@@ -18,6 +18,20 @@ public class MinimapUI : MonoBehaviour
     public Vector2 fullAnchorMin = new Vector2(0.0f, 0.0f);
     public Vector2 fullAnchorMax = new Vector2(1.0f, 1.0f);
 
+    public enum MiniLayoutMode { PercentOfScreen, FixedPixels }
+    [Header("Mini Layout Mode")]
+    public MiniLayoutMode miniLayoutMode = MiniLayoutMode.FixedPixels;
+
+    [Tooltip("Used when MiniLayoutMode = FixedPixels")]
+    public Vector2 miniSizePx = new Vector2(260, 260);
+
+    [Tooltip("Margin from the top-right in pixels when FixedPixels")]
+    public Vector2 miniMarginPx = new Vector2(16, 16);
+
+
+    public bool IsFullscreen => _isFullscreen;
+
+
     [Header("Input")]
     public KeyCode toggleKey = KeyCode.M;
 
@@ -41,6 +55,25 @@ public class MinimapUI : MonoBehaviour
             ToggleFullscreen();
     }
 
+    public void SetFullscreen(bool full)
+    {
+        if (_isFullscreen == full) return;
+        _isFullscreen = full;
+        ApplyLayout(full);
+
+        if (cineBridge != null) cineBridge.SetFullscreen(full);
+        else if (cameraFollow != null) cameraFollow.SetFullscreen(full);
+    }
+
+    // already in your file; expose this so persistent controller can call it:
+    public void ReapplyFogTexture()
+    {
+        if (fogImage == null) return;
+        if (MinimapFog.Instance == null) return;
+        fogImage.texture = MinimapFog.Instance.fogTexture;
+        fogImage.color = fogTint;
+    }
+
     public void ToggleFullscreen()
     {
         _isFullscreen = !_isFullscreen;
@@ -56,14 +89,40 @@ public class MinimapUI : MonoBehaviour
     {
         if (container != null)
         {
-            container.anchorMin = full ? fullAnchorMin : miniAnchorMin;
-            container.anchorMax = full ? fullAnchorMax : miniAnchorMax;
-            container.offsetMin = container.offsetMax = Vector2.zero;
+            if (full)
+            {
+                // Fullscreen = stretch to whole canvas
+                container.anchorMin = fullAnchorMin; // (0,0)
+                container.anchorMax = fullAnchorMax; // (1,1)
+                container.pivot = new Vector2(0.5f, 0.5f);
+                container.offsetMin = container.offsetMax = Vector2.zero;
+                container.anchoredPosition = Vector2.zero;
+            }
+            else
+            {
+                if (miniLayoutMode == MiniLayoutMode.PercentOfScreen)
+                {
+                    // Old behavior: percentage anchors (shrinks with screen/aspect)
+                    container.anchorMin = miniAnchorMin;
+                    container.anchorMax = miniAnchorMax;
+                    container.pivot = new Vector2(0.5f, 0.5f);
+                    container.offsetMin = container.offsetMax = Vector2.zero;
+                    container.anchoredPosition = Vector2.zero;
+                }
+                else // FixedPixels
+                {
+                    // Top-right fixed pixel size
+                    container.anchorMin = container.anchorMax = new Vector2(1f, 1f); // top-right
+                    container.pivot = new Vector2(1f, 1f);
+                    container.sizeDelta = miniSizePx;
+                    container.anchoredPosition = new Vector2(-miniMarginPx.x, -miniMarginPx.y);
+                }
+            }
         }
 
-        if (cameraFollow != null)
-            cameraFollow.SetFullscreen(full);
+        if (cameraFollow != null) cameraFollow.SetFullscreen(full);
     }
+
 
     private void ApplyFogTexture()
     {

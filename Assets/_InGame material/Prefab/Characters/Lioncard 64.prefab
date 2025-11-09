@@ -505,8 +505,8 @@ GameObject:
   - component: {fileID: 620084835912366469}
   - component: {fileID: 873019877890959062}
   - component: {fileID: 1532602733049190791}
-  - component: {fileID: -8949506509282912549}
   - component: {fileID: 991554826835380273}
+  - component: {fileID: 4901132435058660664}
   m_Layer: 7
   m_Name: Lioncard 64
   m_TagString: Player
@@ -1327,19 +1327,6 @@ MonoBehaviour:
   attackMiss: player_attackMiss
   soundDistance: 15
   showGizmo: 0
---- !u!114 &-8949506509282912549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad8c9a6aabb7fe94c9cc6461cb0b0df0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cooldown: 0.64
 --- !u!114 &991554826835380273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1356,6 +1343,19 @@ MonoBehaviour:
   interval: 0.2
   autoBindPlayerLocator: 1
   followOverride: {fileID: 0}
+--- !u!114 &4901132435058660664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fde55e577e664e408560047be4e5fbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  framesToDelay: 1
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0
