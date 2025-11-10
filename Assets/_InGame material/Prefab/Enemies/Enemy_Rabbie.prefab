@@ -160,7 +160,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 6
   m_SortingOrder: -1
   m_Sprite: {fileID: -8900005401159255355, guid: 0f6ff2d79ef492c4bb1ebd376089f815, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -1546,14 +1546,18 @@ MonoBehaviour:
   goldStackMax: 15
   goldPickupPrefab: {fileID: 872795072155214972, guid: 9b3e271ca00737546b153f9cb06b13d9, type: 3}
   attackDistance: 3
-  attackCooldown: 1
+  attackCooldown: 2.3
   range: 4.73
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 128
   attackIndicator: {fileID: 0}
   lastTimeAttacked: 0
-  battleMoveSpeed: 7
+  battleMoveSpeed: 2.5
+  attackLungeSpeed: 6
+  attackLungeDuration: 0.12
+  superArmorDuringAttack: 1
+  ignoreStunDuringAttack: 1
   stunnedDuration: 0.5
   stunnedVelocity: {x: 1, y: 1}
   canBeStunned: 0
@@ -1670,18 +1674,25 @@ MonoBehaviour:
   isDead: 0
   regenInterval: 1
   canRegenerateHealth: 1
-  knockbackDuration: 5
+  knockbackDuration: 0.5
   onDamageKnockback: 1
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 0
-  onHeavyDamageKnockback: 2
+  onHeavyDamageKnockback: 1
   animatorLayer: 0
   deathStateName: dead
   forcePlayDeathState: 1
   extraDespawnDelay: 0.1
   fallbackTimeout: 2
   usePooling: 0
+  enableKillOnInput: 1
+  useRewired: 1
+  rewiredPlayerId: 0
+  rewiredKillAction: DebugKillEnemy
+  fallbackKillKey: 107
   debugLogs: 1
+  superArmorDuringAttack: 1
+  ignoreStunDuringAttack: 1
 --- !u!114 &7042859237568920917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1697,11 +1708,10 @@ MonoBehaviour:
   manaBar: {fileID: 4941476608359865459}
   currentMana: 0
   isDead: 0
-  manaCost: 0
   isManaDepleted: 0
-  useMana: 0
   manaRegenInterval: 1
   canRegenerateMana: 1
+  regenPerTick: 0
 --- !u!114 &3266099578933423636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1717,7 +1727,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: f946a537d5502ee4fa6f27077322270a, type: 2}
   resources:
     maxHealth:
-      baseValue: 100
+      baseValue: 300
       modifiers:
       - value: 0
         type: 0
@@ -1726,23 +1736,23 @@ MonoBehaviour:
       baseValue: 0
       modifiers: []
     maxMana:
-      baseValue: 0
+      baseValue: 50
       modifiers: []
     manaRegen:
       baseValue: 0
       modifiers: []
   offense:
     attackSpeed:
-      baseValue: 0
+      baseValue: 1
       modifiers: []
     damage:
-      baseValue: 0
+      baseValue: 10
       modifiers:
       - value: 1
         type: 0
         source: EnemyLevelScale
     critPower:
-      baseValue: 0
+      baseValue: 150
       modifiers: []
     critChance:
       baseValue: 0
@@ -1799,13 +1809,13 @@ MonoBehaviour:
       modifiers: []
   sex:
     maxArousal:
-      baseValue: 0
+      baseValue: 218.3
       modifiers: []
     stroke:
       baseValue: 0
       modifiers: []
     sexualDamage:
-      baseValue: 0
+      baseValue: 20
       modifiers: []
     resilience:
       baseValue: 0
@@ -1845,7 +1855,7 @@ MonoBehaviour:
     shockDuration: 3
     shockDamageScale: 1
     shockCharge: 0.4
-  targetCheckRadius: 0.97
+  targetCheckRadius: 0.93
   whatIsTarget:
     serializedVersion: 2
     m_Bits: 128
@@ -2369,7 +2379,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 6
   m_SortingOrder: 0
   m_Sprite: {fileID: 577655699, guid: 7b60d3b81fd22804f897393fd944ae4e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -4582,7 +4592,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: -2
+  m_SortingLayer: 6
   m_SortingOrder: -1
   m_Sprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
