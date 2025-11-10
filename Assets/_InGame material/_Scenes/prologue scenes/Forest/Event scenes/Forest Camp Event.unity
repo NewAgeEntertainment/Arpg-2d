@@ -234,7 +234,7 @@ GameObject:
   - component: {fileID: 38774638}
   - component: {fileID: 38774640}
   - component: {fileID: 38774639}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground dac 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22880,19 +22880,19 @@ MonoBehaviour:
   Composition:
     ScreenPosition: {x: 0, y: 0}
     DeadZone:
-      Enabled: 0
+      Enabled: 1
       Size: {x: 0.2, y: 0.2}
     HardLimits:
-      Enabled: 0
+      Enabled: 1
       Size: {x: 0.8, y: 0.8}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
   Damping: {x: 1, y: 1, z: 1}
   Lookahead:
-    Enabled: 0
-    Time: 0
-    Smoothing: 0
+    Enabled: 1
+    Time: 1
+    Smoothing: 5
     IgnoreY: 0
 --- !u!1 &331539044
 GameObject:
@@ -23531,7 +23531,7 @@ GameObject:
   - component: {fileID: 530848097}
   - component: {fileID: 530848099}
   - component: {fileID: 530848098}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground dac 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24040,7 +24040,7 @@ GameObject:
   - component: {fileID: 597981408}
   - component: {fileID: 597981410}
   - component: {fileID: 597981409}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Path
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38042,7 +38042,7 @@ GameObject:
   - component: {fileID: 1060045975}
   - component: {fileID: 1060045974}
   - component: {fileID: 1060045973}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Cliff
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38469,6 +38469,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f802e984342f364daf2d2a3211fad93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSpawn:
+    m_PersistentCalls:
+      m_Calls: []
   playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 1118426845}
   preferPrefabOverExisting: 1
@@ -41675,7 +41678,7 @@ GameObject:
   - component: {fileID: 1294391415}
   - component: {fileID: 1294391414}
   - component: {fileID: 1294391413}
-  m_Layer: 9
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -66386,7 +66389,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -66554,7 +66557,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 6
+    OrthographicSize: 5
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -66592,8 +66595,8 @@ MonoBehaviour:
       Enabled: 0
       Size: {x: 0.2, y: 0.2}
     HardLimits:
-      Enabled: 0
-      Size: {x: 0.8, y: 0.8}
+      Enabled: 1
+      Size: {x: 0.47, y: 0.48}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
@@ -66854,7 +66857,7 @@ GameObject:
   - component: {fileID: 1504654785}
   - component: {fileID: 1504654787}
   - component: {fileID: 1504654786}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Tall Grass
   m_TagString: Untagged
   m_Icon: {fileID: 0}

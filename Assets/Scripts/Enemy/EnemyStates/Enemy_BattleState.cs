@@ -4,12 +4,12 @@ public class Enemy_BattleState : EnemyState
 {
     private Transform player;
     private float lastTimeWasInBattle;
-    private new Enemy_Rabbie enemy; // Use 'new' keyword to explicitly hide the inherited member
+    
     private Vector2 moveDir;
 
     public Enemy_BattleState(Enemy enemy, StateMachine stateMachine, string animBoolName) : base(enemy, stateMachine, animBoolName)
     {
-        this.enemy = enemy as Enemy_Rabbie; // Ensure the enemy is cast to Enemy_Rabbie
+        
     }
 
     public override void Enter()

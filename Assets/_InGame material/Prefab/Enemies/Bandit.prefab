@@ -2302,8 +2302,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3352992267372011650}
+  - component: {fileID: 6886567154537410739}
   - component: {fileID: 5005693105674621010}
-  - component: {fileID: 6195099354342359815}
   - component: {fileID: 5765232276337982311}
   - component: {fileID: 2921286399272258733}
   - component: {fileID: 7120133223093396108}
@@ -2346,6 +2346,54 @@ Transform:
   - {fileID: 4249199753769382642}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6886567154537410739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5235787932737124391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e896b62e34fc94a908c5e99b7e14ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentDir: {x: 0, y: 0}
+  dropList: {fileID: 0}
+  itemPickupPrefab: {fileID: 0}
+  minDrop: 1
+  maxDrop: 3
+  burstRadius: 3
+  dropGold: 1
+  minGold: 10
+  maxGold: 50
+  goldStackMin: 5
+  goldStackMax: 15
+  goldPickupPrefab: {fileID: 0}
+  attackDistance: 3
+  attackCooldown: 1
+  range: 4.73
+  whatIsPlayer:
+    serializedVersion: 2
+    m_Bits: 128
+  attackIndicator: {fileID: 0}
+  lastTimeAttacked: 0
+  battleMoveSpeed: 7
+  attackLungeSpeed: 6
+  attackLungeDuration: 0.12
+  superArmorDuringAttack: 1
+  ignoreStunDuringAttack: 1
+  stunnedDuration: 1
+  stunnedVelocity: {x: 1, y: 1}
+  canBeStunned: 0
+  idleTime: 10
+  moveSpeed: 5
+  pauseDuration: 5
+  battleTime: 3.27
+  moveAnimSpeedMultiplier: 1
+  patrolPoints: []
+  currentPatrolIndex: 0
+  target: {x: 0, y: 0}
 --- !u!70 &5005693105674621010
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -2381,54 +2429,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0.036200523, y: 0.6159433}
   m_Size: {x: 0.6117139, y: 1.4600086}
   m_Direction: 0
---- !u!114 &6195099354342359815
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5235787932737124391}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd19c66f53cdc234085ad9aded64480b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentDir: {x: 0, y: 0}
-  dropList: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
-  itemPickupPrefab: {fileID: 0}
-  minDrop: 1
-  maxDrop: 3
-  burstRadius: 3
-  dropGold: 1
-  minGold: 10
-  maxGold: 50
-  goldStackMin: 5
-  goldStackMax: 15
-  goldPickupPrefab: {fileID: 0}
-  attackDistance: 1.78
-  attackCooldown: 1
-  range: 3.75
-  whatIsPlayer:
-    serializedVersion: 2
-    m_Bits: 128
-  attackIndicator: {fileID: 0}
-  lastTimeAttacked: 0
-  battleMoveSpeed: 3
-  attackLungeSpeed: 6
-  attackLungeDuration: 0.12
-  superArmorDuringAttack: 1
-  ignoreStunDuringAttack: 1
-  stunnedDuration: 1
-  stunnedVelocity: {x: 7, y: 7}
-  canBeStunned: 0
-  idleTime: 1
-  moveSpeed: 4
-  pauseDuration: 0
-  battleTime: 3
-  moveAnimSpeedMultiplier: 1
-  patrolPoints: []
-  currentPatrolIndex: 0
-  target: {x: 0, y: 0}
 --- !u!114 &5765232276337982311
 MonoBehaviour:
   m_ObjectHideFlags: 0

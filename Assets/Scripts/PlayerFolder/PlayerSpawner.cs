@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 using UnityEngine.Playables;
 
 #if UNITY_CINEMACHINE
@@ -8,6 +9,13 @@ using Unity.Cinemachine; // Cinemachine v3
 
 public class PlayerSpawner : MonoBehaviour
 {
+    // ==================== EVENTS (ADDED) ====================
+    [System.Serializable] public class PlayerEvent : UnityEvent<Player> { }
+    [Header("Events")]
+    [Tooltip("Invoked after a Player is chosen/spawned and initial bindings are done.")]
+    public PlayerEvent onSpawn;
+    // ========================================================
+
     [Header("Assign Player Prefab")]
     [SerializeField] private Player playerPrefab;
 
@@ -124,8 +132,10 @@ public class PlayerSpawner : MonoBehaviour
 
         // Let global systems know who the current player is
         GameManager.Instance?.RegisterPlayer(_player);
-    }
 
+        // >>>>> FIRE onSpawn here (player is ready enough for listeners) <<<<<
+        onSpawn?.Invoke(_player);
+    }
 
     private void Start()
     {
@@ -161,6 +171,10 @@ public class PlayerSpawner : MonoBehaviour
         {
             vcam.Follow = p.transform;
             if (alsoSetLookAt) vcam.LookAt = p.transform;
+
+            // (Optional) You can also invoke onSpawn here if you want to signal "camera is bound":
+            // onSpawn?.Invoke(p);
+
             return true;
         }
 #endif
@@ -190,9 +204,4 @@ public class PlayerSpawner : MonoBehaviour
         return best;
     }
 #endif
-
-
-
 }
-
-
