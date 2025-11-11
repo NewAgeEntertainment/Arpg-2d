@@ -693,7 +693,7 @@ RectTransform:
   m_Father: {fileID: 5289454683645911212}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2034,7 +2034,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &585717913881157257
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2203,8 +2203,8 @@ MonoBehaviour:
       skipPCSubtitleAfterResponseMenu: 1
       subtitleCharsPerSecond: 30
       minSubtitleSeconds: 2
-      continueButton: 2
-      requireContinueOnLastLine: 0
+      continueButton: 1
+      requireContinueOnLastLine: 1
       richTextEmphases: 1
       convertPipesToLineBreaks: 1
       informSequenceStartAndEnd: 0
@@ -2250,8 +2250,8 @@ MonoBehaviour:
   persistentDataSettings:
     recordPersistentDataOn: 1
     includeActorData: 1
-    includeAllItemData: 0
-    includeLocationData: 0
+    includeAllItemData: 1
+    includeLocationData: 1
     includeStatusAndRelationshipData: 1
     includeAllConversationFields: 0
     saveConversationSimStatusWithField: 
@@ -3269,7 +3269,7 @@ RectTransform:
   m_Father: {fileID: 7107916453755854061}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3619,7 +3619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7107916453755854061
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3754,7 +3754,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.00000023841858}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3157437063659322605
@@ -4354,6 +4354,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: SceneFaderCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 11466620, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11466620, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11466620, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 11466620, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
+      objectReference: {fileID: 0}
+    - target: {fileID: 11479982, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 7482667652216324306, guid: 48e93eef0688c4a259cb0eddcd8661f7, type: 3}
     - target: {fileID: 22409084, guid: 57901d8399fd6e74fbabbc9956f39557, type: 3}
       propertyPath: m_Pivot.x
       value: 0

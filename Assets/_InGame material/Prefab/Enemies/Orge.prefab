@@ -935,7 +935,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 1.17}
+  m_AnchoredPosition: {x: 0, y: 2.62}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &522568603108822876
@@ -958,7 +958,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: 1859501777
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &3222451895794250144
@@ -1179,7 +1179,7 @@ Animator:
   m_GameObject: {fileID: 2050953771710073436}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1ebacb9695951784faaed455bdf8715a, type: 2}
+  m_Controller: {fileID: 22100000, guid: 78270d7289af27045b9537b88c9e92ae, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -1354,7 +1354,7 @@ Transform:
   m_GameObject: {fileID: 2230814428483507373}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.2, y: 0.53, z: 0}
+  m_LocalPosition: {x: -1.51, y: 0.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2389,6 +2389,7 @@ GameObject:
   - component: {fileID: 960395732620771649}
   - component: {fileID: 1274680758638594373}
   - component: {fileID: 2199313524682953355}
+  - component: {fileID: 5329121959744784953}
   - component: {fileID: 5532499199446041805}
   - component: {fileID: 3248663982876768589}
   - component: {fileID: 5970829233806813239}
@@ -2415,7 +2416,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5488030798746863790}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.53, y: 1.93, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -2488,6 +2489,54 @@ MonoBehaviour:
   critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
   chillVfx: {r: 0.30980393, g: 0.3882353, b: 1, a: 1}
   attackAlert: {fileID: 909481957303748709}
+--- !u!114 &5329121959744784953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5488030798746863790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e896b62e34fc94a908c5e99b7e14ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentDir: {x: 0, y: 0}
+  dropList: {fileID: 0}
+  itemPickupPrefab: {fileID: 0}
+  minDrop: 1
+  maxDrop: 3
+  burstRadius: 3
+  dropGold: 1
+  minGold: 10
+  maxGold: 50
+  goldStackMin: 5
+  goldStackMax: 15
+  goldPickupPrefab: {fileID: 0}
+  attackDistance: 2.39
+  attackCooldown: 2.5
+  range: 4.18
+  whatIsPlayer:
+    serializedVersion: 2
+    m_Bits: 128
+  attackIndicator: {fileID: 0}
+  lastTimeAttacked: 0
+  battleMoveSpeed: 5
+  attackLungeSpeed: 6
+  attackLungeDuration: 0.12
+  superArmorDuringAttack: 1
+  ignoreStunDuringAttack: 1
+  stunnedDuration: 1
+  stunnedVelocity: {x: 7, y: 7}
+  canBeStunned: 0
+  idleTime: 0
+  moveSpeed: 1.4
+  pauseDuration: 0
+  battleTime: 0
+  moveAnimSpeedMultiplier: 1
+  patrolPoints: []
+  currentPatrolIndex: 0
+  target: {x: 0, y: 0}
 --- !u!50 &5532499199446041805
 Rigidbody2D:
   serializedVersion: 4
@@ -2532,7 +2581,7 @@ MonoBehaviour:
   isDead: 0
   regenInterval: 0
   canRegenerateHealth: 0
-  knockbackDuration: 1
+  knockbackDuration: 0
   onDamageKnockback: 1
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 0
@@ -2585,7 +2634,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: 84eb0245628fabf4190f8c22c761f77b, type: 2}
   resources:
     maxHealth:
-      baseValue: 100
+      baseValue: 300
       modifiers:
       - value: 0
         type: 0
@@ -2594,17 +2643,17 @@ MonoBehaviour:
       baseValue: 0
       modifiers: []
     maxMana:
-      baseValue: 0
+      baseValue: 50
       modifiers: []
     manaRegen:
       baseValue: 0
       modifiers: []
   offense:
     attackSpeed:
-      baseValue: 0
+      baseValue: 1
       modifiers: []
     damage:
-      baseValue: 0
+      baseValue: 20
       modifiers:
       - value: 1
         type: 0
@@ -2795,7 +2844,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5488030798746863790}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 0}
   m_CullingMode: 0

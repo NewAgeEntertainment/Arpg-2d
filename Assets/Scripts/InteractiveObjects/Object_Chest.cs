@@ -7,25 +7,36 @@ public class Object_Chest : MonoBehaviour, IDamageable
 
     [SerializeField] private bool canDropItems = true;
 
+    // === Interact hook for InteractionTooltipTrigger2D ===
+    public void OnUse(Transform actor)
+    {
+        OpenChest();
+    }
+
+    // Keep damage opening too (optional)
     public bool TakeDamage(float damage, float ele, ElementType type, Transform dealer)
     {
-        if (!canDropItems)
-            return false;
-
-        canDropItems = false;
-
-        anim.SetBool("chestOpen", true);
-        dropManager?.DropItems(); // 👈 Triggers multiple drops
-
+        if (!canDropItems) return false;
+        OpenChest();
         return true;
     }
 
-    // Optional: Dev test key
+    private void OpenChest()
+    {
+        if (!canDropItems) return;
+        canDropItems = false;
+
+        if (anim) anim.SetBool("chestOpen", true);
+        dropManager?.DropItems();
+
+        // Optionally disable collider so it can’t be re-used:
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+    }
+
+    // Dev test
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            TakeDamage(1, 0, ElementType.None, null);
-        }
+        if (Input.GetKeyDown(KeyCode.K)) OnUse(null);
     }
 }
