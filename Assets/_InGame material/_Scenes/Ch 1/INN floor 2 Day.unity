@@ -707,7 +707,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.53125, y: 2.5}
+    oldSize: {x: 1.53125, y: 1.625}
     newSize: {x: 3.8, y: 5}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3757,27 +3757,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f802e984342f364daf2d2a3211fad93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSpawn:
+    m_PersistentCalls:
+      m_Calls: []
   playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 555817537}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
-  avoidLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  clearance2D: 0.12
-  nudgeMultiplier: 1.15
-  maxResolveIterations: 8
-  disablePlayerCollidersWhileSolving: 1
-  portalTriggerLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
-  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
-  gizmoRadius: 0.25
 --- !u!61 &555817540
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4510,7 +4500,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.53125, y: 2.5}
+    oldSize: {x: 1.53125, y: 1.625}
     newSize: {x: 1, y: 1.40625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -4761,7 +4751,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.53125, y: 2.5}
+    oldSize: {x: 1.53125, y: 1.625}
     newSize: {x: 1, y: 1.40625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -7351,27 +7341,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f802e984342f364daf2d2a3211fad93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSpawn:
+    m_PersistentCalls:
+      m_Calls: []
   playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 854095119}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
-  avoidLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  clearance2D: 0.12
-  nudgeMultiplier: 1.15
-  maxResolveIterations: 8
-  disablePlayerCollidersWhileSolving: 1
-  portalTriggerLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  portalImmunitySeconds: 0.4
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
-  gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.35}
-  gizmoRadius: 0.25
 --- !u!1 &884260641
 GameObject:
   m_ObjectHideFlags: 0
@@ -7841,7 +7821,7 @@ Transform:
   m_GameObject: {fileID: 940109468}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.8979263, y: 2.6057043, z: -11}
+  m_LocalPosition: {x: -0.67713165, y: 2.6057043, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15011,6 +14991,10 @@ MonoBehaviour:
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
+  triggerActivationDelaySeconds: 0
+  blockUsePortalUntilArmed: 0
+  startDisarmedOnEnable: 1
+  m_isArmed: 1
 --- !u!1 &1455315268
 GameObject:
   m_ObjectHideFlags: 0
@@ -20658,6 +20642,10 @@ MonoBehaviour:
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
+  triggerActivationDelaySeconds: 1.2
+  blockUsePortalUntilArmed: 1
+  startDisarmedOnEnable: 1
+  m_isArmed: 1
 --- !u!95 &1932078116 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 2581494389352519561, guid: 46fca4cddbeb32c4a822dd177c3b246a, type: 3}
@@ -20867,7 +20855,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.53125, y: 2.5}
+    oldSize: {x: 1.53125, y: 1.625}
     newSize: {x: 1, y: 1.40625}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -21232,6 +21220,11 @@ MonoBehaviour:
   callSelectOnEnter: 1
   callDeselectOnExit: 1
   callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
   logTextChanges: 0
   verboseLogs: 0
 --- !u!114 &2012415220

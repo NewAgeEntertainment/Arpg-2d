@@ -315,7 +315,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5928955983084671694
 RectTransform:
   m_ObjectHideFlags: 0
@@ -680,7 +680,7 @@ RectTransform:
   m_Father: {fileID: 5987352377354953656}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.120697, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1333,15 +1333,15 @@ GameObject:
   - component: {fileID: 2112800864012940792}
   - component: {fileID: 7478960372248148795}
   - component: {fileID: 6459691345458401076}
-  - component: {fileID: 8582094273972821950}
   - component: {fileID: 5133983823855385578}
+  - component: {fileID: 176247453135557487}
   m_Layer: 8
   m_Name: Enemy_Wolf
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6100707136976238000
 Transform:
   m_ObjectHideFlags: 0
@@ -1378,16 +1378,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  dropList: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
+  dropList: {fileID: 11400000, guid: ef1f500304edab948821744c1d9292bd, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
-  maxDrop: 6
+  maxDrop: 3
   burstRadius: 5
   dropGold: 1
   minGold: 10
-  maxGold: 50
-  goldStackMin: 5
-  goldStackMax: 15
+  maxGold: 30
+  goldStackMin: 1
+  goldStackMax: 10
   goldPickupPrefab: {fileID: 872795072155214972, guid: 9b3e271ca00737546b153f9cb06b13d9, type: 3}
   attackDistance: 1.73
   attackCooldown: 2.3
@@ -1737,25 +1737,6 @@ MonoBehaviour:
   maxRarityAmount: 1200
   maxItemsToDrop: 3
   dropSpreadRadius: 1.5
---- !u!114 &8582094273972821950
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2488284637338199331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_key: 1
-  m_appendSaverTypeToKey: 0
-  m_saveAcrossSceneChanges: 1
-  m_restoreStateOnStart: 0
-  m_mode: 0
-  m_destroyMode: 1
-  m_destroyedVersionPrefab: {fileID: 2488284637338199331}
 --- !u!114 &5133983823855385578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1773,6 +1754,29 @@ MonoBehaviour:
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
   m_gameObjectToWatch: {fileID: 2488284637338199331}
+--- !u!114 &176247453135557487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d27f6460da02c4882703a9290e8785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
+  sendQuestMessageOnDeath: 1
+  deathMessage: killed
+  deathParameter: Wolf
+  useGONameIfParameterEmpty: 1
+  messageTarget: {fileID: 0}
 --- !u!1 &2743883782825291007
 GameObject:
   m_ObjectHideFlags: 0

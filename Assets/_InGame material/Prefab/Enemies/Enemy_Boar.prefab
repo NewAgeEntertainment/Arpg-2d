@@ -2292,8 +2292,8 @@ GameObject:
   - component: {fileID: 7545980277479991511}
   - component: {fileID: 4663367398329860712}
   - component: {fileID: 6857804871308083408}
-  - component: {fileID: 4708360110241905491}
   - component: {fileID: 303316303309266244}
+  - component: {fileID: 3032067255554467395}
   m_Layer: 8
   m_Name: Enemy_Boar
   m_TagString: Enemy
@@ -2337,7 +2337,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  dropList: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
+  dropList: {fileID: 11400000, guid: 72a70273278e23f41a86929c12c77991, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
   maxDrop: 6
@@ -2696,25 +2696,6 @@ MonoBehaviour:
   maxRarityAmount: 1200
   maxItemsToDrop: 3
   dropSpreadRadius: 1.5
---- !u!114 &4708360110241905491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4894418689625105346}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_key: 1
-  m_appendSaverTypeToKey: 0
-  m_saveAcrossSceneChanges: 1
-  m_restoreStateOnStart: 0
-  m_mode: 0
-  m_destroyMode: 1
-  m_destroyedVersionPrefab: {fileID: 4894418689625105346}
 --- !u!114 &303316303309266244
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2732,6 +2713,29 @@ MonoBehaviour:
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
   m_gameObjectToWatch: {fileID: 4894418689625105346}
+--- !u!114 &3032067255554467395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4894418689625105346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d27f6460da02c4882703a9290e8785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
+  sendQuestMessageOnDeath: 1
+  deathMessage: killed
+  deathParameter: Boar
+  useGONameIfParameterEmpty: 1
+  messageTarget: {fileID: 0}
 --- !u!1 &5199220206678693552
 GameObject:
   m_ObjectHideFlags: 0
@@ -3481,7 +3485,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4202018574813020991
 RectTransform:
   m_ObjectHideFlags: 0

@@ -790,7 +790,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1494827443489044068
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1489,8 +1489,9 @@ GameObject:
   - component: {fileID: 4019127699807728705}
   - component: {fileID: 946440742310543714}
   - component: {fileID: 4093357935029395459}
-  - component: {fileID: 447223203100574846}
   - component: {fileID: 8117704176471188191}
+  - component: {fileID: 5390769607914938855}
+  - component: {fileID: 8682051530501751784}
   m_Layer: 8
   m_Name: Enemy_Rabbie
   m_TagString: Enemy
@@ -1534,7 +1535,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  dropList: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
+  dropList: {fileID: 11400000, guid: 3358cc453437e2045869f2e7ebf2bdb9, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
   maxDrop: 6
@@ -1562,10 +1563,10 @@ MonoBehaviour:
   stunnedVelocity: {x: 1, y: 1}
   canBeStunned: 0
   idleTime: 10
-  moveSpeed: 5
+  moveSpeed: 3
   pauseDuration: 5
-  battleTime: 3.27
-  moveAnimSpeedMultiplier: 1
+  battleTime: 1
+  moveAnimSpeedMultiplier: 0
   patrolPoints:
   - {x: -16.3, y: 5.08}
   - {x: -1.22, y: 5.18}
@@ -1656,7 +1657,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!114 &3244157916588337409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1674,7 +1675,7 @@ MonoBehaviour:
   isDead: 0
   regenInterval: 1
   canRegenerateHealth: 1
-  knockbackDuration: 0.5
+  knockbackDuration: 1
   onDamageKnockback: 1
   heavyDamageThreshold: 1
   heavyKnockbackDuration: 0
@@ -1893,25 +1894,6 @@ MonoBehaviour:
   maxRarityAmount: 1200
   maxItemsToDrop: 3
   dropSpreadRadius: 1.5
---- !u!114 &447223203100574846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2891903424803747257}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_key: 1
-  m_appendSaverTypeToKey: 0
-  m_saveAcrossSceneChanges: 1
-  m_restoreStateOnStart: 0
-  m_mode: 0
-  m_destroyMode: 1
-  m_destroyedVersionPrefab: {fileID: 2891903424803747257}
 --- !u!114 &8117704176471188191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1929,6 +1911,84 @@ MonoBehaviour:
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
   m_gameObjectToWatch: {fileID: 2891903424803747257}
+--- !u!114 &5390769607914938855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2891903424803747257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d27f6460da02c4882703a9290e8785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8682051530501751784}
+        m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
+        m_MethodName: SendToMessageSystem
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Rabbie:Defeated
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
+  sendQuestMessageOnDeath: 1
+  deathMessage: Rabbie
+  deathParameter: Defeated
+  useGONameIfParameterEmpty: 1
+  messageTarget: {fileID: 0}
+--- !u!114 &8682051530501751784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2891903424803747257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d18230d3a29b2a418e94d126c53f276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_questID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_questNodeID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_counterName:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_conditionalEvent:
+    questID:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    requiredQuestState: 0
+    questNodeID:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    requiredQuestNodeState: 0
+    onConditionMet:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!1 &3503663332083580918
 GameObject:
   m_ObjectHideFlags: 0

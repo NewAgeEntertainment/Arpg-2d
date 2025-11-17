@@ -9478,6 +9478,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bandit
       objectReference: {fileID: 0}
+    - target: {fileID: 5235787932737124391, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6195099354342359815, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: moveSpeed
       value: 4
@@ -26217,6 +26221,11 @@ MonoBehaviour:
   callSelectOnEnter: 1
   callDeselectOnExit: 1
   callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
   logTextChanges: 0
   verboseLogs: 0
 --- !u!1 &757922077
@@ -31187,7 +31196,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &853646448
 Transform:
   m_ObjectHideFlags: 0
@@ -65810,7 +65819,7 @@ GameObject:
   - component: {fileID: 1364648836}
   - component: {fileID: 1364648835}
   - component: {fileID: 1364648842}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: NewSexy time
   m_TagString: Partner
   m_Icon: {fileID: 0}
@@ -66389,7 +66398,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -66557,7 +66566,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 5
+    OrthographicSize: 6
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -88292,6 +88301,10 @@ PrefabInstance:
     - target: {fileID: 5235787932737124391, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: m_Name
       value: Bandit (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5235787932737124391, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6195099354342359815, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: battleMoveSpeed

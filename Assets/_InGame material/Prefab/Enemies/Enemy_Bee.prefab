@@ -470,7 +470,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 48.9, y: -4.600006}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 27.684, y: 18.4009}
   m_Pivot: {x: 0.5, y: 0.50000024}
 --- !u!222 &8859027311614266857
@@ -1400,7 +1400,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8551983535731864865
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3955,8 +3955,8 @@ GameObject:
   - component: {fileID: 5091870806470952968}
   - component: {fileID: 1520753519595765416}
   - component: {fileID: 5179983159190953345}
-  - component: {fileID: 5847504561958448536}
   - component: {fileID: 4488255332787324719}
+  - component: {fileID: 8993772331562939240}
   m_Layer: 8
   m_Name: Enemy_Bee
   m_TagString: Enemy
@@ -4000,7 +4000,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
-  dropList: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
+  dropList: {fileID: 11400000, guid: 15b1053e05bd8a546b2aa509266d808d, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
   maxDrop: 6
@@ -4359,25 +4359,6 @@ MonoBehaviour:
   maxRarityAmount: 1200
   maxItemsToDrop: 3
   dropSpreadRadius: 1.5
---- !u!114 &5847504561958448536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8906604114107096120}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_key: 1
-  m_appendSaverTypeToKey: 0
-  m_saveAcrossSceneChanges: 1
-  m_restoreStateOnStart: 0
-  m_mode: 0
-  m_destroyMode: 1
-  m_destroyedVersionPrefab: {fileID: 8906604114107096120}
 --- !u!114 &4488255332787324719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4395,6 +4376,29 @@ MonoBehaviour:
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
   m_gameObjectToWatch: {fileID: 8906604114107096120}
+--- !u!114 &8993772331562939240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8906604114107096120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94d27f6460da02c4882703a9290e8785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
+  sendQuestMessageOnDeath: 1
+  deathMessage: killed
+  deathParameter: Bee
+  useGONameIfParameterEmpty: 1
+  messageTarget: {fileID: 0}
 --- !u!1 &9045231725874476919
 GameObject:
   m_ObjectHideFlags: 0

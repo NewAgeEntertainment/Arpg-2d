@@ -120,4 +120,9 @@ public class GiveRewardOnInteract : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void Give(Transform actor)
+    {
+        HandleUse(actor);
+    }
 }

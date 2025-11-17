@@ -192738,7 +192738,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 131335147}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -355839,7 +355839,7 @@ Transform:
   m_GameObject: {fileID: 498309066}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.399994, y: -0.6000004, z: 0.29862404}
+  m_LocalPosition: {x: 4.399994, y: -0.6000004, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -355964,7 +355964,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -356012,7 +356012,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 501903714}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -356314,6 +356314,61 @@ Sprite:
   m_PhysicsShape: []
   m_Bones: []
   m_SpriteID: 
+--- !u!1 &524025573
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 524025575}
+  - component: {fileID: 524025574}
+  m_Layer: 0
+  m_Name: SpawnPoint 4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &524025574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524025573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f802e984342f364daf2d2a3211fad93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onSpawn:
+    m_PersistentCalls:
+      m_Calls: []
+  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
+  spawnPoint: {fileID: 524025575}
+  preferPrefabOverExisting: 0
+  copyPoseFromExisting: 0
+  destroyExistingOnReplace: 1
+  bindCinemachine: 1
+  alsoSetLookAt: 1
+  cameraBindRetrySeconds: 2
+--- !u!4 &524025575
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524025573}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 134, y: 0.8, z: 0.06443604}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &526952434
 GameObject:
   m_ObjectHideFlags: 0
@@ -461269,7 +461324,7 @@ Transform:
   m_GameObject: {fileID: 1714748141}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.4, y: -0.6, z: 0.29862404}
+  m_LocalPosition: {x: 4.4, y: -0.6, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -461366,7 +461421,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 5
+    OrthographicSize: 6
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -486244,7 +486299,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 1882331019}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -487904,7 +487959,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 2013709657}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -488469,6 +488524,7 @@ SceneRoots:
   - {fileID: 2013709657}
   - {fileID: 501903714}
   - {fileID: 131335147}
+  - {fileID: 524025575}
   - {fileID: 446800306}
   - {fileID: 1756033985}
   - {fileID: 676639155}

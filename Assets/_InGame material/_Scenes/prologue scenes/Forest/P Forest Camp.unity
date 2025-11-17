@@ -8303,6 +8303,10 @@ PrefabInstance:
       propertyPath: defaultConquestStats
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 777214986737659209, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: minimapCamera
+      value: 
+      objectReference: {fileID: 2014795712}
     - target: {fileID: 1019160915448982365, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 217.137
@@ -8398,6 +8402,10 @@ PrefabInstance:
     - target: {fileID: 2716476661988399172, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -144.69395
+      objectReference: {fileID: 0}
+    - target: {fileID: 2732341039388679038, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
@@ -8515,6 +8523,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -108.01555
       objectReference: {fileID: 0}
+    - target: {fileID: 5139263401569437796, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: minimapCamera
+      value: 
+      objectReference: {fileID: 2014795712}
     - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 217.137
@@ -8639,6 +8651,14 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6269523282717114061, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: cineBridge
+      value: 
+      objectReference: {fileID: 2014795707}
+    - target: {fileID: 6269523282717114061, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: minimapCamera
+      value: 
+      objectReference: {fileID: 2014795712}
     - target: {fileID: 6909914858952081432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -25189,8 +25209,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Priority:
-    Enabled: 0
-    m_Value: 0
+    Enabled: 1
+    m_Value: -21
   OutputChannel: 2
   StandbyUpdate: 2
   m_StreamingVersion: 20241001
@@ -25228,7 +25248,7 @@ Transform:
   m_GameObject: {fileID: 617214856}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.0243905, y: 2.9370387, z: -32.692577}
+  m_LocalPosition: {x: -50.5, y: -28.8, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -25694,6 +25714,11 @@ MonoBehaviour:
   callSelectOnEnter: 1
   callDeselectOnExit: 1
   callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
   logTextChanges: 0
   verboseLogs: 0
 --- !u!1 &757922077
@@ -40887,7 +40912,7 @@ GameObject:
   - component: {fileID: 1294391415}
   - component: {fileID: 1294391414}
   - component: {fileID: 1294391413}
-  m_Layer: 9
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -65156,7 +65181,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -65267,7 +65292,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 34
-    OrthographicSize: 5
+    OrthographicSize: 6
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -85298,6 +85323,11 @@ MonoBehaviour:
   callSelectOnEnter: 1
   callDeselectOnExit: 1
   callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
   logTextChanges: 0
   verboseLogs: 0
 --- !u!61 &1714859319
@@ -86322,7 +86352,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2014795713}
   - component: {fileID: 2014795712}
-  - component: {fileID: 2014795711}
   - component: {fileID: 2014795710}
   - component: {fileID: 2014795709}
   - component: {fileID: 2014795708}
@@ -86443,14 +86472,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &2014795711
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2014795706}
-  m_Enabled: 1
 --- !u!20 &2014795712
 Camera:
   m_ObjectHideFlags: 0
@@ -86490,7 +86511,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 1782097
+    m_Bits: 1778241
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: d8fd9c3512c8537468914784087b0635, type: 2}
   m_TargetDisplay: 0
@@ -86511,7 +86532,7 @@ Transform:
   m_GameObject: {fileID: 2014795706}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -37.667725, y: -21.913181, z: -32.692577}
+  m_LocalPosition: {x: -50.5, y: -28.8, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

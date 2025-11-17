@@ -29,10 +29,24 @@ public class Object_Chest : MonoBehaviour, IDamageable
         if (anim) anim.SetBool("chestOpen", true);
         dropManager?.DropItems();
 
-        // Optionally disable collider so it can’t be re-used:
+        // 🔥 NEW — Trigger GiveRewardOnInteract
+        var reward = GetComponent<GiveRewardOnInteract>();
+        if (reward != null)
+        {
+            // Find the player (Interaction sends actor, damage won’t)
+            Transform player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+            if (player != null)
+                reward.Give(player);
+            else
+                Debug.LogWarning("Chest opened but Player not found.");
+        }
+
+        // Disable chest collider after use
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = false;
     }
+
 
     // Dev test
     private void Update()
