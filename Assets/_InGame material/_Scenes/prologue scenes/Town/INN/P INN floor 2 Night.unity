@@ -1381,13 +1381,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   director: {fileID: 226332641}
   playerRoot: {fileID: 0}
-  autoPlayAfterRebind: 1
+  autoPlayAfterRebind: 0
   freezePhysicsDuringPlay: 1
   bindDelayFrames: 2
   rootTrackName: Lioncard
   modelTrackName: LioncardModel
   deactivateDirectorOnStop: 1
   deactivateDelay: 0
+  keepDirectorActiveAfterRebind: 0
 --- !u!320 &226332641
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -1398,9 +1399,9 @@ PlayableDirector:
   m_Enabled: 1
   serializedVersion: 3
   m_PlayableAsset: {fileID: 11400000, guid: 2cf67c6167e1243499b9b39cbd04af32, type: 2}
-  m_InitialState: 1
+  m_InitialState: 0
   m_WrapMode: 2
-  m_DirectorUpdateMode: 1
+  m_DirectorUpdateMode: 2
   m_InitialTime: 0
   m_SceneBindings:
   - key: {fileID: -1454643502956970734, guid: bb9da8e49fed5f143b8267f18ed34fe0, type: 2}
@@ -4199,6 +4200,7 @@ GameObject:
   m_Component:
   - component: {fileID: 525523945}
   - component: {fileID: 525523947}
+  - component: {fileID: 525523949}
   - component: {fileID: 525523948}
   m_Layer: 0
   m_Name: Cs2
@@ -4216,11 +4218,11 @@ Transform:
   m_GameObject: {fileID: 525523944}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 23.777025, y: -5.3682117, z: 0.02712126}
+  m_LocalPosition: {x: 23.777039, y: -5.368225, z: 0.02709961}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2102768332}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!320 &525523947
 PlayableDirector:
@@ -4234,7 +4236,7 @@ PlayableDirector:
   m_PlayableAsset: {fileID: 11400000, guid: a906276d6bfb75b4a899ce3454157313, type: 2}
   m_InitialState: 1
   m_WrapMode: 2
-  m_DirectorUpdateMode: 1
+  m_DirectorUpdateMode: 2
   m_InitialTime: 0
   m_SceneBindings:
   - key: {fileID: -1454643502956970734, guid: bb9da8e49fed5f143b8267f18ed34fe0, type: 2}
@@ -4334,13 +4336,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   director: {fileID: 525523947}
   playerRoot: {fileID: 0}
-  autoPlayAfterRebind: 1
+  autoPlayAfterRebind: 0
   freezePhysicsDuringPlay: 1
   bindDelayFrames: 2
   rootTrackName: Lioncard
   modelTrackName: LioncardModel
   deactivateDirectorOnStop: 1
   deactivateDelay: 0
+  keepDirectorActiveAfterRebind: 0
+--- !u!114 &525523949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 525523944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf7f35642053ab4d9187038fc8c55cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &555817536
 GameObject:
   m_ObjectHideFlags: 0
@@ -6830,11 +6845,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4890264941476685447, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -59.87393
+      value: -59.873978
       objectReference: {fileID: 0}
     - target: {fileID: 4890264941476685447, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -108.01553
+      value: -108.01555
       objectReference: {fileID: 0}
     - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -6866,11 +6881,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6187396031038509197, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -72.796875
+      value: -72.797
       objectReference: {fileID: 0}
     - target: {fileID: 6187396031038509197, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -307.5908
+      value: -307.59082
       objectReference: {fileID: 0}
     - target: {fileID: 6191968913524682046, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -6962,7 +6977,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7552569847591205280, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -235.51556
+      value: -235.5156
       objectReference: {fileID: 0}
     - target: {fileID: 7625246665930088326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
@@ -7082,11 +7097,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8184202788682780140, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 33.696274
+      value: 33.696365
       objectReference: {fileID: 0}
     - target: {fileID: 8184202788682780140, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -97.861145
+      value: -97.861176
       objectReference: {fileID: 0}
     - target: {fileID: 8298621198214118396, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -7787,12 +7802,12 @@ Camera:
     x: 0
     y: 0
     width: 1
-    height: 1
+    height: 0.99999994
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 6.6875
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -7815,7 +7830,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 940109468}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
@@ -7824,7 +7839,7 @@ MonoBehaviour:
   m_AssetsPPU: 64
   m_RefResolutionX: 1520
   m_RefResolutionY: 856
-  m_CropFrame: 3
+  m_CropFrame: 4
   m_GridSnapping: 2
   m_FilterMode: 0
   m_UpscaleRT: 1
@@ -21397,7 +21412,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 525523945}
   - {fileID: 226332639}
   m_Father: {fileID: 1038429155}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -21951,3 +21965,4 @@ SceneRoots:
   - {fileID: 1287545020}
   - {fileID: 361749068}
   - {fileID: 1646300673}
+  - {fileID: 525523945}

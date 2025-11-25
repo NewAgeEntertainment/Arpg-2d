@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class MinimapUI : MonoBehaviour
@@ -43,6 +43,17 @@ public class MinimapUI : MonoBehaviour
 
     private bool _isFullscreen;
 
+    // ─────────────────────────────────────────────
+    // SexyTime integration
+    [Header("SexyTime Integration")]
+    [Tooltip("If true, minimap hides automatically whenever SexyTimeLogic.isSexyTimeGoingOn is true.")]
+    [SerializeField] private bool disableDuringSexyTime = true;
+
+    private bool _wasSexyTime;               // last frame's SexyTime state
+    private bool _wasVisibleBeforeSexy;      // did we have the minimap visible?
+    private bool _wasFullscreenBeforeSexy;   // were we fullscreen or mini?
+    // ─────────────────────────────────────────────
+
     private void Start()
     {
         ApplyFogTexture();
@@ -51,6 +62,13 @@ public class MinimapUI : MonoBehaviour
 
     private void Update()
     {
+        HandleSexyTimeAutoHide();
+
+        // If SexyTime is currently active and we're configured to disable during SexyTime,
+        // ignore input so the player can't open the minimap over the minigame.
+        if (disableDuringSexyTime && SexyTimeLogic.isSexyTimeGoingOn)
+            return;
+
         if (Input.GetKeyDown(toggleKey))
             ToggleFullscreen();
     }
@@ -123,7 +141,6 @@ public class MinimapUI : MonoBehaviour
         if (cameraFollow != null) cameraFollow.SetFullscreen(full);
     }
 
-
     private void ApplyFogTexture()
     {
         if (fogImage == null) return;
@@ -133,4 +150,55 @@ public class MinimapUI : MonoBehaviour
         fogImage.color = fogTint;
         // Default UI material respects the texture alpha = perfect.
     }
+
+    // ─────────────────────────────────────────────
+    // SexyTime auto-hide / restore
+    private void HandleSexyTimeAutoHide()
+    {
+        if (!disableDuringSexyTime)
+            return;
+
+        bool sexyNow = SexyTimeLogic.isSexyTimeGoingOn;
+
+        // No change since last frame -> nothing to do
+        if (sexyNow == _wasSexyTime)
+            return;
+
+        _wasSexyTime = sexyNow;
+
+        if (sexyNow)
+        {
+            // SexyTime just started: remember current state, then hide.
+            _wasVisibleBeforeSexy = container != null && container.gameObject.activeSelf;
+            _wasFullscreenBeforeSexy = _isFullscreen;
+
+            if (container != null)
+                container.gameObject.SetActive(false);
+
+            if (minimapCamera != null)
+                minimapCamera.enabled = false;
+        }
+        else
+        {
+            // SexyTime just ended: restore what we had.
+            if (container != null)
+                container.gameObject.SetActive(_wasVisibleBeforeSexy);
+
+            if (minimapCamera != null)
+                minimapCamera.enabled = _wasVisibleBeforeSexy;
+
+            if (_wasVisibleBeforeSexy)
+            {
+                // Restore layout and fullscreen state
+                _isFullscreen = _wasFullscreenBeforeSexy;
+                ApplyLayout(_isFullscreen);
+
+                if (cineBridge != null)
+                    cineBridge.SetFullscreen(_isFullscreen);
+                else if (cameraFollow != null)
+                    cameraFollow.SetFullscreen(_isFullscreen);
+            }
+        }
+    }
+    // ─────────────────────────────────────────────
 }

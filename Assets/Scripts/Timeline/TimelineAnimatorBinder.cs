@@ -36,6 +36,12 @@ public class TimelineAnimatorBinder : MonoBehaviour
     [Tooltip("Optional delay before deactivating the PlayableDirector GameObject.")]
     [Min(0f)] public float deactivateDelay = 0f;
 
+    [Header("Activation / Lifetime")]
+    [Tooltip("If false, the director GameObject will be re-disabled after RebindNow " +
+         "if it was originally inactive (useful for cutscenes you only want active when triggered).")]
+    public bool keepDirectorActiveAfterRebind = true;
+
+
     // internals
     private TimelineOnlyAnimator _dual;                       // holds both animators
     private readonly Dictionary<TrackAsset, Object> _saved = new();
@@ -125,15 +131,22 @@ public class TimelineAnimatorBinder : MonoBehaviour
     /// Rebind tracks now (after a small delay), then optionally auto-play.
     public void RebindNow()
     {
-        if (director != null && !director.gameObject.activeSelf)
+        if (director == null) return;
+
+        // Remember whether this GO was active before we touched it:
+        bool wasActive = director.gameObject.activeSelf;
+
+        // Make sure it's active so coroutines & bindings can run:
+        if (!wasActive)
             director.gameObject.SetActive(true);
 
         StopAllCoroutines();
-        StartCoroutine(RebindRoutine());
+        StartCoroutine(RebindRoutine(wasActive));
     }
 
-    private IEnumerator RebindRoutine()
+    private IEnumerator RebindRoutine(bool wasActive)
     {
+        // Wait the configured number of frames:
         for (int i = 0; i < bindDelayFrames; i++) yield return null;
 
         TryBindTracks();
@@ -147,7 +160,18 @@ public class TimelineAnimatorBinder : MonoBehaviour
             director.Evaluate();   // snap to first frame pose
             director.Play();
         }
+
+        // If it *started* inactive and you don't want it active at start,
+        // put it back the way it was (only when we're not auto-playing).
+        if (!keepDirectorActiveAfterRebind &&
+            !wasActive &&
+            director != null &&
+            !autoPlayAfterRebind)
+        {
+            director.gameObject.SetActive(false);
+        }
     }
+
 
     // ========= Director lifecycle =========
 
