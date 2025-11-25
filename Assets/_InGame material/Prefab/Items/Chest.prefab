@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 5726283307218255063}
   - component: {fileID: 1965031463835100286}
   - component: {fileID: 8583783484523227945}
+  - component: {fileID: 8835091928746438487}
+  - component: {fileID: 1367289501003916547}
   m_Layer: 9
   m_Name: Chest
   m_TagString: Untagged
@@ -160,7 +162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemPickupPrefab: {fileID: 0}
-  dropData: {fileID: 11400000, guid: 953111fe70a7a6343840a653cfe50215, type: 2}
+  dropData: {fileID: 0}
   maxRarityAmount: 1200
   maxItemsToDrop: 10
   dropSpreadRadius: 1.5
@@ -171,7 +173,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101532415083386398}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
   m_Name: 
@@ -189,6 +191,63 @@ MonoBehaviour:
     onUse:
       m_PersistentCalls:
         m_Calls: []
+--- !u!114 &8835091928746438487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1101532415083386398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c111bbac2dc76a46919670c03f00958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onSelect:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeselect:
+    m_PersistentCalls:
+      m_Calls: []
+  onUse:
+    m_PersistentCalls:
+      m_Calls: []
+  playerTag: Player
+  extraAllowedTags: []
+  tooltipRoot: {fileID: 0}
+  messageText: {fileID: 0}
+  fallbackMessage: Press Interact
+  format: '{msg}'
+  worldOffset: {x: 0, y: 1.1, z: 0}
+  billboardToCamera: 1
+  autoRepositionEachFrame: 1
+  useUsableIntegration: 1
+  callSelectOnEnter: 1
+  callDeselectOnExit: 1
+  callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
+  logTextChanges: 0
+  verboseLogs: 0
+--- !u!114 &1367289501003916547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1101532415083386398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32e2e2043ffe5b84095ff18e1fcfbf20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemRewards: []
+  requireAllItemsToFit: 0
+  goldAmount: 0
+  destroyAfterGive: 0
 --- !u!1 &1102087999453198968
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,9 +3,15 @@ using UnityEngine;
 [RequireComponent(typeof(InteractionTooltipTrigger2D))]
 public class GiveRewardOnInteract : MonoBehaviour
 {
-    [Header("Item Reward (optional)")]
-    [SerializeField] private ItemDataSO itemToGive;
-    [SerializeField, Min(1)] private int itemAmount = 1;
+    [System.Serializable]
+    private class ItemReward
+    {
+        public ItemDataSO item;
+        [Min(1)] public int amount = 1;
+    }
+
+    [Header("Item Rewards (optional)")]
+    [SerializeField] private ItemReward[] itemRewards;
     [SerializeField] private bool requireAllItemsToFit = false;
 
     [Header("Gold Reward (optional)")]
@@ -46,7 +52,6 @@ public class GiveRewardOnInteract : MonoBehaviour
         var inv = actor.GetComponentInParent<Inventory_Player>();
         if (inv == null)
         {
-            // Fall back to base inventory if needed
             inv = actor.GetComponentInParent<Inventory_Player>();
         }
 
@@ -59,50 +64,78 @@ public class GiveRewardOnInteract : MonoBehaviour
         bool gaveAnything = false;
 
         // 1) Give item(s) if configured
-        if (itemToGive != null && itemAmount > 0)
+        if (itemRewards != null && itemRewards.Length > 0)
         {
             if (requireAllItemsToFit)
             {
-                // Pre-check capacity
-                int canFit = 0;
-                for (int i = 0; i < itemAmount; i++)
+                // Pre-check capacity for ALL rewards before giving anything
+                bool allFit = true;
+
+                foreach (var reward in itemRewards)
                 {
-                    var temp = new Inventory_Item(itemToGive);
-                    if (inv.CanAddItem(temp)) canFit++;
-                    else break;
+                    if (reward == null || reward.item == null || reward.amount <= 0)
+                        continue;
+
+                    int canFit = 0;
+                    for (int i = 0; i < reward.amount; i++)
+                    {
+                        var temp = new Inventory_Item(reward.item);
+                        if (inv.CanAddItem(temp)) canFit++;
+                        else break;
+                    }
+
+                    if (canFit < reward.amount)
+                    {
+                        Debug.Log($"[{name}] Not enough space to give {reward.amount}x {reward.item.itemName}.");
+                        allFit = false;
+                        break;
+                    }
                 }
 
-                if (canFit < itemAmount)
+                if (allFit)
                 {
-                    Debug.Log($"[{name}] Not enough space to give {itemAmount}x {itemToGive.itemName}.");
-                }
-                else
-                {
-                    for (int i = 0; i < itemAmount; i++)
-                        inv.AddItem(new Inventory_Item(itemToGive));
-                    gaveAnything = true;
+                    foreach (var reward in itemRewards)
+                    {
+                        if (reward == null || reward.item == null || reward.amount <= 0)
+                            continue;
+
+                        for (int i = 0; i < reward.amount; i++)
+                        {
+                            inv.AddItem(new Inventory_Item(reward.item));
+                        }
+
+                        Debug.Log($"[{name}] Gave {reward.amount}x {reward.item.itemName} to {actor.name}.");
+                        gaveAnything = true;
+                    }
                 }
             }
             else
             {
-                int given = 0;
-                for (int i = 0; i < itemAmount; i++)
+                // Best-effort: give as many as will fit for each reward
+                foreach (var reward in itemRewards)
                 {
-                    var entry = new Inventory_Item(itemToGive);
-                    if (inv.CanAddItem(entry) && inv.AddItem(entry))
-                        given++;
-                    else
-                        break;
-                }
+                    if (reward == null || reward.item == null || reward.amount <= 0)
+                        continue;
 
-                if (given > 0)
-                {
-                    Debug.Log($"[{name}] Gave {given}x {itemToGive.itemName} to {actor.name}.");
-                    gaveAnything = true;
-                }
-                else
-                {
-                    Debug.Log($"[{name}] Inventory full: could not give {itemToGive.itemName}.");
+                    int given = 0;
+                    for (int i = 0; i < reward.amount; i++)
+                    {
+                        var entry = new Inventory_Item(reward.item);
+                        if (inv.CanAddItem(entry) && inv.AddItem(entry))
+                            given++;
+                        else
+                            break;
+                    }
+
+                    if (given > 0)
+                    {
+                        Debug.Log($"[{name}] Gave {given}x {reward.item.itemName} to {actor.name}.");
+                        gaveAnything = true;
+                    }
+                    else
+                    {
+                        Debug.Log($"[{name}] Inventory full: could not give {reward.item.itemName}.");
+                    }
                 }
             }
         }
