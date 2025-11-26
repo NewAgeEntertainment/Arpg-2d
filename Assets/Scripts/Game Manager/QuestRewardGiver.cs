@@ -1,12 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Gives rewards to the player (XP, gold, item) and can drop a pickup if adding fails.
+/// Gives rewards to the player (XP, gold, item[s]) and can drop a pickup if adding fails.
 /// Hook from Quest Machine via Message → GiveConfigured (or a UnityEvent).
 /// </summary>
 [AddComponentMenu("Game/Quests/Quest Reward Giver")]
 public class QuestRewardGiver : MonoBehaviour
 {
+    [System.Serializable]
+    public class ItemReward
+    {
+        public ItemDataSO item;
+        [Min(1)] public int count = 1;
+    }
+
     [Header("Auto-found if left empty")]
     [SerializeField] private Player_Stats playerStats;
     [SerializeField] private Inventory_Player inventory;
@@ -14,8 +22,13 @@ public class QuestRewardGiver : MonoBehaviour
     [Header("Configured rewards (used by GiveConfigured)")]
     [Min(0)] public int xp = 0;
     public int gold = 0;                     // can be negative (charge)
+
+    [Tooltip("Optional single item reward (legacy, for simple cases).")]
     public ItemDataSO item;
     [Min(1)] public int itemCount = 1;
+
+    [Tooltip("Additional (or multiple) item rewards to give.")]
+    public List<ItemReward> itemRewards = new List<ItemReward>();
 
     [Header("Duplicate Safety")]
     [Tooltip("If true, ignores subsequent calls after the first successful GiveConfigured().")]
@@ -51,7 +64,7 @@ public class QuestRewardGiver : MonoBehaviour
 
     // ===================== Public API =====================
 
-    /// <summary>Give xp/gold/item based on the inspector fields above.</summary>
+    /// <summary>Give xp/gold/item(s) based on the inspector fields above.</summary>
     public void GiveConfigured()
     {
         if (oneShot && _alreadyGiven)
@@ -62,9 +75,37 @@ public class QuestRewardGiver : MonoBehaviour
 
         bool gaveSomething = false;
 
-        if (xp > 0) { GiveXP(xp); gaveSomething = true; }
-        if (gold != 0) { GiveGold(gold); gaveSomething = true; }
-        if (item != null && itemCount > 0) { GiveItem(item, itemCount); gaveSomething = true; }
+        if (xp > 0)
+        {
+            GiveXP(xp);
+            gaveSomething = true;
+        }
+
+        if (gold != 0)
+        {
+            GiveGold(gold);
+            gaveSomething = true;
+        }
+
+        // Legacy single item (still supported)
+        if (item != null && itemCount > 0)
+        {
+            GiveItem(item, itemCount);
+            gaveSomething = true;
+        }
+
+        // New: multiple item rewards
+        if (itemRewards != null)
+        {
+            foreach (var reward in itemRewards)
+            {
+                if (reward == null || reward.item == null || reward.count <= 0)
+                    continue;
+
+                GiveItem(reward.item, reward.count);
+                gaveSomething = true;
+            }
+        }
 
         if (!gaveSomething)
             Debug.LogWarning("[QuestRewardGiver] GiveConfigured called but no rewards set.");

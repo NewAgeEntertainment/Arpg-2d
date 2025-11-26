@@ -71,6 +71,23 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &-8044589467392073370
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b98d1dac758fff4f8ed6db923f7599c, type: 3}
+  m_Name: GivePlayerExperienceQuestAction
+  m_EditorClassIdentifier: 
+  expType: 0
+  amount:
+    m_valueType: 0
+    m_literalValue: 100
+    m_counterIndex: 0
 --- !u!114 &-7601074196647538510
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -430,8 +447,9 @@ MonoBehaviour:
     - m_contentList: []
   - m_actionList:
     - {fileID: -532180373793328640}
-    - {fileID: 5318512005537059496}
     - {fileID: 4323656947582455133}
+    - {fileID: 1531984854518715538}
+    - {fileID: -8044589467392073370}
     m_categorizedContentList:
     - m_contentList:
       - {fileID: -9080661024587089208}
@@ -733,7 +751,7 @@ MonoBehaviour:
     m_childIndexList: 03000000
     m_canvasRect:
       serializedVersion: 2
-      x: 203.01952
+      x: 203.81952
       y: 155.35442
       width: 120
       height: 48
@@ -755,6 +773,19 @@ MonoBehaviour:
   m_contentList:
   - {fileID: -4643546719584042674}
   m_contentListSerializationProxy: []
+--- !u!114 &1531984854518715538
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c94e8fb3b9b54114cbe8185003729c1b, type: 3}
+  m_Name: SceneEventQuestAction
+  m_EditorClassIdentifier: 
+  m_guid: d8e21759-605b-41fd-ba89-0e829cec3a3f
 --- !u!114 &1688519301988002033
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -944,45 +975,6 @@ MonoBehaviour:
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
   m_headingLevel: 1
---- !u!114 &5318512005537059496
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9840a28297a53d449903f34dc60157bb, type: 3}
-  m_Name: UnityEventQuestAction
-  m_EditorClassIdentifier: 
-  m_onExecute:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
-        m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
-        m_MethodName: AddGold
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 200
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 7332091058474374377, guid: 6aad4506fe342f44eb80fda29aa644be, type: 3}
-        m_TargetAssemblyTypeName: SearchObjectsAndUpdateValues, Assembly-CSharp
-        m_MethodName: AddXP
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 30
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &6755757568021615863
 MonoBehaviour:
   m_ObjectHideFlags: 1
