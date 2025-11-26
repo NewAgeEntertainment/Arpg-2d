@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
+using UnityEngine.UI;
+using PixelCrushers.DialogueSystem;
 
 [DefaultExecutionOrder(-50)]
 public class TimelineAnimatorBinder : MonoBehaviour
@@ -38,9 +40,35 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     [Header("Activation / Lifetime")]
     [Tooltip("If false, the director GameObject will be re-disabled after RebindNow " +
-         "if it was originally inactive (useful for cutscenes you only want active when triggered).")]
+             "if it was originally inactive (useful for cutscenes you only want active when triggered).")]
     public bool keepDirectorActiveAfterRebind = true;
 
+    [Header("Skip Settings")]
+    [Tooltip("If true, the player can skip this Timeline while it's playing.")]
+    public bool allowSkip = true;
+
+    [Tooltip("Key used to skip the cutscene. You can also call SkipCutscene() from UI.")]
+    public KeyCode skipKey = KeyCode.Escape;
+
+    [Tooltip("How long (in seconds) the skip key must be held to skip.")]
+    public float skipHoldDuration = 1.0f;
+
+    [Header("Skip UI")]
+    [Tooltip("If true, a UI bar will show while the player is holding the skip key.")]
+    public bool showSkipUI = true;
+
+    [Tooltip("Root GameObject (panel) for the skip UI. Will be SetActive(true/false).")]
+    public GameObject skipUIPanel;
+
+    [Tooltip("Fill Image used to display skip progress (fillAmount 0–1).")]
+    public Image skipFillImage;
+
+    [Header("Dialogue System (optional)")]
+    [Tooltip("If true, skipping the cutscene will also skip any active Dialogue System conversation.")]
+    public bool alsoSkipDialogue = true;
+
+    [Tooltip("Optional ConversationControl used to skip Dialogue System conversations.")]
+    public ConversationControl conversationControl;
 
     // internals
     private TimelineOnlyAnimator _dual;                       // holds both animators
@@ -51,10 +79,21 @@ public class TimelineAnimatorBinder : MonoBehaviour
     private Rigidbody2D _rb2d;
     private bool _hadRb2d;
     private bool _prevSimulated;
-    private bool _frozenByBinder;      // <— NEW: only unfreeze if we froze it
+    private bool _frozenByBinder;
 
     // completion
     private Coroutine _deactivateCo;
+
+    // skip internals
+    private float _skipHeldTime = 0f;
+
+    // convenience properties
+    private bool IsTimelinePlaying =>
+        (director != null && director.state == PlayState.Playing);
+
+    private bool IsConversationActive =>
+    DialogueManager.instance != null && DialogueManager.isConversationActive;
+
 
     void Reset() => director = GetComponent<PlayableDirector>();
 
@@ -63,6 +102,15 @@ public class TimelineAnimatorBinder : MonoBehaviour
         if (director == null) director = GetComponent<PlayableDirector>();
         CachePhysicsFrom(playerRoot);
         EnsureDualOn(playerRoot);
+
+        // Ensure skip UI starts hidden
+        ResetSkipUI();
+
+        // Cache ConversationControl if not assigned
+        if (conversationControl == null)
+        {
+            conversationControl = FindObjectOfType<ConversationControl>();
+        }
     }
 
     void OnEnable()
@@ -93,7 +141,43 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     void LateUpdate()
     {
-        // ---------- Failsafe watchdog ----------
+        // ---------- Hold-to-skip check + UI ----------
+        bool canSkipNow = allowSkip && (IsTimelinePlaying || IsConversationActive);
+
+        if (canSkipNow)
+        {
+            if (Input.GetKey(skipKey))
+            {
+                _skipHeldTime += Time.unscaledDeltaTime;
+
+                float needed = Mathf.Max(0.0001f, skipHoldDuration);
+                float progress = Mathf.Clamp01(_skipHeldTime / needed);
+
+                UpdateSkipUI(progress);
+
+                if (_skipHeldTime >= needed)
+                {
+                    _skipHeldTime = 0f;
+                    ResetSkipUI();
+
+                    // Unified skip: this will skip Timeline (if playing)
+                    // AND close dialogue (if active).
+                    SkipCutscene();
+                }
+            }
+            else
+            {
+                _skipHeldTime = 0f;
+                ResetSkipUI();
+            }
+        }
+        else
+        {
+            _skipHeldTime = 0f;
+            ResetSkipUI();
+        }
+
+        // ---------- Physics failsafe watchdog ----------
         if (_frozenByBinder && freezePhysicsDuringPlay)
         {
             bool shouldUnfreeze = false;
@@ -117,6 +201,80 @@ public class TimelineAnimatorBinder : MonoBehaviour
                 UnfreezePhysics();
         }
     }
+
+    // ---------- Skip UI helpers ----------
+
+    private void UpdateSkipUI(float progress)
+    {
+        if (!showSkipUI) return;
+
+        if (skipUIPanel != null && !skipUIPanel.activeSelf)
+            skipUIPanel.SetActive(true);
+
+        if (skipFillImage != null)
+            skipFillImage.fillAmount = progress;
+    }
+
+    private void ResetSkipUI()
+    {
+        if (!showSkipUI) return;
+
+        if (skipUIPanel != null && skipUIPanel.activeSelf)
+            skipUIPanel.SetActive(false);
+
+        if (skipFillImage != null)
+            skipFillImage.fillAmount = 0f;
+    }
+
+    /// <summary>
+    /// Skips/fast-forwards any active Dialogue System conversation,
+    /// then force-closes all conversations & UI.
+    /// </summary>
+    private void SkipDialogueConversation()
+    {
+        // If Dialogue System isn't even in the scene, bail.
+        if (DialogueManager.instance == null) return;
+
+        // Try to use a ConversationControl if one is present, so sequences still run.
+        ConversationControl control = conversationControl;
+        if (control == null)
+        {
+            control = FindObjectOfType<ConversationControl>();
+        }
+
+        if (control != null)
+        {
+            // This should fast-forward through the conversation logic.
+            control.SkipAll();
+        }
+
+        // HARD GUARANTEE: close every active conversation & UI.
+        DialogueManager.StopAllConversations();
+    }
+
+
+    public void SkipCutscene()
+    {
+        // Skip Timeline if it’s actually playing.
+        if (director != null && director.state == PlayState.Playing)
+        {
+            double duration = director.duration;
+            if (duration > 0.001)
+            {
+                director.time = duration;
+                director.Evaluate(); // snap to last frame
+            }
+
+            director.Stop();        // triggers OnStopped and cleanup
+        }
+
+        // ALWAYS try to kill dialogue as well.
+        if (alsoSkipDialogue)
+        {
+            SkipDialogueConversation();
+        }
+    }
+
 
     // ========= Public API (call from PlayerSpawner) =========
 
@@ -171,7 +329,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
             director.gameObject.SetActive(false);
         }
     }
-
 
     // ========= Director lifecycle =========
 
@@ -302,7 +459,6 @@ public class TimelineAnimatorBinder : MonoBehaviour
     }
 
     // ================= OPTIONAL: Auto-pick a director + tracks =================
-    // Not used automatically; call this if you want the binder (for player) to self-pick.
     public bool TryAutoPickDirectorAndTracks(GameObject root, string[] rootNameCandidates, string[] modelNameCandidates)
     {
         var all = FindObjectsOfType<PlayableDirector>(true);
