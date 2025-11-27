@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using PixelCrushers.DialogueSystem;
 
 [DefaultExecutionOrder(-50)]
@@ -53,6 +54,9 @@ public class TimelineAnimatorBinder : MonoBehaviour
     [Tooltip("How long (in seconds) the skip key must be held to skip.")]
     public float skipHoldDuration = 1.0f;
 
+    [Tooltip("How fast the Timeline plays when skipping (e.g. 5 = 5x speed).")]
+    public float skipFastForwardSpeed = 5f;
+
     [Header("Skip UI")]
     [Tooltip("If true, a UI bar will show while the player is holding the skip key.")]
     public bool showSkipUI = true;
@@ -63,12 +67,30 @@ public class TimelineAnimatorBinder : MonoBehaviour
     [Tooltip("Fill Image used to display skip progress (fillAmount 0–1).")]
     public Image skipFillImage;
 
+    [Header("Skip Fade")]
+    [Tooltip("Full-screen CanvasGroup used to fade to black when skipping.")]
+    public CanvasGroup skipFadeCanvasGroup;
+
+    [Tooltip("Seconds to fade in/out when skipping.")]
+    public float skipFadeDuration = 0.4f;
+
     [Header("Dialogue System (optional)")]
     [Tooltip("If true, skipping the cutscene will also skip any active Dialogue System conversation.")]
     public bool alsoSkipDialogue = true;
 
     [Tooltip("Optional ConversationControl used to skip Dialogue System conversations.")]
     public ConversationControl conversationControl;
+
+    [Header("Events")]
+    [Tooltip("Invoked when the Timeline stops (either naturally or by skip).")]
+    public UnityEvent onTimelineEnded;
+
+    [Tooltip("If true, skipping will fast-forward the conversation to the end. " +
+             "If false, skipping will immediately stop the conversation.")]
+    public bool fastForwardDialogueOnSkip = false;
+
+    
+
 
     // internals
     private TimelineOnlyAnimator _dual;                       // holds both animators
@@ -83,17 +105,18 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     // completion
     private Coroutine _deactivateCo;
+    private bool _timelineStopHandled = false;
 
     // skip internals
     private float _skipHeldTime = 0f;
+    private bool _skipInProgress = false;
 
     // convenience properties
     private bool IsTimelinePlaying =>
         (director != null && director.state == PlayState.Playing);
 
     private bool IsConversationActive =>
-    DialogueManager.instance != null && DialogueManager.isConversationActive;
-
+        DialogueManager.instance != null && DialogueManager.isConversationActive;
 
     void Reset() => director = GetComponent<PlayableDirector>();
 
@@ -105,6 +128,10 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
         // Ensure skip UI starts hidden
         ResetSkipUI();
+
+        // Ensure fade starts transparent
+        if (skipFadeCanvasGroup != null)
+            skipFadeCanvasGroup.alpha = 0f;
 
         // Cache ConversationControl if not assigned
         if (conversationControl == null)
@@ -160,8 +187,7 @@ public class TimelineAnimatorBinder : MonoBehaviour
                     _skipHeldTime = 0f;
                     ResetSkipUI();
 
-                    // Unified skip: this will skip Timeline (if playing)
-                    // AND close dialogue (if active).
+                    // Start skip flow (fade + fast-forward Timeline)
                     SkipCutscene();
                 }
             }
@@ -226,54 +252,173 @@ public class TimelineAnimatorBinder : MonoBehaviour
             skipFillImage.fillAmount = 0f;
     }
 
-    /// <summary>
-    /// Skips/fast-forwards any active Dialogue System conversation,
-    /// then force-closes all conversations & UI.
-    /// </summary>
-    private void SkipDialogueConversation()
-    {
-        // If Dialogue System isn't even in the scene, bail.
-        if (DialogueManager.instance == null) return;
+    // ---------- Dialogue skip helper ----------
 
-        // Try to use a ConversationControl if one is present, so sequences still run.
+    /// <summary>
+    /// Handles what happens to the Dialogue System conversation when we skip.
+    /// - If fastForwardDialogueOnSkip is true, it tries to fast-forward (SkipAll).
+    /// - Otherwise it just stops all conversations immediately.
+    /// Called from the skip coroutine as soon as skipping starts.
+    /// </summary>
+    /// <summary>
+    /// If a Dialogue System conversation is active, either fast-forward it
+    /// (SkipAll) or stop it immediately, based on fastForwardDialogueOnSkip.
+    /// Safe to call every frame while skipping.
+    /// </summary>
+    private void SkipDialogueConversationIfActive()
+    {
+        if (!alsoSkipDialogue) return;
+        if (!DialogueManager.isConversationActive) return;
+
+        // Try to get a ConversationControl (from field or find in scene)
         ConversationControl control = conversationControl;
         if (control == null)
-        {
             control = FindObjectOfType<ConversationControl>();
-        }
 
-        if (control != null)
+        if (fastForwardDialogueOnSkip)
         {
-            // This should fast-forward through the conversation logic.
-            control.SkipAll();
+            // Let Dialogue System burn through all remaining entries & sequences.
+            if (control != null)
+            {
+                control.SkipAll();
+            }
+            else
+            {
+                // Fallback if no ConversationControl is present.
+                DialogueManager.StopAllConversations();
+            }
         }
-
-        // HARD GUARANTEE: close every active conversation & UI.
-        DialogueManager.StopAllConversations();
+        else
+        {
+            // Simple behavior: instantly close all conversations & UI.
+            DialogueManager.StopAllConversations();
+        }
     }
 
 
+
+
+    // ---------- Timeline stopped handling ----------
+
+    private void HandleTimelineStoppedInternal()
+    {
+        if (_timelineStopHandled) return;
+        _timelineStopHandled = true;
+
+        // Always ensure fade is gone when the timeline is finished
+        if (skipFadeCanvasGroup != null)
+            skipFadeCanvasGroup.alpha = 0f;
+
+        if (_dual != null) _dual.DisableWhenIdle();
+        if (freezePhysicsDuringPlay) UnfreezePhysics();
+
+        if (onTimelineEnded != null)
+            onTimelineEnded.Invoke();
+
+        if (deactivateDirectorOnStop && director != null)
+        {
+            if (_deactivateCo != null) StopCoroutine(_deactivateCo);
+            _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
+        }
+    }
+
+
+    /// <summary>
+    /// Public entry point for skipping. Starts the fade + fast-forward coroutine.
+    /// </summary>
     public void SkipCutscene()
     {
-        // Skip Timeline if it’s actually playing.
-        if (director != null && director.state == PlayState.Playing)
-        {
-            double duration = director.duration;
-            if (duration > 0.001)
-            {
-                director.time = duration;
-                director.Evaluate(); // snap to last frame
-            }
-
-            director.Stop();        // triggers OnStopped and cleanup
-        }
-
-        // ALWAYS try to kill dialogue as well.
-        if (alsoSkipDialogue)
-        {
-            SkipDialogueConversation();
-        }
+        if (_skipInProgress) return;
+        StartCoroutine(SkipCutsceneRoutine());
     }
+
+    /// <summary>
+    /// Fade to black while fast-forwarding the Timeline to the end
+    /// (by increasing its playback speed), then clean up and fade back in.
+    /// </summary>
+    private IEnumerator SkipCutsceneRoutine()
+    {
+        _skipInProgress = true;
+
+        // 0) Boost Timeline speed so it fast-forwards instead of playing at 1x.
+        Playable rootPlayable = default;
+        bool hasRootPlayable = false;
+        double originalSpeed = 1.0;
+
+        if (director != null && director.playableAsset != null)
+        {
+            var graph = director.playableGraph;
+            if (graph.IsValid() && graph.GetRootPlayableCount() > 0)
+            {
+                rootPlayable = graph.GetRootPlayable(0);
+                originalSpeed = rootPlayable.GetSpeed();
+                rootPlayable.SetSpeed(skipFastForwardSpeed);
+                hasRootPlayable = true;
+            }
+        }
+
+        // 1) Fade to black while it’s fast-forwarding
+        if (skipFadeCanvasGroup != null && skipFadeDuration > 0f)
+        {
+            float t = 0f;
+            while (t < skipFadeDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float norm = Mathf.Clamp01(t / skipFadeDuration);
+                skipFadeCanvasGroup.alpha = norm;
+
+                // While we’re in skip mode, keep any active conversations
+                // skipped or stopped (covers multiple Start Conversation clips).
+                SkipDialogueConversationIfActive();
+
+                yield return null;
+            }
+            skipFadeCanvasGroup.alpha = 1f;
+        }
+
+        // 2) Wait until the Timeline finishes naturally (at high speed)
+        if (director != null)
+        {
+            while (director.state == PlayState.Playing)
+            {
+                // New conversations might start as the Timeline scrubs past
+                // more StartConversation clips; keep smashing them.
+                SkipDialogueConversationIfActive();
+                yield return null;
+            }
+        }
+
+        // 3) Restore original Timeline speed
+        if (hasRootPlayable)
+        {
+            rootPlayable.SetSpeed(originalSpeed);
+        }
+
+        // One more safety call after it’s stopped
+        SkipDialogueConversationIfActive();
+
+        // 4) Run the "timeline ended" logic while still black
+        HandleTimelineStoppedInternal();
+
+        // 5) Fade back in
+        if (skipFadeCanvasGroup != null && skipFadeDuration > 0f)
+        {
+            float t = 0f;
+            while (t < skipFadeDuration)
+            {
+                t += Time.unscaledDeltaTime;
+                float norm = Mathf.Clamp01(t / skipFadeDuration);
+                skipFadeCanvasGroup.alpha = 1f - norm;
+                yield return null;
+            }
+        }
+
+        // 6) Hard safety: make absolutely sure the fade is gone
+        ForceHideFade();
+
+        _skipInProgress = false;
+    }
+
 
 
     // ========= Public API (call from PlayerSpawner) =========
@@ -330,25 +475,49 @@ public class TimelineAnimatorBinder : MonoBehaviour
         }
     }
 
+    private void ForceHideFade()
+    {
+        if (skipFadeCanvasGroup != null)
+            skipFadeCanvasGroup.alpha = 0f;
+    }
+
+
     // ========= Director lifecycle =========
 
     private void OnPlayed(PlayableDirector d)
     {
+        _timelineStopHandled = false;
+
         if (_dual != null) _dual.EnableForTimeline();
         if (freezePhysicsDuringPlay) FreezePhysics();
     }
 
     private void OnStopped(PlayableDirector d)
     {
+        // No matter how the Timeline ended (natural or skip),
+        // always make sure the fade overlay is hidden.
+        ForceHideFade();
+
         if (_dual != null) _dual.DisableWhenIdle();
         if (freezePhysicsDuringPlay) UnfreezePhysics();
 
-        if (deactivateDirectorOnStop && director != null)
+        // Fire event once.
+        if (!_timelineStopHandled)
         {
-            if (_deactivateCo != null) StopCoroutine(_deactivateCo);
-            _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
+            _timelineStopHandled = true;
+
+            if (onTimelineEnded != null)
+                onTimelineEnded.Invoke();
+
+            if (deactivateDirectorOnStop && director != null)
+            {
+                if (_deactivateCo != null) StopCoroutine(_deactivateCo);
+                _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
+            }
         }
     }
+
+
 
     private IEnumerator DeactivateDirectorAfter(float delay)
     {
