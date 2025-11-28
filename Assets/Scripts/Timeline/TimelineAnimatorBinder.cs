@@ -96,6 +96,9 @@ public class TimelineAnimatorBinder : MonoBehaviour
     private TimelineOnlyAnimator _dual;                       // holds both animators
     private readonly Dictionary<TrackAsset, Object> _saved = new();
     private bool _bound;
+    // global skip lock so only one binder handles skipping at a time
+    private static TimelineAnimatorBinder _activeSkipBinder;
+
 
     // physics cache
     private Rigidbody2D _rb2d;
@@ -164,41 +167,74 @@ public class TimelineAnimatorBinder : MonoBehaviour
         UnfreezePhysics();
 
         if (_dual != null) _dual.DisableWhenIdle();
+
+        // Release global skip lock if this binder owned it.
+        if (_activeSkipBinder == this)
+            _activeSkipBinder = null;
     }
+
 
     void LateUpdate()
     {
         // ---------- Hold-to-skip check + UI ----------
-        bool canSkipNow = allowSkip && (IsTimelinePlaying || IsConversationActive);
+        // Only the active skip binder (or the first one that needs it)
+        // is allowed to process skip input. Others will ignore skip.
+        bool someOtherBinderIsActive =
+            _activeSkipBinder != null && _activeSkipBinder != this;
 
-        if (canSkipNow)
+        if (!someOtherBinderIsActive)
         {
-            if (Input.GetKey(skipKey))
+            bool canSkipNow = allowSkip && (IsTimelinePlaying || IsConversationActive);
+
+            if (canSkipNow)
             {
-                _skipHeldTime += Time.unscaledDeltaTime;
+                // Claim the global skip lock if nobody has it yet.
+                if (_activeSkipBinder == null)
+                    _activeSkipBinder = this;
 
-                float needed = Mathf.Max(0.0001f, skipHoldDuration);
-                float progress = Mathf.Clamp01(_skipHeldTime / needed);
+                if (Input.GetKey(skipKey))
+                {
+                    _skipHeldTime += Time.unscaledDeltaTime;
 
-                UpdateSkipUI(progress);
+                    float needed = Mathf.Max(0.0001f, skipHoldDuration);
+                    float progress = Mathf.Clamp01(_skipHeldTime / needed);
 
-                if (_skipHeldTime >= needed)
+                    UpdateSkipUI(progress);
+
+                    if (_skipHeldTime >= needed)
+                    {
+                        _skipHeldTime = 0f;
+                        ResetSkipUI();
+
+                        // Start skip flow (fade + fast-forward Timeline)
+                        SkipCutscene();
+                    }
+                }
+                else
                 {
                     _skipHeldTime = 0f;
                     ResetSkipUI();
-
-                    // Start skip flow (fade + fast-forward Timeline)
-                    SkipCutscene();
                 }
             }
             else
             {
+                // If we were the active binder but there's nothing left to skip,
+                // release the global lock so another cutscene can claim it.
+                if (_activeSkipBinder == this &&
+                    !IsTimelinePlaying &&
+                    !IsConversationActive)
+                {
+                    _activeSkipBinder = null;
+                }
+
                 _skipHeldTime = 0f;
                 ResetSkipUI();
             }
         }
         else
         {
+            // We're *not* the active skip binder. Make sure our UI is hidden
+            // and we don't track skip timing.
             _skipHeldTime = 0f;
             ResetSkipUI();
         }
@@ -227,6 +263,7 @@ public class TimelineAnimatorBinder : MonoBehaviour
                 UnfreezePhysics();
         }
     }
+
 
     // ---------- Skip UI helpers ----------
 
@@ -320,7 +357,13 @@ public class TimelineAnimatorBinder : MonoBehaviour
             if (_deactivateCo != null) StopCoroutine(_deactivateCo);
             _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
         }
+
+        // If we owned the global skip lock and there's no conversation,
+        // release it so other cutscenes can be skipped later.
+        if (_activeSkipBinder == this && !IsConversationActive)
+            _activeSkipBinder = null;
     }
+
 
 
     /// <summary>
@@ -328,9 +371,17 @@ public class TimelineAnimatorBinder : MonoBehaviour
     /// </summary>
     public void SkipCutscene()
     {
+        // Enforce global "only one cutscene can be skipped at a time".
+        if (_activeSkipBinder != null && _activeSkipBinder != this)
+            return;
+
+        if (_activeSkipBinder == null)
+            _activeSkipBinder = this;
+
         if (_skipInProgress) return;
         StartCoroutine(SkipCutsceneRoutine());
     }
+
 
     /// <summary>
     /// Fade to black while fast-forwarding the Timeline to the end
@@ -417,6 +468,15 @@ public class TimelineAnimatorBinder : MonoBehaviour
         ForceHideFade();
 
         _skipInProgress = false;
+
+        // If we owned the global lock and there's nothing left to skip,
+        // release it so another cutscene can be skipped later.
+        if (_activeSkipBinder == this &&
+            !IsTimelinePlaying &&
+            !IsConversationActive)
+        {
+            _activeSkipBinder = null;
+        }
     }
 
 
