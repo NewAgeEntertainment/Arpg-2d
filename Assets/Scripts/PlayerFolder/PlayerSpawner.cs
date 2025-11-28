@@ -7,6 +7,9 @@ using UnityEngine.Playables;
 using Unity.Cinemachine; // Cinemachine v3
 #endif
 
+using PixelCrushers;
+using PixelCrushers.QuestMachine.Wrappers;
+
 public class PlayerSpawner : MonoBehaviour
 {
     // ==================== EVENTS (ADDED) ====================
@@ -37,7 +40,13 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private bool alsoSetLookAt = true;
     [SerializeField, Min(0f)] private float cameraBindRetrySeconds = 2f;
 
+    [SerializeField, Min(0f)]
+    private float spawnEventDelay = 1.0f;
+
     private Player _player;
+
+
+
 
     private void Awake()
     {
@@ -72,11 +81,13 @@ public class PlayerSpawner : MonoBehaviour
             if (destroyExistingOnReplace && haveExisting)
             {
                 foreach (var p in existingPlayers)
+                {
                     if (p && p.gameObject != _player.gameObject)
                         Destroy(p.gameObject);
+                }
             }
 
-            // >>> Rebind Timeline to the spawned Player <<<
+            // Rebind Timeline to the spawned Player
             var dualA = _player.GetComponent<TimelineOnlyAnimator>();
             if (dualA == null) dualA = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
 
@@ -87,7 +98,6 @@ public class PlayerSpawner : MonoBehaviour
                 b.SetPlayerRoot(_player.gameObject);
                 b.RebindNow(); // (optionally) auto-plays depending on binder setting
             }
-            // <<< end rebind <<<
         }
         else
         {
@@ -97,7 +107,7 @@ public class PlayerSpawner : MonoBehaviour
                 _player = existingPlayers[0];
                 _player.TeleportPlayer(targetPos);
 
-                // >>> Rebind Timeline to the existing Player <<<
+                // Rebind Timeline to the existing Player
                 var dualB = _player.GetComponent<TimelineOnlyAnimator>();
                 if (dualB == null) dualB = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
 
@@ -108,14 +118,13 @@ public class PlayerSpawner : MonoBehaviour
                     b.SetPlayerRoot(_player.gameObject);
                     b.RebindNow();
                 }
-                // <<< end rebind <<<
             }
             else
             {
                 _player = Instantiate(playerPrefab, targetPos, Quaternion.identity);
                 _player.name = playerPrefab.name;
 
-                // >>> Rebind Timeline to the spawned Player <<<
+                // Rebind Timeline to the spawned Player
                 var dualC = _player.GetComponent<TimelineOnlyAnimator>();
                 if (dualC == null) dualC = _player.gameObject.AddComponent<TimelineOnlyAnimator>();
 
@@ -126,22 +135,53 @@ public class PlayerSpawner : MonoBehaviour
                     b.SetPlayerRoot(_player.gameObject);
                     b.RebindNow();
                 }
-                // <<< end rebind <<<
             }
         }
 
         // Let global systems know who the current player is
         GameManager.Instance?.RegisterPlayer(_player);
 
-        // >>>>> FIRE onSpawn here (player is ready enough for listeners) <<<<<
-        onSpawn?.Invoke(_player);
+        // IMPORTANT: do NOT invoke onSpawn here anymore.
+        // We'll invoke it later in Start after a delay.
     }
+
+
+
+
+
+    private IEnumerator SendSpawnMessageDelayed()
+    {
+        // Wait a bit so Quest Machine has fully started the quest & nodes.
+        // You can tweak this value (e.g., 0.5f, 1f, 2f) if needed.
+        float delay = 1.0f;
+        yield return new WaitForSeconds(delay);
+
+        Debug.Log($"[PlayerSpawner] Sending Quest Machine message new:one at time {Time.time}");
+
+        
+    }
+
+
 
     private void Start()
     {
         if (bindCinemachine)
             StartCoroutine(BindCameraRetryCo(cameraBindRetrySeconds));
+
+        // Delay the OnSpawn event; QuestControl will send the message from that event.
+        StartCoroutine(InvokeSpawnEventDelayed());
     }
+
+    private IEnumerator InvokeSpawnEventDelayed()
+    {
+        if (spawnEventDelay > 0f)
+            yield return new WaitForSeconds(spawnEventDelay);
+
+        // Now fire the event; QuestControl.SendToMessageSystem("new:one")
+        // is still hooked up to this in the Inspector.
+        onSpawn?.Invoke(_player);
+    }
+
 
     private IEnumerator BindCameraRetryCo(float seconds)
     {

@@ -85,6 +85,29 @@ MonoBehaviour:
   m_contentList:
   - {fileID: -7526788382210992664}
   m_contentListSerializationProxy: []
+--- !u!114 &-5058363597898650998
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: GivePlayerInventoryQuestAction
+  m_EditorClassIdentifier: Assembly-CSharp::GivePlayerInventoryQuestAction
+  goldAmount:
+    m_valueType: 0
+    m_literalValue: 250
+    m_counterIndex: 0
+  clampGoldToZero: 1
+  item: {fileID: 0}
+  itemCount:
+    m_valueType: 0
+    m_literalValue: 0
+    m_counterIndex: 0
+  itemRewards: []
 --- !u!114 &-4635032683153438400
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -360,6 +383,8 @@ MonoBehaviour:
     - {fileID: -7565444088991711452}
     - {fileID: 7827164959884315500}
     - {fileID: -149896381559333722}
+    - {fileID: -5058363597898650998}
+    - {fileID: 8358105428045041401}
     m_categorizedContentList:
     - m_contentList: []
     - m_contentList: []
@@ -918,6 +943,23 @@ MonoBehaviour:
     m_stringAsset: {fileID: 0}
     m_textTable: {fileID: 0}
     m_textTableFieldID: 0
+--- !u!114 &8358105428045041401
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b98d1dac758fff4f8ed6db923f7599c, type: 3}
+  m_Name: GivePlayerExperienceQuestAction
+  m_EditorClassIdentifier: 
+  expType: 0
+  amount:
+    m_valueType: 0
+    m_literalValue: 25
+    m_counterIndex: 0
 --- !u!114 &8369610590067455200
 MonoBehaviour:
   m_ObjectHideFlags: 1

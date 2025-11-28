@@ -188578,6 +188578,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &187943247
 Transform:
   m_ObjectHideFlags: 0
@@ -351359,6 +351360,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &481579762
 Transform:
   m_ObjectHideFlags: 0
@@ -351584,6 +351586,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &501903714
 Transform:
   m_ObjectHideFlags: 0
@@ -442606,6 +442609,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &1314620122
 Transform:
   m_ObjectHideFlags: 0
@@ -487926,6 +487930,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &1882331019
 Transform:
   m_ObjectHideFlags: 0
@@ -489606,6 +489611,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2013709657}
   - component: {fileID: 2013709656}
+  - component: {fileID: 2013709658}
   m_Layer: 0
   m_Name: SpawnPoint 1
   m_TagString: Untagged
@@ -489630,12 +489636,13 @@ MonoBehaviour:
       m_Calls: []
   playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
   spawnPoint: {fileID: 2013709657}
-  preferPrefabOverExisting: 1
-  copyPoseFromExisting: 1
+  preferPrefabOverExisting: 0
+  copyPoseFromExisting: 0
   destroyExistingOnReplace: 1
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &2013709657
 Transform:
   m_ObjectHideFlags: 0
@@ -489651,6 +489658,49 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2013709658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013709655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d18230d3a29b2a418e94d126c53f276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_questID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_questNodeID:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_counterName:
+    m_text: 
+    m_stringAsset: {fileID: 0}
+    m_textTable: {fileID: 0}
+    m_textTableFieldID: 0
+  m_conditionalEvent:
+    questID:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    requiredQuestState: 0
+    questNodeID:
+      m_text: 
+      m_stringAsset: {fileID: 0}
+      m_textTable: {fileID: 0}
+      m_textTableFieldID: 0
+    requiredQuestNodeState: 0
+    onConditionMet:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!4 &2072630587 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 384080477117976736, guid: b9c6e32683e2f0741b6b4b1a32fe2d76, type: 3}
