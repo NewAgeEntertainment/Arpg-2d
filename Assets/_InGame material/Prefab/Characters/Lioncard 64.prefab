@@ -481,6 +481,7 @@ GameObject:
   - component: {fileID: 7404050491979521307}
   - component: {fileID: 875733981393590875}
   - component: {fileID: 2475480508921098455}
+  - component: {fileID: 2085784072963349365}
   - component: {fileID: 5213953530006539592}
   - component: {fileID: 5843875191212425359}
   - component: {fileID: 7836690205457666931}
@@ -620,7 +621,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 2475480508921098455}
   maxInventorySize: 10
-  itemList: []
+  itemList:
+  - itemData: {fileID: 11400000, guid: 4b6b7d77a5a50f94698f1b16ee2876d5, type: 2}
+    stackSize: 0
+    instanceModifiers: []
+    itemEffect: {fileID: 0}
 --- !u!114 &875733981393590875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -652,7 +657,7 @@ MonoBehaviour:
       baseValue: 1
       modifiers: []
     damage:
-      baseValue: 10
+      baseValue: 0
       modifiers: []
     critPower:
       baseValue: 0
@@ -696,7 +701,7 @@ MonoBehaviour:
       modifiers: []
   major:
     strength:
-      baseValue: 6.48
+      baseValue: 25
       modifiers: []
     luck:
       baseValue: 0
@@ -723,7 +728,7 @@ MonoBehaviour:
     sexualRestraint:
       baseValue: 0
       modifiers: []
-  levelScalingData: {fileID: 0}
+  levelScalingData: {fileID: 11400000, guid: 8ac7552b69f3c5e45a68e74940df036f, type: 2}
 --- !u!114 &2475480508921098455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -767,6 +772,24 @@ MonoBehaviour:
   grassRustlePrefab: {fileID: 0}
   feetPivot: {fileID: 5852501936329725365}
   grassRustleInterval: 0.18
+--- !u!114 &2085784072963349365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 575cdb99ca932b14c9129c44915bfba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInventory: {fileID: 8328735636652493673}
+  equipmentInventory: {fileID: 7404050491979521307}
+  startingEquipment:
+  - {fileID: 11400000, guid: 4b6b7d77a5a50f94698f1b16ee2876d5, type: 2}
+  - {fileID: 11400000, guid: 80d38c9ec4d4c1d4ebfa8e0ed5b1018a, type: 2}
+  onlyIfNoEquipment: 1
 --- !u!50 &5213953530006539592
 Rigidbody2D:
   serializedVersion: 4
@@ -850,7 +873,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetCheckPoints: []
   basicAttackScale:
-    physical: 1
+    physical: 2
     elemental: 1
     basePower: 10
     scalingMultiplier: 1

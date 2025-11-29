@@ -62,6 +62,13 @@ public class Player_Stats : Entity_Stats
 
         var statGains = ApplyCumulativeLevelBonuses();
 
+        // 🔹 NEW: force HUD HP/MP/EXP bars to refresh immediately on level-up
+        var ui = UI.Instance;
+        if (ui != null && ui.inGameUI != null)
+        {
+            ui.inGameUI.ForceRefreshFromCurrentState();
+        }
+
         // Compatible with UI_LevelUpPopup.Show(int, IDictionary<string,float>)
         GetComponent<Player>()?.ui?.levelUpPopup?.Show(CurrentLevel, statGains);
     }
