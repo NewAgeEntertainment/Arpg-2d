@@ -2,8 +2,8 @@
 
 public static class StatGrowthCalculator
 {
-    public static int GetMaxHealth(int level) => 10 + (level * 0);
-    public static int GetMaxMana(int level) => 50 + (level * 6);
+    public static int GetMaxHealth(int level) => 10 + (level * 7);
+    public static int GetMaxMana(int level) => 5 - (level * 10);
     public static int GetStrength(int level) => 7 + (level * 2);
     public static int GetDefense(int level) => 3 + (level * 2);
     public static int GetIntelligence(int level) => 5 + (level * 2);

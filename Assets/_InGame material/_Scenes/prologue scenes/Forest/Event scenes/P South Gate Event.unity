@@ -34781,6 +34781,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!4 &655249536
 Transform:
   m_ObjectHideFlags: 0
@@ -44365,6 +44366,7 @@ MonoBehaviour:
   toggleKey: 109
   fogTint: {r: 0, g: 0, b: 0, a: 0.85}
   cineBridge: {fileID: 278971049}
+  disableDuringSexyTime: 1
 --- !u!114 &992621299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66927,10 +66929,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 278971054}
     - target: {fileID: 1019160915448982365, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 88.4756
-      objectReference: {fileID: 0}
-    - target: {fileID: 1019160915448982365, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -249.57379
       objectReference: {fileID: 0}
@@ -66974,22 +66972,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2549932440979663326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2549932440979663326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2549932440979663326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2549932440979663326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2551002250036725105, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 338.47562
@@ -67005,38 +66987,6 @@ PrefabInstance:
     - target: {fileID: 2716476661988399172, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -232.57379
-      objectReference: {fileID: 0}
-    - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2822415357276710850, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3148942304683000711, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3148942304683000711, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3148942304683000711, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3148942304683000711, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3719981098842944138, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -67090,10 +67040,6 @@ PrefabInstance:
       propertyPath: minimapCamera
       value: 
       objectReference: {fileID: 278971054}
-    - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 88.4756
-      objectReference: {fileID: 0}
     - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -249.57379
@@ -67185,22 +67131,6 @@ PrefabInstance:
     - target: {fileID: 7552569847591205280, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -232.57379
-      objectReference: {fileID: 0}
-    - target: {fileID: 7625246665930088326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7625246665930088326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7625246665930088326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7625246665930088326, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7648056274386805161, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -68137,6 +68067,7 @@ MonoBehaviour:
   toggleKey: 103
   fogTint: {r: 0, g: 0, b: 0, a: 0.85}
   cineBridge: {fileID: 0}
+  disableDuringSexyTime: 1
 --- !u!114 &1543818538
 MonoBehaviour:
   m_ObjectHideFlags: 0

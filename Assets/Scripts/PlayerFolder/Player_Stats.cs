@@ -17,7 +17,7 @@ public class Player_Stats : Entity_Stats
     [Header("Level Scaling")]
     [SerializeField] private LevelScalingSO levelScalingData;
 
-    private const float BASE_EXP_REQUIREMENT = 100f;
+    private const float BASE_EXP_REQUIREMENT = 138f;
     private const float EXP_GROWTH_RATE = 1.5f;
 
     private const string LEVEL_UP_TAG_PREFIX = "LevelUp_L";

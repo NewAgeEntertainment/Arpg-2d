@@ -2472,7 +2472,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35325787a1707334687762b7e1ebe52f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  expReward: 8
+  expReward: 10
   currentHealth: 0
   isDead: 0
   regenInterval: 1
@@ -2530,7 +2530,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: f946a537d5502ee4fa6f27077322270a, type: 2}
   resources:
     maxHealth:
-      baseValue: 300
+      baseValue: 70
       modifiers:
       - value: 0
         type: 0
@@ -2555,7 +2555,7 @@ MonoBehaviour:
         type: 0
         source: EnemyLevelScale
     critPower:
-      baseValue: 150
+      baseValue: 2
       modifiers: []
     critChance:
       baseValue: 0
@@ -2577,7 +2577,7 @@ MonoBehaviour:
       modifiers: []
   defense:
     armor:
-      baseValue: 0
+      baseValue: 2
       modifiers:
       - value: 0
         type: 0

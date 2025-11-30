@@ -2802,7 +2802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 428759be256e745419eb5537c420a20b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_key: 
+  m_key: party
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
@@ -9103,7 +9103,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1846809848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9116,8 +9116,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad9844039add7f349b91f621f1788a8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadFromPrefsOnAwake: 0
-  playerPrefsKey: PlayTime_TotalSeconds
+  m_key: 
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
   prettyNames:
   - raw: Level_01
     display: Forest Area 0

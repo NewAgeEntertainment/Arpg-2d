@@ -641,13 +641,13 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: e8ce5ad926afff04cb47eb5d5f81ccfc, type: 2}
   resources:
     maxHealth:
-      baseValue: 100
+      baseValue: 75
       modifiers: []
     healthRegen:
       baseValue: 0
       modifiers: []
     maxMana:
-      baseValue: 50
+      baseValue: 25
       modifiers: []
     manaRegen:
       baseValue: 0
@@ -682,7 +682,7 @@ MonoBehaviour:
       modifiers: []
   defense:
     armor:
-      baseValue: 0
+      baseValue: 4
       modifiers: []
     evasion:
       baseValue: 0
@@ -701,10 +701,10 @@ MonoBehaviour:
       modifiers: []
   major:
     strength:
-      baseValue: 25
+      baseValue: 9
       modifiers: []
     luck:
-      baseValue: 0
+      baseValue: 2
       modifiers: []
     intelligence:
       baseValue: 0
@@ -728,7 +728,7 @@ MonoBehaviour:
     sexualRestraint:
       baseValue: 0
       modifiers: []
-  levelScalingData: {fileID: 11400000, guid: 8ac7552b69f3c5e45a68e74940df036f, type: 2}
+  levelScalingData: {fileID: 0}
 --- !u!114 &2475480508921098455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -759,8 +759,8 @@ MonoBehaviour:
   Bio: sdhfjhaljfhsjldfksajhfjkasdhfjshfkjsahdfkjshdfkjahsdfkjhsdjfhksdjfhkjdshfkjhsdlkj;sdflkjdf;kgjlk;
   moveSpeed: 8
   jumpForce: 0
-  dashDuration: 0.5
-  dashSpeed: 20
+  dashDuration: 0.2
+  dashSpeed: 10
   ThrustDuration: 1
   ThrustSpeed: 5
   interactRadius: 1.8
@@ -1429,7 +1429,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillType: 0
   upgradeType: 0
-  cooldown: 3
+  cooldown: 0.2
   manaCost: 0
   unlockedByDefault: 1
 --- !u!114 &7563797542631961709
@@ -1463,7 +1463,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillType: 3
   upgradeType: 0
-  cooldown: 1
+  cooldown: 0.2
   manaCost: 0
   unlockedByDefault: 0
   shardPrefab: {fileID: 453335324129619194, guid: 2e9bcadcaa78a2d4487c7440523eb802, type: 3}
