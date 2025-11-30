@@ -1,8 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PixelCrushers;
 
-public class PlayTimeTracker : MonoBehaviour
+public class PlayTimeTracker : Saver
 {
     public static PlayTimeTracker Instance { get; private set; }
 
@@ -17,10 +18,6 @@ public class PlayTimeTracker : MonoBehaviour
     public static string CurrentSceneName { get; private set; } = "";
     public static string CurrentSceneDisplay { get; private set; } = "";
 
-    [Header("Optional Persistence")]
-    [SerializeField] private bool loadFromPrefsOnAwake = false;
-    [SerializeField] private string playerPrefsKey = "PlayTime_TotalSeconds";
-
     [Header("Optional Pretty Names (raw -> display)")]
     [SerializeField]
     private SceneNameMap[] prettyNames =
@@ -34,6 +31,13 @@ public class PlayTimeTracker : MonoBehaviour
 
     private float _accumulator = 0f;
 
+    [Serializable]
+    private class Data
+    {
+        public int totalSeconds;
+        public string sceneName;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -41,12 +45,6 @@ public class PlayTimeTracker : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         CacheSceneNames(SceneManager.GetActiveScene());
-
-        if (loadFromPrefsOnAwake)
-        {
-            TotalSecondsInt = PlayerPrefs.GetInt(playerPrefsKey, 0);
-            OnSecondChanged?.Invoke(TotalSecondsInt);
-        }
     }
 
     private void OnEnable()
@@ -65,7 +63,8 @@ public class PlayTimeTracker : MonoBehaviour
     {
         if (!IsRunning) return;
 
-        _accumulator += Time.unscaledDeltaTime; // unaffected by timescale
+        // unscaled so it continues while paused / in menus
+        _accumulator += Time.unscaledDeltaTime;
         if (_accumulator >= 1f)
         {
             int whole = (int)_accumulator;
@@ -96,7 +95,8 @@ public class PlayTimeTracker : MonoBehaviour
         {
             foreach (var m in prettyNames)
             {
-                if (!string.IsNullOrEmpty(m.raw) && string.Equals(m.raw, raw, StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(m.raw) &&
+                    string.Equals(m.raw, raw, StringComparison.Ordinal))
                 {
                     if (!string.IsNullOrEmpty(m.display)) return m.display;
                 }
@@ -105,7 +105,6 @@ public class PlayTimeTracker : MonoBehaviour
         return raw ?? string.Empty;
     }
 
-    /// <summary>Programmatically override the pretty display for the current scene.</summary>
     public static void OverrideCurrentSceneDisplay(string display)
     {
         CurrentSceneDisplay = display ?? string.Empty;
@@ -114,7 +113,6 @@ public class PlayTimeTracker : MonoBehaviour
 
     // -------- Public API (timer control) --------
 
-    /// <summary>Set counter to zero and start counting.</summary>
     public static void ResetAndStart()
     {
         TotalSecondsInt = 0;
@@ -123,16 +121,12 @@ public class PlayTimeTracker : MonoBehaviour
         OnSecondChanged?.Invoke(TotalSecondsInt);
     }
 
-    /// <summary>Alias for ResetAndStart (legacy name).</summary>
     public static void StartTimer() => ResetAndStart();
 
-    /// <summary>Start/resume without resetting.</summary>
     public static void Resume() => IsRunning = true;
 
-    /// <summary>Pause the counter (doesn't reset).</summary>
     public static void Pause() => IsRunning = false;
 
-    /// <summary>Stop and reset to zero.</summary>
     public static void StopAndReset()
     {
         IsRunning = false;
@@ -141,37 +135,61 @@ public class PlayTimeTracker : MonoBehaviour
         OnSecondChanged?.Invoke(TotalSecondsInt);
     }
 
-    /// <summary>Persist current seconds to PlayerPrefs.</summary>
-    public static void SaveToPrefs()
-    {
-        if (Instance == null) return;
-        PlayerPrefs.SetInt(Instance.playerPrefsKey, TotalSecondsInt);
-        PlayerPrefs.Save();
-    }
+    // -------- Formatting helpers --------
 
-    /// <summary>Load seconds from PlayerPrefs (does not auto-start).</summary>
-    public static void LoadFromPrefs()
-    {
-        if (Instance == null) return;
-        TotalSecondsInt = PlayerPrefs.GetInt(Instance.playerPrefsKey, 0);
-        OnSecondChanged?.Invoke(TotalSecondsInt);
-    }
-
-    // -------- Formatting helpers (used by UI.cs) --------
-
-    /// <summary>Format total seconds as HH:MM (hours collapsed, e.g., 27:05).</summary>
     public static string FormatHHMM(int totalSeconds)
     {
         var ts = TimeSpan.FromSeconds(Mathf.Max(0, totalSeconds));
-        int hours = (int)ts.TotalHours; // include days
+        int hours = (int)ts.TotalHours;
         return $"{hours:00}:{ts.Minutes:00}";
     }
 
-    /// <summary>Format total seconds as HH:MM:SS (hours collapsed).</summary>
     public static string FormatHHMMSS(int totalSeconds)
     {
         var ts = TimeSpan.FromSeconds(Mathf.Max(0, totalSeconds));
         int hours = (int)ts.TotalHours;
         return $"{hours:00}:{ts.Minutes:00}:{ts.Seconds:00}";
     }
+
+    // ================= PixelCrushers Save/Load =================
+
+    public override string RecordData()
+    {
+        var data = new Data
+        {
+            totalSeconds = TotalSecondsInt,
+            sceneName = CurrentSceneName
+        };
+
+        return SaveSystem.Serialize(data);
+    }
+
+    public override void ApplyData(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            // No saved data for this slot (brand new game)
+            TotalSecondsInt = 0;
+            _accumulator = 0f;
+        }
+        else
+        {
+            var data = SaveSystem.Deserialize<Data>(s);
+            if (data != null)
+            {
+                TotalSecondsInt = data.totalSeconds;
+                _accumulator = 0f;   // restart local counter
+                CurrentSceneName = data.sceneName;
+                CurrentSceneDisplay = ResolvePrettyName(CurrentSceneName);
+            }
+        }
+
+        Debug.Log($"[PlayTimeTracker] ApplyData -> {TotalSecondsInt} seconds");
+        OnSecondChanged?.Invoke(TotalSecondsInt);
+        OnSceneChanged?.Invoke(CurrentSceneDisplay);
+
+        // important: after load, keep counting
+        IsRunning = true;
+    }
+
 }

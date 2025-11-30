@@ -82,6 +82,7 @@ public class UI_SkillToolTip : UI_ToolTip
         }
     }
 
+
     private string GetRequirements(int skillCost, UI_TreeNode[] neededNodes, UI_TreeNode[] conflictNodes)
     {
         StringBuilder sb = new StringBuilder();
@@ -124,6 +125,11 @@ public class UI_SkillToolTip : UI_ToolTip
         }
 
         return sb.ToString();
+    }
+
+    private void OnDisable()
+    {
+        ShowToolTip(false, null);
     }
 
 }

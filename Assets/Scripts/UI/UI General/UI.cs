@@ -289,6 +289,9 @@ public class UI : MonoBehaviour
 
     private void OnEnable()
     {
+        // NEW: hook sceneLoaded so AfterSceneLoad_Co runs after any load
+        SceneManager.sceneLoaded += OnSceneLoaded_UIRefresh;
+
         // Re-arm gold subscription in case of scene reload
         TrySubscribeGold();
 
@@ -298,7 +301,8 @@ public class UI : MonoBehaviour
         if (timePlayedUsesUnscaled)
         {
             EnsureRealSecondsInit();
-            if (_realTimeTickerCo == null) _realTimeTickerCo = StartCoroutine(RealTimeTicker_Co());
+            if (_realTimeTickerCo == null)
+                _realTimeTickerCo = StartCoroutine(RealTimeTicker_Co());
         }
         else
         {
@@ -309,19 +313,24 @@ public class UI : MonoBehaviour
 
         UpdateTimePlayedLabelImmediate();
         UpdateLocationLabel();
-
     }
 
     private void OnDisable()
     {
+        // NEW: unhook (you already had this line – keep it)
         SceneManager.sceneLoaded -= OnSceneLoaded_UIRefresh;
+
         UnsubscribeGold();
         UnhookStatEvents();
         StopMenuPoll();
 
         if (timePlayedUsesUnscaled)
         {
-            if (_realTimeTickerCo != null) { StopCoroutine(_realTimeTickerCo); _realTimeTickerCo = null; }
+            if (_realTimeTickerCo != null)
+            {
+                StopCoroutine(_realTimeTickerCo);
+                _realTimeTickerCo = null;
+            }
         }
         else
         {
@@ -329,8 +338,8 @@ public class UI : MonoBehaviour
         }
 
         SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
-
     }
+
 
     private void OnDestroy()
     {
@@ -387,10 +396,19 @@ public class UI : MonoBehaviour
 
     private IEnumerator AfterSceneLoad_Co()
     {
+        // Let SaveSystem & PlayTimeTracker finish restoring values.
         yield return null;
+
         BindStats(AutoFindStats());
-        if (mainMenuPanel != null && mainMenuPanel.activeSelf) ForceRefreshMenuBars();
+
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
+            ForceRefreshMenuBars();
+
+        // 🔹 NEW: sync timer from the tracker after every scene load
+        ResyncPlayTimeFromTracker();
     }
+
+
 
     private IEnumerator RefreshHUDOnceCo()
     {
@@ -982,6 +1000,8 @@ public class UI : MonoBehaviour
 
     public void CloseAllPanels()
     {
+        SwitchOffAllToolTips();  // 👈 hide all tips first
+
         inventoryUI?.gameObject.SetActive(false);
         skillTreeUI?.gameObject.SetActive(false);
         equipmentInventoryPanel?.gameObject.SetActive(false);
@@ -1003,6 +1023,7 @@ public class UI : MonoBehaviour
         ResetStates();
         StopMenuPoll();
     }
+
 
     private void ResetStates()
     {
@@ -1108,6 +1129,7 @@ public class UI : MonoBehaviour
     {
         itemToolTip?.ShowToolTip(false, null);
         statToolTip?.ShowToolTip(false, null);
+        skillToolTip?.ShowToolTip(false, null);
     }
 
     // ========================= Return-to-Title (Ys-style) & helpers =========================
@@ -1208,6 +1230,9 @@ public class UI : MonoBehaviour
             Destroy(go);
         }
     }
+
+   
+
 
     private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
     {
@@ -1410,6 +1435,20 @@ public class UI : MonoBehaviour
         int s = totalSeconds % 60;
         return $"{h:00}:{m:00}:{s:00}";
     }
+
+    // UI.cs
+    // UI.cs
+    public void ResyncPlayTimeFromTracker()
+    {
+        if (!timePlayedUsesUnscaled) return;
+
+        // Whatever your tracker uses – adjust this line if needed.
+        _realSecondsPlayed = PlayTimeTracker.TotalSecondsInt;
+
+        Debug.Log($"[UI] ResyncPlayTimeFromTracker -> {_realSecondsPlayed} seconds");
+        UpdateTimePlayedLabelImmediate();
+    }
+
 
     public int CurrentTimePlayedSeconds
     {
