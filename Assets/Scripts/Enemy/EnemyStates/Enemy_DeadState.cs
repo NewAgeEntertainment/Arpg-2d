@@ -17,7 +17,8 @@ public class Enemy_DeadState : EnemyState
         // Stop movement/physics; let the animation play visually
         if (rb != null)
         {
-            rb.velocity = Vector2.zero;
+            enemy.SetZeroVelocity();
+
             rb.simulated = false;
         }
 

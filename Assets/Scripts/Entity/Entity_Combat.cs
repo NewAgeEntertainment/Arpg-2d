@@ -11,10 +11,11 @@ public abstract class Entity_Combat : MonoBehaviour
 
     public event Action<float> OnDoingPhysicalDamage;
     protected Entity _entity;
-    private Entity_SFX sfx;
+    protected Entity_SFX sfx;
     protected Entity_VFX vfx;
     protected Entity_Stats stats; // Reference to the Entity_Stats component, if needed for combat calculations  
 
+    [Header("Basic Attack Scaling")]
     public DamageScaleData basicAttackScale; // Scale data for basic attack damage, chill, burn, poison, and shock effects
 
     [Header("Target detection")]
@@ -28,20 +29,54 @@ public abstract class Entity_Combat : MonoBehaviour
         sfx = GetComponent<Entity_SFX>();
         stats = GetComponent<Entity_Stats>();
         mana = GetComponent<Entity_Mana>(); // ✅ Get mana if available
-    }
 
+        if (stats == null)
+        {
+            Debug.LogError($"[Entity_Combat] No Entity_Stats found on {name}. AttackData will not work correctly.");
+        }
+
+        if (basicAttackScale == null)
+        {
+            Debug.LogWarning($"[Entity_Combat] basicAttackScale is NULL on {name}. " +
+                             "Attacks will use a default DamageScaleData unless you assign one in the Inspector.");
+        }
+    }
 
     public virtual void PerformAttack()
     {
+        // Safety: if we somehow have no stats, we can’t build a proper AttackData
+        if (stats == null)
+        {
+            Debug.LogError($"[Entity_Combat] PerformAttack called on {name} but stats is NULL.");
+            return;
+        }
+
+        // Safety: get colliders array once and guard against null
+        Collider2D[] detectedColliders = GetDetectedCollider();
+        if (detectedColliders == null || detectedColliders.Length == 0)
+            return;
+
         bool targetGotHit = false;
 
-        foreach (var target in GetDetectedCollider())
+        foreach (var target in detectedColliders)
         {
+            if (target == null) continue;
+
             IDamageable damageable = target.GetComponent<IDamageable>();
             if (damageable == null)
                 continue;
 
-            AttackData attackData = new AttackData(stats, basicAttackScale);
+            // ✅ Ensure we never pass a null DamageScaleData into AttackData
+            DamageScaleData scaleToUse = basicAttackScale;
+            if (scaleToUse == null)
+            {
+                // Fall back to a fresh default instance so AttackData always has something valid
+                scaleToUse = new DamageScaleData();
+                Debug.LogWarning($"[Entity_Combat] basicAttackScale was NULL on {name} during PerformAttack. " +
+                                 "Using a default DamageScaleData. Consider assigning one on this Entity_Combat.");
+            }
+
+            AttackData attackData = new AttackData(stats, scaleToUse);
             Entity_StatusHandler statusHandler = target.GetComponent<Entity_StatusHandler>();
 
             float physicalDamage = attackData.physicalDamage;
@@ -56,25 +91,21 @@ public abstract class Entity_Combat : MonoBehaviour
             if (targetGotHit)
             {
                 OnDoingPhysicalDamage?.Invoke(physicalDamage);
-                vfx.CreateOnHitVFX(target.transform, attackData.isCrit, element);
+                vfx?.CreateOnHitVFX(target.transform, attackData.isCrit, element);
                 sfx?.PlayAttackHit();
 
                 // ✅ Restore mana on hit
-                if (_entity is Player player)
+                if (_entity is Player player && player.mana != null)
                 {
                     player.mana.RestoreManaOnHitWithScaling(player.Level);
                 }
-
             }
-
-            if (targetGotHit == false)
+            else
+            {
                 sfx?.PlayAttackMiss();
+            }
         }
     }
-
-
-
-
 
     public abstract Collider2D[] GetDetectedCollider();
 
@@ -91,8 +122,6 @@ public abstract class Entity_Combat : MonoBehaviour
 // The method `GetElementalDamage` is expected to return an elemental damage value and an `ElementType` through the `out` parameter.  
 // However, the `ElementType` enum only has a single value `None` defined, which means no other elemental types are available.  
 // This could lead to incorrect behavior when applying elemental effects or calculating damage.  
-
-
 
 
 

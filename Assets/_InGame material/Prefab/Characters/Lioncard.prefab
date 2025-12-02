@@ -421,7 +421,6 @@ GameObject:
   - component: {fileID: 620084835912366469}
   - component: {fileID: 873019877890959062}
   - component: {fileID: 1532602733049190791}
-  - component: {fileID: 7625218139660621083}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -563,7 +562,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: e8ce5ad926afff04cb47eb5d5f81ccfc, type: 2}
   resources:
     maxHealth:
-      baseValue: 100
+      baseValue: 999
       modifiers: []
     healthRegen:
       baseValue: 0
@@ -636,7 +635,7 @@ MonoBehaviour:
       modifiers: []
   sex:
     maxArousal:
-      baseValue: 100
+      baseValue: 0
       modifiers: []
     stroke:
       baseValue: 0
@@ -681,8 +680,8 @@ MonoBehaviour:
   Bio: sdhfjhaljfhsjldfksajhfjkasdhfjshfkjsahdfkjshdfkjahsdfkjhsdjfhksdjfhkjdshfkjhsdlkj;sdflkjdf;kgjlk;
   moveSpeed: 8
   jumpForce: 0
-  dashDuration: 0.5
-  dashSpeed: 20
+  dashDuration: 0.2
+  dashSpeed: 10
   ThrustDuration: 1
   ThrustSpeed: 5
   interactRadius: 1.8
@@ -710,7 +709,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 0
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 83548ec120b0e6047a807e0ec9b43368, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1194,19 +1193,6 @@ MonoBehaviour:
   attackMiss: player_attackMiss
   soundDistance: 15
   showGizmo: 0
---- !u!114 &7625218139660621083
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3412577514713453343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad8c9a6aabb7fe94c9cc6461cb0b0df0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cooldown: 0.3
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0

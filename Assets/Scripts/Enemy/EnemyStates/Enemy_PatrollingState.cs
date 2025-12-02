@@ -1,68 +1,83 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Enemy_PatrollingState : Enemy_GroundedState
 {
-    public Enemy_PatrollingState(Enemy enemy, StateMachine stateMachine, string animBoolName) : base(enemy, stateMachine, animBoolName)
-    {
-    }
+    private const float reachTolerance = 0.1f;
+
+    public Enemy_PatrollingState(Enemy enemy, StateMachine stateMachine, string animBoolName)
+        : base(enemy, stateMachine, animBoolName) { }
 
     public override void Enter()
     {
         base.Enter();
 
-        // If entering from Battle state, set animation  
-        if (enemy.previousState == enemy.battleState)
+        // No patrol points → immediately go back to idle
+        if (enemy.patrolPoints == null || enemy.patrolPoints.Length == 0)
         {
-            enemy.anim.SetFloat("xInput", enemy.currentDir.x);
-            enemy.anim.SetFloat("xInput", enemy.currentDir.y);
+            enemy.SetZeroVelocity();
+            stateMachine.ChangeState(enemy.idleState);
+            return;
         }
 
-        // If entering from Idle state, move to the next patrol point  
-        if (enemy.previousState == enemy.idleState)
-        {
-            enemy.StartCoroutine(enemy.SetPatrolPoint());
-        }
+        // Clamp index
+        if (enemy.currentPatrolIndex < 0 || enemy.currentPatrolIndex >= enemy.patrolPoints.Length)
+            enemy.currentPatrolIndex = 0;
 
-        enemy.target = enemy.patrolPoints[enemy.currentPatrolIndex]; // Set the target to the current patrol point  
-    }
+        enemy.target = enemy.patrolPoints[enemy.currentPatrolIndex];
 
-    public override void Exit()
-    {
-        base.Exit();
-        
+        // Face towards current target
+        Vector2 dir = ((Vector2)enemy.target - (Vector2)enemy.transform.position).normalized;
+        enemy.currentDirection = dir;
+        enemy.SetFacing(dir);
     }
 
     public override void Update()
     {
         base.Update();
-       
-        enemy.anim.SetFloat("xInput", enemy.currentDir.x);
-        enemy.anim.SetFloat("yInput", enemy.currentDir.y);
 
-        if (enemy.PlayerDetected()) // 
-        {
-            stateMachine.ChangeState(enemy.battleState); // Change to move state if not within attack distance
-        }
+        // If player detected, battle state takes over (your existing logic in Enemy_GroundedState)
+        // Enemy_GroundedState.Update() already checks PlayerDetected() and switches to battle.
 
+        // If we got paused (during SetPatrolPoint), stop but stay in this state
         if (enemy.isPaused)
         {
-            rb.velocity = Vector2.zero; // Stop the enemy's movement when paused
-            
-            stateMachine.ChangeState(enemy.idleState); // Change to idle state if paused
-
+            enemy.SetZeroVelocity();
             return;
         }
 
-        Vector2 movedirection = ((Vector3)enemy.target - enemy.transform.position).normalized; // Calculate the direction to the target point  
-        rb.velocity = movedirection * enemy.moveSpeed; // Set the enemy's velocity towards the target  
-
-        if (Vector2.Distance(enemy.transform.position, enemy.target) < .1f) // check if the enemy has reached the target point  
+        // Safety: if patrol data vanished, go idle
+        if (enemy.patrolPoints == null || enemy.patrolPoints.Length == 0)
         {
-            enemy.StartCoroutine(enemy.SetPatrolPoint()); // Move to the next patrol point  
+            enemy.SetZeroVelocity();
+            stateMachine.ChangeState(enemy.idleState);
+            return;
         }
 
+        Vector2 pos = enemy.transform.position;
+        Vector2 toTarget = enemy.target - pos;
+        float dist = toTarget.magnitude;
 
-        // Update the enemy's current direction based on the movement direction
+        // Reached target?
+        if (dist <= reachTolerance)
+        {
+            enemy.SetZeroVelocity();
+            enemy.StartCoroutine(enemy.SetPatrolPoint());
+            return;
+        }
 
+        // Move towards target
+        Vector2 dir = toTarget.normalized;
+        enemy.currentDirection = dir;
+        enemy.SetVelocity(dir.x * enemy.moveSpeed, dir.y * enemy.moveSpeed);
+
+        // Update anim facing
+        enemy.anim.SetFloat("xInput", dir.x);
+        enemy.anim.SetFloat("yInput", dir.y);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+        enemy.SetZeroVelocity();
     }
 }

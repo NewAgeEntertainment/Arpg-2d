@@ -52,8 +52,13 @@ public class Enemy_BattleState : EnemyState
         else
         {
             if (stateTimer < 0 || Vector2.Distance(player.transform.position, enemy.transform.position) > 7)
+            {
+                enemy.SetZeroVelocity();
                 stateMachine.ChangeState(enemy.idleState);
+                return; // make sure we don't run the chasing code below
+            }
         }
+
 
         moveDir = new Vector2(player.position.x - enemy.transform.position.x, player.position.y - enemy.transform.position.y);
         moveDir.Normalize();
@@ -88,9 +93,13 @@ public class Enemy_BattleState : EnemyState
     public override void Exit()
     {
         base.Exit();
-        
+
+        // stop chase movement
+        enemy.SetZeroVelocity();
+        if (rb != null) rb.velocity = Vector2.zero; // optional
 
         enemy.anim.SetFloat("xInput", 0f);
         enemy.anim.SetFloat("yInput", 0f);
     }
+
 }

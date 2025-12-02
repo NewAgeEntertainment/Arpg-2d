@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +12,6 @@ public class Enemy_IdleState : Enemy_GroundedState
     {
         base.Enter();
 
-        
-
         rb.velocity = Vector2.zero; // Stop the enemy's movement when entering idle state  
 
         stateTimer = enemy.idleTime;
@@ -25,20 +23,21 @@ public class Enemy_IdleState : Enemy_GroundedState
     {
         base.Update();
 
-        if (stateTimer < 0 && !enemy.isPaused) // Corrected the condition
+        // No patrol points? Stay idle forever.
+        if (enemy.patrolPoints == null || enemy.patrolPoints.Length == 0)
+            return;
+
+        // Timer done and we have patrol points → start patrolling
+        if (stateTimer < 0 && !enemy.isPaused)
         {
-            stateMachine.ChangeState(enemy.patrollingState); // Change to patrolling state after idle time
+            stateMachine.ChangeState(enemy.patrollingState);
             return;
         }
-
-        
     }
+
 
     public override void Exit()
     {
         base.Exit();
-        
     }
-
-    
 }

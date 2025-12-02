@@ -776,7 +776,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: e8ce5ad926afff04cb47eb5d5f81ccfc, type: 2}
   resources:
     maxHealth:
-      baseValue: 100
+      baseValue: 999
       modifiers: []
     healthRegen:
       baseValue: 0
@@ -1080,11 +1080,10 @@ MonoBehaviour:
   manaBar: {fileID: 2737374287708854188}
   currentMana: 0
   isDead: 0
-  manaCost: 4
   isManaDepleted: 0
-  useMana: 0
   manaRegenInterval: 1
   canRegenerateMana: 1
+  regenPerTick: 0
 --- !u!114 &4919769521175615904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2030,7 +2029,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 5
+  m_SortingLayer: 7
   m_SortingOrder: 0
   m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

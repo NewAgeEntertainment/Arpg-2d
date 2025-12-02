@@ -72,11 +72,21 @@ public class Enemy : Entity
     public Vector2[] patrolPoints;
     public int currentPatrolIndex;
     public bool isPaused { get; set; }
+    private Vector2 _patrolOrigin;
 
+    private Vector2 _spawnPosition;
     public Vector2 LastDir { get; private set; } = Vector2.down;
-    public Vector2 currentDirection { get; private set; }
+    public Vector2 currentDirection { get; set; }    // <-- change to set;
     public Vector2 target;
+
     public Transform player { get; private set; }
+
+    // ------------ NEW: setter so states can write currentDirection ------------
+    public void SetCurrentDirection(Vector2 dir)
+    {
+        currentDirection = dir;
+    }
+    // -------------------------------------------------------------------------
 
     protected override IEnumerator SlowDownEntityCo(float duration, float slowMultiplier)
     {
@@ -142,6 +152,21 @@ public class Enemy : Entity
         }
     }
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+        {
+            if (patrolPoints != null && patrolPoints.Length > 0)
+            {
+                if (patrolPoints[0] == Vector2.zero)
+                    patrolPoints[0] = (Vector2)transform.position;
+            }
+        }
+    }
+#endif
+
+
     public void HandlePlayerDeath()
     {
         stateMachine.ChangeState(idleState);
@@ -159,13 +184,26 @@ public class Enemy : Entity
     {
         base.Awake();
         stats = GetComponent<Entity_Stats>();
+        _spawnPosition = transform.position;
     }
 
     protected override void Start()
     {
         base.Start();
-        StartCoroutine(SetPatrolPoint());
+
+        // Only auto-set if designer left it at (0,0)
+        if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] == Vector2.zero)
+        {
+            patrolPoints[0] = transform.position;
+        }
+
+        if (patrolPoints != null && patrolPoints.Length > 0)
+        {
+            target = patrolPoints[currentPatrolIndex];
+            StartCoroutine(SetPatrolPoint());
+        }
     }
+
 
     protected override void Update()
     {
@@ -175,14 +213,39 @@ public class Enemy : Entity
 
     public virtual IEnumerator SetPatrolPoint()
     {
+        // No patrol → nothing to do
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            yield break;
+
         isPaused = true;
         yield return new WaitForSeconds(pauseDuration);
-        currentDirection = target - (Vector2)transform.position;
-        currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+
+        // If index somehow got out of range, reset
+        if (currentPatrolIndex < 0 || currentPatrolIndex >= patrolPoints.Length)
+            currentPatrolIndex = 0;
+        else
+            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+
         target = patrolPoints[currentPatrolIndex];
+
+        // Update facing direction for anim/combat
+        Vector2 dir = (target - (Vector2)transform.position).normalized;
+        currentDirection = dir;
+
         isPaused = false;
-        currentDirection = target - (Vector2)transform.position;
     }
+
+
+
+    private Vector2 GetWorldPatrolPoint(int index)
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            return _patrolOrigin;
+
+        index = Mathf.Clamp(index, 0, patrolPoints.Length - 1);
+        return _patrolOrigin + patrolPoints[index];   // spawn position + offset
+    }
+
 
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
     public virtual Collider2D PlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
@@ -190,21 +253,22 @@ public class Enemy : Entity
     protected override void OnDrawGizmos()
     {
         base.OnDrawGizmos();
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, range);
 
-        Gizmos.color = Color.yellow;
-        Vector3 attackRangePosition = new Vector3(transform.position.x, transform.position.y, 0);
-        Gizmos.DrawWireSphere(attackRangePosition, attackDistance);
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            return;
 
+        Gizmos.color = Color.cyan;
         for (int i = 0; i < patrolPoints.Length; i++)
         {
-            if (i == patrolPoints.Length - 1)
-                Gizmos.DrawLine(patrolPoints[i], patrolPoints[0]);
-            else
-                Gizmos.DrawLine(patrolPoints[i], patrolPoints[i + 1]);
+            Vector3 p = patrolPoints[i];
+            Vector3 q = patrolPoints[(i + 1) % patrolPoints.Length];
+
+            Gizmos.DrawSphere(p, 0.1f);
+            Gizmos.DrawLine(p, q);
         }
     }
+
+
 
     // helper checked by damage/KB code
     public bool ShouldIgnoreKnockback()
