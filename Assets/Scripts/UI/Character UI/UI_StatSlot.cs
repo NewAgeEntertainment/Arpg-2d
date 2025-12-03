@@ -59,14 +59,19 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
         }
 
-        float value = 0;
+        float value = 0f;
+        string displayText = "";
 
         switch (statSlotType)
         {
-            //major Stats
+            // -------- Major Stats --------
             case StatType.Strength:
                 value = playerStats.major.strength.GetValue();
+                // also show resulting physical damage
+                float physDmg = playerStats.GetBaseDamage();
+                displayText = $"{value}  (Phys: {physDmg})";
                 break;
+
             case StatType.Luck:
                 value = playerStats.major.luck.GetValue();
                 break;
@@ -77,8 +82,7 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 value = playerStats.major.vitality.GetValue();
                 break;
 
-            //Offensive Stats
-
+            // -------- Offensive Stats --------
             case StatType.Damage:
                 value = playerStats.GetBaseDamage();
                 break;
@@ -89,14 +93,13 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 value = playerStats.GetCritPower();
                 break;
             case StatType.ArmorReduction:
-                value = playerStats.GetArmorReduction() * 100;
+                value = playerStats.GetArmorReduction() * 100f;
                 break;
             case StatType.AttackSpeed:
-                value = playerStats.offense.attackSpeed.GetValue() * 100;
+                value = playerStats.offense.attackSpeed.GetValue() * 100f;
                 break;
 
-
-            // Defense Stats
+            // -------- Defense Stats --------
             case StatType.MaxHealth:
                 value = playerStats.GetMaxHealth();
                 break;
@@ -116,37 +119,44 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 value = playerStats.GetBaseArmor();
                 break;
 
-            // Elemental damage stats
+            // -------- Elemental damage --------
             case StatType.IceDamage:
                 value = playerStats.offense.iceDamage.GetValue();
                 break;
             case StatType.FireDamage:
-                value = playerStats.offense.lightningDamage.GetValue();
+                // small bug fix: this should be fire, not lightning
+                value = playerStats.offense.fireDamage.GetValue();
                 break;
             case StatType.PoisonDamage:
-                value = playerStats.GetElementalDamage(out ElementType element, 1);
+                value = playerStats.offense.poisonDamage.GetValue();
+                break;
+            case StatType.LightningDamage:
+                value = playerStats.offense.lightningDamage.GetValue();
                 break;
 
-            // Elemental resistances stats
+            // -------- Elemental resistances --------
             case StatType.IceResistance:
-                value = playerStats.GetElementalResistance(ElementType.Ice) * 100;
+                value = playerStats.GetElementalResistance(ElementType.Ice) * 100f;
                 break;
             case StatType.FireResistance:
-                value = playerStats.GetElementalResistance(ElementType.Fire) * 100;
+                value = playerStats.GetElementalResistance(ElementType.Fire) * 100f;
                 break;
             case StatType.PoisonResistance:
-                value = playerStats.GetElementalResistance(ElementType.Poison) * 100;
+                value = playerStats.GetElementalResistance(ElementType.Poison) * 100f;
                 break;
             case StatType.LightningResistance:
-                value = playerStats.GetElementalResistance(ElementType.Lightning) * 100;
+                value = playerStats.GetElementalResistance(ElementType.Lightning) * 100f;
                 break;
 
-            // sexual Stats
+            // -------- Sexual Stats --------
             case StatType.MaxArousal:
                 value = playerStats.GetMaxArousel();
                 break;
             case StatType.Stroke:
                 value = playerStats.sex.stroke.GetValue();
+                // also show resulting sexual damage
+                float sexDmg = playerStats.GetBaseSexDamage();
+                displayText = $"{value}  (Sex: {sexDmg})";
                 break;
             case StatType.Resilience:
                 value = playerStats.GetBaseResilience();
@@ -159,8 +169,17 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 break;
         }
 
-        statValue.text = IsPercentageStat(statSlotType) ? value + "%" : value.ToString();
+        // If we didn't set a custom displayText above, use the normal format
+        if (string.IsNullOrEmpty(displayText))
+        {
+            displayText = IsPercentageStat(statSlotType)
+                ? $"{value}%"
+                : value.ToString();
+        }
+
+        statValue.text = displayText;
     }
+
 
     private bool IsPercentageStat(StatType type)
     {

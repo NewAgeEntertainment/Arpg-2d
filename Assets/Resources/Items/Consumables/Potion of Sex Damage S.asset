@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Potion of Sex Damage S
   m_EditorClassIdentifier: 
   guid: 45074434-9679-497f-a097-1a221d043f0b
-  goldValue: 0
-  itemPtice: 100
+  goldValue: 50
+  itemPtice: 300
   minStackSizeAtShop: 1
   maxStackSizeAtShop: 1
   itemRarity: 100
@@ -25,5 +25,7 @@ MonoBehaviour:
   itemIcon: {fileID: 1454793533, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   itemType: 6
   maxStackSize: 1
-  itemEffect: {fileID: 0}
-  itemModifiers: []
+  itemEffect: {fileID: 11400000, guid: eefcaf61219bb9841a9ac6c099e4ba03, type: 2}
+  itemModifiers:
+  - statType: 27
+    value: 20

@@ -282417,7 +282417,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1990743934
 Transform:
   m_ObjectHideFlags: 0
@@ -282427,7 +282427,7 @@ Transform:
   m_GameObject: {fileID: 1990743933}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 43.22, y: 101.6, z: 0}
+  m_LocalPosition: {x: 1.23, y: 69.67, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -282458,13 +282458,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_requiredTag: Player
-  m_destinationSceneName: 
-  m_spawnpointNameInDestinationScene: 
+  m_destinationSceneName: Sex Shop
+  m_spawnpointNameInDestinationScene: SpawnPoint
   m_onUsePortal:
     m_PersistentCalls:
       m_Calls: []
-  triggerActivationDelaySeconds: 0
-  blockUsePortalUntilArmed: 0
+  triggerActivationDelaySeconds: 1.2
+  blockUsePortalUntilArmed: 1
   startDisarmedOnEnable: 1
   m_isArmed: 1
 --- !u!61 &1990743937
@@ -282496,7 +282496,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: -0.4021621}

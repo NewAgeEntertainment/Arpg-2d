@@ -10,6 +10,9 @@ public class Player_Stats : Entity_Stats
     public event Action<float, float, int> OnSexExpChanged;        // (current, nextReq, level)
     public event Action<int> OnLevelChanged;                       // (newLevel)
 
+    // 🔹 NEW: fire this whenever any stat (str, stroke, etc.) changes
+    public event Action OnStatsChanged;
+
     // Progress
     public float CurrentEXP { get; private set; } = 0f;
     public int CurrentLevel { get; private set; } = 1;
@@ -39,6 +42,12 @@ public class Player_Stats : Entity_Stats
         inventory = GetComponent<Inventory_Player>();
     }
 
+    // 🔹 NEW: small helper so other scripts can poke it easily
+    public void NotifyStatsChanged()
+    {
+        OnStatsChanged?.Invoke();
+    }
+
     // ========= Normal EXP & Level-Up =========
 
     public void AddEXP(float amount)
@@ -62,7 +71,10 @@ public class Player_Stats : Entity_Stats
 
         var statGains = ApplyCumulativeLevelBonuses();
 
-        // 🔹 NEW: force HUD HP/MP/EXP bars to refresh immediately on level-up
+        // 🔹 NEW: stats changed (str/vit/etc.) → notify
+        NotifyStatsChanged();
+
+        // 🔹 force HUD HP/MP/EXP bars to refresh immediately on level-up
         var ui = UI.Instance;
         if (ui != null && ui.inGameUI != null)
         {
@@ -134,6 +146,9 @@ public class Player_Stats : Entity_Stats
         CurrentSexEXP -= GetNextSexLevelRequirement();
         CurrentSexLevel++;
         RaiseSex();
+
+        // if Sex level also gives stat bonuses later,
+        // call NotifyStatsChanged() here as well.
     }
 
     public float GetNextSexLevelRequirement()
@@ -162,6 +177,7 @@ public class Player_Stats : Entity_Stats
             GetStatByType(buff.type).AddModifier(buff.value, StatModType.Flat, source);
 
         inventory?.NotifyInventoryChanged();
+        NotifyStatsChanged();                    // 🔹 stats changed
 
         yield return new WaitForSeconds(duration);
 
@@ -169,12 +185,12 @@ public class Player_Stats : Entity_Stats
             GetStatByType(buff.type).RemoveModifier(source);
 
         inventory?.NotifyInventoryChanged();
+        NotifyStatsChanged();                    // 🔹 stats changed back
         activeBuff.Remove(source);
     }
 
     // ========= Save/Load helpers =========
 
-    /// <summary>Set level & exp and immediately notify listeners (UI refresh).</summary>
     public void SetLevelAndExp(int level, float exp)
     {
         CurrentLevel = Mathf.Max(1, level);
@@ -183,7 +199,6 @@ public class Player_Stats : Entity_Stats
         RaiseExp();
     }
 
-    /// <summary>Set sex level & exp and immediately notify listeners (UI refresh).</summary>
     public void SetSexLevelAndExp(int sexLevel, float sexExp)
     {
         CurrentSexLevel = Mathf.Max(1, sexLevel);
@@ -204,7 +219,6 @@ public class Player_Stats : Entity_Stats
         RaiseExp();
     }
 
-    /// <summary>Use this after a New Game / Load if you need to force all bars to repaint.</summary>
     public void ForceRaiseAllExpSignals()
     {
         OnLevelChanged?.Invoke(CurrentLevel);
