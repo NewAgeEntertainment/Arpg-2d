@@ -86,15 +86,16 @@ public class UI_PlayerStats : MonoBehaviour
                 {
                     float dmg = playerStats.offense.damage.GetValue();
                     float str = playerStats.major.strength.GetValue();
-                    return Mathf.Floor(dmg + str);
+                    return Mathf.Floor(dmg + str * 0.5f);   // 0.5 damage per STR
                 }
+
 
             // -------- Derived sexual damage: SexualDamage + Stroke --------
             case StatType.SexualDamage:
                 {
                     float sexDmg = playerStats.sex.sexualDamage.GetValue();
                     float stroke = playerStats.sex.stroke.GetValue();
-                    return Mathf.Floor(sexDmg + stroke);
+                    return Mathf.Floor(sexDmg + stroke * 0.5f);   // 0.5 per Stroke
                 }
 
             // -------- Derived resilience shown in UI (gameplay uses same idea) --------
@@ -131,20 +132,22 @@ public class UI_PlayerStats : MonoBehaviour
 
         switch (statType)
         {
-            // -------- Damage depends on Damage + Strength --------
             case StatType.Damage:
                 {
                     float projBaseDmg = GetProjectedBaseStat(StatType.Damage, item);
                     float projBaseStr = GetProjectedBaseStat(StatType.Strength, item);
-                    return Mathf.Floor(projBaseDmg + projBaseStr);
+                    return Mathf.Floor(projBaseDmg + projBaseStr * 0.5f);   // keep UI in sync
                 }
+
 
             // -------- Sexual damage depends on SexualDamage + Stroke --------
             case StatType.SexualDamage:
                 {
                     float projSexDmg = GetProjectedBaseStat(StatType.SexualDamage, item);
                     float projStroke = GetProjectedBaseStat(StatType.Stroke, item);
-                    return Mathf.Floor(projSexDmg + projStroke);
+
+                    float projected = Mathf.Floor(projSexDmg + projStroke * 0.5f);  // keep UI in sync
+                    return projected;
                 }
 
             // -------- Resilience depends on Resilience × SexualRestraint --------

@@ -71,7 +71,15 @@ public class Entity_Stats : MonoBehaviour
         return Mathf.Floor(finalDamage * scaleFactor);
     }
 
-    public float GetBaseDamage() => Mathf.Floor(offense.damage.GetValue() + major.strength.GetValue());
+    public float GetBaseDamage()
+    {
+        float rawDamage = offense.damage.GetValue();
+        float strength = major.strength.GetValue();
+        float strBonus = strength * 0.5f;          // 0.5 damage per 1 STR
+
+        return Mathf.Floor(rawDamage + strBonus);
+    }
+
     public float GetCritChance() => Mathf.Floor(offense.critChance.GetValue() + (major.luck.GetValue() * 0.3f));
     public float GetCritPower() => Mathf.Floor(offense.critPower.GetValue() + (major.strength.GetValue() * 0.5f));
 
@@ -86,7 +94,19 @@ public class Entity_Stats : MonoBehaviour
         return Mathf.Floor(finalSexDamage * scaleFactor);
     }
 
-    public float GetBaseSexDamage() => Mathf.Floor(sex.sexualDamage.GetValue() + sex.stroke.GetValue());
+    // OLD
+    // public float GetBaseSexDamage() => Mathf.Floor(sex.sexualDamage.GetValue() + sex.stroke.GetValue());
+
+    // NEW
+    public float GetBaseSexDamage()
+    {
+        float rawSexDamage = sex.sexualDamage.GetValue();
+        float stroke = sex.stroke.GetValue();
+        float strokeBonus = stroke * 0.5f;          // 0.5 sexual damage per 1 Stroke
+
+        return Mathf.Floor(rawSexDamage + strokeBonus);
+    }
+
 
     public float GetArmorMitigation(float armorReduction)
     {
