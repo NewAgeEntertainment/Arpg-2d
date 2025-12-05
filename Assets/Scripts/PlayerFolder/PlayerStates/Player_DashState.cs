@@ -1,4 +1,4 @@
-// Player_DashState.cs
+﻿// Player_DashState.cs
 using Rewired;
 using UnityEngine;
 
@@ -9,8 +9,23 @@ public class Player_DashState : PlayerState
     public Player_DashState(Player player, StateMachine stateMachine, string animBoolName)
         : base(player, stateMachine, animBoolName) { }
 
+    // 🔹 Helper: use Entity_Health.IsDead so dash never overrides death.
+    private bool IsPlayerDead()
+    {
+        var hp = player.health as Entity_Health;    // Player_Health inherits Entity_Health
+        return hp != null && hp.IsDead;
+    }
+
     public override void Enter()
     {
+        // If we somehow try to start a dash while already dead,
+        // just bounce back to idle (or whichever state requested it).
+        if (IsPlayerDead())
+        {
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+
         base.Enter();
 
         // ---------- 1) Read raw input at the exact dash frame ----------
@@ -29,7 +44,7 @@ public class Player_DashState : PlayerState
 
         Vector2 dash;
 
-        // Small deadzone so tiny input doesn�t override facing
+        // Small deadzone so tiny input doesn’t override facing
         const float inputDeadzoneSq = 0.1f * 0.1f;
 
         if (rawInput.sqrMagnitude > inputDeadzoneSq)
@@ -99,12 +114,19 @@ public class Player_DashState : PlayerState
         }
     }
 
-
-
-
-
     public override void Update()
     {
+        // 🛑 If we died during the dash, stop dash logic and let the death state take over.
+        if (IsPlayerDead())
+        {
+            (player.health as Player_Health)?.RemoveInvulnerability("Dash");
+            if (skillManager != null && skillManager.dash != null)
+                skillManager.dash.OnEndEffect();
+
+            player.SetVelocity(0f, 0f);
+            return; // Death flow (Entity_Health / Player_DeathState) runs independently.
+        }
+
         // Instead of base.Update(), do the minimal state work:
         stateTimer -= Time.deltaTime;
         UpdateAnimationParameters(); // if you need it; otherwise you can omit
@@ -120,12 +142,10 @@ public class Player_DashState : PlayerState
             anim.SetFloat("yInput", Mathf.Round(n.y));
         }
 
-        // End dash when timer runs out
+        // End dash when timer runs out (only if we're still alive)
         if (stateTimer <= 0f)
             stateMachine.ChangeState(player.idleState);
     }
-
-
 
     public override void Exit()
     {
@@ -138,12 +158,11 @@ public class Player_DashState : PlayerState
         player.SetVelocity(0f, 0f);
     }
 
-
     private void UpdateDashAnimFacing()
     {
         if (anim == null) return;
 
-        // face exactly where we�re dashing
+        // face exactly where we’re dashing
         Vector2 n = dashDir.sqrMagnitude > 0.0001f ? dashDir.normalized : player.lastMoveDirection;
         anim.SetFloat("xInput", Mathf.Round(n.x));
         anim.SetFloat("yInput", Mathf.Round(n.y));

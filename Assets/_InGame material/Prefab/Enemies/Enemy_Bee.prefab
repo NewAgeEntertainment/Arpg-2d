@@ -4099,11 +4099,11 @@ MonoBehaviour:
   dropList: {fileID: 11400000, guid: 15b1053e05bd8a546b2aa509266d808d, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
-  maxDrop: 6
+  maxDrop: 2
   burstRadius: 5
   dropGold: 1
-  minGold: 10
-  maxGold: 50
+  minGold: 3
+  maxGold: 10
   goldStackMin: 5
   goldStackMax: 15
   goldPickupPrefab: {fileID: 872795072155214972, guid: 9b3e271ca00737546b153f9cb06b13d9, type: 3}
@@ -4124,7 +4124,7 @@ MonoBehaviour:
   stunnedVelocity: {x: 1, y: 1}
   canBeStunned: 0
   idleTime: 10
-  moveSpeed: 5
+  moveSpeed: 3
   pauseDuration: 5
   battleTime: 3.27
   moveAnimSpeedMultiplier: 1
@@ -4286,7 +4286,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: f946a537d5502ee4fa6f27077322270a, type: 2}
   resources:
     maxHealth:
-      baseValue: 300
+      baseValue: 70
       modifiers:
       - value: 0
         type: 0
@@ -4305,13 +4305,13 @@ MonoBehaviour:
       baseValue: 1
       modifiers: []
     damage:
-      baseValue: 10
+      baseValue: 6
       modifiers:
       - value: 1
         type: 0
         source: EnemyLevelScale
     critPower:
-      baseValue: 0
+      baseValue: 150
       modifiers: []
     critChance:
       baseValue: 0

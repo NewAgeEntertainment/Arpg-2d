@@ -1099,11 +1099,11 @@ GameObject:
   m_Component:
   - component: {fileID: 6100707136976238000}
   - component: {fileID: 1229165927033897754}
+  - component: {fileID: 5851395876229093120}
+  - component: {fileID: 3520670173130286455}
   - component: {fileID: 2761438198328592618}
   - component: {fileID: 7452291460787910200}
-  - component: {fileID: 3520670173130286455}
   - component: {fileID: 4121024465192022402}
-  - component: {fileID: 5851395876229093120}
   - component: {fileID: 2112800864012940792}
   - component: {fileID: 7478960372248148795}
   - component: {fileID: 6459691345458401076}
@@ -1160,8 +1160,8 @@ MonoBehaviour:
   maxDrop: 3
   burstRadius: 5
   dropGold: 1
-  minGold: 10
-  maxGold: 30
+  minGold: 5
+  maxGold: 10
   goldStackMin: 1
   goldStackMax: 10
   goldPickupPrefab: {fileID: 872795072155214972, guid: 9b3e271ca00737546b153f9cb06b13d9, type: 3}
@@ -1182,118 +1182,16 @@ MonoBehaviour:
   stunnedVelocity: {x: 1, y: 1}
   canBeStunned: 0
   idleTime: 3
-  moveSpeed: 5
+  moveSpeed: 3
   pauseDuration: 5
   battleTime: 3.27
   moveAnimSpeedMultiplier: 1
-  patrolPoints: []
+  patrolPoints:
+  - {x: 5.97, y: -2.92}
+  - {x: -0.14, y: -3.78}
+  - {x: 5.9, y: 0.45}
   currentPatrolIndex: 0
   target: {x: 0, y: 0}
---- !u!114 &2761438198328592618
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2488284637338199331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2392a2eecb796df429c32f9898fac0c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
-  onDamageVFXDuration: 0.1
-  hitVfxColor: {r: 0.83372265, g: 0.93207544, b: 0.80721253, a: 1}
-  burnVfx: {r: 0.99607843, g: 0.3882353, b: 0.043137256, a: 1}
-  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
-  shockVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  posionVfx: {fileID: 0}
-  hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
-  critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
-  chillVfx: {r: 0.30980393, g: 0.3882353, b: 1, a: 1}
-  attackAlert: {fileID: 4862312424062019137}
---- !u!50 &7452291460787910200
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2488284637338199331}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 800
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 6200000, guid: 83548ec120b0e6047a807e0ec9b43368, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 1
-  m_SleepingMode: 1
-  m_CollisionDetection: 1
-  m_Constraints: 4
---- !u!114 &3520670173130286455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2488284637338199331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35325787a1707334687762b7e1ebe52f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  expReward: 9
-  currentHealth: 0
-  isDead: 0
-  regenInterval: 1
-  canRegenerateHealth: 1
-  knockbackDuration: 0.5
-  onDamageKnockback: 1
-  heavyDamageThreshold: 1
-  heavyKnockbackDuration: 0
-  onHeavyDamageKnockback: 1
-  animatorLayer: 0
-  deathStateName: dead
-  forcePlayDeathState: 1
-  extraDespawnDelay: 0.1
-  fallbackTimeout: 2
-  usePooling: 0
-  enableKillOnInput: 1
-  useRewired: 1
-  rewiredPlayerId: 0
-  rewiredKillAction: DebugKillEnemy
-  fallbackKillKey: 107
-  debugLogs: 1
-  superArmorDuringAttack: 1
-  ignoreStunDuringAttack: 1
---- !u!114 &4121024465192022402
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2488284637338199331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1faa47a00974f8940a98bf422f61bfae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manaBar: {fileID: 0}
-  currentMana: 0
-  isDead: 0
-  isManaDepleted: 0
-  manaRegenInterval: 1
-  canRegenerateMana: 1
-  regenPerTick: 0
 --- !u!114 &5851395876229093120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1309,7 +1207,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: 379d62341a7e85d42b62b5665867ae31, type: 2}
   resources:
     maxHealth:
-      baseValue: 300
+      baseValue: 100
       modifiers:
       - value: 0
         type: 0
@@ -1328,7 +1226,7 @@ MonoBehaviour:
       baseValue: 1
       modifiers: []
     damage:
-      baseValue: 12
+      baseValue: 8
       modifiers:
       - value: 1
         type: 0
@@ -1407,11 +1305,116 @@ MonoBehaviour:
       modifiers: []
   enemyLevel: 1
   showLevelInName: 1
-  maxHealthMultiplier: 1
+  maxHealthMultiplier: 3
   damageMultiplier: 1
   armorMultiplier: 1
   elementalDamageMultiplier: 1
   elementalResMultiplier: 1
+--- !u!114 &3520670173130286455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35325787a1707334687762b7e1ebe52f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  expReward: 9
+  currentHealth: 0
+  isDead: 0
+  regenInterval: 1
+  canRegenerateHealth: 1
+  knockbackDuration: 0.5
+  onDamageKnockback: 1
+  heavyDamageThreshold: 1
+  heavyKnockbackDuration: 0
+  onHeavyDamageKnockback: 1
+  animatorLayer: 0
+  deathStateName: dead
+  forcePlayDeathState: 1
+  extraDespawnDelay: 0.1
+  fallbackTimeout: 2
+  usePooling: 0
+  enableKillOnInput: 1
+  useRewired: 1
+  rewiredPlayerId: 0
+  rewiredKillAction: DebugKillEnemy
+  fallbackKillKey: 107
+  debugLogs: 1
+  superArmorDuringAttack: 1
+  ignoreStunDuringAttack: 1
+--- !u!114 &2761438198328592618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2392a2eecb796df429c32f9898fac0c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onDamageMaterial: {fileID: 2100000, guid: fb986f58c2099be448d25ee317fd9623, type: 2}
+  onDamageVFXDuration: 0.1
+  hitVfxColor: {r: 0.83372265, g: 0.93207544, b: 0.80721253, a: 1}
+  burnVfx: {r: 0.99607843, g: 0.3882353, b: 0.043137256, a: 1}
+  poisonVfx: {r: 0, g: 1, b: 0, a: 1}
+  shockVfx: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  posionVfx: {fileID: 0}
+  hitVfx: {fileID: 6112724607161003390, guid: a092b215b1103c34982cf4ba009e0fed, type: 3}
+  critHitVfx: {fileID: 1689162328634845605, guid: 21c37d195b3724e4fb4e60215c5a1ba7, type: 3}
+  chillVfx: {r: 0.30980393, g: 0.3882353, b: 1, a: 1}
+  attackAlert: {fileID: 4862312424062019137}
+--- !u!50 &7452291460787910200
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 800
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 6200000, guid: 83548ec120b0e6047a807e0ec9b43368, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 1
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!114 &4121024465192022402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1faa47a00974f8940a98bf422f61bfae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manaBar: {fileID: 0}
+  currentMana: 0
+  isDead: 0
+  isManaDepleted: 0
+  manaRegenInterval: 1
+  canRegenerateMana: 1
+  regenPerTick: 0
 --- !u!114 &2112800864012940792
 MonoBehaviour:
   m_ObjectHideFlags: 0

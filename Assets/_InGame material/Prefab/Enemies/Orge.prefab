@@ -2595,7 +2595,7 @@ MonoBehaviour:
   stunnedVelocity: {x: 7, y: 7}
   canBeStunned: 0
   idleTime: 3
-  moveSpeed: 3
+  moveSpeed: 4
   pauseDuration: 1
   battleTime: 3
   moveAnimSpeedMultiplier: 1
@@ -2746,7 +2746,7 @@ MonoBehaviour:
       modifiers: []
   defense:
     armor:
-      baseValue: 0
+      baseValue: 3
       modifiers:
       - value: 0
         type: 0
@@ -2797,6 +2797,11 @@ MonoBehaviour:
       modifiers: []
   enemyLevel: 1
   showLevelInName: 1
+  maxHealthMultiplier: 1
+  damageMultiplier: 1
+  armorMultiplier: 1
+  elementalDamageMultiplier: 1
+  elementalResMultiplier: 1
 --- !u!114 &8759250925004963928
 MonoBehaviour:
   m_ObjectHideFlags: 0

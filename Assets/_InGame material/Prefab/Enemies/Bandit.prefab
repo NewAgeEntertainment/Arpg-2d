@@ -2428,8 +2428,8 @@ MonoBehaviour:
   maxDrop: 3
   burstRadius: 3
   dropGold: 1
-  minGold: 10
-  maxGold: 50
+  minGold: 5
+  maxGold: 10
   goldStackMin: 5
   goldStackMax: 15
   goldPickupPrefab: {fileID: 0}
@@ -2450,7 +2450,7 @@ MonoBehaviour:
   stunnedVelocity: {x: 0.1, y: 0.1}
   canBeStunned: 1
   idleTime: 10
-  moveSpeed: 5
+  moveSpeed: 3
   pauseDuration: 5
   battleTime: 3.27
   moveAnimSpeedMultiplier: 1
@@ -2612,7 +2612,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: 846ce9129122a34428aaf7ec17d8b2d6, type: 2}
   resources:
     maxHealth:
-      baseValue: 300
+      baseValue: 80
       modifiers:
       - value: 0
         type: 0
@@ -2631,7 +2631,7 @@ MonoBehaviour:
       baseValue: 1
       modifiers: []
     damage:
-      baseValue: 11
+      baseValue: 8
       modifiers:
       - value: 1
         type: 0
@@ -2659,7 +2659,7 @@ MonoBehaviour:
       modifiers: []
   defense:
     armor:
-      baseValue: 0
+      baseValue: 1
       modifiers:
       - value: 2
         type: 0

@@ -26199,7 +26199,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f7f9612717dd294593fffdb28645456, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneEvents: []
+  sceneEvents:
+  - guid: cc8c72b6-69a1-42a0-a64a-0a988480b937
+    onExecute:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 7562833577638670875}
+          m_TargetAssemblyTypeName: UnityEngine.Collider2D, UnityEngine
+          m_MethodName: set_isTrigger
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
 --- !u!4 &657888966
 Transform:
   m_ObjectHideFlags: 0
@@ -66738,7 +66754,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7562833577638670872}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
   m_Name: 
@@ -89546,6 +89562,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8564477627029999769, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
   m_PrefabInstance: {fileID: 7562833577638670871}
   m_PrefabAsset: {fileID: 0}
+--- !u!61 &7562833577638670875 stripped
+BoxCollider2D:
+  m_CorrespondingSourceObject: {fileID: 2415206637815481327, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+  m_PrefabInstance: {fileID: 7562833577638670871}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &7562833577638670877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89685,7 +89706,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7562833577638670872}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c593457cd8105e148906690e1707c592, type: 3}
   m_Name: 
@@ -89729,7 +89750,7 @@ MonoBehaviour:
   allowBarksDuringConversations: 0
   skipBarkIfNoValidEntries: 0
   cacheBarkLines: 0
-  conversation: NPC should Follow
+  conversation: Elaina/Prolonge
   conversationConversant: {fileID: 1745488122}
   conversationActor: {fileID: 0}
   startConversationEntryID: -1
@@ -89739,7 +89760,7 @@ MonoBehaviour:
   replace: 0
   queue: 0
   skipIfNoValidEntries: 0
-  preventRestartOnSameFrameEnded: 0
+  preventRestartOnSameFrameEnded: 1
   stopConversationOnTriggerExit: 0
   marginToAllowTriggerExit: 0.2
   stopConversationIfTooFar: 0

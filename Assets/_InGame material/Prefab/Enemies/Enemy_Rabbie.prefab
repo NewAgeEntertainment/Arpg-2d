@@ -1541,11 +1541,11 @@ MonoBehaviour:
   dropList: {fileID: 11400000, guid: 3358cc453437e2045869f2e7ebf2bdb9, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
-  maxDrop: 6
+  maxDrop: 2
   burstRadius: 5
   dropGold: 1
-  minGold: 5
-  maxGold: 20
+  minGold: 3
+  maxGold: 10
   goldStackMin: 5
   goldStackMax: 15
   goldPickupPrefab: {fileID: 872795072155214972, guid: 9b3e271ca00737546b153f9cb06b13d9, type: 3}
@@ -1571,10 +1571,8 @@ MonoBehaviour:
   battleTime: 1
   moveAnimSpeedMultiplier: 0
   patrolPoints:
-  - {x: 0, y: 3.44}
-  - {x: 6.38, y: 3.53}
-  - {x: 6.38, y: 0.17}
-  - {x: 0, y: 0.01}
+  - {x: 0.85, y: -5.4}
+  - {x: 4.26, y: -1.11}
   currentPatrolIndex: 0
   target: {x: 0, y: 0}
 --- !u!70 &4913001161840626736
@@ -1732,7 +1730,7 @@ MonoBehaviour:
   defaultStatSetup: {fileID: 11400000, guid: f946a537d5502ee4fa6f27077322270a, type: 2}
   resources:
     maxHealth:
-      baseValue: 300
+      baseValue: 70
       modifiers:
       - value: 0
         type: 0
@@ -1751,7 +1749,7 @@ MonoBehaviour:
       baseValue: 1
       modifiers: []
     damage:
-      baseValue: 10
+      baseValue: 7
       modifiers:
       - value: 1
         type: 0
@@ -1830,6 +1828,11 @@ MonoBehaviour:
       modifiers: []
   enemyLevel: 1
   showLevelInName: 1
+  maxHealthMultiplier: 1
+  damageMultiplier: 1
+  armorMultiplier: 1
+  elementalDamageMultiplier: 1
+  elementalResMultiplier: 1
 --- !u!114 &4019127699807728705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4636,7 +4639,7 @@ RectTransform:
   m_Father: {fileID: 3192330273189093084}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.120697, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
