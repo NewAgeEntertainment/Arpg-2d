@@ -10,7 +10,7 @@ public class Player_BasicAttackState : PlayerState
     // ---- Input / chaining ----
     private bool comboAttackQueued;
     private float lastQueueTime;
-    private const float attackQueueCooldown = 0.08f; // prevents accidental double-queues within the same swing
+    private const float attackQueueCooldown = 0.08f;
 
     // ---- Direction locked per swing ----
     private Vector2 lastAttackDir;
@@ -21,13 +21,15 @@ public class Player_BasicAttackState : PlayerState
     private const int FirstComboIndex = 1;
 
     // ---- Input (Rewired) ----
-    // Button-only. Make sure this matches your Rewired Action name.
     private const string AttackActionName = "Attack";
 
     // ---- Lunge tuning ----
-    private const float lungeDuration = 0.10f; // seconds; outside this, velocity is hard-zeroed
+    private const float lungeDuration = 0.10f;
 
-    // ---- Debounce so we don't double-consume the same press on the entry frame ----
+    // ---- Soft aim tuning (used instead of ThrustSoftAimAngle/Range) ----
+    private const float SoftAimAngleDeg = 35f;       // cone half-angle
+    private const float SoftAimRangeMultiplier = 1f; // × combat.TargetCheckRadius
+
     private int enteredFrame;
 
     public Player_BasicAttackState(Player player, StateMachine stateMachine, string animBoolName)
@@ -52,23 +54,68 @@ public class Player_BasicAttackState : PlayerState
     {
         base.Enter();
 
-        enteredFrame = Time.frameCount;   // ignore AttackDown this frame to avoid double-consume
+        enteredFrame = Time.frameCount;
 
-        // Fresh swing: clear any leftover queue flag
         comboAttackQueued = false;
 
         ResetComboIndexIfNeeded();
         SyncAttackSpeed();
 
-        // Lock direction for this swing from input or last facing
-        Vector2 inputDir = player.moveInput;
-        lastAttackDir = (inputDir.sqrMagnitude > 0.01f) ? inputDir.normalized : player.lastMoveDirection;
+        // ------------------ LOCK + SOFT-AIM ATTACK DIRECTION ------------------
 
-        // Animator params
+        // 1) Base direction from movement input or last facing
+        Vector2 inputDir = player.moveInput;
+
+        if (inputDir.sqrMagnitude <= 0.01f)
+        {
+            if (player.lastMoveDirection.sqrMagnitude > 0.01f)
+                inputDir = player.lastMoveDirection;
+            else
+                inputDir = Vector2.down;
+        }
+
+        Vector2 dir = inputDir.normalized;
+
+        // 2) Soft-aim: bias toward a target roughly in front of us
+        if (player.combat != null)
+        {
+            float range =
+                player.combat.TargetCheckRadius > 0f
+                    ? player.combat.TargetCheckRadius * SoftAimRangeMultiplier
+                    : 2.5f; // fallback
+
+            Transform softTarget = player.combat.GetSoftAimTarget(
+                player.transform.position,
+                dir,
+                SoftAimAngleDeg,
+                range
+            );
+
+            if (softTarget != null)
+            {
+                Vector2 toTarget = (Vector2)softTarget.position - (Vector2)player.transform.position;
+                if (toTarget.sqrMagnitude > 0.001f)
+                {
+                    toTarget.Normalize();
+                    const float blend = 0.3f; // 0 = no assist, 1 = full lock
+                    Vector2 blended = Vector2.Lerp(dir, toTarget, blend);
+                    if (blended.sqrMagnitude > 0.0001f)
+                        dir = blended.normalized;
+                }
+            }
+        }
+
+        lastAttackDir = dir;
+
+        // Make sure combat hitpoints use this facing
+        player.currentDir = lastAttackDir;
+        player.lastMoveDirection = lastAttackDir;
+
+        // -----------------------------------------------------------
+
         anim.SetInteger("basicAttackIndex", comboIndex);
         SetAnimatorDirectionParams(lastAttackDir);
 
-        // Apply the lunge burst; movement is fully stopped when timer ends
         ApplyAttackVelocity();
     }
 
@@ -76,31 +123,25 @@ public class Player_BasicAttackState : PlayerState
     {
         base.Update();
 
-        // Stop movement when the lunge window ends
         HandleAttackVelocity();
 
-        // Edge-triggered queue for the next hit (Rewired button only)
         if (rPlayer != null && ReInput.isReady)
         {
-            bool attackPressedThisFrame = rPlayer.GetButtonDown("Attack");
+            bool attackPressedThisFrame = rPlayer.GetButtonDown(AttackActionName);
             if (!triggerCalled && attackPressedThisFrame)
                 TryQueueNextAttack();
         }
 
-        // When the current attack animation signals exit, decide whether to chain
         if (triggerCalled)
             HandleStateExit();
     }
-
 
     public override void Exit()
     {
         base.Exit();
 
-        // Finisher -> reset to 1; otherwise advance
         comboIndex = (comboIndex < comboLimit) ? comboIndex + 1 : FirstComboIndex;
 
-        // Keep facing consistent for idle
         player.lastMoveDirection = lastAttackDir;
 
         lastTimeAttacked = Time.time;
@@ -110,8 +151,8 @@ public class Player_BasicAttackState : PlayerState
 
     private void TryQueueNextAttack()
     {
-        if (comboAttackQueued) return;                    // already queued once this swing
-        if (comboIndex >= comboLimit) return;             // no next step
+        if (comboAttackQueued) return;
+        if (comboIndex >= comboLimit) return;
         if (Time.time - lastQueueTime < attackQueueCooldown) return;
 
         comboAttackQueued = true;
@@ -124,14 +165,12 @@ public class Player_BasicAttackState : PlayerState
 
         if (canChain && comboAttackQueued)
         {
-            // Consume and chain
             comboAttackQueued = false;
             anim.SetBool(animBoolName, false);
             player.EnterAttackStateWithDelay();
         }
         else
         {
-            // No chain or end of combo
             stateMachine.ChangeState(player.idleState);
         }
     }
@@ -140,7 +179,6 @@ public class Player_BasicAttackState : PlayerState
     {
         attackVelocityTimer -= Time.deltaTime;
 
-        // When the burst ends, completely stop movement (x & y)
         if (attackVelocityTimer <= 0f)
             player.SetVelocity(0f, 0f);
     }
@@ -153,7 +191,6 @@ public class Player_BasicAttackState : PlayerState
         if (player.attackMovement != null && player.attackMovement.Length > 0)
             burst = player.attackMovement[Mathf.Clamp(idx, 0, player.attackMovement.Length - 1)];
 
-        // Lunge in the locked direction
         player.SetVelocity(burst * lastAttackDir.x, burst * lastAttackDir.y);
 
         attackVelocityTimer = lungeDuration;
@@ -161,11 +198,9 @@ public class Player_BasicAttackState : PlayerState
 
     private void ResetComboIndexIfNeeded()
     {
-        // Restart chain if we waited too long
         if (Time.time > lastTimeAttacked + player.comboResetTime)
             comboIndex = FirstComboIndex;
 
-        // Clamp just in case
         if (comboIndex > comboLimit || comboIndex < FirstComboIndex)
             comboIndex = FirstComboIndex;
     }

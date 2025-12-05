@@ -72,6 +72,18 @@ public class Player : Entity
     public float ThrustSpeed;
     public Vector2 moveInput { get; set; }
 
+    [Header("Thrust Aim Assist")]
+    [Tooltip("Max angle from stick direction that we will 'snap' toward an enemy.")]
+    [SerializeField, Range(0f, 90f)] private float thrustSoftAimAngle = 45f;
+
+    [Tooltip("Max distance to look for soft-aim targets when thrusting.")]
+    [SerializeField] private float thrustSoftAimRange = 6f;
+
+    // Public accessors used by Player_ThrustState
+    public float ThrustSoftAimAngle => thrustSoftAimAngle;
+    public float ThrustSoftAimRange => thrustSoftAimRange;
+
+
     [Header("Interact scan")]
     [SerializeField] private float interactRadius = 1.8f;
     [SerializeField] private LayerMask interactMask = ~0; // set in Inspector to your “Interactable” layers

@@ -4,9 +4,9 @@ using UnityEngine;
 public class Player_Combat : Entity_Combat
 {
     [Header("Counter Attack details")]
-    [SerializeField]
-    private float counterRecovery = .1f;
+    [SerializeField] private float counterRecovery = .1f;
 
+    [Header("Hit Check Points")]
     [SerializeField] private Transform _targetCheck_Left;
     [SerializeField] private Transform _targetCheck_Right;
     [SerializeField] private Transform _targetCheck_Up;
@@ -16,76 +16,135 @@ public class Player_Combat : Entity_Combat
     {
         bool hasPerformedCounter = false;
 
-        // This method checks if a counter attack was performed by looking for targets that implement the ICounterable interface
-        // for each detected collider in the target area, it checks if the target has an ICounterable component
-        foreach (Collider2D target in GetDetectedCollider()) // loop through all detected colliders in the target area
+        foreach (Collider2D target in GetDetectedCollider())
         {
-            // check if the target has an ICounterable component
-            // counterable equals the ICounterable component of the target collider
-
             if (!target.TryGetComponent(out ICounterable counterable))
-                continue; // if the target does not have an ICounterable component, skip to the next target
+                continue;
 
-            // if the target has an ICounterable component, call its HandleCounter method
             if (counterable.CanBeCountered)
             {
-                // Perform the counter attack by calling the HandleCounter method on the target's ICounterable component
-                counterable.HandleCounter(); // call the HandleCounter method on the target's ICounterable component
-                hasPerformedCounter = true; // if we found a counterable target, set the flag to true
+                counterable.HandleCounter();
+                hasPerformedCounter = true;
             }
         }
 
-        return hasPerformedCounter; // return true if we countered at least one target, false otherwise
-
+        return hasPerformedCounter;
     }
 
     public float GetCounterRecoveryDuration()
     {
-        return counterRecovery; // return the duration of the counter attack
+        return counterRecovery;
     }
 
+    // =====================================================================
+    // Hit detection used by PerformAttack() (called from animation event)
+    // =====================================================================
     public override Collider2D[] GetDetectedCollider()
     {
-        // Initialize an empty list to store detected colliders  
         List<Collider2D> detected = new List<Collider2D>();
 
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(GetTargetTransform().position, targetCheckRadius, whatIsTarget);
+        Transform hitOrigin = GetTargetTransform();
+        if (hitOrigin == null)
+            hitOrigin = transform; // very defensive fallback
 
-        // Combine the detected colliders into the list  
-        detected.AddRange(colliders);
+        var colliders = Physics2D.OverlapCircleAll(
+            hitOrigin.position,
+            targetCheckRadius,
+            whatIsTarget
+        );
 
-        // Return the combined colliders as an array  
+        if (colliders != null && colliders.Length > 0)
+        {
+            foreach (var c in colliders)
+            {
+                if (c == null) continue;
+                if (!detected.Contains(c))
+                    detected.Add(c);
+            }
+        }
+
         return detected.ToArray();
     }
 
+    /// <summary>
+    /// Picks which hit point to use based on the entity's current facing.
+    /// </summary>
     private Transform GetTargetTransform()
     {
         Vector2 dir = _entity.currentDir;
 
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y)) // Horizontal
-        {
-            return dir.x < 0 ? _targetCheck_Left : _targetCheck_Right;
-        }
-        else if (Mathf.Abs(dir.y) > 0) // Vertical
-        {
-            return dir.y < 0 ? _targetCheck_Down : _targetCheck_Up;
-        }
+        // If currentDir somehow ended up zero, be forgiving and use "down" as default.
+        if (dir.sqrMagnitude < 0.001f)
+            return _targetCheck_Down != null ? _targetCheck_Down : transform;
 
-        // Default fallback
-        return _targetCheck_Down;
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y)) // Horizontal dominant
+        {
+            return dir.x < 0f ? _targetCheck_Left : _targetCheck_Right;
+        }
+        else                                   // Vertical dominant
+        {
+            return dir.y < 0f ? _targetCheck_Down : _targetCheck_Up;
+        }
     }
 
+    // Just for editor visualization of all four possible hit origins.
     private void OnDrawGizmos()
     {
-        // Fix: Declare and initialize targetCheck to avoid CS0103 error  
-        Transform[] targetCheck = { _targetCheck_Left, _targetCheck_Right, _targetCheck_Up, _targetCheck_Down };
+        Gizmos.color = Color.yellow;
 
-        if (targetCheck != null)
+        Transform[] targetChecks =
         {
-            foreach (Transform check in targetCheck)
-            {
-                Gizmos.DrawWireSphere(check.position, targetCheckRadius);
-            }
+            _targetCheck_Left,
+            _targetCheck_Right,
+            _targetCheck_Up,
+            _targetCheck_Down
+        };
+
+        if (targetChecks == null) return;
+
+        foreach (Transform check in targetChecks)
+        {
+            if (check == null) continue;
+            Gizmos.DrawWireSphere(check.position, targetCheckRadius);
         }
     }
+
+    public Transform GetSoftAimTarget(Vector2 origin, Vector2 forward, float maxAngleDeg, float maxRange)
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, maxRange, whatIsTarget); // use your combat layer mask
+        if (hits == null || hits.Length == 0) return null;
+
+        Transform best = null;
+        float bestScore = float.NegativeInfinity;
+
+        foreach (var h in hits)
+        {
+            if (h == null) continue;
+
+            Vector2 to = (Vector2)h.transform.position - origin;
+            float dist = to.magnitude;
+            if (dist < 0.001f) continue;
+
+            to /= dist; // normalize
+
+            // angle between our forward and this target
+            float dot = Vector2.Dot(forward, to); // cos(theta)
+            float angle = Mathf.Acos(Mathf.Clamp(dot, -1f, 1f)) * Mathf.Rad2Deg;
+
+            if (angle > maxAngleDeg)
+                continue; // too far off to the side
+
+            // Score = "how straight ahead + how close"
+            float score = dot * 2f + (1f - Mathf.Clamp01(dist / maxRange));
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                best = h.transform;
+            }
+        }
+
+        return best;
+    }
+
 }
