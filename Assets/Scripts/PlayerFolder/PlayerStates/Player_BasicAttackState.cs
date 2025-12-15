@@ -26,11 +26,10 @@ public class Player_BasicAttackState : PlayerState
     // ---- Lunge tuning ----
     private const float lungeDuration = 0.10f;
 
-    // ---- Soft aim tuning (used instead of ThrustSoftAimAngle/Range) ----
-    private const float SoftAimAngleDeg = 35f;       // cone half-angle
-    private const float SoftAimRangeMultiplier = 1f; // × combat.TargetCheckRadius
-
     private int enteredFrame;
+
+    private const string SkillModifierActionName = "SkillModifier";
+
 
     public Player_BasicAttackState(Player player, StateMachine stateMachine, string animBoolName)
         : base(player, stateMachine, animBoolName)
@@ -61,34 +60,39 @@ public class Player_BasicAttackState : PlayerState
         ResetComboIndexIfNeeded();
         SyncAttackSpeed();
 
-        // ------------------ LOCK + SOFT-AIM ATTACK DIRECTION ------------------
+        // ------------------ LOCK + AUTO-AIM ATTACK DIRECTION ------------------
 
         // 1) Base direction from movement input or last facing
-        Vector2 inputDir = player.moveInput;
+        bool hasInput = player.moveInput.sqrMagnitude > 0.0001f;
 
-        if (inputDir.sqrMagnitude <= 0.01f)
+        Vector2 baseDir;
+        if (hasInput)
         {
-            if (player.lastMoveDirection.sqrMagnitude > 0.01f)
-                inputDir = player.lastMoveDirection;
-            else
-                inputDir = Vector2.down;
+            baseDir = player.moveInput.normalized;
+        }
+        else if (player.lastMoveDirection.sqrMagnitude > 0.01f)
+        {
+            baseDir = player.lastMoveDirection.normalized;
+        }
+        else
+        {
+            baseDir = Vector2.down;
         }
 
-        Vector2 dir = inputDir.normalized;
+        Vector2 dir = baseDir;
 
-        // 2) Soft-aim: bias toward a target roughly in front of us
+        // 2) Soft / hard aim assist using Player_Combat.GetSoftAimTarget
         if (player.combat != null)
         {
-            float range =
-                player.combat.TargetCheckRadius > 0f
-                    ? player.combat.TargetCheckRadius * SoftAimRangeMultiplier
-                    : 2.5f; // fallback
+            // If no input → use almost full circle (like thrust soft lock when neutral)
+            float angleToUse = hasInput ? player.ThrustSoftAimAngle : 179.9f;
+            float rangeToUse = player.ThrustSoftAimRange;
 
             Transform softTarget = player.combat.GetSoftAimTarget(
                 player.transform.position,
-                dir,
-                SoftAimAngleDeg,
-                range
+                baseDir,
+                angleToUse,
+                rangeToUse
             );
 
             if (softTarget != null)
@@ -96,11 +100,24 @@ public class Player_BasicAttackState : PlayerState
                 Vector2 toTarget = (Vector2)softTarget.position - (Vector2)player.transform.position;
                 if (toTarget.sqrMagnitude > 0.001f)
                 {
-                    toTarget.Normalize();
-                    const float blend = 0.3f; // 0 = no assist, 1 = full lock
-                    Vector2 blended = Vector2.Lerp(dir, toTarget, blend);
-                    if (blended.sqrMagnitude > 0.0001f)
-                        dir = blended.normalized;
+                    Vector2 targetDir = toTarget.normalized;
+
+                    if (hasInput)
+                    {
+                        // Stick held → bias toward what the player is pressing,
+                        // but gently nudge toward the enemy.
+                        const float blend = 0.3f; // 0 = no assist, 1 = full lock
+                        Vector2 blended = Vector2.Lerp(baseDir, targetDir, blend);
+                        if (blended.sqrMagnitude > 0.0001f)
+                            dir = blended.normalized;
+                        else
+                            dir = targetDir;
+                    }
+                    else
+                    {
+                        // No input at all → hard lock directly at target
+                        dir = targetDir;
+                    }
                 }
             }
         }
@@ -127,10 +144,15 @@ public class Player_BasicAttackState : PlayerState
 
         if (rPlayer != null && ReInput.isReady)
         {
+            // NEW: while holding SkillModifier, do not allow basic attack chaining/queueing
+            if (rPlayer.GetButton(SkillModifierActionName))
+                return;
+
             bool attackPressedThisFrame = rPlayer.GetButtonDown(AttackActionName);
             if (!triggerCalled && attackPressedThisFrame)
                 TryQueueNextAttack();
         }
+
 
         if (triggerCalled)
             HandleStateExit();

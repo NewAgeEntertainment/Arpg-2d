@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Player_Combat : Entity_Combat
@@ -31,10 +31,7 @@ public class Player_Combat : Entity_Combat
         return hasPerformedCounter;
     }
 
-    public float GetCounterRecoveryDuration()
-    {
-        return counterRecovery;
-    }
+    public float GetCounterRecoveryDuration() => counterRecovery;
 
     // =====================================================================
     // Hit detection used by PerformAttack() (called from animation event)
@@ -45,7 +42,7 @@ public class Player_Combat : Entity_Combat
 
         Transform hitOrigin = GetTargetTransform();
         if (hitOrigin == null)
-            hitOrigin = transform; // very defensive fallback
+            hitOrigin = transform;
 
         var colliders = Physics2D.OverlapCircleAll(
             hitOrigin.position,
@@ -66,28 +63,19 @@ public class Player_Combat : Entity_Combat
         return detected.ToArray();
     }
 
-    /// <summary>
-    /// Picks which hit point to use based on the entity's current facing.
-    /// </summary>
     private Transform GetTargetTransform()
     {
         Vector2 dir = _entity.currentDir;
 
-        // If currentDir somehow ended up zero, be forgiving and use "down" as default.
         if (dir.sqrMagnitude < 0.001f)
             return _targetCheck_Down != null ? _targetCheck_Down : transform;
 
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y)) // Horizontal dominant
-        {
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y)) // Horizontal
             return dir.x < 0f ? _targetCheck_Left : _targetCheck_Right;
-        }
-        else                                   // Vertical dominant
-        {
+        else                                     // Vertical
             return dir.y < 0f ? _targetCheck_Down : _targetCheck_Up;
-        }
     }
 
-    // Just for editor visualization of all four possible hit origins.
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
@@ -111,7 +99,7 @@ public class Player_Combat : Entity_Combat
 
     public Transform GetSoftAimTarget(Vector2 origin, Vector2 forward, float maxAngleDeg, float maxRange)
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, maxRange, whatIsTarget); // use your combat layer mask
+        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, maxRange, whatIsTarget);
         if (hits == null || hits.Length == 0) return null;
 
         Transform best = null;
@@ -125,16 +113,14 @@ public class Player_Combat : Entity_Combat
             float dist = to.magnitude;
             if (dist < 0.001f) continue;
 
-            to /= dist; // normalize
+            to /= dist;
 
-            // angle between our forward and this target
-            float dot = Vector2.Dot(forward, to); // cos(theta)
+            float dot = Vector2.Dot(forward, to);
             float angle = Mathf.Acos(Mathf.Clamp(dot, -1f, 1f)) * Mathf.Rad2Deg;
 
             if (angle > maxAngleDeg)
-                continue; // too far off to the side
+                continue;
 
-            // Score = "how straight ahead + how close"
             float score = dot * 2f + (1f - Mathf.Clamp01(dist / maxRange));
 
             if (score > bestScore)
@@ -145,6 +131,33 @@ public class Player_Combat : Entity_Combat
         }
 
         return best;
+    }
+
+    // 🔹 Player-only mana restoration on successful hit
+    // 🔹 Player-only mana restoration on successful hit + debug logging
+    protected override void OnSuccessfulHit(Collider2D target, AttackData attackData)
+    {
+        base.OnSuccessfulHit(target, attackData);
+
+        // Only the Player should restore mana on hit
+        if (_entity is Player player && player.mana != null)
+        {
+            float before = player.mana.GetCurrentMana();
+
+            player.mana.RestoreManaOnHitWithScaling(player.Level);
+
+            float after = player.mana.GetCurrentMana();
+
+            Debug.Log(
+                $"[Player_Combat] Successful hit on '{target.name}'. " +
+                $"Mana: {before} -> {after} (Level {player.Level})"
+            );
+        }
+        else
+        {
+            Debug.Log("[Player_Combat] OnSuccessfulHit fired, but no Player/mana found. " +
+                      $"Entity type: {_entity?.GetType().Name}");
+        }
     }
 
 }

@@ -33,6 +33,13 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     // Cache for mini pulses
     private Coroutine pulseCo;
 
+    private Coroutine cooldownCo;
+    private Coroutine cooldownRoutine;
+
+
+    public bool IsCoolingDown => cooldownImage != null && cooldownImage.fillAmount > 0.001f;
+
+
     private void Awake()
     {
         ui = GetComponentInParent<UI>(true);
@@ -120,18 +127,34 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (inputKeyText != null) inputKeyText.text = label;
     }
 
-    public void StartCooldown(float cooldownSeconds)
+    public void StartCooldown(float cooldownSeconds, bool forceRestart = false)
     {
         if (cooldownImage == null) return;
-        StopAllCoroutines();
+
+        // NEW: Don't reset/refresh cooldown if already running (unless forced).
+        if (!forceRestart && IsCoolingDown) return;
+
+        if (cooldownRoutine != null)
+            StopCoroutine(cooldownRoutine);
+
         cooldownImage.fillAmount = 1f;
-        StartCoroutine(CooldownCo(cooldownSeconds));
+        cooldownRoutine = StartCoroutine(CooldownCo(cooldownSeconds));
     }
+
 
     public void ResetCooldown()
     {
+        if (cooldownRoutine != null)
+        {
+            StopCoroutine(cooldownRoutine);
+            cooldownRoutine = null;
+        }
+
         if (cooldownImage != null) cooldownImage.fillAmount = 0f;
     }
+
+
+
 
     /// <summary>
     /// Refreshes the visible MP cost text using the runtime skill (if available).
@@ -217,8 +240,12 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 cooldownImage.fillAmount = 1f - (t / duration);
             yield return null;
         }
+
         if (cooldownImage != null) cooldownImage.fillAmount = 0f;
+        cooldownRoutine = null; // NEW
     }
+
+
 
     private IEnumerator PulseCo(float seconds)
     {

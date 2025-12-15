@@ -100,7 +100,7 @@ public class Player_DashState : PlayerState
             ?.GrantInvulnerabilityFor("Dash", duration + 0.05f);
 
         skillManager.dash.OnStartEffect();
-        player.vfx?.DoImageEchoEffect(duration);
+        //player.vfx?.DoImageEchoEffect(duration);
 
         // ---------- 5) Set dash timer ----------
         stateTimer = duration;

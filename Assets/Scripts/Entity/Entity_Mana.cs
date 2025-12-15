@@ -110,6 +110,13 @@ public class Entity_Mana : MonoBehaviour
         return !isDead && currentMana >= Mathf.Max(0f, cost);
     }
 
+    public void RestoreManaOnHitWithScaling(int level)
+    {
+        // Example: 2 mana base, +2 every 10 levels
+        float amount = 2f + 2f * Mathf.Floor(level / 10f);
+        IncreaseMana(amount);
+    }
+
 
     public void EnableManaBar(bool enable)
     {

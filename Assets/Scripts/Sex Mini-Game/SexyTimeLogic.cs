@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Rewired;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -57,6 +58,9 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Tooltip("When PINK wins, subtract this many affection points as a penalty (set 0 to ignore).")]
     [SerializeField] private int pinkBarAffectionSubtract = 0;
+
+    // ===== Stroke suppression (prevents stroke when a sex skill uses on same button) =====
+    private int _suppressStrokeFrame = -999;
 
     public UnityEvent OnPlayerBarFull = new UnityEvent();
     public UnityEvent OnPartnerBarFull = new UnityEvent();
@@ -190,6 +194,28 @@ public class SexyTimeLogic : MonoBehaviour
         DepletePlayerBar();
     }
 
+    private void LateUpdate()
+    {
+        if (shouldPause) return;
+        if (!isSexyTimeGoingOn) return;
+        if (inputRouter == null) return;
+
+        // NEW: while holding SkillModifier, stroke is NOT allowed
+        if (ReInput.isReady)
+        {
+            var rp = ReInput.players.GetPlayer(0); // or your playerID if you use one here
+            if (rp != null && rp.GetButton("SkillModifier"))
+                return;
+        }
+
+        if (IsStrokeSuppressedThisFrame) return;
+
+        if (inputRouter.StrokePressed())
+            stateMachine.Stroke();
+    }
+
+
+
     public void StartSexyTime()
     {
         if (ui == null)
@@ -266,6 +292,18 @@ public class SexyTimeLogic : MonoBehaviour
         }
     }
 
+    
+
+    /// <summary>Call this when a sex hotbar skill successfully fires.</summary>
+    public void SuppressStrokeThisFrame()
+    {
+        _suppressStrokeFrame = Time.frameCount;
+    }
+
+    /// <summary>True if stroke should be blocked this frame.</summary>
+    public bool IsStrokeSuppressedThisFrame => _suppressStrokeFrame == Time.frameCount;
+
+
     private bool ResolveSkillManager()
     {
         if (skillManager != null) return true;
@@ -330,8 +368,7 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (inputRouter == null) return;
 
-        if (inputRouter.StrokePressed())
-            stateMachine.Stroke();
+        // Stroke moved to LateUpdate() so sex skills can suppress it this frame
 
         if (inputRouter.DeepBreathePressed())
             CastDeepBreathe();
@@ -339,6 +376,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (inputRouter.PausePressed())
             stateMachine.PauseForDialogue();
     }
+
 
     private void UpdateNPCAttack()
     {

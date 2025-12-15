@@ -512,8 +512,11 @@ public class UI : MonoBehaviour
     {
         isInventoryOpen = false;
         inventoryUI?.CloseInventory();
-        CheckStopPlayerControls();
+
+        // NEW: bounce back to Main Menu after closing this panel
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
     public void OpenSkillTree()
     {
@@ -526,9 +529,12 @@ public class UI : MonoBehaviour
     public void CloseSkillTree()
     {
         isSkillTreeOpen = false;
-        skillTreeUI?.gameObject.SetActive(false);
-        CheckStopPlayerControls();
+        if (skillTreeUI != null) skillTreeUI.gameObject.SetActive(false);
+
+        // NEW
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
     public void OpenEquipment()
     {
@@ -543,8 +549,11 @@ public class UI : MonoBehaviour
     {
         isEquipmentOpen = false;
         equipmentInventoryPanel?.Close();
-        CheckStopPlayerControls();
+
+        // NEW
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
     public void OpenOptions()
     {
@@ -563,8 +572,11 @@ public class UI : MonoBehaviour
     {
         isOptionsOpen = false;
         optionsUI?.ClosePanel();
-        CheckStopPlayerControls();
+
+        // NEW
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
     public void OpenStatusPanel()
     {
@@ -582,8 +594,11 @@ public class UI : MonoBehaviour
     {
         isStatusPanelOpen = false;
         statusPanel?.ClosePanel();
-        CheckStopPlayerControls();
+
+        // NEW
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
     public void OpenConquestPanel()
     {
@@ -605,8 +620,11 @@ public class UI : MonoBehaviour
     {
         isConquestOpen = false;
         if (conquestUI != null) conquestUI.Close();
-        CheckStopPlayerControls();
+
+        // NEW
+        ReturnToMainMenuAfterClosingPanel();
     }
+
 
 
     private CharacterProfileSO TryGetProfile(Entity_Stats s)
@@ -1231,7 +1249,16 @@ public class UI : MonoBehaviour
         }
     }
 
-   
+    // When backing out of a pause/menu panel, always show the Main Menu panel.
+    private void ReturnToMainMenuAfterClosingPanel()
+    {
+        // If we're already showing it, do nothing.
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
+            return;
+
+        OpenMainMenuDirect(); // keeps UI map enabled + pauses time
+    }
+
 
 
     private void ShowConfirm(string message, System.Action onYes, System.Action onNo)

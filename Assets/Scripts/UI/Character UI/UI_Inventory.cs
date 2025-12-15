@@ -218,23 +218,34 @@ public class UI_Inventory : UI_Panel
                 OpenItemListPanel();
                 PlayCloseSound();
                 return true;
+
             case PanelState.AssignPopup:
                 if (assignPopupPanel != null) assignPopupPanel.SetActive(false);
                 OpenItemListPanel();
                 PlayCloseSound();
                 return true;
+
             case PanelState.ItemList:
                 itemListPanel.SetActive(false);
                 OpenCategoryPanel();
                 PlayCloseSound();
                 return true;
+
             case PanelState.Category:
-                CloseInventory();
+                // Close via UI manager so it returns to Main Menu correctly
+                if (UI.Instance != null)
+                    UI.Instance.CloseInventory();
+                else
+                    CloseInventory(); // fallback if singleton missing
+
                 return true;
+
             default:
                 return false;
         }
     }
+
+
 
     public void SetFilter(string filterName)
     {

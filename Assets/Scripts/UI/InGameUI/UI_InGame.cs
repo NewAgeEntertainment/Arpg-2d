@@ -30,6 +30,14 @@ public class UI_InGame : MonoBehaviour
     [Header("Combat Hotbar (A/B/C/D)")]
     [SerializeField] private List<UI_SkillSlot> skillSlots = new();  // these must be UISkillCategory.Combat
 
+    [Header("Combat Hotbar Visibility")]
+    [SerializeField] private GameObject combatHotbarRoot; // drag the parent that contains A/B/C/D combat slots (recommended)
+
+    private bool _combatHiddenBySex;
+    private bool _prevCombatHotbarRootActive;
+    private readonly Dictionary<UI_SkillSlot, bool> _prevCombatSlotsActive = new();
+
+
     [Header("Health & Mana")]
     [SerializeField] private Slider healthSlider;
     [SerializeField] private TextMeshProUGUI healthText;
@@ -255,17 +263,22 @@ public class UI_InGame : MonoBehaviour
     {
         if (preferSex)
         {
-            // Try Sex first; then fall back to Combat with pulse
+            // Try Sex first; if it fails, only try Combat if the combat bar isn't hidden
             if (!TryUseSexSkillFromIndex(sexIndex))
-                TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: true);
+            {
+                if (!CombatHotbarHidden)
+                    TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: true);
+            }
         }
         else
         {
-            // Try Combat first (no pulse yet); then Sex (which pulses on its own failures)
             if (!TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: false))
                 TryUseSexSkillFromIndex(sexIndex);
         }
+
     }
+
+
 
     /// <summary>
     /// New: Use a combat skill from bar, returning success. Optionally pulse on failure.
@@ -276,6 +289,13 @@ public class UI_InGame : MonoBehaviour
         var slot = FindSlotById(id);
         if (slot == null) return false;
         if (!slot.HasSkill) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
+        // NEW: if already cooling down, do nothing (and do NOT reset the UI cooldown)
+        if (!slot.IsReady)
+        {
+            slot.PulseConflict(0.2f);
+            return false;
+        }
+
         if (slot.slotCategory != UISkillCategory.Combat) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
 
         var data = slot.Data;
@@ -325,6 +345,89 @@ public class UI_InGame : MonoBehaviour
 
         return true;
     }
+
+    public bool CombatHotbarHidden => _combatHiddenBySex;
+
+    /// <summary>
+    /// Hides/restores the combat hotbar UI (A/B/C/D). Uses combatHotbarRoot if assigned,
+    /// otherwise falls back to enabling/disabling individual combat slots.
+    /// </summary>
+    public void SetCombatHotbarHidden(bool hide)
+    {
+        if (hide)
+        {
+            if (_combatHiddenBySex) return;
+            _combatHiddenBySex = true;
+
+            if (combatHotbarRoot != null)
+            {
+                _prevCombatHotbarRootActive = combatHotbarRoot.activeSelf;
+                combatHotbarRoot.SetActive(false);
+                return;
+            }
+
+            _prevCombatSlotsActive.Clear();
+            foreach (var s in skillSlots)
+            {
+                if (s == null) continue;
+                _prevCombatSlotsActive[s] = s.gameObject.activeSelf;
+                s.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            if (!_combatHiddenBySex) return;
+            _combatHiddenBySex = false;
+
+            if (combatHotbarRoot != null)
+            {
+                combatHotbarRoot.SetActive(_prevCombatHotbarRootActive);
+                return;
+            }
+
+            foreach (var kv in _prevCombatSlotsActive)
+            {
+                if (kv.Key != null) kv.Key.gameObject.SetActive(kv.Value);
+            }
+            _prevCombatSlotsActive.Clear();
+        }
+    }
+
+    private bool RuntimeCanUseSkill(object runtime)
+    {
+        if (runtime == null) return false;
+
+        var t = runtime.GetType();
+        const System.Reflection.BindingFlags flags =
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic;
+
+        // 1) bool CanUseSkillCheck()
+        var m0 = t.GetMethod("CanUseSkillCheck", flags, null, System.Type.EmptyTypes, null);
+        if (m0 != null && m0.ReturnType == typeof(bool))
+            return (bool)m0.Invoke(runtime, null);
+
+        // 2) bool CanUseSkillCheck(out <something>)
+        foreach (var m in t.GetMethods(flags))
+        {
+            if (m.Name != "CanUseSkillCheck") continue;
+            if (m.ReturnType != typeof(bool)) continue;
+
+            var p = m.GetParameters();
+            if (p.Length != 1) continue;
+            if (!p[0].IsOut) continue;
+
+            object[] args = new object[] { null };
+            try { return (bool)m.Invoke(runtime, args); }
+            catch { return true; } // if reflection fails, don't hard-block use
+        }
+
+        // If there's no CanUseSkillCheck, assume TryUseSkill will gate internally
+        return true;
+    }
+
+
 
     /// <summary>
     /// Original method (kept intact). Now unused by Update(), but preserved as requested.
@@ -378,6 +481,16 @@ public class UI_InGame : MonoBehaviour
 
         var slot = hotbar.Slots[index];
         if (slot == null || !slot.HasSkill) { PulseSexConflict(index, 0.2f); return false; }
+
+        // NEW: if it's on cooldown, don't do anything and DON'T restart cooldown UI
+        if (!slot.IsReady)
+        {
+            slot.PulseConflict(0.2f);
+            return false;
+        }
+
+
+        if (slot == null || !slot.HasSkill) { PulseSexConflict(index, 0.2f); return false; }
         if (slot.slotCategory != UISkillCategory.Sex) { PulseSexConflict(index, 0.2f); return false; }
 
         var data = slot.Data;
@@ -388,13 +501,25 @@ public class UI_InGame : MonoBehaviour
         if (runtime == null) { PulseSexConflict(index, 0.2f); return false; }
 
         // Use the skill (runtime handles gating/commit). Then reflect UI (cooldown/affordability).
+        // Only count as "using a sex skill" if it can actually fire
+        if (!RuntimeCanUseSkill(runtime))
+        {
+            PulseSexConflict(index, 0.2f);
+            return false;
+        }
+
+        // Use the skill (runtime handles commit)
         runtime.TryUseSkill();
+
+        // NEW: prevent stroke this frame if the same physical button overlaps
+        SexyTimeLogic.Current?.SuppressStrokeThisFrame();
 
         slot.StartCooldown(slot.CooldownSeconds);
         slot.RefreshText(sm);
         sexUI.RefreshAffordability(player.mana);
 
         return true;
+
     }
 
     public bool AnySkillSlotHasSkill()

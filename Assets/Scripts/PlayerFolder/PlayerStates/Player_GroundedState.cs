@@ -3,12 +3,14 @@ using Rewired;
 
 public class Player_GroundedState : PlayerState
 {
-    // one-per-frame guards so a single press can’t trigger multiple ChangeState calls
     private int _lastAttackStartFrame = -1;
     private int _lastCounterStartFrame = -1;
 
     private const string AttackAction = "Attack";
     private const string CounterAction = "Counter";
+
+    // NEW
+    private const string SkillModifierAction = "SkillModifier";
 
     public Player_GroundedState(Player player, StateMachine stateMachine, string animBoolName)
         : base(player, stateMachine, animBoolName) { }
@@ -18,6 +20,10 @@ public class Player_GroundedState : PlayerState
         base.Update();
 
         if (!ReInput.isReady || rPlayer == null) return;
+
+        // NEW: while holding SkillModifier, DO NOT allow basic attack/counter
+        if (rPlayer.GetButton(SkillModifierAction))
+            return;
 
         // ---- START BASIC ATTACK (edge only, once per frame) ----
         if (rPlayer.GetButtonDown(AttackAction) && Time.frameCount != _lastAttackStartFrame)
@@ -34,7 +40,5 @@ public class Player_GroundedState : PlayerState
             stateMachine.ChangeState(player.counterAttackState);
             return;
         }
-
-        // (your move / jump checks would go here if needed)
     }
 }

@@ -81,6 +81,15 @@ public class Enemy : Entity
 
     public Transform player { get; private set; }
 
+    [Header("Targeting")]
+    [Tooltip("Optional point where the soft-lock reticle should appear (e.g. above head).")]
+    public Transform lockOnPoint;
+
+    public Transform GetLockOnPoint()
+    {
+        return lockOnPoint != null ? lockOnPoint : transform;
+    }
+
     // ------------ NEW: setter so states can write currentDirection ------------
     public void SetCurrentDirection(Vector2 dir)
     {
@@ -250,10 +259,26 @@ public class Enemy : Entity
     public virtual bool IsPlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
     public virtual Collider2D PlayerDetected() => Physics2D.OverlapCircle(transform.position, range, whatIsPlayer);
 
+#if UNITY_EDITOR
     protected override void OnDrawGizmos()
     {
         base.OnDrawGizmos();
 
+        // --- Detection range (aggro) ---
+        if (range > 0f)
+        {
+            Gizmos.color = new Color(1f, 0.9f, 0f, 0.35f); // yellow-ish
+            Gizmos.DrawWireSphere(transform.position, range);
+        }
+
+        // --- Attack range ---
+        if (attackDistance > 0f)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.6f);   // red
+            Gizmos.DrawWireSphere(transform.position, attackDistance);
+        }
+
+        // --- Existing patrol path gizmos ---
         if (patrolPoints == null || patrolPoints.Length == 0)
             return;
 
@@ -267,6 +292,8 @@ public class Enemy : Entity
             Gizmos.DrawLine(p, q);
         }
     }
+#endif
+
 
 
 

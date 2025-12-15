@@ -72,6 +72,21 @@ public class Player : Entity
     public float ThrustSpeed;
     public Vector2 moveInput { get; set; }
 
+    [Header("Thrust Target Check")]
+    [SerializeField] private Transform thrustTargetCheck;
+    [SerializeField] private float thrustTargetRadius = 3f;
+    [SerializeField] private LayerMask thrustTargetMask = ~0; // default: everything
+
+    /// <summary>How far in front of the player to place the thrust target point.</summary>
+    [SerializeField] private float thrustTargetOffset = 1.5f;
+
+    // Public accessors
+    public Transform ThrustTargetCheck => thrustTargetCheck;
+    public float ThrustTargetRadius => thrustTargetRadius;
+    public LayerMask ThrustTargetMask => thrustTargetMask;
+    public float ThrustTargetOffset => thrustTargetOffset;
+
+
     [Header("Thrust Aim Assist")]
     [Tooltip("Max angle from stick direction that we will 'snap' toward an enemy.")]
     [SerializeField, Range(0f, 90f)] private float thrustSoftAimAngle = 45f;
@@ -674,10 +689,19 @@ public class Player : Entity
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
+        // Interact radius
         Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.35f);
         Gizmos.DrawWireSphere(transform.position, interactRadius);
+
+        // Thrust target radius (if assigned)
+        if (thrustTargetCheck != null)
+        {
+            Gizmos.color = new Color(1f, 0.5f, 0.1f, 0.35f);
+            Gizmos.DrawWireSphere(thrustTargetCheck.position, thrustTargetRadius);
+        }
     }
 #endif
+
 
 
 #if UNITY_EDITOR
@@ -686,4 +710,8 @@ public class Player : Entity
         if (feetPivot == null) feetPivot = transform;
     }
 #endif
+
+
+
+
 }

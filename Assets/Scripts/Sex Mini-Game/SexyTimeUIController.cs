@@ -33,6 +33,12 @@ public class SexyTimeUIController : MonoBehaviour
     [Header("Sex Hotbar (optional)")]
     [SerializeField] private SexyTimeHotbar sexHotbar;
 
+    [Header("Combat HUD (optional)")]
+    [SerializeField] private UI_InGame inGameHUD; // drag it in, or it will auto-find
+
+    private bool _combatWasHiddenBySexUI;
+
+
     [Header("Single DeepBreath Slot (optional)")]
     [SerializeField] private UI_SkillSlot deepBreathSlot;
 
@@ -238,23 +244,39 @@ public class SexyTimeUIController : MonoBehaviour
         _uiRoot.anchoredPosition = localPoint + screenOffset;
     }
 
+    private void SetCombatHotbarHidden(bool hide)
+    {
+        if (inGameHUD == null)
+            inGameHUD = FindFirstObjectByType<UI_InGame>(FindObjectsInactive.Include);
+
+        if (inGameHUD == null) return;
+
+        inGameHUD.SetCombatHotbarHidden(hide);
+        _combatWasHiddenBySexUI = hide;
+    }
+
+
     public void Show()
     {
         if (panel != null) panel.SetActive(true);
+
+        // NEW: hide combat hotbar while sex mini game UI is active
+        SetCombatHotbarHidden(true);
+
         HideCrit();
-        RefreshAffordability(null); // clears fades until we get player mana
-
-        // Make sure persisteds are applied when showing
+        RefreshAffordability(null);
         ApplyPendingSexSkillsToHotbar();
-
-        // If a follow target is already set and we just opened, do a one-time snap.
         if (followTarget != null) SnapToTarget();
     }
 
     public void Hide()
     {
         if (panel != null) panel.SetActive(false);
+
+        // NEW: restore combat hotbar when sex UI closes
+        SetCombatHotbarHidden(false);
     }
+
 
     // ---------- Bars ----------
     public void InitBars(float playerMax, float partnerMax)
@@ -468,4 +490,18 @@ public class SexyTimeUIController : MonoBehaviour
         if (ok) SetPersistentSexSkillAtIndex(index, sexSkill);
         return ok;
     }
+
+    private void OnDisable()
+    {
+        if (_combatWasHiddenBySexUI)
+            SetCombatHotbarHidden(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (_combatWasHiddenBySexUI)
+            SetCombatHotbarHidden(false);
+    }
+
+
 }
