@@ -1389,6 +1389,21 @@ MonoBehaviour:
   deactivateDirectorOnStop: 1
   deactivateDelay: 0
   keepDirectorActiveAfterRebind: 0
+  allowSkip: 1
+  skipKey: 27
+  skipHoldDuration: 1
+  skipFastForwardSpeed: 5
+  showSkipUI: 1
+  skipUIPanel: {fileID: 0}
+  skipFillImage: {fileID: 0}
+  skipFadeCanvasGroup: {fileID: 0}
+  skipFadeDuration: 0.4
+  alsoSkipDialogue: 1
+  conversationControl: {fileID: 0}
+  onTimelineEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  fastForwardDialogueOnSkip: 0
 --- !u!320 &226332641
 PlayableDirector:
   m_ObjectHideFlags: 0
@@ -8408,6 +8423,21 @@ MonoBehaviour:
   deactivateDirectorOnStop: 1
   deactivateDelay: 0
   keepDirectorActiveAfterRebind: 0
+  allowSkip: 1
+  skipKey: 27
+  skipHoldDuration: 1
+  skipFastForwardSpeed: 5
+  showSkipUI: 1
+  skipUIPanel: {fileID: 0}
+  skipFillImage: {fileID: 0}
+  skipFadeCanvasGroup: {fileID: 0}
+  skipFadeDuration: 0.4
+  alsoSkipDialogue: 1
+  conversationControl: {fileID: 0}
+  onTimelineEnded:
+    m_PersistentCalls:
+      m_Calls: []
+  fastForwardDialogueOnSkip: 0
 --- !u!114 &525523949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8470,7 +8500,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 555817537}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -8478,6 +8508,7 @@ MonoBehaviour:
   bindCinemachine: 1
   alsoSetLookAt: 1
   cameraBindRetrySeconds: 2
+  spawnEventDelay: 1
 --- !u!61 &555817540
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -10751,6 +10782,22 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1942670569603163805, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1942670569603163805, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1942670569603163805, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1942670569603163805, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1949509180332231432, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -10915,6 +10962,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -108.01555
       objectReference: {fileID: 0}
+    - target: {fileID: 5690218301738891411, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5690218301738891411, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5690218301738891411, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5690218301738891411, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5775173515627878682, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 117.21489
@@ -10942,6 +11005,22 @@ PrefabInstance:
     - target: {fileID: 6063913171784885233, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -137.68683
+      objectReference: {fileID: 0}
+    - target: {fileID: 6078977843873054763, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6078977843873054763, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6078977843873054763, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6078977843873054763, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6187396031038509197, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -11209,6 +11288,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8867694381733399756, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8932668908659238694, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8932668908659238694, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8932668908659238694, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8932668908659238694, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9150533268995979329, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -11864,9 +11959,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.12383177
-    width: 0.2901316
-    height: 0.29013157
+    y: 0.063888885
+    width: 0.19843751
+    height: 0.19866958
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34

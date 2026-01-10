@@ -1195,7 +1195,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.7, y: 1.7, z: 1}
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 960395732620771649}
@@ -2528,8 +2528,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.03885889, y: 1.071665}
-  m_Size: {x: 1.8195868, y: 2.4346008}
+  m_Offset: {x: 0.0003181696, y: 0.911999}
+  m_Size: {x: 1.7425053, y: 2.1152687}
   m_Direction: 0
 --- !u!114 &2199313524682953355
 MonoBehaviour:
@@ -2602,6 +2602,7 @@ MonoBehaviour:
   patrolPoints: []
   currentPatrolIndex: 0
   target: {x: 0, y: 0}
+  lockOnPoint: {fileID: 0}
 --- !u!50 &5532499199446041805
 Rigidbody2D:
   serializedVersion: 4

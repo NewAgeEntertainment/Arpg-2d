@@ -204,6 +204,10 @@ public class UI : MonoBehaviour
 
     public bool IsAssignPreviewActive => _assignPreviewActive;
 
+
+    private CursorLockMode _prevLockMode;
+private bool _prevCursorVisible;
+
     // -------------------- ADDED: Panel Switching (Rewired) --------------------
     [SerializeField] private string nextPanelAction = "NextUIPanel";
     [SerializeField] private string prevPanelAction = "PrevUIPanel";
