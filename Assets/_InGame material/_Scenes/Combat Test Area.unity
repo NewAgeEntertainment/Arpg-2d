@@ -12504,7 +12504,7 @@ Transform:
   m_GameObject: {fileID: 929750886}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.0043120384, y: 1.8580203, z: -11}
+  m_LocalPosition: {x: -2.9904099, y: 2.8300004, z: -11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12524,8 +12524,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
   m_AssetsPPU: 64
-  m_RefResolutionX: 1520
-  m_RefResolutionY: 856
+  m_RefResolutionX: 1920
+  m_RefResolutionY: 1080
   m_CropFrame: 3
   m_GridSnapping: 2
   m_FilterMode: 0
@@ -12645,15 +12645,15 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.10416667
-    y: 0.1037037
-    width: 0.7916667
-    height: 0.7925926
+    x: 0
+    y: 0
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 6.6875
+  orthographic size: 4.21875
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -13053,13 +13053,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Orge
       objectReference: {fileID: 0}
-    - target: {fileID: 5492062911542178616, guid: 68d60194ee7163441a21a55367a01a1c, type: 3}
-      propertyPath: m_AnchorMax.x
+    - target: {fileID: 5488030798746863790, guid: 68d60194ee7163441a21a55367a01a1c, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5492062911542178616, guid: 68d60194ee7163441a21a55367a01a1c, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5492062911542178616, guid: 68d60194ee7163441a21a55367a01a1c, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15594,13 +15598,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lioncard
       objectReference: {fileID: 0}
-    - target: {fileID: 3738569970553218436, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-      propertyPath: m_AnchorMax.x
+    - target: {fileID: 3412577514713453343, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3738569970553218436, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3738569970553218436, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5852501936329725365, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -15644,11 +15652,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7066102213595533723, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -19538,7 +19546,7 @@ MonoBehaviour:
   onSpawn:
     m_PersistentCalls:
       m_Calls: []
-  playerPrefab: {fileID: 2475480508921098455, guid: 1c18772ec4e5c814fb729f25545af227, type: 3}
+  playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 1623565207}
   preferPrefabOverExisting: 1
   copyPoseFromExisting: 1
@@ -32971,11 +32979,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3471722867986400300, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3471722867986400300, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5235787932737124391, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: m_Name
@@ -32983,7 +32991,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5235787932737124391, guid: e89c4a60b38543149ada65dd4d631459, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -33335,7 +33343,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4894418689625105346, guid: 95a081b51051c8b4aa850206aa82c796, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5043757685322538082, guid: 95a081b51051c8b4aa850206aa82c796, type: 3}
       propertyPath: m_LocalScale.x
@@ -33387,11 +33395,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9155003147572172330, guid: 95a081b51051c8b4aa850206aa82c796, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9155003147572172330, guid: 95a081b51051c8b4aa850206aa82c796, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
