@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -33,12 +33,14 @@ public class Skill_Shard : Skill_Base
 
     public override void TryUseSkill()
     {
-        // check is mana is enough.
-
-
-        if (CanUseSkill() == false)
+        if (!CanUseSkillCheck(out var reason))
             return;
 
+        // ✅ this is what actually spends mana
+        if (!CommitUse())
+            return;
+
+        // Now do the shard behavior
         if (Unlocked(SkillUpgradeType.Shard))
             HandleShardRegular();
 
@@ -50,10 +52,11 @@ public class Skill_Shard : Skill_Base
 
         if (Unlocked(SkillUpgradeType.Shard_Teleport))
             HandleShardTelport();
-       
+
         if (Unlocked(SkillUpgradeType.Shard_TeleportHpRewind))
             HandleShardHealthRewind();
     }
+
 
     private void HandleShardHealthRewind()
     {
