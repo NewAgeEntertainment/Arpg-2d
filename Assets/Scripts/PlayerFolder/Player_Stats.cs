@@ -66,24 +66,34 @@ public class Player_Stats : Entity_Stats
         CurrentEXP -= GetNextLevelRequirement();
         CurrentLevel++;
 
-        OnLevelChanged?.Invoke(CurrentLevel); // notify listeners first
-        RaiseExp();                           // refresh EXP bar for new threshold
+        OnLevelChanged?.Invoke(CurrentLevel);
+        RaiseExp();
 
         var statGains = ApplyCumulativeLevelBonuses();
 
-        // 🔹 NEW: stats changed (str/vit/etc.) → notify
+        // ✅ Restore HP to full (after max HP increased)
+        var health = GetComponent<Entity_Health>();
+        if (health != null)
+        {
+            health.SetCurrentHealth(health.GetMaxHealth()); // full heal, clamps, updates bar
+                                                            // OR: if you want to force revive too:
+                                                            // health.ForceReviveToFull();
+        }
+
+        var mana = GetComponent<Entity_Mana>();
+        if (mana != null) mana.SetCurrentMana(mana.GetMaxMana());
+
         NotifyStatsChanged();
 
-        // 🔹 force HUD HP/MP/EXP bars to refresh immediately on level-up
         var ui = UI.Instance;
         if (ui != null && ui.inGameUI != null)
         {
             ui.inGameUI.ForceRefreshFromCurrentState();
         }
 
-        // Compatible with UI_LevelUpPopup.Show(int, IDictionary<string,float>)
         GetComponent<Player>()?.ui?.levelUpPopup?.Show(CurrentLevel, statGains);
     }
+
 
     public float GetNextLevelRequirement()
     {
