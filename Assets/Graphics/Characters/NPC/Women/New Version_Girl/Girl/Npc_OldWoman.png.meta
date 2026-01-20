@@ -3,7 +3,7 @@ guid: 6dc1ec315858478439a6ec4e10d48806
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_OldWoman_8: 1869131688
-      Npc_OldWoman_22: -739682113
-      Npc_OldWoman_28: -375118132
-      Npc_OldWoman_1: 1945504176
-      Npc_OldWoman_29: 1842777488
-      Npc_OldWoman_23: -135418014
-      Npc_OldWoman_2: 2038816350
-      Npc_OldWoman_21: -1043152566
-      Npc_OldWoman_24: -237315606
-      Npc_OldWoman_6: -597999914
-      Npc_OldWoman_27: 921889141
-      Npc_OldWoman_4: -1304959177
-      Npc_OldWoman_16: -1593303022
-      Npc_OldWoman_13: 1473973293
-      Npc_OldWoman_5: 418147100
-      Npc_OldWoman_26: 559992437
-      Npc_OldWoman_3: 1968048879
-      Npc_OldWoman_25: -750288661
-      Npc_OldWoman_30: 1687747611
-      Npc_OldWoman_18: -1464739380
-      Npc_OldWoman_9: -1772328009
-      Npc_OldWoman_17: -80381058
-      Npc_OldWoman_14: -1386008465
-      Npc_OldWoman_20: 1785418066
-      Npc_OldWoman_10: 1008931360
-      Npc_OldWoman_31: -796762018
-      Npc_OldWoman_15: 1361904126
-      Npc_OldWoman_19: 339514891
-      Npc_OldWoman_12: -1227043964
       Npc_OldWoman_0: 798481840
-      Npc_OldWoman_7: 398231983
+      Npc_OldWoman_1: 1945504176
+      Npc_OldWoman_10: 1008931360
       Npc_OldWoman_11: -1466530327
-  spritePackingTag: 
+      Npc_OldWoman_12: -1227043964
+      Npc_OldWoman_13: 1473973293
+      Npc_OldWoman_14: -1386008465
+      Npc_OldWoman_15: 1361904126
+      Npc_OldWoman_16: -1593303022
+      Npc_OldWoman_17: -80381058
+      Npc_OldWoman_18: -1464739380
+      Npc_OldWoman_19: 339514891
+      Npc_OldWoman_2: 2038816350
+      Npc_OldWoman_20: 1785418066
+      Npc_OldWoman_21: -1043152566
+      Npc_OldWoman_22: -739682113
+      Npc_OldWoman_23: -135418014
+      Npc_OldWoman_24: -237315606
+      Npc_OldWoman_25: -750288661
+      Npc_OldWoman_26: 559992437
+      Npc_OldWoman_27: 921889141
+      Npc_OldWoman_28: -375118132
+      Npc_OldWoman_29: 1842777488
+      Npc_OldWoman_3: 1968048879
+      Npc_OldWoman_30: 1687747611
+      Npc_OldWoman_31: -796762018
+      Npc_OldWoman_4: -1304959177
+      Npc_OldWoman_5: 418147100
+      Npc_OldWoman_6: -597999914
+      Npc_OldWoman_7: 398231983
+      Npc_OldWoman_8: 1869131688
+      Npc_OldWoman_9: -1772328009
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

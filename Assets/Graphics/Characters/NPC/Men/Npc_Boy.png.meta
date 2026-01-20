@@ -3,7 +3,7 @@ guid: 8c2f06495e68f0147b7740f99b8d01b6
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_Boy_5: -2088233889
-      Npc_Boy_1: 523960758
-      Npc_Boy_15: -2098797133
-      Npc_Boy_19: -66948543
-      Npc_Boy_18: -601288399
-      Npc_Boy_13: 937665907
-      Npc_Boy_9: -809812733
-      Npc_Boy_2: 838990016
-      Npc_Boy_8: -1378250758
-      Npc_Boy_14: 1566141651
-      Npc_Boy_25: -236962189
-      Npc_Boy_28: 1006080322
-      Npc_Boy_3: 1567319879
-      Npc_Boy_20: 1216620519
-      Npc_Boy_31: 1815955641
-      Npc_Boy_27: -37800258
-      Npc_Boy_29: -1460995510
       Npc_Boy_0: -887201320
-      Npc_Boy_16: -1998309918
-      Npc_Boy_30: -107351919
-      Npc_Boy_7: 970829630
-      Npc_Boy_17: 242153770
-      Npc_Boy_21: 1720564842
+      Npc_Boy_1: 523960758
       Npc_Boy_10: -1932944356
-      Npc_Boy_26: -702934680
       Npc_Boy_11: 51191817
-      Npc_Boy_6: 1082732551
+      Npc_Boy_12: 312002675
+      Npc_Boy_13: 937665907
+      Npc_Boy_14: 1566141651
+      Npc_Boy_15: -2098797133
+      Npc_Boy_16: -1998309918
+      Npc_Boy_17: 242153770
+      Npc_Boy_18: -601288399
+      Npc_Boy_19: -66948543
+      Npc_Boy_2: 838990016
+      Npc_Boy_20: 1216620519
+      Npc_Boy_21: 1720564842
       Npc_Boy_22: 62222848
       Npc_Boy_23: -1824650576
       Npc_Boy_24: -2026327109
-      Npc_Boy_12: 312002675
+      Npc_Boy_25: -236962189
+      Npc_Boy_26: -702934680
+      Npc_Boy_27: -37800258
+      Npc_Boy_28: 1006080322
+      Npc_Boy_29: -1460995510
+      Npc_Boy_3: 1567319879
+      Npc_Boy_30: -107351919
+      Npc_Boy_31: 1815955641
       Npc_Boy_4: 965060868
-  spritePackingTag: 
+      Npc_Boy_5: -2088233889
+      Npc_Boy_6: 1082732551
+      Npc_Boy_7: 970829630
+      Npc_Boy_8: -1378250758
+      Npc_Boy_9: -809812733
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

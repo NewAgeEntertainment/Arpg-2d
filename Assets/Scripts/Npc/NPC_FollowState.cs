@@ -25,10 +25,18 @@ public class NPC_FollowState : EntityState
     {
         base.Update();
 
+        if (npc.isInteracting)
+        {
+            npc.SetZeroVelocity();
+            stateMachine.ChangeState(npc.idleState);
+            return;
+        }
+
+
         // stop following if not commanded or no target
         if (!npc.followCommanded || npc.followTarget == null)
         {
-            if (npc.patrolPoints != null && npc.patrolPoints.Count > 0 && npc.autoStartPatrol)
+            if (npc.patrolPoints != null && npc.patrolPoints.Length > 0 && npc.autoStartPatrol)
                 stateMachine.ChangeState(npc.patrolState);
             else
                 stateMachine.ChangeState(npc.idleState);

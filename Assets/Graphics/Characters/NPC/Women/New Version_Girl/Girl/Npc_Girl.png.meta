@@ -3,7 +3,7 @@ guid: 0bb53290f602c3d4bbb75520f3dd86a5
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_Girl_1: -1349452723
-      Npc_Girl_11: -1249934523
-      Npc_Girl_22: 146093077
-      Npc_Girl_26: -1627351575
-      Npc_Girl_4: 1563564887
-      Npc_Girl_18: 1057212037
-      Npc_Girl_10: 1168188778
-      Npc_Girl_5: 1652386970
-      Npc_Girl_23: 2050526902
-      Npc_Girl_13: 2106350557
-      Npc_Girl_21: -1939038330
       Npc_Girl_0: -1081626422
-      Npc_Girl_9: -1398979830
-      Npc_Girl_28: 554782983
-      Npc_Girl_6: 1759718587
-      Npc_Girl_29: -420880163
+      Npc_Girl_1: -1349452723
+      Npc_Girl_10: 1168188778
+      Npc_Girl_11: -1249934523
       Npc_Girl_12: 1138847268
-      Npc_Girl_20: -764231689
-      Npc_Girl_31: 1231511181
-      Npc_Girl_17: 1639959576
-      Npc_Girl_2: -644433759
-      Npc_Girl_3: 1904984922
-      Npc_Girl_15: 1319414161
-      Npc_Girl_25: 694418371
+      Npc_Girl_13: 2106350557
       Npc_Girl_14: -773608395
-      Npc_Girl_8: 696527787
+      Npc_Girl_15: 1319414161
       Npc_Girl_16: -1655860409
-      Npc_Girl_7: -346498194
+      Npc_Girl_17: 1639959576
+      Npc_Girl_18: 1057212037
       Npc_Girl_19: -554622016
-      Npc_Girl_30: -1922306733
-      Npc_Girl_27: 69582499
+      Npc_Girl_2: -644433759
+      Npc_Girl_20: -764231689
+      Npc_Girl_21: -1939038330
+      Npc_Girl_22: 146093077
+      Npc_Girl_23: 2050526902
       Npc_Girl_24: 44417555
-  spritePackingTag: 
+      Npc_Girl_25: 694418371
+      Npc_Girl_26: -1627351575
+      Npc_Girl_27: 69582499
+      Npc_Girl_28: 554782983
+      Npc_Girl_29: -420880163
+      Npc_Girl_3: 1904984922
+      Npc_Girl_30: -1922306733
+      Npc_Girl_31: 1231511181
+      Npc_Girl_4: 1563564887
+      Npc_Girl_5: 1652386970
+      Npc_Girl_6: 1759718587
+      Npc_Girl_7: -346498194
+      Npc_Girl_8: 696527787
+      Npc_Girl_9: -1398979830
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

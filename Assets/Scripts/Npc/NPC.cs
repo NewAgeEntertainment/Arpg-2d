@@ -10,13 +10,16 @@ public class NPC : Entity
     [Header("Movement")]
     public float moveSpeed = 3f;
 
-    // ───── Patrol (enemy-like)
+    // ───── Patrol (EXACT Enemy-style: Vector2[] editable in Inspector)
     [Header("Patrol")]
-    public List<Transform> patrolPoints = new List<Transform>();
+    public Vector2[] patrolPoints;                 // edit X/Y like Enemy
+    public int currentPatrolIndex = 0;
     public bool loopPatrol = true;
-    public float waypointTolerance = 0.10f;
     public float waitAtWaypoint = 0.25f;
     public bool autoStartPatrol = false;
+
+    [HideInInspector] public bool isPaused { get; set; } = false; // used by PatrolState like Enemy
+    [HideInInspector] public Vector2 target;                      // used by PatrolState like Enemy
 
     // ───── Follow (command-only via Dialogue)
     [Header("Follow (commanded only)")]
@@ -30,6 +33,15 @@ public class NPC : Entity
     [HideInInspector] public NPC_FollowState followState;
     [HideInInspector] public Vector2 lastFacing = Vector2.down;
 
+    [Header("Interaction")]
+    public bool isInteracting = false;
+    public Transform currentInteractor = null;
+
+    [Header("Interaction Facing")]
+    public bool faceInteractorWhileTalking = true;
+
+    public bool IsInteracting { get; private set; }
+    private Transform _interactor;
 
     // ───── Timeline (optional)
     [Header("Timeline (optional)")]
@@ -64,6 +76,20 @@ public class NPC : Entity
         base.Start();
         stateMachine.Initialize(idleState);
 
+        // Enemy-style convenience: if designer left point 0 at (0,0), replace with spawn position
+        if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] == Vector2.zero)
+            patrolPoints[0] = transform.position;
+
+        if (patrolPoints != null && patrolPoints.Length > 0)
+        {
+            target = patrolPoints[currentPatrolIndex];
+            StartCoroutine(SetPatrolPoint()); // same as Enemy.Start()
+        }
+
+        if (autoStartPatrol && patrolPoints != null && patrolPoints.Length > 0)
+            stateMachine.ChangeState(patrolState);
+
+        // Follow-manager bootstrap (unchanged)
         var ident = GetComponent<NPCIdentity>();
         if (ident != null && !string.IsNullOrEmpty(ident.id))
         {
@@ -92,6 +118,34 @@ public class NPC : Entity
     }
 
     // ─────────────────────────────────────────────
+    // PATROL (Enemy-exact)
+    // ─────────────────────────────────────────────
+    public System.Collections.IEnumerator SetPatrolPoint()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            yield break;
+
+        isPaused = true;
+        yield return new WaitForSeconds(waitAtWaypoint);
+
+        if (currentPatrolIndex < 0 || currentPatrolIndex >= patrolPoints.Length)
+            currentPatrolIndex = 0;
+        else
+            currentPatrolIndex = loopPatrol
+                ? (currentPatrolIndex + 1) % patrolPoints.Length
+                : Mathf.Min(currentPatrolIndex + 1, patrolPoints.Length - 1);
+
+        target = patrolPoints[currentPatrolIndex];
+
+        // Update facing like Enemy
+        Vector2 dir = (target - (Vector2)transform.position).normalized;
+        currentDir = dir;
+        UpdateFacing(dir);
+
+        isPaused = false;
+    }
+
+    // ─────────────────────────────────────────────
     // FOLLOW / TELEPORT / TIMELINE
     // ─────────────────────────────────────────────
     public void RebindFollow(Transform newTarget, bool startFollowing = true)
@@ -107,11 +161,8 @@ public class NPC : Entity
         followTarget = newTarget;
         TeleportNextToPlayer();
 
-        // Auto-find the Timeline/Director if desired and not set yet
         if (bindToTimelineOnRebind && autoFindTimeline && timelineDirector == null)
-        {
             TryAutoFindTimelineForThisNPC();
-        }
 
         if (bindToTimelineOnRebind)
             StartCoroutine(BindThisNPCToTimelineRoutine());
@@ -124,8 +175,11 @@ public class NPC : Entity
         }
         else
         {
-            UpdateFacing((newTarget.position - transform.position).normalized);
+            Vector2 dir = (newTarget.position - transform.position);
+            if (dir.sqrMagnitude > 0.0001f)
+                UpdateFacing(dir.normalized);   // ✅ stores lastFacing + sets anim
         }
+
     }
 
     private void TeleportNextToPlayer()
@@ -146,6 +200,26 @@ public class NPC : Entity
 
         transform.position = targetPos;
     }
+
+    public void AdvancePatrolIndexAndTarget()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            return;
+
+        if (currentPatrolIndex < 0 || currentPatrolIndex >= patrolPoints.Length)
+            currentPatrolIndex = 0;
+        else
+            currentPatrolIndex = loopPatrol
+                ? (currentPatrolIndex + 1) % patrolPoints.Length
+                : Mathf.Min(currentPatrolIndex + 1, patrolPoints.Length - 1);
+
+        target = patrolPoints[currentPatrolIndex];
+
+        Vector2 dir = (target - (Vector2)transform.position).normalized;
+        currentDir = dir;
+        UpdateFacing(dir);
+    }
+
 
     private System.Collections.IEnumerator BindThisNPCToTimelineRoutine()
     {
@@ -190,12 +264,12 @@ public class NPC : Entity
             timelineDirector.Play();
     }
 
-    private void SaveAndBind(TrackAsset track, Object target)
+    private void SaveAndBind(TrackAsset track, Object targetObj)
     {
         var old = timelineDirector.GetGenericBinding(track);
         if (!_savedTimelineBindings.ContainsKey(track))
             _savedTimelineBindings.Add(track, old);
-        timelineDirector.SetGenericBinding(track, target);
+        timelineDirector.SetGenericBinding(track, targetObj);
     }
 
     // ─────────────────────────────────────────────
@@ -210,14 +284,10 @@ public class NPC : Entity
         string id = (ident != null) ? ident.id : null;
         string goName = gameObject.name;
 
-        // Build candidate track names for both root/model if not specified.
-        // Priority list: explicit field -> id/id+"Model" -> goName/goName+"Model"
-        // (We still use explicit rootTrackName/modelTrackName if you set them.)
-        string[] rootCandidates = BuildCandidates(rootTrackName, id, goName, suffix: null);
-        string[] modelCandidates = BuildCandidates(modelTrackName, id != null ? id + "Model" : null, goName + "Model", suffix: null);
+        string[] rootCandidates = BuildCandidates(rootTrackName, id, goName);
+        string[] modelCandidates = BuildCandidates(modelTrackName, id != null ? id + "Model" : null, goName + "Model");
 
-        // Also consider "Root" suffix variants
-        string[] moreRoot = BuildCandidates(null, id != null ? id + "Root" : null, goName + "Root", suffix: null);
+        string[] moreRoot = BuildCandidates(null, id != null ? id + "Root" : null, goName + "Root");
         rootCandidates = MergeArrays(rootCandidates, moreRoot);
 
         Animator rootAnimator = anim != null ? anim : GetComponent<Animator>();
@@ -237,7 +307,6 @@ public class NPC : Entity
         string bestModel = null;
         int bestScore = 0;
 
-        // Scan each director and score matches
         for (int i = 0; i < all.Length; i++)
         {
             var d = all[i];
@@ -254,11 +323,9 @@ public class NPC : Entity
             {
                 if (track is not AnimationTrack) continue;
 
-                // Name matches give +2
                 if (NameInList(track.name, rootCandidates)) { score += 2; foundRoot = track.name; }
                 if (NameInList(track.name, modelCandidates)) { score += 2; foundModel = track.name; }
 
-                // Binding already points at our animators? Strong signal +4
                 var bound = d.GetGenericBinding(track);
                 if (bound != null)
                 {
@@ -280,7 +347,6 @@ public class NPC : Entity
         {
             timelineDirector = best;
 
-            // If you didn't explicitly set names, adopt the matched ones
             if (string.IsNullOrEmpty(rootTrackName) && !string.IsNullOrEmpty(bestRoot))
                 rootTrackName = bestRoot;
             if (string.IsNullOrEmpty(modelTrackName) && !string.IsNullOrEmpty(bestModel))
@@ -288,10 +354,8 @@ public class NPC : Entity
         }
     }
 
-    private static string[] BuildCandidates(string explicitName, string alt1, string alt2, string suffix)
+    private static string[] BuildCandidates(string explicitName, string alt1, string alt2)
     {
-        // Build a small list without null/empty entries; keep order
-        // suffix is unused for now but kept for extension parity
         var list = new List<string>(4);
         if (!string.IsNullOrEmpty(explicitName)) list.Add(explicitName);
         if (!string.IsNullOrEmpty(alt1)) list.Add(alt1);
@@ -313,9 +377,7 @@ public class NPC : Entity
     {
         if (list == null) return false;
         for (int i = 0; i < list.Length; i++)
-        {
             if (name == list[i]) return true;
-        }
         return false;
     }
 
@@ -326,11 +388,12 @@ public class NPC : Entity
     {
         if (dir.sqrMagnitude > 0.0001f)
         {
-            lastFacing = dir;
+            lastFacing = dir.normalized;
+
             if (anim)
             {
-                anim.SetFloat("xInput", dir.x);
-                anim.SetFloat("yInput", dir.y);
+                anim.SetFloat("xInput", lastFacing.x);
+                anim.SetFloat("yInput", lastFacing.y);
             }
         }
     }
@@ -344,25 +407,18 @@ public class NPC : Entity
         }
     }
 
-    public void SetIdleAnim()
-    {
-        if (!anim) return;
-        anim.SetFloat("xinput", 0f);
-        anim.SetFloat("yinput", 0f);
-    }
-
     // ─────────────────────────────────────────────
-    // PUBLIC API
+    // PUBLIC API (Follow)
     // ─────────────────────────────────────────────
-    public void StartFollowing(Transform target)
+    public void StartFollowing(Transform targetT)
     {
         followCommanded = true;
-        followTarget = target;
+        followTarget = targetT;
         if (stateMachine.currentState != followState)
             stateMachine.ChangeState(followState);
     }
 
-    public void StartFollow(Transform target) => StartFollowing(target);
+    public void StartFollow(Transform targetT) => StartFollowing(targetT);
     public void StopFollow() => StopFollowing();
 
     public void StopFollowing()
@@ -370,9 +426,139 @@ public class NPC : Entity
         followCommanded = false;
         followTarget = null;
 
-        if (autoStartPatrol && patrolPoints != null && patrolPoints.Count > 0)
+        // ✅ keep current facing when follow ends
+        ApplyLastFacing(); // (lastFacing was kept updated by UpdateFacing during follow)
+
+        if (autoStartPatrol && patrolPoints != null && patrolPoints.Length > 0)
             stateMachine.ChangeState(patrolState);
         else
             stateMachine.ChangeState(idleState);
     }
+
+
+#if UNITY_EDITOR
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+
+        if (patrolPoints == null || patrolPoints.Length == 0)
+            return;
+
+        Gizmos.color = Color.cyan;
+        for (int i = 0; i < patrolPoints.Length; i++)
+        {
+            Vector3 p = patrolPoints[i];
+            Gizmos.DrawSphere(p, 0.12f);
+
+            int next = i + 1;
+            if (next >= patrolPoints.Length)
+            {
+                if (!loopPatrol) break;
+                next = 0;
+            }
+
+            Vector3 q = patrolPoints[next];
+            Gizmos.DrawLine(p, q);
+        }
+    }
+
+    // Back-compat wrappers (so other scripts can call these names)
+    public void BeginInteraction(Transform actor) => BeginInteractionLock(actor);
+    public void EndInteraction() => EndInteractionLock();
+
+
+    // Called by your InteractionTooltipTrigger2D via SendMessage("OnSelect", actor)
+    public void OnSelect(Transform actor)
+    {
+        _interactor = actor;
+        // Optional: face player immediately when they enter the trigger
+        FaceTarget(actor);
+    }
+
+    // Called by your InteractionTooltipTrigger2D via SendMessage("OnUse", actor)
+    public void OnUse(Transform actor)
+    {
+        _interactor = actor;
+
+        // Freeze + face immediately when player presses Interact
+        BeginInteractionLock(actor);
+    }
+
+    // Called by your InteractionTooltipTrigger2D via SendMessage("OnDeselect")
+    public void OnDeselect()
+    {
+        // Do NOT unlock here — we unlock ONLY when the conversation ends.
+        // Keep last facing as-is.
+    }
+
+    private void BeginInteractionLock(Transform actor)
+    {
+        IsInteracting = true;
+        SetZeroVelocity();
+
+        if (actor != null)
+            FaceTarget(actor);
+
+        // Make sure we don't keep walking from patrol/follow
+        if (stateMachine != null && idleState != null)
+            stateMachine.ChangeState(idleState);
+    }
+
+    private void EndInteractionLock()
+    {
+        IsInteracting = false;
+        _interactor = null;
+        SetZeroVelocity();
+    }
+
+    // Face helper
+    public void FaceTarget(Transform t)
+    {
+        if (t == null) return;
+
+        Vector2 dir = (Vector2)(t.position - transform.position);
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        UpdateFacing(dir.normalized); // updates lastFacing + animator xInput/yInput
+    }
+
+    // Optional: keep facing the interactor while talking
+    public void FaceCurrentInteractor()
+    {
+        if (_interactor != null)
+            FaceTarget(_interactor);
+    }
+
+    // ===================== Dialogue System Hooks =====================
+    // Dialogue System sends these Unity messages to conversation participants. :contentReference[oaicite:2]{index=2}
+    public void OnConversationStart(Transform actor)
+    {
+        // Conversation started - ensure we're locked + facing
+        IsInteracting = true;
+        SetZeroVelocity();
+
+        if (faceInteractorWhileTalking)
+        {
+            // actor is typically the player transform passed by DS
+            if (actor != null) _interactor = actor;
+            FaceCurrentInteractor();
+        }
+    }
+
+    public void OnConversationEnd(Transform actor)
+    {
+        // Conversation ended - unlock now
+        EndInteractionLock();
+    }
+
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+        {
+            if (patrolPoints != null && patrolPoints.Length > 0 && patrolPoints[0] == Vector2.zero)
+                patrolPoints[0] = transform.position;
+        }
+    }
+#endif
 }

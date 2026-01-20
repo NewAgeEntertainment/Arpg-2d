@@ -1,8 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class NPC_IdleState : EntityState
 {
     private readonly NPC npc;
+
+    private float idleTimer;
+    private bool waitingForPatrolContinue;
 
     public NPC_IdleState(NPC npc, StateMachine sm, string animBool)
         : base(sm, animBool)
@@ -12,21 +15,39 @@ public class NPC_IdleState : EntityState
         this.rb = npc.rb;
     }
 
-    // in Idle.Enter()
     public override void Enter()
     {
         base.Enter();
+
         npc.SetZeroVelocity();
-        npc.ApplyLastFacing();   // keep facing the last direction from follow/patrol
+        npc.ApplyLastFacing();
+
+        idleTimer = 0f;
+
+        waitingForPatrolContinue =
+            npc.autoStartPatrol &&
+            npc.patrolPoints != null &&
+            npc.patrolPoints.Length > 0 &&
+            npc.followCommanded == false;
     }
-
-
 
     public override void Update()
     {
         base.Update();
 
-        // If follow was commanded and we have a target, go follow unless already close enough
+        // ✅ If interacting, stay idle + face the player
+        // If we're in a Dialogue System interaction, stay idle and keep facing player
+        if (npc.IsInteracting)
+        {
+            npc.SetZeroVelocity();
+            if (npc.faceInteractorWhileTalking)
+                npc.FaceCurrentInteractor();
+            return;
+        }
+
+
+
+        // Follow takes priority over everything
         if (npc.followCommanded && npc.followTarget != null)
         {
             float dist = Vector2.Distance(npc.transform.position, npc.followTarget.position);
@@ -35,22 +56,25 @@ public class NPC_IdleState : EntityState
                 stateMachine.ChangeState(npc.followState);
                 return;
             }
+
+            waitingForPatrolContinue = false;
         }
-        else
+
+        // Patrol pause logic
+        if (waitingForPatrolContinue)
         {
-            // Otherwise, optionally go patrol if configured
-            if (npc.patrolPoints != null && npc.patrolPoints.Count > 0 && npc.autoStartPatrol)
+            idleTimer += Time.deltaTime;
+
+            if (idleTimer >= npc.waitAtWaypoint)
             {
+                npc.AdvancePatrolIndexAndTarget();
                 stateMachine.ChangeState(npc.patrolState);
                 return;
             }
         }
 
-        if (npc.anim)
-        {
-            npc.anim.SetFloat("xinput", 0f);
-            npc.anim.SetFloat("yinput", 0f);
-        }
+        // ✅ Keep facing direction while idling
+        npc.ApplyLastFacing();
     }
 
     public override void Exit()

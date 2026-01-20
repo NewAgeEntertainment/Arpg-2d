@@ -3,7 +3,7 @@ guid: 1b602dc89d3b9ea49b68300ee33eef3a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_OldMan_1_28: 286135203
-      Npc_OldMan_1_16: -1080022314
+      Npc_OldMan_1_0: 1783003664
       Npc_OldMan_1_1: -248428773
+      Npc_OldMan_1_10: -347963229
       Npc_OldMan_1_11: 97743751
       Npc_OldMan_1_12: -1506760909
-      Npc_OldMan_1_17: 221526238
-      Npc_OldMan_1_9: -393450996
+      Npc_OldMan_1_13: 536815228
       Npc_OldMan_1_14: -269470620
       Npc_OldMan_1_15: -761612113
-      Npc_OldMan_1_6: 318730322
-      Npc_OldMan_1_25: 2030693929
-      Npc_OldMan_1_29: 1222083428
-      Npc_OldMan_1_13: 536815228
-      Npc_OldMan_1_3: -1865876222
-      Npc_OldMan_1_22: -414952171
+      Npc_OldMan_1_16: -1080022314
+      Npc_OldMan_1_17: 221526238
       Npc_OldMan_1_18: -94622683
       Npc_OldMan_1_19: -1236426531
-      Npc_OldMan_1_20: -1013133476
-      Npc_OldMan_1_24: -304776995
-      Npc_OldMan_1_8: 1907568807
-      Npc_OldMan_1_0: 1783003664
       Npc_OldMan_1_2: -830567337
-      Npc_OldMan_1_26: -1729584132
+      Npc_OldMan_1_20: -1013133476
       Npc_OldMan_1_21: 46160136
-      Npc_OldMan_1_10: -347963229
-      Npc_OldMan_1_31: 1143580630
+      Npc_OldMan_1_22: -414952171
       Npc_OldMan_1_23: 1426398593
-      Npc_OldMan_1_30: -686743791
-      Npc_OldMan_1_5: -960061801
+      Npc_OldMan_1_24: -304776995
+      Npc_OldMan_1_25: 2030693929
+      Npc_OldMan_1_26: -1729584132
       Npc_OldMan_1_27: -1794037290
-      Npc_OldMan_1_7: -1583395261
+      Npc_OldMan_1_28: 286135203
+      Npc_OldMan_1_29: 1222083428
+      Npc_OldMan_1_3: -1865876222
+      Npc_OldMan_1_30: -686743791
+      Npc_OldMan_1_31: 1143580630
       Npc_OldMan_1_4: 685543287
-  spritePackingTag: 
+      Npc_OldMan_1_5: -960061801
+      Npc_OldMan_1_6: 318730322
+      Npc_OldMan_1_7: -1583395261
+      Npc_OldMan_1_8: 1907568807
+      Npc_OldMan_1_9: -393450996
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

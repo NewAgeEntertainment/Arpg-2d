@@ -3,7 +3,7 @@ guid: f6ee2384ecb15d94a98272b1a6040007
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_Blacksmith_1: -285337668
-      Npc_Blacksmith_8: 1985397617
-      Npc_Blacksmith_4: 718459813
-      Npc_Blacksmith_26: -1188427557
-      Npc_Blacksmith_16: -211593403
-      Npc_Blacksmith_23: 1221152067
       Npc_Blacksmith_0: -694162457
-      Npc_Blacksmith_22: 1114067389
-      Npc_Blacksmith_21: -98903549
-      Npc_Blacksmith_5: -234181086
-      Npc_Blacksmith_11: -358536639
-      Npc_Blacksmith_6: -493181457
-      Npc_Blacksmith_15: -1289324970
+      Npc_Blacksmith_1: -285337668
       Npc_Blacksmith_10: 1499066149
-      Npc_Blacksmith_14: 1394557244
+      Npc_Blacksmith_11: -358536639
       Npc_Blacksmith_12: -2083187279
-      Npc_Blacksmith_19: 614693408
-      Npc_Blacksmith_7: -458762107
-      Npc_Blacksmith_28: -417855503
-      Npc_Blacksmith_24: -1672053047
-      Npc_Blacksmith_3: 1387181102
-      Npc_Blacksmith_31: 1313265898
-      Npc_Blacksmith_17: -1988432511
-      Npc_Blacksmith_27: 1267357726
-      Npc_Blacksmith_2: -1762713661
-      Npc_Blacksmith_30: 2096156752
-      Npc_Blacksmith_29: 2012203312
-      Npc_Blacksmith_9: 407052464
-      Npc_Blacksmith_20: -1707070993
-      Npc_Blacksmith_25: 72957619
       Npc_Blacksmith_13: -18168972
+      Npc_Blacksmith_14: 1394557244
+      Npc_Blacksmith_15: -1289324970
+      Npc_Blacksmith_16: -211593403
+      Npc_Blacksmith_17: -1988432511
       Npc_Blacksmith_18: -1134766388
-  spritePackingTag: 
+      Npc_Blacksmith_19: 614693408
+      Npc_Blacksmith_2: -1762713661
+      Npc_Blacksmith_20: -1707070993
+      Npc_Blacksmith_21: -98903549
+      Npc_Blacksmith_22: 1114067389
+      Npc_Blacksmith_23: 1221152067
+      Npc_Blacksmith_24: -1672053047
+      Npc_Blacksmith_25: 72957619
+      Npc_Blacksmith_26: -1188427557
+      Npc_Blacksmith_27: 1267357726
+      Npc_Blacksmith_28: -417855503
+      Npc_Blacksmith_29: 2012203312
+      Npc_Blacksmith_3: 1387181102
+      Npc_Blacksmith_30: 2096156752
+      Npc_Blacksmith_31: 1313265898
+      Npc_Blacksmith_4: 718459813
+      Npc_Blacksmith_5: -234181086
+      Npc_Blacksmith_6: -493181457
+      Npc_Blacksmith_7: -458762107
+      Npc_Blacksmith_8: 1985397617
+      Npc_Blacksmith_9: 407052464
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

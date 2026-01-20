@@ -2,9 +2,8 @@
 
 public class NPC_PatrolState : EntityState
 {
+    private const float reachTolerance = 0.1f;
     private readonly NPC npc;
-    private int index = 0;
-    private float waitTimer = 0f;
 
     public NPC_PatrolState(NPC npc, StateMachine sm, string animBool)
         : base(sm, animBool)
@@ -17,22 +16,37 @@ public class NPC_PatrolState : EntityState
     public override void Enter()
     {
         base.Enter();
-        waitTimer = 0f;
 
-        if (npc.patrolPoints == null || npc.patrolPoints.Count == 0)
+        if (npc.patrolPoints == null || npc.patrolPoints.Length == 0)
         {
+            npc.SetZeroVelocity();
             stateMachine.ChangeState(npc.idleState);
             return;
         }
 
-        if (index < 0 || index >= npc.patrolPoints.Count) index = 0;
+        if (npc.currentPatrolIndex < 0 || npc.currentPatrolIndex >= npc.patrolPoints.Length)
+            npc.currentPatrolIndex = 0;
+
+        npc.target = npc.patrolPoints[npc.currentPatrolIndex];
+
+        Vector2 dir = (npc.target - (Vector2)npc.transform.position).normalized;
+        npc.currentDir = dir;
+        npc.UpdateFacing(dir);
     }
 
     public override void Update()
     {
         base.Update();
 
-        // follow command takes priority
+        if (npc.IsInteracting)
+        {
+            npc.SetZeroVelocity();
+            stateMachine.ChangeState(npc.idleState);
+            return;
+        }
+
+
+        // follow has priority
         if (npc.followCommanded && npc.followTarget != null)
         {
             float d = Vector2.Distance(npc.transform.position, npc.followTarget.position);
@@ -44,44 +58,37 @@ public class NPC_PatrolState : EntityState
             }
         }
 
-        // no points → idle
-        if (npc.patrolPoints == null || npc.patrolPoints.Count == 0)
+        if (npc.patrolPoints == null || npc.patrolPoints.Length == 0)
         {
+            npc.SetZeroVelocity();
             stateMachine.ChangeState(npc.idleState);
             return;
         }
 
-        if (index < 0 || index >= npc.patrolPoints.Count) index = 0;
-        Transform point = npc.patrolPoints[index];
-        if (!point) { NextIndex(); return; }
+        Vector2 pos = npc.transform.position;
+        Vector2 toTarget = npc.target - pos;
+        float dist = toTarget.magnitude;
 
-        Vector2 from = npc.transform.position;
-        Vector2 to = point.position;
-        float dist = Vector2.Distance(from, to);
-
-        if (dist <= npc.waypointTolerance)
+        // ✅ reached waypoint -> go idle (pause happens in idle)
+        if (dist <= reachTolerance)
         {
             npc.SetZeroVelocity();
-            waitTimer += Time.deltaTime;
-            if (waitTimer >= npc.waitAtWaypoint)
-            {
-                waitTimer = 0f;
-                NextIndex();
-            }
+            stateMachine.ChangeState(npc.idleState);
             return;
         }
 
-        // move toward waypoint
-        Vector2 dir = (to - from).normalized;
+        Vector2 dir = toTarget.normalized;
+        npc.currentDir = dir;
         npc.SetVelocity(dir.x * npc.moveSpeed, dir.y * npc.moveSpeed);
-        npc.UpdateFacing(dir);                      // <- sets xInput/yInput and remembers lastFacing
-    }
 
-    private void NextIndex()
-    {
-        index++;
-        if (index >= npc.patrolPoints.Count)
-            index = npc.loopPatrol ? 0 : npc.patrolPoints.Count - 1;
+        // ✅ keep lastFacing updated continuously
+        npc.UpdateFacing(dir);
+
+        //if (npc.anim)
+        //{
+        //    //npc.anim.SetFloat("xInput", dir.x);
+        //    //npc.anim.SetFloat("yInput", dir.y);
+        //}
     }
 
     public override void Exit()

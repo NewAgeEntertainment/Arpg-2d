@@ -3,7 +3,7 @@ guid: f10a96637b9f916449eb73feaee0e9a4
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -123,6 +129,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Windows Store Apps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -811,41 +831,40 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Npc_Guard_lv01_3: 178605310
-      Npc_Guard_lv01_7: -1589635288
-      Npc_Guard_lv01_21: -1077295976
-      Npc_Guard_lv01_22: 479806305
-      Npc_Guard_lv01_18: -1992014733
-      Npc_Guard_lv01_1: 398204002
-      Npc_Guard_lv01_31: 52369923
-      Npc_Guard_lv01_16: -403921433
-      Npc_Guard_lv01_6: 1071209308
-      Npc_Guard_lv01_12: 585448555
-      Npc_Guard_lv01_10: 1636709893
-      Npc_Guard_lv01_30: 1702863297
-      Npc_Guard_lv01_20: -1764183094
-      Npc_Guard_lv01_2: 484116982
       Npc_Guard_lv01_0: 224547698
-      Npc_Guard_lv01_4: 1303587633
-      Npc_Guard_lv01_8: -1903203440
+      Npc_Guard_lv01_1: 398204002
+      Npc_Guard_lv01_10: 1636709893
+      Npc_Guard_lv01_11: -1552377364
+      Npc_Guard_lv01_12: 585448555
       Npc_Guard_lv01_13: -662416705
       Npc_Guard_lv01_14: 1201648537
-      Npc_Guard_lv01_25: -1501330755
-      Npc_Guard_lv01_26: 1289820220
       Npc_Guard_lv01_15: 1769381286
-      Npc_Guard_lv01_5: -2095822488
-      Npc_Guard_lv01_9: -15972094
+      Npc_Guard_lv01_16: -403921433
+      Npc_Guard_lv01_17: 439871435
+      Npc_Guard_lv01_18: -1992014733
+      Npc_Guard_lv01_19: 840644021
+      Npc_Guard_lv01_2: 484116982
+      Npc_Guard_lv01_20: -1764183094
+      Npc_Guard_lv01_21: -1077295976
+      Npc_Guard_lv01_22: 479806305
       Npc_Guard_lv01_23: -623684607
       Npc_Guard_lv01_24: -1042097106
+      Npc_Guard_lv01_25: -1501330755
+      Npc_Guard_lv01_26: 1289820220
       Npc_Guard_lv01_27: -1932165501
-      Npc_Guard_lv01_11: -1552377364
-      Npc_Guard_lv01_17: 439871435
-      Npc_Guard_lv01_29: 452786920
       Npc_Guard_lv01_28: 2068000762
-      Npc_Guard_lv01_19: 840644021
-  spritePackingTag: 
+      Npc_Guard_lv01_29: 452786920
+      Npc_Guard_lv01_3: 178605310
+      Npc_Guard_lv01_30: 1702863297
+      Npc_Guard_lv01_31: 52369923
+      Npc_Guard_lv01_4: 1303587633
+      Npc_Guard_lv01_5: -2095822488
+      Npc_Guard_lv01_6: 1071209308
+      Npc_Guard_lv01_7: -1589635288
+      Npc_Guard_lv01_8: -1903203440
+      Npc_Guard_lv01_9: -15972094
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
