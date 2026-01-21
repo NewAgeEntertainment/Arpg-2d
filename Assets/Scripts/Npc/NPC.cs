@@ -18,6 +18,8 @@ public class NPC : Entity
     public float waitAtWaypoint = 0.25f;
     public bool autoStartPatrol = false;
 
+    private bool _resumePatrolAfterInteraction;
+
     [HideInInspector] public bool isPaused { get; set; } = false; // used by PatrolState like Enemy
     [HideInInspector] public Vector2 target;                      // used by PatrolState like Enemy
 
@@ -40,8 +42,14 @@ public class NPC : Entity
     [Header("Interaction Facing")]
     public bool faceInteractorWhileTalking = true;
 
+    [Header("Interaction")]
+    public bool faceOnlyOnUse = true;      // just for clarity in inspector
     public bool IsInteracting { get; private set; }
     private Transform _interactor;
+
+    // Back-compat wrappers (if any other script calls these names)
+    public void BeginInteraction(Transform actor) => BeginInteractionLock(actor);
+    public void EndInteraction() => EndInteractionLock();
 
     // ───── Timeline (optional)
     [Header("Timeline (optional)")]
@@ -462,96 +470,6 @@ public class NPC : Entity
         }
     }
 
-    // Back-compat wrappers (so other scripts can call these names)
-    public void BeginInteraction(Transform actor) => BeginInteractionLock(actor);
-    public void EndInteraction() => EndInteractionLock();
-
-
-    // Called by your InteractionTooltipTrigger2D via SendMessage("OnSelect", actor)
-    public void OnSelect(Transform actor)
-    {
-        _interactor = actor;
-        // Optional: face player immediately when they enter the trigger
-        FaceTarget(actor);
-    }
-
-    // Called by your InteractionTooltipTrigger2D via SendMessage("OnUse", actor)
-    public void OnUse(Transform actor)
-    {
-        _interactor = actor;
-
-        // Freeze + face immediately when player presses Interact
-        BeginInteractionLock(actor);
-    }
-
-    // Called by your InteractionTooltipTrigger2D via SendMessage("OnDeselect")
-    public void OnDeselect()
-    {
-        // Do NOT unlock here — we unlock ONLY when the conversation ends.
-        // Keep last facing as-is.
-    }
-
-    private void BeginInteractionLock(Transform actor)
-    {
-        IsInteracting = true;
-        SetZeroVelocity();
-
-        if (actor != null)
-            FaceTarget(actor);
-
-        // Make sure we don't keep walking from patrol/follow
-        if (stateMachine != null && idleState != null)
-            stateMachine.ChangeState(idleState);
-    }
-
-    private void EndInteractionLock()
-    {
-        IsInteracting = false;
-        _interactor = null;
-        SetZeroVelocity();
-    }
-
-    // Face helper
-    public void FaceTarget(Transform t)
-    {
-        if (t == null) return;
-
-        Vector2 dir = (Vector2)(t.position - transform.position);
-        if (dir.sqrMagnitude < 0.0001f) return;
-
-        UpdateFacing(dir.normalized); // updates lastFacing + animator xInput/yInput
-    }
-
-    // Optional: keep facing the interactor while talking
-    public void FaceCurrentInteractor()
-    {
-        if (_interactor != null)
-            FaceTarget(_interactor);
-    }
-
-    // ===================== Dialogue System Hooks =====================
-    // Dialogue System sends these Unity messages to conversation participants. :contentReference[oaicite:2]{index=2}
-    public void OnConversationStart(Transform actor)
-    {
-        // Conversation started - ensure we're locked + facing
-        IsInteracting = true;
-        SetZeroVelocity();
-
-        if (faceInteractorWhileTalking)
-        {
-            // actor is typically the player transform passed by DS
-            if (actor != null) _interactor = actor;
-            FaceCurrentInteractor();
-        }
-    }
-
-    public void OnConversationEnd(Transform actor)
-    {
-        // Conversation ended - unlock now
-        EndInteractionLock();
-    }
-
-
     private void OnValidate()
     {
         if (!Application.isPlaying)
@@ -561,4 +479,104 @@ public class NPC : Entity
         }
     }
 #endif
+
+
+    // Called by InteractionTooltipTrigger2D via SendMessage("OnSelect", actor)
+    public void OnSelect(Transform actor)
+    {
+        // DO NOTHING. We do not face on select.
+        _interactor = actor; // optional: store who is inside
+    }
+
+    // Called by InteractionTooltipTrigger2D via SendMessage("OnUse", actor)
+    public void OnUse(Transform actor)
+    {
+        _interactor = actor;
+
+        // remember if we were patrolling when interaction started
+        _resumePatrolAfterInteraction = (stateMachine != null && stateMachine.currentState == patrolState);
+
+        BeginInteractionLock(actor);
+    }
+
+
+    // Called by InteractionTooltipTrigger2D via SendMessage("OnDeselect")
+    public void OnDeselect()
+    {
+        // Do NOT unlock here. Dialogue System will end the conversation later.
+        // If you want to unlock when leaving trigger without talking, you'd do it here,
+        // but you said only face on use, so we leave it alone.
+    }
+
+    private void BeginInteractionLock(Transform actor)
+    {
+        IsInteracting = true;
+        SetZeroVelocity();
+
+        // ✅ Face ONLY here
+        if (actor != null)
+            FaceTarget(actor);
+
+        // Stop patrol/follow movement
+        if (stateMachine != null && idleState != null)
+            stateMachine.ChangeState(idleState);
+    }
+
+    private void EndInteractionLock()
+    {
+        IsInteracting = false;
+        _interactor = null;
+        SetZeroVelocity();
+
+        // keep lastFacing as-is so idle faces correctly
+        ApplyLastFacing();
+
+        // ✅ Resume patrol toward CURRENT target (do not advance index)
+        if (_resumePatrolAfterInteraction &&
+            !followCommanded &&
+            autoStartPatrol &&
+            patrolPoints != null && patrolPoints.Length > 0)
+        {
+            // ensure target is valid; if not, rebuild it from current index
+            if (target == Vector2.zero && patrolPoints.Length > 0)
+                target = patrolPoints[Mathf.Clamp(currentPatrolIndex, 0, patrolPoints.Length - 1)];
+
+            isPaused = false;                    // make sure patrol state moves
+            stateMachine.ChangeState(patrolState);
+        }
+        else
+        {
+            stateMachine.ChangeState(idleState);
+        }
+
+        _resumePatrolAfterInteraction = false;
+    }
+
+
+    public void FaceTarget(Transform t)
+    {
+        if (t == null) return;
+
+        Vector2 dir = (Vector2)(t.position - transform.position);
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        UpdateFacing(dir.normalized); // updates lastFacing + anim params
+    }
+
+    // ===================== Dialogue System Hooks =====================
+    // If you want: conversation start does NOT rotate; OnUse already did.
+    public void OnConversationStart(Transform actor)
+    {
+        IsInteracting = true;
+        SetZeroVelocity();
+    }
+
+    public void OnConversationEnd(Transform actor)
+    {
+        EndInteractionLock();
+    }
+
+
+  
+
 }
