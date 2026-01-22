@@ -394,26 +394,24 @@ public class NPC : Entity
     // ─────────────────────────────────────────────
     public void UpdateFacing(Vector2 dir)
     {
-        if (dir.sqrMagnitude > 0.0001f)
-        {
-            lastFacing = dir.normalized;
-
-            if (anim)
-            {
-                anim.SetFloat("xInput", lastFacing.x);
-                anim.SetFloat("yInput", lastFacing.y);
-            }
-        }
+        FaceDirection(dir); // ✅ routes through override -> sets lastFacing + animator
     }
+
 
     public void ApplyLastFacing()
     {
-        if (anim)
-        {
-            anim.SetFloat("xInput", lastFacing.x);
-            anim.SetFloat("yInput", lastFacing.y);
-        }
+        FaceDirection(lastFacing);
     }
+
+
+    public override void FaceDirection(Vector2 dir)
+    {
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        lastFacing = dir.normalized;   // ✅ remember for idle
+        base.FaceDirection(lastFacing); // ✅ sets currentDir + animator floats using Entity's params
+    }
+
 
     // ─────────────────────────────────────────────
     // PUBLIC API (Follow)

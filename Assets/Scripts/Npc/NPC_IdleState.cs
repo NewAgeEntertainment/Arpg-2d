@@ -21,7 +21,7 @@ public class NPC_IdleState : EntityState
 
         npc.SetZeroVelocity();
 
-        // ✅ Idle should face the last direction we were moving/looking
+        // ✅ Keep sprite facing the last direction we were moving/looking
         npc.ApplyLastFacing();
 
         idleTimer = 0f;
@@ -38,12 +38,19 @@ public class NPC_IdleState : EntityState
     {
         base.Update();
 
-        // If interacting (Dialogue), just stay idle and keep last facing
+        // Always stop in idle
+        npc.SetZeroVelocity();
+
+        // ✅ If interacting (Dialogue), just stay idle and keep facing interactor/lastFacing
         if (npc.IsInteracting)
         {
-            npc.SetZeroVelocity();
+            // If you want them to continuously face the interactor while talking:
+            // npc.FaceCurrentInteractor();
             return;
         }
+
+        // ✅ Ensure our idle keeps the last facing (in case other systems changed it)
+        npc.ApplyLastFacing();
 
         // Follow takes priority
         if (npc.followCommanded && npc.followTarget != null)
@@ -65,21 +72,18 @@ public class NPC_IdleState : EntityState
 
             if (idleTimer >= npc.waitAtWaypoint)
             {
-                // advance patrol index + set next target
                 npc.AdvancePatrolIndexAndTarget();
                 stateMachine.ChangeState(npc.patrolState);
                 return;
             }
         }
 
-        // If your animator needs "idle params", set them here.
-        // NOTE: If xInput/yInput = 0 forces down-facing in your animator,
-        // remove these two lines and rely on ApplyLastFacing() instead.
-        if (npc.anim)
-        {
-            npc.anim.SetFloat("xInput", 0f);
-            npc.anim.SetFloat("yInput", 0f);
-        }
+        // ❌ DO NOT set xInput/yInput to 0 here.
+        // That forces a default facing and overrides start-facing / lastFacing.
+        //
+        // If your animator needs an "idle" indicator, use a separate param like:
+        // anim.SetFloat("speed", 0f);
+        // or anim.SetBool("isMoving", false);
     }
 
     public override void Exit()

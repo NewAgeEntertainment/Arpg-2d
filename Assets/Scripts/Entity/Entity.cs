@@ -10,6 +10,19 @@ public class Entity : MonoBehaviour
 
     [HideInInspector] public Vector2 currentDir;
 
+    [Header("Start Facing")]
+    [SerializeField] private bool applyFacingOnStart = false;
+
+    public enum StartFacingDirection { None, North, South, East, West }
+
+    [SerializeField] private StartFacingDirection startFacing = StartFacingDirection.South;
+
+    [Tooltip("Animator float parameter name for X direction.")]
+    [SerializeField] private string animXParam = "xInput";
+
+    [Tooltip("Animator float parameter name for Y direction.")]
+    [SerializeField] private string animYParam = "yInput";
+
     [Header("KnockBack info")]
     protected bool isKnocked;
     private Coroutine knockbakCo;
@@ -17,7 +30,6 @@ public class Entity : MonoBehaviour
 
     // --- Defer movement to FixedUpdate ---
     private Vector2 _desiredVelocity;
-    private bool _hasDesiredVelocityThisFrame;
 
     protected virtual void Awake()
     {
@@ -75,7 +87,12 @@ public class Entity : MonoBehaviour
             anim = ResolveGameplayAnimator();
     }
 
-    protected virtual void Start() { }
+    protected virtual void Start()
+    {
+        // Apply initial facing once at scene start (optional)
+        if (applyFacingOnStart)
+            ApplyStartFacing();
+    }
 
     protected virtual void Update()
     {
@@ -90,6 +107,41 @@ public class Entity : MonoBehaviour
         // Always move using the last requested velocity
         Vector2 next = rb.position + _desiredVelocity * Time.fixedDeltaTime;
         rb.MovePosition(next);
+    }
+
+    // ---------------- Start Facing API ----------------
+
+    public void ApplyStartFacing()
+    {
+        Vector2 dir = startFacing switch
+        {
+            StartFacingDirection.North => Vector2.up,
+            StartFacingDirection.South => Vector2.down,
+            StartFacingDirection.East => Vector2.right,
+            StartFacingDirection.West => Vector2.left,
+            _ => Vector2.zero
+        };
+
+        if (dir != Vector2.zero)
+            FaceDirection(dir);
+    }
+
+    /// <summary>
+    /// Faces a direction (updates currentDir + animator params).
+    /// Safe to call from NPC/Enemy/etc whenever you want.
+    /// </summary>
+    public virtual void FaceDirection(Vector2 dir)
+    {
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        dir.Normalize();
+        currentDir = dir;
+
+        if (anim != null)
+        {
+            if (!string.IsNullOrEmpty(animXParam)) anim.SetFloat(animXParam, dir.x);
+            if (!string.IsNullOrEmpty(animYParam)) anim.SetFloat(animYParam, dir.y);
+        }
     }
 
     // ---------------- Movement API ----------------
@@ -127,7 +179,6 @@ public class Entity : MonoBehaviour
         isKnocked = false;
         if (rb != null) rb.velocity = Vector2.zero;
     }
-
 
     // --------------- States / Anim ---------------
     public void CurrentStateAnimationTrigger()
