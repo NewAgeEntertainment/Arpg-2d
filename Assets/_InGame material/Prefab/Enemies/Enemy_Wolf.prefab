@@ -428,7 +428,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: 6
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 1498993612, guid: 8e8d42feceaf0f64a9d214e2ca1cde01, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -942,7 +942,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: 6
+  m_SortingLayer: 3
   m_SortingOrder: -1
   m_Sprite: {fileID: -8900005401159255355, guid: 0f6ff2d79ef492c4bb1ebd376089f815, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -1109,7 +1109,7 @@ GameObject:
   - component: {fileID: 6459691345458401076}
   - component: {fileID: 5133983823855385578}
   - component: {fileID: 176247453135557487}
-  - component: {fileID: 724242973456994121}
+  - component: {fileID: 5922825876006769586}
   m_Layer: 8
   m_Name: Enemy_Wolf
   m_TagString: Enemy
@@ -1131,6 +1131,7 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 85567367316540405}
+  - {fileID: 1454917538180880668}
   - {fileID: 4335780047794698648}
   - {fileID: 149877568571868167}
   - {fileID: 9096875807705630854}
@@ -1155,6 +1156,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
+  applyFacingOnStart: 0
+  startFacing: 2
+  animXParam: xInput
+  animYParam: yInput
   dropList: {fileID: 11400000, guid: ef1f500304edab948821744c1d9292bd, type: 2}
   itemPickupPrefab: {fileID: 5792298682163486623, guid: 158ae06d77a8683478c1030c6405e091, type: 3}
   minDrop: 1
@@ -1429,7 +1434,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d8239df1796c410c9e130ffeab05fe4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCheckPoints: []
   basicAttackScale:
     physical: 1
     elemental: 1
@@ -1448,7 +1452,7 @@ MonoBehaviour:
   targetCheckRadius: 0.93
   whatIsTarget:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 2097152
   _targetCheck_Left: {fileID: 4618335643795070059}
   _targetCheck_Right: {fileID: 2986057126202076954}
   _targetCheck_Up: {fileID: 7444192374785261632}
@@ -1525,7 +1529,7 @@ MonoBehaviour:
   deathParameter: Wolf
   useGONameIfParameterEmpty: 1
   messageTarget: {fileID: 0}
---- !u!58 &724242973456994121
+--- !u!58 &5922825876006769586
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1557,9 +1561,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.15196943, y: 0}
+  m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.65196943
+  m_Radius: 0.56
 --- !u!1 &2743883782825291007
 GameObject:
   m_ObjectHideFlags: 0
@@ -2231,7 +2235,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -794797989
-  m_SortingLayer: 6
+  m_SortingLayer: 3
   m_SortingOrder: -1
   m_Sprite: {fileID: 3625043607559282579, guid: 045b15ec09bba42448d89db77fa6f20a, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -2444,6 +2448,73 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &6370630798992585640
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1454917538180880668}
+  - component: {fileID: 9123340233424037324}
+  m_Layer: 22
+  m_Name: HurtBox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1454917538180880668
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6370630798992585640}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.441, y: -0.227, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6100707136976238000}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &9123340233424037324
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6370630798992585640}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.65
 --- !u!1 &6397714496244780216
 GameObject:
   m_ObjectHideFlags: 0
