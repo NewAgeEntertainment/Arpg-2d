@@ -204,7 +204,7 @@ public class UI_Inventory : UI_Panel
 
         HideTooltip(); // NEW
 
-        FindFirstObjectByType<UI>()?.OpenMainMenuDirect();
+        //FindFirstObjectByType<UI>()?.OpenMainMenuDirect();
     }
 
     public bool IsOpen() => isOpen;

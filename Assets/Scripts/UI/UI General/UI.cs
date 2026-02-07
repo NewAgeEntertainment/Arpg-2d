@@ -208,6 +208,9 @@ public class UI : MonoBehaviour
     private CursorLockMode _prevLockMode;
 private bool _prevCursorVisible;
 
+    [Header("Book UI")]
+    [SerializeField] private BookOpenManager bookUI;
+
     // -------------------- ADDED: Panel Switching (Rewired) --------------------
     [SerializeField] private string nextPanelAction = "NextUIPanel";
     [SerializeField] private string prevPanelAction = "PrevUIPanel";
@@ -501,16 +504,47 @@ private bool _prevCursorVisible;
             goldText.text = $"{newGoldAmount:N0} G";
     }
 
+    private void OpenPanelWithBook(System.Action openPanel)
+    {
+        if (bookUI == null)
+        {
+            openPanel?.Invoke();
+            return;
+        }
+
+        bookUI.PlayOpenThen(() =>
+        {
+            openPanel?.Invoke();
+        });
+    }
+
+
     #region Open/Close Panels
 
     public void OpenInventory()
     {
-        isInventoryOpen = true;
-        EnsureUIRootIsActive();
-        CloseAllPanels();
-        inventoryUI?.gameObject.SetActive(true);
-        inventoryUI?.OpenInventory();
+        OpenPanelWithBook(() =>
+        {
+            isInventoryOpen = true;
+            EnsureUIRootIsActive();
+            CloseAllPanels();
+
+            // ✅ Keep book visible + open while inventory is active
+            if (bookUI != null)
+            {
+                bookUI.gameObject.SetActive(true);
+                bookUI.ShowOpenIdle(); // <-- add this method (below)
+            }
+
+            
+
+
+            inventoryUI?.gameObject.SetActive(true);
+            inventoryUI?.OpenInventory();
+        });
     }
+
+
 
     public void CloseInventory()
     {
@@ -524,10 +558,13 @@ private bool _prevCursorVisible;
 
     public void OpenSkillTree()
     {
-        isSkillTreeOpen = true;
-        EnsureUIRootIsActive();
-        CloseAllPanels();
-        skillTreeUI?.gameObject.SetActive(true);
+        OpenPanelWithBook(() =>
+        {
+            isSkillTreeOpen = true;
+            EnsureUIRootIsActive();
+            CloseAllPanels();
+            skillTreeUI?.gameObject.SetActive(true);
+        });
     }
 
     public void CloseSkillTree()
@@ -542,11 +579,14 @@ private bool _prevCursorVisible;
 
     public void OpenEquipment()
     {
-        isEquipmentOpen = true;
-        EnsureUIRootIsActive();
-        CloseAllPanels();
-        equipmentInventoryPanel?.gameObject.SetActive(true);
-        equipmentInventoryPanel?.Open();
+        OpenPanelWithBook(() =>
+        {
+            isEquipmentOpen = true;
+            EnsureUIRootIsActive();
+            CloseAllPanels();
+            equipmentInventoryPanel?.gameObject.SetActive(true);
+            equipmentInventoryPanel?.Open();
+        });
     }
 
     public void CloseEquipment()
@@ -969,18 +1009,27 @@ private bool _prevCursorVisible;
         CloseAllPanels();
         mainMenuPanel?.SetActive(true);
 
-        ApplyButtonTheme(mainMenuPanel?.transform);
+        // ✅ Play close animation when returning to main menu
+        if (bookUI != null)
+        {
+            bookUI.gameObject.SetActive(true);
 
-        // Refresh menu HP/MP immediately and start polling if needed
+            bookUI.PlayCloseThen(() =>
+            {
+                // after close finishes, make sure we're sitting on closed idle
+                bookUI.ShowClosedIdle();
+            });
+        }
+
+        ApplyButtonTheme(mainMenuPanel?.transform);
         ForceRefreshMenuBars();
         StartMenuPollIfNeeded();
-
-        var binder = FindFirstObjectByType<UI_MenuHealthManaBinder>(FindObjectsInactive.Include);
-        binder?.ForceFindAndRefresh();
-
-        // Switch maps to UI and pause while main menu is open
         EnterUIMode();
     }
+
+
+
+
 
     #endregion
 
@@ -1044,6 +1093,10 @@ private bool _prevCursorVisible;
 
         ResetStates();
         StopMenuPoll();
+
+        // ✅ IMPORTANT: book should NOT be closed here
+        if (bookUI != null)
+            bookUI.gameObject.SetActive(true);
     }
 
 
@@ -1129,10 +1182,15 @@ private bool _prevCursorVisible;
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
             mainMenuPanel.SetActive(false);
-            ExitUIMode();           // restores gameplay map + Time.timeScale=1
+
+            if (bookUI != null)
+                bookUI.ShowClosedIdle();
+
+            ExitUIMode();
             CheckStopPlayerControls();
             return;
         }
+
 
         if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen())
         {

@@ -1,65 +1,176 @@
-using System;
-using System.Collections;
+﻿using System;
 using UnityEngine;
 
 public class BookOpenManager : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Animator bookAnimator; // drag your Animator here
+    [Header("Animator")]
+    [SerializeField] private Animator anim;
 
-    [Tooltip("Book open state name (match your Animator)")]
-    [SerializeField] private string openStateName = "Open"; // match your Animator state name!
+    [Header("Animator State Names (must match EXACTLY)")]
+    [SerializeField] private string closedIdleStateName = "Book Close idle";
+    [SerializeField] private string openIdleStateName = "Book Open idle";
 
-    [Tooltip("Book open animation length fallback (seconds)")]
-    [SerializeField] private float openDuration = 1.0f;
+    [Header("Animator Params (optional)")]
+    [SerializeField] private string openTriggerName = "Open";
+    [SerializeField] private string closeTriggerName = "Close";
 
-    /// <summary>
-    /// Call this to open the book if needed, then run your callback after it's open.
-    /// </summary>
-    public void OpenBookIfNeeded(Action onOpened)
+    [Header("Fail-safe")]
+    [SerializeField] private float maxWaitSeconds = 1.25f;
+
+    private BookUIStateMachine sm;
+
+    public BookClosedIdleState ClosedIdleState { get; private set; }
+    public BookOpeningState OpeningState { get; private set; }
+    public BookOpenIdleState OpenIdleState { get; private set; }
+    public BookClosingState ClosingState { get; private set; }
+
+    // Backwards-compatible names used by UI.cs
+    public void ShowOpenIdle() => SetOpenIdleImmediate();
+    public void ShowClosedIdle() => SetClosedIdleImmediate();
+
+
+    private Action _onOpened;
+    private Action _onClosed;
+
+    private float _timeout;
+
+    private void Awake()
     {
-        if (bookAnimator == null)
+        if (anim == null) anim = GetComponentInChildren<Animator>(true);
+
+        anim.updateMode = AnimatorUpdateMode.UnscaledTime;
+
+        sm = new BookUIStateMachine();
+
+        ClosedIdleState = new BookClosedIdleState(sm, this, anim);
+        OpeningState = new BookOpeningState(sm, this, anim);
+        OpenIdleState = new BookOpenIdleState(sm, this, anim);
+        ClosingState = new BookClosingState(sm, this, anim);
+
+        // Initialize based on current animator pose
+        if (IsInOpenIdle())
+            sm.Initialize(OpenIdleState);
+        else
+            sm.Initialize(ClosedIdleState);
+    }
+
+    private void Start()
+    {
+        StartCoroutine(ResyncInitialStateNextFrame());
+    }
+
+    private System.Collections.IEnumerator ResyncInitialStateNextFrame()
+    {
+        yield return null; // let Animator evaluate
+        if (IsInOpenIdle()) sm.Initialize(OpenIdleState);
+        else sm.Initialize(ClosedIdleState);
+    }
+
+
+    private void Update()
+    {
+        // tick the state machine
+        sm.UpdateActiveState();
+
+        // fail-safe timeout while in transition states
+        if (sm.CurrentState == OpeningState || sm.CurrentState == ClosingState)
         {
-            Debug.LogWarning("[BookOpenManager] No animator found!");
-            onOpened?.Invoke();
+            _timeout -= Time.unscaledDeltaTime;
+            if (_timeout <= 0f)
+            {
+                // force to the intended idle if animator never reached it
+                if (sm.CurrentState == OpeningState)
+                    sm.ChangeState(OpenIdleState);
+                else
+                    sm.ChangeState(ClosedIdleState);
+            }
+        }
+    }
+
+    // ---------- Public API ----------
+    public void PlayOpenThen(Action onOpened)
+    {
+        _onOpened = onOpened;
+        _timeout = maxWaitSeconds;
+
+        // already open?
+        if (IsInOpenIdle())
+        {
+            NotifyOpened();
             return;
         }
 
-        bool isOpen = bookAnimator.GetBool("Open");
-
-        if (isOpen)
-        {
-            Debug.Log("[BookOpenManager] Book already open, running callback immediately.");
-            onOpened?.Invoke();
-        }
-        else
-        {
-            Debug.Log("[BookOpenManager] Opening book...");
-            bookAnimator.SetBool("Open", true);
-            StartCoroutine(WaitForOpenThenRun(onOpened));
-        }
+        sm.ChangeState(OpeningState);
     }
 
-    private IEnumerator WaitForOpenThenRun(Action callback)
+    public void PlayCloseThen(Action onClosed)
     {
-        // Wait until Animator transitions into the Open state
-        while (!bookAnimator.GetCurrentAnimatorStateInfo(0).IsName(openStateName))
-            yield return null;
+        _onClosed = onClosed;
+        _timeout = maxWaitSeconds;
 
-        // Wait until that state finishes
-        while (bookAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
-            yield return null;
+        // already closed?
+        if (IsInClosedIdle())
+        {
+            NotifyClosed();
+            return;
+        }
 
-        callback?.Invoke();
+        sm.ChangeState(ClosingState);
     }
 
-    /// <summary>
-    /// Optional: manually toggle open/close.
-    /// </summary>
-    public void ToggleBook()
+    // ---------- Called by states ----------
+    public void NotifyOpened()
     {
-        bool newState = !bookAnimator.GetBool("Open");
-        bookAnimator.SetBool("Open", newState);
-        Debug.Log($"[BookOpenManager] Book now {(newState ? "OPEN" : "CLOSED")}.");
+        var cb = _onOpened;
+        _onOpened = null;
+        cb?.Invoke();
+    }
+
+    public void NotifyClosed()
+    {
+        var cb = _onClosed;
+        _onClosed = null;
+        cb?.Invoke();
+    }
+
+    // ---------- Animator helpers ----------
+    public bool IsInOpenIdle()
+    {
+        if (anim == null) return false;
+        return anim.GetCurrentAnimatorStateInfo(0).IsName(openIdleStateName);
+    }
+
+    public bool IsInClosedIdle()
+    {
+        if (anim == null) return false;
+        return anim.GetCurrentAnimatorStateInfo(0).IsName(closedIdleStateName);
+    }
+
+    public void PlayOpenAnim()
+    {
+        if (anim == null) return;
+        if (!string.IsNullOrEmpty(openTriggerName))
+            anim.SetTrigger(openTriggerName);
+    }
+
+    public void PlayCloseAnim()
+    {
+        if (anim == null) return;
+        if (!string.IsNullOrEmpty(closeTriggerName))
+            anim.SetTrigger(closeTriggerName);
+    }
+
+    public void SetOpenIdleImmediate()
+    {
+        if (anim == null) return;
+        anim.Play(openIdleStateName, 0, 0f);
+        anim.Update(0f);
+    }
+
+    public void SetClosedIdleImmediate()
+    {
+        if (anim == null) return;
+        anim.Play(closedIdleStateName, 0, 0f);
+        anim.Update(0f);
     }
 }
