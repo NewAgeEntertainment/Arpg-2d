@@ -95,29 +95,26 @@ public class UI_Options : MonoBehaviour
 
     public bool HandleCancel()
     {
-        // Cancel from Options should: on Title → close *all* option panels and show main;
-        // in-game → go back to UI main menu.
+        // Title screen context stays as-is (TitleMenuManager controls that flow)
         if (IsTitleScreenContext())
         {
             ReturnToTitleMainAndCloseSelf();
+            return true;
         }
-        else
-        {
-            // In-game
-            HideOptionsForMapper(true);
-            UI.Instance?.OpenMainMenuDirect();
-            gameObject.SetActive(false);
-        }
+
+        // In-game: just close Options. UI.cs will do the book/menu flow.
+        ClosePanel();
         return true;
     }
 
+
     public void ClosePanel()
     {
-        // Generic close (TitleMenuManager.CloseOptions also calls this path)
         SetInteractable(false);
         gameObject.SetActive(false);
         Debug.Log("[UI_Options] Closed.");
     }
+
 
     // ---------- Toggles ----------
 
@@ -226,12 +223,10 @@ public class UI_Options : MonoBehaviour
         // In-game: go to UI main menu if desired
         if (returnToUIMenuWhenMapperCloses)
         {
-            UI.Instance?.OpenMainMenuDirect();
-            gameObject.SetActive(false);
+            UI.Instance?.CloseOptions();   // ✅ book closes then menu appears
         }
         else
         {
-            // Re-open Options
             HideOptionsForMapper(false);
             BringToFront();
             if (defaultSelectable != null && EventSystem.current != null)

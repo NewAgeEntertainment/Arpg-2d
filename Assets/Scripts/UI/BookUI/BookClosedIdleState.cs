@@ -8,5 +8,6 @@ public class BookClosedIdleState : BookUIState
     public override void Enter()
     {
         manager.SetClosedIdleImmediate();
+        manager.NotifyClosed();
     }
 }

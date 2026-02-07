@@ -266,6 +266,18 @@ private bool _prevCursorVisible;
         mainMenuPanel?.SetActive(false);
         uiRoot?.SetActive(false);
 
+        // Auto-find main menu panel if not assigned
+        if (mainMenuPanel == null)
+        {
+            // Try common names you’ve used
+            var found = GameObject.Find("MenuPanel") ?? GameObject.Find("MainMenuPanel");
+
+            if (found != null)
+                mainMenuPanel = found;
+            else
+                Debug.LogWarning("[UI] mainMenuPanel is not assigned and could not be found (MenuPanel/MainMenuPanel).");
+        }
+
         // Journal off by default
         if (questJournalUI != null) questJournalUI.gameObject.SetActive(false);
         if (questJournalRoot != null) questJournalRoot.SetActive(false);
@@ -523,21 +535,20 @@ private bool _prevCursorVisible;
 
     public void OpenInventory()
     {
+        // ✅ hide main menu FIRST (same frame)
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        // keep UI root on + enter UI mode
+        EnsureUIRootIsActive();
+
+        // turn off other panels (but DON'T touch the book object)
+        CloseAllPanels();
+
+        // ✅ now play the book open, then show inventory
         OpenPanelWithBook(() =>
         {
             isInventoryOpen = true;
-            EnsureUIRootIsActive();
-            CloseAllPanels();
-
-            // ✅ Keep book visible + open while inventory is active
-            if (bookUI != null)
-            {
-                bookUI.gameObject.SetActive(true);
-                bookUI.ShowOpenIdle(); // <-- add this method (below)
-            }
-
-            
-
 
             inventoryUI?.gameObject.SetActive(true);
             inventoryUI?.OpenInventory();
@@ -546,106 +557,223 @@ private bool _prevCursorVisible;
 
 
 
+
     public void CloseInventory()
     {
+        if (!isInventoryOpen) return;
+
         isInventoryOpen = false;
+
+        // Close the inventory UI first
         inventoryUI?.CloseInventory();
 
-        // NEW: bounce back to Main Menu after closing this panel
-        ReturnToMainMenuAfterClosingPanel();
+        // Then close book, then show main menu
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
 
 
     public void OpenSkillTree()
     {
+        // ✅ hide main menu FIRST (same frame)
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        // keep UI root on + enter UI mode
+        EnsureUIRootIsActive();
+
+        // turn off other panels (but DON'T touch the book object)
+        CloseAllPanels();
+
+        // ✅ now play the book open, then show skill tree
         OpenPanelWithBook(() =>
         {
             isSkillTreeOpen = true;
-            EnsureUIRootIsActive();
-            CloseAllPanels();
+
             skillTreeUI?.gameObject.SetActive(true);
+            // (Optional) if you have a method to refresh/force update on open, call it here.
+            // skillTreeUI?.RefreshUI();
         });
     }
 
+
     public void CloseSkillTree()
     {
+        if (!isSkillTreeOpen) return;
+
         isSkillTreeOpen = false;
         if (skillTreeUI != null) skillTreeUI.gameObject.SetActive(false);
 
-        // NEW
-        ReturnToMainMenuAfterClosingPanel();
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
 
 
     public void OpenEquipment()
     {
+        // hide main menu first
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
         OpenPanelWithBook(() =>
         {
             isEquipmentOpen = true;
-            EnsureUIRootIsActive();
-            CloseAllPanels();
+
             equipmentInventoryPanel?.gameObject.SetActive(true);
             equipmentInventoryPanel?.Open();
         });
     }
 
+
     public void CloseEquipment()
     {
+        if (!isEquipmentOpen) return;
+
         isEquipmentOpen = false;
+
         equipmentInventoryPanel?.Close();
 
-        // NEW
-        ReturnToMainMenuAfterClosingPanel();
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
 
 
     public void OpenOptions()
     {
+        // ✅ hide main menu first
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
         CloseAllPanels();
 
-        if (optionsUI != null)
+        OpenPanelWithBook(() =>
         {
             isOptionsOpen = true;
-            EnsureUIRootIsActive();
-            optionsUI.OpenOptions();
-            Debug.Log("[UI] Opening Options Panel");
-        }
+
+            if (optionsUI != null)
+            {
+                optionsUI.gameObject.SetActive(true);
+                optionsUI.OpenOptions();
+                ApplyButtonTheme(optionsUI.transform);
+            }
+
+            EnterUIMode();
+        });
     }
+
 
     public void CloseOptions()
     {
+        if (!isOptionsOpen) return;
         isOptionsOpen = false;
+
+        // close panel first
         optionsUI?.ClosePanel();
 
-        // NEW
-        ReturnToMainMenuAfterClosingPanel();
+        // then close book, then show main menu
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
 
 
     public void OpenStatusPanel()
     {
-        isStatusPanelOpen = true;
+        // ✅ hide main menu FIRST (same frame)
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        // keep UI root on + enter UI mode
         EnsureUIRootIsActive();
+
+        // turn off other panels (but DON'T touch the book object)
         CloseAllPanels();
-        if (statusPanel != null)
+
+        // ✅ now play the book open, then show status
+        OpenPanelWithBook(() =>
         {
-            statusPanel.gameObject.SetActive(true);
-            statusPanel.UpdateStatus(FindObjectOfType<Player>());
-        }
+            isStatusPanelOpen = true;
+
+            if (statusPanel != null)
+            {
+                statusPanel.gameObject.SetActive(true);
+                statusPanel.UpdateStatus(FindObjectOfType<Player>());
+            }
+        });
     }
+
 
     public void CloseStatusPanel()
     {
         isStatusPanelOpen = false;
+
+        // close the status UI first
         statusPanel?.ClosePanel();
 
-        // NEW
-        ReturnToMainMenuAfterClosingPanel();
+        // then close book, then show main menu (same as Inventory)
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
 
 
     public void OpenConquestPanel()
     {
+        // ✅ hide main menu FIRST
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
         EnsureUIRootIsActive();
         CloseAllPanels();
 
@@ -655,19 +783,39 @@ private bool _prevCursorVisible;
             return;
         }
 
-        conquestUI.gameObject.SetActive(true);
-        conquestUI.OpenRosterFirst();   // always show roster first
-        isConquestOpen = true;
+        OpenPanelWithBook(() =>
+        {
+            conquestUI.gameObject.SetActive(true);
+            conquestUI.OpenRosterFirst();
+            isConquestOpen = true;
+        });
     }
+
 
     public void CloseConquest()
     {
-        isConquestOpen = false;
-        if (conquestUI != null) conquestUI.Close();
+        if (!isConquestOpen) return;
 
-        // NEW
-        ReturnToMainMenuAfterClosingPanel();
+        isConquestOpen = false;
+
+        // close conquest UI first
+        if (conquestUI != null)
+            conquestUI.Close();
+
+        // then close book, then show main menu
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
 
 
 
@@ -880,8 +1028,12 @@ private bool _prevCursorVisible;
 
     public void OpenSavePanel()
     {
+        // ✅ hide main menu FIRST
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
         EnsureUIRootIsActive();
-        CloseAllPanels();
+        CloseAllPanels(); // keeps book active
 
         if (saveLoadPanel == null)
             saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Include);
@@ -892,41 +1044,89 @@ private bool _prevCursorVisible;
             return;
         }
 
-        // Make sure the holder object is active so its inner 'panel' can show
-        saveLoadPanel.gameObject.SetActive(true);
+        // Subscribe once so we can close book -> show menu
+        saveLoadPanel.Closed -= OnSaveLoadClosed;
+        saveLoadPanel.Closed += OnSaveLoadClosed;
 
-        // Determine where we're opening from (Title/Main Menu panel showing or not)
+        // Decide context
         var ctx = (mainMenuPanel != null && mainMenuPanel.activeSelf)
             ? UI_SaveLoadPanel.OpenContext.TitleMenu
             : UI_SaveLoadPanel.OpenContext.PauseMenu;
 
-        // Subscribe once to the panel's close event (so we can bounce back to main menu)
-        saveLoadPanel.Closed -= OnSaveLoadClosed;
-        saveLoadPanel.Closed += OnSaveLoadClosed;
-
-        // Open in Save mode (or use OpenForLoad(ctx) if you need a load entry)
-        saveLoadPanel.OpenForSave(ctx);
-
-        // Apply your theme colors to buttons under the save panel root
-        ApplyButtonTheme(saveLoadPanel.transform);
-
-        // Mark state and ensure we’re in UI input map + paused
         isSaveOpen = true;
-        EnterUIMode();   // disables Gameplay map, enables UI map, pauses time
+
+        // ✅ book open first, then show panel
+        OpenPanelWithBook(() =>
+        {
+            saveLoadPanel.gameObject.SetActive(true);
+            saveLoadPanel.OpenForSave(ctx); // or OpenForLoad(ctx) depending on button
+            ApplyButtonTheme(saveLoadPanel.transform);
+            EnterUIMode();
+        });
     }
+
 
 
     public void CloseSavePanel()
     {
+        if (!isSaveOpen) return;
+
         isSaveOpen = false;
+
         if (saveLoadPanel != null)
         {
-            // Unhook to avoid duplicate handlers over time
-            saveLoadPanel.Closed -= OnSaveLoadClosed;
+            saveLoadPanel.Closed -= OnSaveLoadClosed; // prevent double
             saveLoadPanel.ClosePanel();
         }
-        CheckStopPlayerControls();
+
+        // ✅ close book then show menu
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
     }
+
+
+    private void OnSaveLoadClosed(UI_SaveLoadPanel.OpenContext ctx)
+    {
+        isSaveOpen = false;
+
+        // If we closed from overwrite, panel handles that internally and won't fire this.
+        // This is the final close.
+
+        if (ctx == UI_SaveLoadPanel.OpenContext.GameOver)
+        {
+            // If you still want to re-show game over, do it here:
+            UI_GameOver.ShowStatic();
+            return;
+        }
+
+        // ✅ normal: book close then main menu
+        if (bookUI != null)
+        {
+            bookUI.PlayCloseThen(() =>
+            {
+                OpenMainMenuDirect();
+            });
+        }
+        else
+        {
+            OpenMainMenuDirect();
+        }
+    }
+
+    private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
+    {
+        onYes?.Invoke();
+    }
+
 
 
     public void OpenCraft()
@@ -1141,8 +1341,11 @@ private bool _prevCursorVisible;
         // Skill tree
         if (skillTreeUI != null && skillTreeUI.gameObject.activeInHierarchy && skillTreeUI.HandleCancel()) return;
 
-        // Status panel
-        if (statusPanel != null && isStatusPanelOpen && statusPanel.HandleCancel()) return;
+        if (statusPanel != null && isStatusPanelOpen)
+        {
+            CloseStatusPanel();
+            return;
+        }
 
         // Options
         if (optionsUI != null && isOptionsOpen)
@@ -1151,8 +1354,20 @@ private bool _prevCursorVisible;
             return;
         }
 
-        // Conquest
-        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy && conquestUI.HandleCancel()) return;
+
+        if (conquestUI != null && conquestUI.gameObject.activeInHierarchy)
+        {
+            // details -> roster OR roster -> closed
+            bool handled = conquestUI.HandleCancel();
+
+            // if it just closed (no longer active), run the book-close-to-menu flow
+            if (handled && (conquestUI == null || !conquestUI.gameObject.activeInHierarchy))
+                CloseConquest();
+
+            return;
+        }
+
+
 
         // ---------- Quest Journal (robust close) ----------
         // Close if we *think* it's open, OR if the UI exists and is active.
@@ -1164,12 +1379,17 @@ private bool _prevCursorVisible;
         }
         // ---------------------------------------------------
 
-        // Save/Load panel
-        if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.HandleCancel())
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen)
         {
-            if (!saveLoadPanel.IsOpen) isSaveOpen = false;
-            return;
+            if (saveLoadPanel.HandleCancel())
+            {
+                // if it actually closed the panel, run the full close flow
+                if (!saveLoadPanel.IsOpen)
+                    CloseSavePanel();
+                return;
+            }
         }
+
 
         // Merchant panel (fallback) — may be redundant with .IsOpen above
         if (merchantUI != null && isMerchantOpen)
@@ -1178,18 +1398,27 @@ private bool _prevCursorVisible;
             return;
         }
 
+        
         // Main Menu panel
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
             mainMenuPanel.SetActive(false);
 
             if (bookUI != null)
+            {
+                // make sure it's in the correct pose, then hide it completely
                 bookUI.ShowClosedIdle();
+                bookUI.gameObject.SetActive(false);
+            }
+
+            // optional: if "leaving the UI menu" means no UI at all on screen
+            uiRoot?.SetActive(false);
 
             ExitUIMode();
             CheckStopPlayerControls();
             return;
         }
+
 
 
         if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen())
@@ -1314,32 +1543,42 @@ private bool _prevCursorVisible;
     // When backing out of a pause/menu panel, always show the Main Menu panel.
     private void ReturnToMainMenuAfterClosingPanel()
     {
-        // If we're already showing it, do nothing.
+        // If already showing it, do nothing
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
             return;
 
-        OpenMainMenuDirect(); // keeps UI map enabled + pauses time
-    }
+        EnsureUIRootIsActive();
+        CloseAllPanels();               // hides panels + keeps book active (per your CloseAllPanels code)
 
-
-
-    private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
-    {
-        onYes?.Invoke();
-    }
-
-    // Gets called when UI_SaveLoadPanel closes (via its Closed event)
-    private void OnSaveLoadClosed(UI_SaveLoadPanel.OpenContext ctx)
-    {
-        isSaveOpen = false;
-
-        // If the Save/Load was opened from Game Over, the panel itself will re-show GameOver.
-        // In all other cases, bounce to the Main Menu UI.
-        if (ctx != UI_SaveLoadPanel.OpenContext.GameOver)
+        // If no book, just show menu immediately
+        if (bookUI == null)
         {
-            OpenMainMenuDirect();   // pauses, switches to UI map, applies button theme, etc.
+            mainMenuPanel?.SetActive(true);
+            ApplyButtonTheme(mainMenuPanel?.transform);
+            ForceRefreshMenuBars();
+            StartMenuPollIfNeeded();
+            EnterUIMode();
+            return;
         }
+
+        // ✅ Close animation first, THEN show menu
+        bookUI.gameObject.SetActive(true);
+        bookUI.PlayCloseThen(() =>
+        {
+            // now it is fully closed
+            mainMenuPanel?.SetActive(true);
+
+            // optional: make absolutely sure we’re on the closed idle pose
+            bookUI.ShowClosedIdle();
+
+            ApplyButtonTheme(mainMenuPanel?.transform);
+            ForceRefreshMenuBars();
+            StartMenuPollIfNeeded();
+            EnterUIMode();
+        });
     }
+
+  
 
 
     // ============================ Menu Bars: internals =====================================
