@@ -26,6 +26,9 @@ public class BookOpenManager : MonoBehaviour
     [SerializeField] private string turnLeftTriggerName = "TurnLeft";
     [SerializeField] private string turnRightTriggerName = "TurnRight";
 
+    [SerializeField] private GameObject insideMenuRoot; // drag your MenuPanel holder here
+
+
 
     private BookUIStateMachine sm;
 
@@ -34,12 +37,26 @@ public class BookOpenManager : MonoBehaviour
     public BookOpenIdleState OpenIdleState { get; private set; }
     public BookClosingState ClosingState { get; private set; }
 
+    private bool _pendingTurn;
+    private bool _pendingTurnRight;      // true = right, false = left
+    private System.Action _pendingTurnCallback;
 
 
     public BookTurnLeftState TurnLeftState { get; private set; }
     public BookTurnRightState TurnRightState { get; private set; }
 
+    private Action _onTurnFinished;
+    public bool HasPendingTurn => _pendingTurn;
+    public bool PendingTurnRight => _pendingTurnRight;
 
+    public bool IsBusy()
+    {
+        if (sm == null) return false;
+        return sm.CurrentState == OpeningState
+            || sm.CurrentState == ClosingState
+            || sm.CurrentState == TurnLeftState
+            || sm.CurrentState == TurnRightState;
+    }
 
 
     public void ShowOpenIdle() => SetOpenIdleImmediate();
@@ -57,6 +74,11 @@ public class BookOpenManager : MonoBehaviour
         StartCoroutine(InitNextFrame());
     }
 
+    public void SetInsideMenuVisible(bool visible)
+    {
+        if (insideMenuRoot != null)
+            insideMenuRoot.SetActive(visible);
+    }
 
 
     private IEnumerator InitNextFrame()
@@ -119,12 +141,24 @@ public class BookOpenManager : MonoBehaviour
                 }
                 else
                 {
+                    NotifyTurnFinished();
                     // page turns should always end back on open idle
                     sm.ChangeState(OpenIdleState);
                 }
             }
         }
     }
+
+
+    public void PlayTurnLeftThen(System.Action onDone) => QueueTurnLeft(onDone);
+    public void PlayTurnRightThen(System.Action onDone) => QueueTurnRight(onDone);
+
+    public void PlayTurnCallbackFromState(System.Action onDone)
+    {
+        _onTurnFinished = onDone;
+        _timeout = maxWaitSeconds;
+    }
+
 
 
     public bool IsInTurnLeft()
@@ -153,6 +187,16 @@ public class BookOpenManager : MonoBehaviour
             anim.SetTrigger(turnRightTriggerName);
     }
 
+
+
+    public void NotifyTurnFinished()
+    {
+        var cb = _onTurnFinished;
+        _onTurnFinished = null;
+        cb?.Invoke();
+    }
+
+
     public void TurnLeft()
     {
         if (!_initialized) return;
@@ -180,7 +224,88 @@ public class BookOpenManager : MonoBehaviour
     }
 
 
+    public System.Action ConsumePendingTurnCallback()
+    {
+        var cb = _pendingTurnCallback;
+        _pendingTurnCallback = null;
+        return cb;
+    }
 
+    public void ClearPendingTurn()
+    {
+        _pendingTurn = false;
+        _pendingTurnCallback = null;
+    }
+
+    public void QueueTurnLeft(System.Action onDone = null)
+    {
+        if (!_initialized) { onDone?.Invoke(); return; }
+        if (IsBusy()) return;
+
+        _pendingTurn = true;
+        _pendingTurnRight = false;
+        _pendingTurnCallback = onDone;
+
+        // Ensure we end up in OpenIdle so it can fire the turn from there
+        _timeout = maxWaitSeconds;
+
+        if (!IsInOpenIdle())
+        {
+            // If we're closed, open first. When open idle enters, it will start the turn.
+            sm.ChangeState(OpeningState);
+        }
+        else
+        {
+            // already open idle -> OpenIdleState.Update will pick it up immediately next tick
+            sm.ChangeState(OpenIdleState); // safe "poke"
+        }
+    }
+
+    public void QueueTurnRight(System.Action onDone = null)
+    {
+        if (!_initialized) { onDone?.Invoke(); return; }
+        if (IsBusy()) return;
+
+        _pendingTurn = true;
+        _pendingTurnRight = true;
+        _pendingTurnCallback = onDone;
+
+        _timeout = maxWaitSeconds;
+
+        if (!IsInOpenIdle())
+        {
+            sm.ChangeState(OpeningState);
+        }
+        else
+        {
+            sm.ChangeState(OpenIdleState);
+        }
+    }
+
+    public void TryStartQueuedTurnFromOpenIdle()
+    {
+        if (!_initialized) return;
+
+        // Only start queued turns from the open idle animator pose
+        if (!IsInOpenIdle()) return;
+
+        // Nothing queued
+        if (!_pendingTurn) return;
+
+        // Don’t start if state machine is currently in a transition/turn
+        if (IsBusy()) return;
+
+        // Consume queue ONCE (so it can’t fire twice)
+        bool right = _pendingTurnRight;
+        var cb = ConsumePendingTurnCallback();
+        ClearPendingTurn();
+
+        // Attach the callback for the turn states to invoke when they reach open idle again
+        PlayTurnCallbackFromState(cb);
+
+        // Start the appropriate turn state
+        sm.ChangeState(right ? TurnRightState : TurnLeftState);
+    }
 
 
 
@@ -188,8 +313,50 @@ public class BookOpenManager : MonoBehaviour
     public bool IsInOpenIdle() => anim && anim.GetCurrentAnimatorStateInfo(0).IsName(openIdleStateName);
     public bool IsInClosedIdle() => anim && anim.GetCurrentAnimatorStateInfo(0).IsName(closedIdleStateName);
 
-    public void PlayOpenThen(Action onOpened) { _onOpened = onOpened; _timeout = maxWaitSeconds; if (IsInOpenIdle()) { NotifyOpened(); return; } sm.ChangeState(OpeningState); }
-    public void PlayCloseThen(Action onClosed) { _onClosed = onClosed; _timeout = maxWaitSeconds; if (IsInClosedIdle()) { NotifyClosed(); return; } sm.ChangeState(ClosingState); }
+    public void PlayOpenThen(Action onOpened)
+    {
+        _onOpened = onOpened;
+        _timeout = maxWaitSeconds;
+
+        if (!_initialized)
+        {
+            NotifyOpened();
+            return;
+        }
+
+        // If already open idle, just re-enter OpenIdleState so it fires NotifyOpened once.
+        if (IsInOpenIdle())
+        {
+            sm.ChangeState(OpenIdleState);
+            return;
+        }
+
+        sm.ChangeState(OpeningState);
+    }
+
+
+
+
+    public void PlayCloseThen(Action onClosed)
+    {
+        _onClosed = onClosed;
+        _timeout = maxWaitSeconds;
+
+        if (!_initialized)
+        {
+            NotifyClosed();
+            return;
+        }
+
+        // If already closed idle, re-enter ClosedIdleState so it fires NotifyClosed once.
+        if (IsInClosedIdle())
+        {
+            sm.ChangeState(ClosedIdleState);
+            return;
+        }
+
+        sm.ChangeState(ClosingState);
+    }
 
     public void NotifyOpened() { var cb = _onOpened; _onOpened = null; cb?.Invoke(); }
     public void NotifyClosed() { var cb = _onClosed; _onClosed = null; cb?.Invoke(); }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BookOpenIdleState : BookUIState
 {
@@ -8,6 +8,21 @@ public class BookOpenIdleState : BookUIState
     public override void Enter()
     {
         manager.SetOpenIdleImmediate();
-        manager.NotifyOpened(); // fires your callback if any
+
+        // ✅ show menu panel holder while book is open idle
+        manager.SetInsideMenuVisible(true);
+
+        manager.NotifyOpened();
+        manager.TryStartQueuedTurnFromOpenIdle();
+    }
+
+
+
+
+    public override void Update()
+    {
+        // If something queued a turn while we were already idling,
+        // start it on the next tick (still only from OpenIdle).
+        manager.TryStartQueuedTurnFromOpenIdle();
     }
 }

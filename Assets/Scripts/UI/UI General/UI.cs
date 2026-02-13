@@ -134,6 +134,11 @@ public class UI : MonoBehaviour
     [SerializeField] private string cancelAction = "UICancel";
     [SerializeField] private string openSavePanelAction = "OpenSavePanel"; // optional
 
+    [Header("Menus")]
+    [SerializeField] private GameObject outsideMenuPanel;   // shown when book is CLOSED (main menu)
+    [SerializeField] private GameObject insideMenuPanel;    // shown when book is OPEN (tabs/buttons inside book)
+
+
     [Header("Time Played – Unscaled")]
     [SerializeField] private bool timePlayedUsesUnscaled = true;  // turn on to count while paused
     private int _realSecondsPlayed = -1;
@@ -178,6 +183,11 @@ public class UI : MonoBehaviour
     private Inventory_Player cachedInv;
     #endregion
 
+    
+
+   
+
+
     // ======================= Title Screen / Return-to-Title settings =======================
     [Header("Title Screen")]
     [SerializeField] private string titleSceneName = "Title Screen"; // set to your title scene name
@@ -215,7 +225,18 @@ private bool _prevCursorVisible;
     [SerializeField] private string nextPanelAction = "NextUIPanel";
     [SerializeField] private string prevPanelAction = "PrevUIPanel";
 
-    private enum UIPanelKind { Inventory, Equipment, SkillTree, Status, Conquest, Options, Save, QuestJournal }
+    public enum UIPanelKind
+    {
+        Inventory,
+        SkillTree,
+        Equipment,
+        Status,
+        Conquest,
+        QuestJournal,
+        Options,
+        Save
+    }
+
 
 
     [SerializeField]
@@ -224,12 +245,14 @@ private bool _prevCursorVisible;
     UIPanelKind.Inventory,
     UIPanelKind.SkillTree,
     UIPanelKind.Equipment,
+    UIPanelKind.Status,
     UIPanelKind.Conquest,
     UIPanelKind.QuestJournal,
     UIPanelKind.Options,
     UIPanelKind.Save,
 };
-    // -------------------------------------------------------------------------
+
+   
 
     private void Awake()
     {
@@ -265,6 +288,7 @@ private bool _prevCursorVisible;
         craftUI?.gameObject.SetActive(false);
         mainMenuPanel?.SetActive(false);
         uiRoot?.SetActive(false);
+
 
         // Auto-find main menu panel if not assigned
         if (mainMenuPanel == null)
@@ -357,6 +381,11 @@ private bool _prevCursorVisible;
         }
 
         SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
+    }
+
+    private void LateUpdate()
+    {
+        SyncMenusToBook();
     }
 
 
@@ -491,15 +520,15 @@ private bool _prevCursorVisible;
         // --------------------------------------------------------------------
     }
 
-    private void LateUpdate()
-    {
-        if (!timePlayedLabel) return;
-        if (!string.IsNullOrEmpty(_timePlayedRendered) && timePlayedLabel.text != _timePlayedRendered)
-        {
-            // Re-assert our authoritative text (prevents “numbers-only” overrides)
-            timePlayedLabel.text = _timePlayedRendered;
-        }
-    }
+    //private void LateUpdate()
+    //{
+    //    if (!timePlayedLabel) return;
+    //    if (!string.IsNullOrEmpty(_timePlayedRendered) && timePlayedLabel.text != _timePlayedRendered)
+    //    {
+    //        // Re-assert our authoritative text (prevents “numbers-only” overrides)
+    //        timePlayedLabel.text = _timePlayedRendered;
+    //    }
+    //}
 
 
     public static UI EnsureExists(UI prefab)
@@ -524,36 +553,37 @@ private bool _prevCursorVisible;
             return;
         }
 
-        bookUI.PlayOpenThen(() =>
-        {
-            openPanel?.Invoke();
-        });
+        bookUI.PlayOpenThen(() => openPanel?.Invoke());
     }
+
 
 
     #region Open/Close Panels
 
     public void OpenInventory()
     {
-        // ✅ hide main menu FIRST (same frame)
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
+        if (outsideMenuPanel != null && outsideMenuPanel.activeSelf)
+        {
+            OpenPanelFromOutsideMenu(() =>
+            {
+                isInventoryOpen = true;
+                inventoryUI?.gameObject.SetActive(true);
+                inventoryUI?.OpenInventory();
+            });
+            return;
+        }
 
-        // keep UI root on + enter UI mode
-        EnsureUIRootIsActive();
-
-        // turn off other panels (but DON'T touch the book object)
-        CloseAllPanels();
-
-        // ✅ now play the book open, then show inventory
-        OpenPanelWithBook(() =>
+        // otherwise switching inside book
+        SwitchPanelWithPageTurn(() =>
         {
             isInventoryOpen = true;
-
             inventoryUI?.gameObject.SetActive(true);
             inventoryUI?.OpenInventory();
-        });
+        }, turnRight: false);
     }
+
+
+
 
 
 
@@ -631,21 +661,26 @@ private bool _prevCursorVisible;
 
     public void OpenEquipment()
     {
-        // hide main menu first
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
+        {
+            OpenPanelFromMainMenu(() =>
+            {
+                isEquipmentOpen = true;
+                equipmentInventoryPanel?.gameObject.SetActive(true);
+                equipmentInventoryPanel?.Open();
+            });
+            return;
+        }
 
-        EnsureUIRootIsActive();
-        CloseAllPanels();
-
-        OpenPanelWithBook(() =>
+        SwitchPanelWithPageTurn(() =>
         {
             isEquipmentOpen = true;
-
             equipmentInventoryPanel?.gameObject.SetActive(true);
             equipmentInventoryPanel?.Open();
-        });
+        }, turnRight: true);
     }
+
+
 
 
     public void CloseEquipment()
@@ -818,6 +853,227 @@ private bool _prevCursorVisible;
 
 
 
+    private void SwitchPanelWithPageTurn(System.Action showPanel, bool turnRight)
+    {
+        if (bookUI != null && bookUI.IsBusy())
+            return;
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        if (bookUI == null)
+        {
+            showPanel?.Invoke();
+            return;
+        }
+
+        bookUI.gameObject.SetActive(true);
+
+        if (!IsBookOpenAndReady())
+        {
+            bookUI.PlayOpenThen(() => showPanel?.Invoke());
+            return;
+        }
+
+        if (turnRight) bookUI.PlayTurnRightThen(() => showPanel?.Invoke());
+        else bookUI.PlayTurnLeftThen(() => showPanel?.Invoke());
+    }
+
+
+
+    private bool IsBookOpenAndReady()
+    {
+        return bookUI != null && bookUI.gameObject.activeInHierarchy && bookUI.IsInOpenIdle();
+    }
+
+    private void OpenPanelFromMainMenu(System.Action showPanel)
+    {
+        // called by MainMenu buttons
+        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        if (bookUI == null)
+        {
+            showPanel?.Invoke();
+            return;
+        }
+
+        // Ensure book object is visible/active
+        bookUI.gameObject.SetActive(true);
+
+        // Open book first, THEN show panel
+        bookUI.PlayOpenThen(() =>
+        {
+            showPanel?.Invoke();
+        });
+    }
+
+
+    private void SyncMenusToBook()
+    {
+        bool bookOpen = (bookUI != null && bookUI.gameObject.activeInHierarchy && bookUI.IsInOpenIdle());
+
+        if (outsideMenuPanel != null)
+            outsideMenuPanel.SetActive(!bookOpen);
+
+        if (insideMenuPanel != null)
+            insideMenuPanel.SetActive(bookOpen);
+    }
+
+
+    private void OpenPanelFromOutsideMenu(System.Action showPanel)
+    {
+        EnsureUIRootIsActive();
+
+        if (outsideMenuPanel != null) outsideMenuPanel.SetActive(false);
+
+        if (bookUI == null)
+        {
+            if (insideMenuPanel != null) insideMenuPanel.SetActive(true);
+            showPanel?.Invoke();
+            return;
+        }
+
+        bookUI.gameObject.SetActive(true);
+
+        bookUI.PlayOpenThen(() =>
+        {
+            if (insideMenuPanel != null) insideMenuPanel.SetActive(true);
+            showPanel?.Invoke();
+            SyncMenusToBook();
+        });
+    }
+
+
+
+    private int IndexOfKindInCycle(UIPanelKind k)
+    {
+        if (_panelCycleCache == null) return -1;
+        return Array.IndexOf(_panelCycleCache, k);
+    }
+
+    private bool ShouldTurnRight(UIPanelKind from, UIPanelKind to)
+    {
+        int a = IndexOfKindInCycle(from);
+        int b = IndexOfKindInCycle(to);
+        if (a < 0 || b < 0) return true;
+        return b > a; // forward in cycle => turn right
+    }
+
+
+    private bool TryOpenPanelByKind(UIPanelKind kind)
+    {
+        // IMPORTANT: do NOT call OpenInventory/OpenSkillTree here (they play book anims)
+        CloseAllPanels();
+        EnsureUIRootIsActive();
+
+        switch (kind)
+        {
+            case UIPanelKind.Inventory:
+                if (inventoryUI == null) return false;
+                isInventoryOpen = true;
+                inventoryUI.gameObject.SetActive(true);
+                inventoryUI.OpenInventory();
+                return true;
+
+            case UIPanelKind.SkillTree:
+                if (skillTreeUI == null) return false;
+                isSkillTreeOpen = true;
+                skillTreeUI.gameObject.SetActive(true);
+                return true;
+
+            case UIPanelKind.Equipment:
+                if (equipmentInventoryPanel == null) return false;
+                isEquipmentOpen = true;
+                equipmentInventoryPanel.gameObject.SetActive(true);
+                equipmentInventoryPanel.Open();
+                return true;
+
+            case UIPanelKind.Status:
+                if (statusPanel == null) return false;
+                isStatusPanelOpen = true;
+                statusPanel.gameObject.SetActive(true);
+                statusPanel.UpdateStatus(FindObjectOfType<Player>());
+                return true;
+
+
+            case UIPanelKind.Conquest:
+                if (conquestUI == null) return false;
+                isConquestOpen = true;
+                conquestUI.gameObject.SetActive(true);
+                conquestUI.OpenRosterFirst();
+                return true;
+
+            case UIPanelKind.QuestJournal:
+                return EnsureQuestJournalVisibleImmediate();
+
+            case UIPanelKind.Options:
+                if (optionsUI == null) return false;
+                isOptionsOpen = true;
+                optionsUI.gameObject.SetActive(true);
+                optionsUI.OpenOptions();
+                ApplyButtonTheme(optionsUI.transform);
+                return true;
+
+            case UIPanelKind.Save:
+                OpenSavePanel(); // this one handles its own open flow
+                return true;
+        }
+
+        return false;
+    }
+
+    public bool CanSwitchPanelsRightNow()
+    {
+        // must exist, must be active, must be open idle, must not be busy
+        if (bookUI == null) return false;
+        if (!bookUI.gameObject.activeInHierarchy) return false;
+
+        // You should implement IsBusy() in BookOpenManager (recommended)
+        if (bookUI.IsBusy()) return false;
+
+        // Only allow switching when the book is open idle
+        return bookUI.IsInOpenIdle();
+    }
+
+    // Called by button script so you don’t expose your private SwitchToPanel
+    public void SwitchToPanelFromButton(UIPanelKind target)
+    {
+        // Only allow when book is already open (per your request)
+        if (!CanSwitchPanelsRightNow()) return;
+
+        // Use your existing switching logic (page turn between panels)
+        SwitchToPanel(target);
+    }
+
+    private void ReturnToOutsideMenu()
+    {
+        CloseAllPanels();
+
+        if (insideMenuPanel != null) insideMenuPanel.SetActive(false);
+
+        if (bookUI != null)
+        {
+            bookUI.gameObject.SetActive(true);
+            bookUI.PlayCloseThen(() =>
+            {
+                if (outsideMenuPanel != null) outsideMenuPanel.SetActive(true);
+                bookUI.ShowClosedIdle();
+                SyncMenusToBook();
+            });
+        }
+        else
+        {
+            if (outsideMenuPanel != null) outsideMenuPanel.SetActive(true);
+            SyncMenusToBook();
+        }
+    }
+
+
+
+    //----------------------------- menu Panel---------------------------------------
 
     private CharacterProfileSO TryGetProfile(Entity_Stats s)
     {
@@ -2067,40 +2323,72 @@ private bool _prevCursorVisible;
     }
 
     // -------------------- ADDED: Panel Switch helpers --------------------
-    private void SwitchUIPanel(int direction) // +1 = next, -1 = prev
+    private void SwitchUIPanel(int direction) // +1 next, -1 prev
     {
-        if (direction == 0 || panelCycleOrder == null || panelCycleOrder.Length == 0) return;
+        if (direction == 0) return;
 
-        // Block switching while overwrite confirmation is up
+        // Don’t cycle while overwrite dialog is open
         if (saveLoadPanel != null && saveLoadPanel.IsOpen && saveLoadPanel.IsOverwriteOpen)
             return;
 
-        // Disallow switching during special flows (Save panel itself is allowed)
+        // Don’t cycle during special flows
         if (isMerchantOpen || isCraftOpen || isStorageOpen || _assignPreviewActive)
             return;
 
-        // You MUST be currently on one of the panels in the list
+        // Must already be inside the book UI (not on main menu)
         var active = GetActivePanelKind();
         if (!active.HasValue) return;
 
-        int curIndex = Array.IndexOf(panelCycleOrder, active.Value);
-        if (curIndex < 0) return; // not in the order list (shouldn't happen)
+        // Use the filtered cache (only panels that exist)
+        if (_panelCycleCache == null || _panelCycleCache.Length == 0) return;
 
-        EnsureUIRootIsActive();
-        EnterUIMode();
+        int cur = Array.IndexOf(_panelCycleCache, active.Value);
+        if (cur < 0) return;
 
-        // Walk forward/backward to the next available panel in the fixed order (wrap)
-        for (int tries = 0; tries < panelCycleOrder.Length; tries++)
-        {
-            curIndex = Mod(curIndex + direction, panelCycleOrder.Length);
-            if (OpenPanelByKind(panelCycleOrder[curIndex])) return;
-        }
-
-        // Fallback (shouldn't hit if at least one panel is openable)
-        OpenMainMenuDirect();
+        int next = Mod(cur + direction, _panelCycleCache.Length);
+        SwitchToPanel(_panelCycleCache[next]);   // ✅ this will page-turn between panels
     }
 
 
+    private bool IsPanelAvailable(UIPanelKind kind)
+    {
+        switch (kind)
+        {
+            case UIPanelKind.Inventory: return inventoryUI != null;
+            case UIPanelKind.SkillTree: return skillTreeUI != null;
+            case UIPanelKind.Equipment: return equipmentInventoryPanel != null;
+            case UIPanelKind.Status: return statusPanel != null;
+            case UIPanelKind.Conquest: return conquestUI != null;
+            case UIPanelKind.QuestJournal: return questJournalUI != null || TryFindQuestJournalUI();
+            case UIPanelKind.Options: return optionsUI != null;
+            case UIPanelKind.Save: return true; // lazy-find inside OpenSavePanel
+            default: return false;
+        }
+    }
+
+    private void SwitchToPanel(UIPanelKind target)
+    {
+        // Opening from main menu: open book first, then show (NO page turn)
+        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
+        {
+            OpenPanelFromMainMenu(() => TryOpenPanelByKind(target));
+            return;
+        }
+
+        // Already inside book UI: page turn between panels
+        var active = GetActivePanelKind();
+        bool turnRight = true;
+
+        if (active.HasValue)
+        {
+            // Use your filtered cycle cache to decide direction
+            int a = (_panelCycleCache != null) ? Array.IndexOf(_panelCycleCache, active.Value) : -1;
+            int b = (_panelCycleCache != null) ? Array.IndexOf(_panelCycleCache, target) : -1;
+            if (a >= 0 && b >= 0) turnRight = b > a;
+        }
+
+        SwitchPanelWithPageTurn(() => TryOpenPanelByKind(target), turnRight);
+    }
 
 
 
@@ -2124,6 +2412,8 @@ private bool _prevCursorVisible;
         if (inventoryUI != null && inventoryUI.gameObject.activeInHierarchy) return UIPanelKind.Inventory;
         if (skillTreeUI != null && skillTreeUI.gameObject.activeInHierarchy) return UIPanelKind.SkillTree;
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.gameObject.activeInHierarchy) return UIPanelKind.Equipment;
+        if (statusPanel != null && statusPanel.gameObject.activeInHierarchy) return UIPanelKind.Status;
+
         if ((questJournalUI != null && questJournalUI.gameObject.activeInHierarchy) || isQuestJournalOpen)
             return UIPanelKind.QuestJournal;
         if (conquestUI != null && conquestUI.gameObject.activeInHierarchy) return UIPanelKind.Conquest;
@@ -2132,23 +2422,6 @@ private bool _prevCursorVisible;
         return null;
     }
 
-
-
-    private bool IsPanelAvailable(UIPanelKind kind)
-    {
-        switch (kind)
-        {
-            case UIPanelKind.Inventory: return inventoryUI != null;
-            case UIPanelKind.Equipment: return equipmentInventoryPanel != null;
-            case UIPanelKind.SkillTree: return skillTreeUI != null;
-            case UIPanelKind.Status: return statusPanel != null;
-            case UIPanelKind.Conquest: return conquestUI != null;
-            case UIPanelKind.Options: return optionsUI != null;
-            case UIPanelKind.Save: return true; // lazy-find inside OpenSavePanel
-            case UIPanelKind.QuestJournal: return questJournalUI != null || TryFindQuestJournalUI();
-            default: return false;
-        }
-    }
 
 
 
@@ -2185,52 +2458,20 @@ private bool _prevCursorVisible;
         if (skillTreeUI == null)
             skillTreeUI = FindFirstObjectByType<UI_SkillTree>(include);
 
+        if (statusPanel == null) // ✅ ADD THIS
+            statusPanel = FindFirstObjectByType<UI_StatusPanel>(include);
+
         if (conquestUI == null)
             conquestUI = FindFirstObjectByType<UI_Conquest>(include);
 
-        if (questJournalUI == null) questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(include);
+        if (questJournalUI == null)
+            questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(include);
     }
 
 
 
-    // Opens the requested panel and returns true if it succeeded.
-    private bool OpenPanelByKind(UIPanelKind kind)
-    {
-        CloseAllPanels();
-        EnsureUIRootIsActive();
 
-        switch (kind)
-        {
-            case UIPanelKind.Inventory:
-                if (inventoryUI != null) { OpenInventory(); return true; }
-                break;
 
-            case UIPanelKind.SkillTree:
-                if (skillTreeUI != null) { OpenSkillTree(); return true; }
-                break;
-
-            case UIPanelKind.Equipment:
-                if (equipmentInventoryPanel != null) { OpenEquipment(); return true; }
-                break;
-
-            case UIPanelKind.Conquest:
-                if (conquestUI != null) { OpenConquestPanel(); return true; }
-                break;
-
-            case UIPanelKind.QuestJournal: // ← use immediate path
-                if (EnsureQuestJournalVisibleImmediate()) return true;
-                break;
-
-            case UIPanelKind.Options:
-                if (optionsUI != null) { OpenOptions(); return true; }
-                break;
-
-            case UIPanelKind.Save:
-                OpenSavePanel();
-                return true;
-        }
-        return false;
-    }
 
 
 

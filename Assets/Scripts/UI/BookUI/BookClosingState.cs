@@ -13,7 +13,6 @@ public class BookClosingState : BookUIState
     public override void Update()
     {
         if (manager.IsInClosedIdle())
-            manager.NotifyClosed();
-        
+            stateMachine.ChangeState(manager.ClosedIdleState); // <-- go to closed idle
     }
 }
