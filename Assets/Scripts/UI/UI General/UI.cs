@@ -144,6 +144,11 @@ public class UI : MonoBehaviour
     private int _realSecondsPlayed = -1;
     private Coroutine _realTimeTickerCo;
 
+    // Save panel return behavior
+    private bool _saveOpenedFromCycle = false;
+    private UIPanelKind _panelBeforeSave = UIPanelKind.Inventory;
+
+
     private bool _suppressSaveClosedHandler = false;
 
 
@@ -778,12 +783,11 @@ public class UI : MonoBehaviour
 
     public void OpenSavePanel()
     {
-        // ✅ hide main menu FIRST
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(false);
 
         EnsureUIRootIsActive();
-        CloseAllPanels(); // keeps book active
+        CloseAllPanels();
 
         if (saveLoadPanel == null)
             saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Include);
@@ -794,22 +798,30 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // Subscribe once so we can close book -> show menu
         saveLoadPanel.Closed -= OnSaveLoadClosed;
         saveLoadPanel.Closed += OnSaveLoadClosed;
 
-        // Decide context
         var ctx = (mainMenuPanel != null && mainMenuPanel.activeSelf)
             ? UI_SaveLoadPanel.OpenContext.TitleMenu
             : UI_SaveLoadPanel.OpenContext.PauseMenu;
 
         isSaveOpen = true;
 
-        // ✅ book open first, then show panel
+        // ✅ If book is already open (page-turn path), do NOT PlayOpenThen.
+        if (IsBookOpenAndReady())
+        {
+            saveLoadPanel.gameObject.SetActive(true);
+            saveLoadPanel.OpenForSave(ctx);
+            ApplyButtonTheme(saveLoadPanel.transform);
+            EnterUIMode();
+            return;
+        }
+
+        // Otherwise opening from outside/main menu: normal open-book flow.
         OpenPanelWithBook(() =>
         {
             saveLoadPanel.gameObject.SetActive(true);
-            saveLoadPanel.OpenForSave(ctx); // or OpenForLoad(ctx) depending on button
+            saveLoadPanel.OpenForSave(ctx);
             ApplyButtonTheme(saveLoadPanel.transform);
             EnterUIMode();
         });
@@ -817,18 +829,28 @@ public class UI : MonoBehaviour
 
 
 
+
     public void CloseSavePanel()
     {
+        // mark state first
         isSaveOpen = false;
 
-        if (saveLoadPanel != null)
+        // Close the save UI WITHOUT triggering Closed event handling
+        if (saveLoadPanel != null && saveLoadPanel.IsOpen)
         {
+            _suppressSaveClosedHandler = true;
             saveLoadPanel.Closed -= OnSaveLoadClosed;
-            saveLoadPanel.ClosePanel();
+            saveLoadPanel.ClosePanel();   // this will invoke Closed, but suppressed + unsubscribed
+            _suppressSaveClosedHandler = false;
         }
 
+        // ✅ Single path: this will play book close then show main menu
         OpenMainMenuDirect();
     }
+
+
+
+
 
 
 
@@ -839,33 +861,46 @@ public class UI : MonoBehaviour
 
         isSaveOpen = false;
 
-        // If we closed from overwrite, panel handles that internally and won't fire this.
-        // This is the final close.
-
         if (ctx == UI_SaveLoadPanel.OpenContext.GameOver)
         {
-            // If you still want to re-show game over, do it here:
             UI_GameOver.ShowStatic();
             return;
         }
 
-        // ✅ normal: book close then main menu
-        if (bookUI != null)
-        {
-            bookUI.PlayCloseThen(() =>
-            {
-                OpenMainMenuDirect();
-            });
-        }
-        else
-        {
-            OpenMainMenuDirect();
-        }
+        // ✅ Single authority handles the book close
+        OpenMainMenuDirect();
     }
+
+
+
+
 
     private void ShowConfirm(string message, System.Action onYes, System.Action onNo)
     {
         onYes?.Invoke();
+    }
+
+
+    private void ShowSavePanelImmediate(UI_SaveLoadPanel.OpenContext ctx)
+    {
+        if (saveLoadPanel == null)
+            saveLoadPanel = FindFirstObjectByType<UI_SaveLoadPanel>(FindObjectsInactive.Include);
+
+        if (saveLoadPanel == null)
+        {
+            Debug.LogError("[UI] UI_SaveLoadPanel not found in scene.");
+            return;
+        }
+
+        saveLoadPanel.Closed -= OnSaveLoadClosed;
+        saveLoadPanel.Closed += OnSaveLoadClosed;
+
+        isSaveOpen = true;
+
+        saveLoadPanel.gameObject.SetActive(true);
+        saveLoadPanel.OpenForSave(ctx);
+        ApplyButtonTheme(saveLoadPanel.transform);
+        EnterUIMode();
     }
 
 
@@ -946,13 +981,15 @@ public class UI : MonoBehaviour
 
     public void OpenMainMenuDirect()
     {
+        // ✅ don't stack close animations
+        if (bookUI != null && bookUI.IsBusy())
+            return;
+
         EnsureUIRootIsActive();
         CloseAllPanels();
 
-        // DO NOT show menu yet
         mainMenuPanel?.SetActive(false);
 
-        // If no book, just show immediately
         if (bookUI == null)
         {
             ShowMainMenuNow();
@@ -961,13 +998,20 @@ public class UI : MonoBehaviour
 
         bookUI.gameObject.SetActive(true);
 
-        // Close book first, THEN show menu
+        // If already closed, don't re-play close
+        if (bookUI.IsInClosedIdle())
+        {
+            ShowMainMenuNow();
+            return;
+        }
+
         bookUI.PlayCloseThen(() =>
         {
-            bookUI.ShowClosedIdle();   // ensure pose
+            bookUI.ShowClosedIdle();
             ShowMainMenuNow();
         });
     }
+
 
     private void ShowMainMenuNow()
     {
@@ -1159,8 +1203,10 @@ public class UI : MonoBehaviour
                 return true;
 
             case UIPanelKind.Save:
-                OpenSavePanel(); // this one handles its own open flow
+                // We are already inside the book when cycling/switching.
+                ShowSavePanelImmediate(UI_SaveLoadPanel.OpenContext.PauseMenu);
                 return true;
+
         }
 
         return false;
@@ -1600,12 +1646,15 @@ public class UI : MonoBehaviour
         }
 
         // 🔟 Save Panel → ALWAYS back to main menu
+        // 🔟 Save Panel → close book + return to main menu
         if (saveLoadPanel != null && saveLoadPanel.IsOpen)
         {
-            saveLoadPanel.HandleCancel();
             CloseSavePanel();
             return;
         }
+
+
+
 
         // ⓫ Main Menu → exit UI completely
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
@@ -2317,27 +2366,44 @@ public class UI : MonoBehaviour
 
     private void SwitchToPanel(UIPanelKind target)
     {
-        // Opening from main menu: open book first, then show (NO page turn)
+        // If we're on main menu: open book, then show panel (no page turn)
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
             OpenPanelFromMainMenu(() => TryOpenPanelByKind(target));
             return;
         }
 
-        // Already inside book UI: page turn between panels
-        var active = GetActivePanelKind();
-        bool turnRight = true;
+        // Must be able to switch (book open idle, not busy)
+        if (!CanSwitchPanelsRightNow())
+            return;
 
-        if (active.HasValue)
+        var active = GetActivePanelKind();
+
+        // Save tracking (optional, but keep your intent)
+        if (target == UIPanelKind.Save)
         {
-            // Use your filtered cycle cache to decide direction
-            int a = (_panelCycleCache != null) ? Array.IndexOf(_panelCycleCache, active.Value) : -1;
-            int b = (_panelCycleCache != null) ? Array.IndexOf(_panelCycleCache, target) : -1;
-            if (a >= 0 && b >= 0) turnRight = b > a;
+            if (active.HasValue && active.Value != UIPanelKind.Save)
+                _panelBeforeSave = active.Value;
+
+            _saveOpenedFromCycle = true;
+        }
+        else
+        {
+            _saveOpenedFromCycle = false;
         }
 
-        SwitchPanelWithPageTurn(() => TryOpenPanelByKind(target), turnRight);
+        // Decide turn direction based on cycle order
+        bool turnRight = true;
+        if (active.HasValue)
+            turnRight = ShouldTurnRight(active.Value, target);
+
+        // ✅ THIS WAS MISSING: actually do the page turn and show the panel
+        SwitchPanelWithPageTurn(() =>
+        {
+            TryOpenPanelByKind(target);
+        }, turnRight);
     }
+
 
 
 
@@ -2415,6 +2481,10 @@ public class UI : MonoBehaviour
 
         if (questJournalUI == null)
             questJournalUI = FindFirstObjectByType<UnityUIQuestJournalUI>(include);
+
+        if (optionsUI == null)
+            optionsUI = FindFirstObjectByType<UI_Options>(include);
+
     }
 
 
