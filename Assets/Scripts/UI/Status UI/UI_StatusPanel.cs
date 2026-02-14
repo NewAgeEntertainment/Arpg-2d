@@ -275,7 +275,13 @@ public class UI_StatusPanel : UI_Panel
 
     public override bool HandleCancel()
     {
-        ClosePanel();
+        if (UI.Instance != null)
+            UI.Instance.CloseStatusPanel();   // <- this runs OpenMainMenuDirect()
+
+        else
+            ClosePanel(); // fallback
+
         return true;
     }
+
 }

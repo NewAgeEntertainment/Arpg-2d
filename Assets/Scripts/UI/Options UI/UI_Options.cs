@@ -102,10 +102,15 @@ public class UI_Options : MonoBehaviour
             return true;
         }
 
-        // In-game: just close Options. UI.cs will do the book/menu flow.
-        ClosePanel();
+        // In-game: route through UI.cs so it returns to mainMenuPanel
+        if (UI.Instance != null)
+            UI.Instance.CloseOptions();
+        else
+            ClosePanel(); // fallback
+
         return true;
     }
+
 
 
     public void ClosePanel()

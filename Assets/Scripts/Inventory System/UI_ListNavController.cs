@@ -40,10 +40,6 @@ public class UI_ListNavController : MonoBehaviour
     private Rewired.Player rplayer;
     private GameObject lastSelectedGO;
 
-    [Header("Selection Anim (optional)")]
-    [SerializeField] private bool autoAddSelectableAnimEvents = true;
-
-
     private void OnEnable()
     {
         TryGetRewired();
@@ -84,22 +80,6 @@ public class UI_ListNavController : MonoBehaviour
     {
         var sel = ChooseItems(items, root);
         if (sel.Length == 0) return;
-
-        if (autoAddSelectableAnimEvents)
-        {
-            foreach (var s in sel)
-            {
-                if (!s) continue;
-
-                // Only add if there is an Animator somewhere on it
-                var hasAnim = s.GetComponent<Animator>() || s.GetComponentInChildren<Animator>(true);
-                if (!hasAnim) continue;
-
-                if (!s.GetComponent<UI_SelectableAnimEvents>())
-                    s.gameObject.AddComponent<UI_SelectableAnimEvents>();
-            }
-        }
-
 
         switch (layout)
         {

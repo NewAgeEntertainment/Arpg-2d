@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using PixelCrushers;
+using Rewired;
 
 public class TitleMenuManager : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class TitleMenuManager : MonoBehaviour
     [SerializeField] private CanvasGroup fadeOverlay;
     [SerializeField, Min(0f)] private float fadeDuration = 0.35f;
 
+    [SerializeField] private int playerID = 0;
+    [SerializeField] private string cancelAction = "UICancel";
+    private Rewired.Player rPlayer;
+
     private LoadMenu loadMenu;
     private UI_Options optionsUI;
     private bool isTransitioning = false;
@@ -43,6 +48,9 @@ public class TitleMenuManager : MonoBehaviour
 
     private void Awake()
     {
+        rPlayer = ReInput.players.GetPlayer(playerID);
+
+
         // Ensure initial visibility
         if (mainPanel != null) mainPanel.SetActive(true);
         if (loadPanel != null) loadPanel.SetActive(false);
@@ -94,39 +102,40 @@ public class TitleMenuManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (rPlayer == null)
         {
-            // Save/Load: let the panel swallow ESC first (handles overwrite dialogs, etc.)
-            if (uiSaveLoad != null && uiSaveLoad.IsOpen)
-            {
-                if (uiSaveLoad.HandleCancel()) return; // its Closed event (or our CloseLoad) will re-show buttons
-            }
-
-            // Controls (inside Options)
-            if (controlsPanel != null && controlsPanel.activeSelf) { CloseControls(); return; }
-
-            // Options: mirror Save/Load behavior
-            if (optionsPanel != null && optionsPanel.activeSelf)
-            {
-                if (optionsUI == null && optionsPanel != null)
-                    optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
-
-                if (optionsUI != null && optionsUI.HandleCancel())
-                {
-                    // After a handled cancel, restore main menu interactivity & buttons
-                    RestoreMainMenuInteractivity();
-                    return;
-                }
-
-                // Fallback safety
-                CloseOptions();
-                return;
-            }
-
-            // Legacy: Load panel wrapper (in case uiSaveLoad is nested)
-            if (loadPanel != null && loadPanel.activeSelf) { CloseLoad(); return; }
+            try { rPlayer = ReInput.players.GetPlayer(playerID); } catch { }
+            return;
         }
+
+        if (!rPlayer.GetButtonDown(cancelAction)) return;
+
+        // Save/Load: let the panel swallow ESC first (handles overwrite dialogs, etc.)
+        if (uiSaveLoad != null && uiSaveLoad.IsOpen)
+        {
+            if (uiSaveLoad.HandleCancel()) return;
+        }
+
+        // Controls (inside Options)
+        if (controlsPanel != null && controlsPanel.activeSelf) { CloseControls(); return; }
+
+        // Options
+        if (optionsPanel != null && optionsPanel.activeSelf)
+        {
+            if (optionsUI == null && optionsPanel != null)
+                optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
+
+            // Options.HandleCancel() in title context calls TitleMenuManager.CloseAllOptionPanels()
+            if (optionsUI != null && optionsUI.HandleCancel()) return;
+
+            CloseOptions();
+            return;
+        }
+
+        // Legacy load wrapper
+        if (loadPanel != null && loadPanel.activeSelf) { CloseLoad(); return; }
     }
+
 
     // ----------------- Play/Quit -----------------
 
@@ -255,15 +264,12 @@ public class TitleMenuManager : MonoBehaviour
 
         yield return StartCoroutine(LocalFadeGuard_Co(show: true, duration: fadeDuration));
 
-        SaveSystem.RestartGame(firstLevelSceneName);
-
-        isTransitioning = false;
-
         PlayTimeTracker.ResetAndStart();
         PixelCrushers.SaveSystem.sceneLoaded += OnFirstGameplayLoaded_StartTimer;
 
         SaveSystem.RestartGame(firstLevelSceneName);
     }
+
 
     private void OnFirstGameplayLoaded_StartTimer(string sceneName, int sceneIndex)
     {
@@ -345,15 +351,14 @@ public class TitleMenuManager : MonoBehaviour
         }
     }
 
+
     private void OnSaveLoadClosedFromTitle(UI_SaveLoadPanel.OpenContext ctx)
     {
-        if (ctx == UI_SaveLoadPanel.OpenContext.TitleMenu)
-        {
-            loadPanel?.SetActive(false);
-            RestoreMainMenuInteractivity();
-            HookSaveLoadClosed(false);
-        }
+        loadPanel?.SetActive(false);
+        RestoreMainMenuInteractivity();
+        HookSaveLoadClosed(false);
     }
+
 
     // ----------------- Helpers -----------------
 
