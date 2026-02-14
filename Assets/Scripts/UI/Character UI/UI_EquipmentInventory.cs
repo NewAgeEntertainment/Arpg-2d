@@ -248,6 +248,7 @@ public class UI_EquipmentInventory : UI_Panel
     {
         Debug.Log("[UI_EquipmentInventory] HandleCancel() called. Current state: " + currentState);
 
+        // ItemList -> EquippedPanel
         if (IsOnItemListPanel() || currentState == PanelState.ItemList)
         {
             Debug.Log("[UI_EquipmentInventory] Returning to Equipped Slot Panel");
@@ -255,11 +256,16 @@ public class UI_EquipmentInventory : UI_Panel
             return true;
         }
 
-        Debug.Log("[UI_EquipmentInventory] Closing Equipment UI");
-        Close();
-        FindObjectOfType<UI>()?.OpenMainMenuDirect();
+        // EquippedPanel -> Close via UI manager (same pattern as Inventory)
+        Debug.Log("[UI_EquipmentInventory] Request close via UI.Instance");
+        if (UI.Instance != null)
+            UI.Instance.CloseEquipment();
+        else
+            Close(); // fallback
+
         return true;
     }
+
 
     public void GoToMainMenuPanel()
     {

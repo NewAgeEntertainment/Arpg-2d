@@ -95,18 +95,19 @@ public class UI_Conquest : MonoBehaviour
 
     public bool HandleCancel()
     {
-        // If details are open → go back to roster; otherwise close and return to main menu.
+        // If details open → go back to roster
         if (detailsRoot != null && detailsRoot.activeSelf)
         {
             ShowRosterFirst();
             return true;
         }
 
-        gameObject.SetActive(false);
-        var ui = FindObjectOfType<UI>();
-        ui?.OpenMainMenuDirect();
+        // Otherwise just close conquest panel.
+        // ✅ Do NOT open main menu here (UI.cs will do it with book close).
+        Close();
         return true;
     }
+
 
     // -------------------- Roster --------------------
 

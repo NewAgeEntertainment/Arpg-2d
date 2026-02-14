@@ -485,11 +485,15 @@ public class UI_SkillTree : UI_Panel
             return true;
         }
 
-        var ui = FindFirstObjectByType<UI>();
-        gameObject.SetActive(false);
-        ui?.OpenMainMenuDirect();
+        // ✅ Close via UI manager (same pattern as Inventory/Equipment)
+        if (UI.Instance != null)
+            UI.Instance.CloseSkillTree();
+        else
+            gameObject.SetActive(false); // fallback
+
         return true;
     }
+
 
     #endregion
 }

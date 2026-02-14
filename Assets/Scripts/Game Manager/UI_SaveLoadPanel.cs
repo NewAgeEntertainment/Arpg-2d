@@ -106,13 +106,11 @@ public class UI_SaveLoadPanel : MonoBehaviour
         Context = OpenContext.None;
         Closed?.Invoke(ctx);
 
-        // If we were opened from Game Over, re-show it.
-        if (ctx == OpenContext.GameOver)
-        {
-            // This is a safe no-op in gameplay or title scenes if the prefab isn't present.
-            UI_GameOver.ShowStatic();
-        }
+        // ✅ IMPORTANT:
+        // Do NOT open main menu or game over here.
+        // UI.cs will decide what to show (so book animation stays consistent).
     }
+
 
     /// Route Esc/back here from UI.cs
     public bool HandleCancel()

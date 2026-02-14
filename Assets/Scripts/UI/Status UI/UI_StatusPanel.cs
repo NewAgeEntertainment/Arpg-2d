@@ -89,9 +89,12 @@ public class UI_StatusPanel : UI_Panel
     {
         isOpen = false;
         gameObject.SetActive(false);
-        var ui = FindObjectOfType<UI>();
-        ui?.OpenMainMenuDirect();
+
+        // ✅ UI.cs will handle returning to main menu (with book close animation)
+        // var ui = FindObjectOfType<UI>();
+        // ui?.OpenMainMenuDirect();
     }
+
 
     // --------- Binding & refresh ---------
 
@@ -272,7 +275,13 @@ public class UI_StatusPanel : UI_Panel
 
     public override bool HandleCancel()
     {
-        ClosePanel();
+        if (UI.Instance != null)
+            UI.Instance.CloseStatusPanel();   // <- this runs OpenMainMenuDirect()
+
+        else
+            ClosePanel(); // fallback
+
         return true;
     }
+
 }
