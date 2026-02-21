@@ -2386,7 +2386,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStop ("Elaina");
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -6133,7 +6133,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: SendMessageSystem("that", "way")
+      userScript: SendMessageSystem("that", "way")NPCFollowStart ("Elaina");
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -8951,6 +8951,10 @@ MonoBehaviour:
         value: 
         type: 0
         typeString: CustomFieldType_Text
+      - title: EventGuid
+        value: e3da496d-b3ac-4025-9cd6-8cfec162dbc1
+        type: 0
+        typeString: 
       conversationID: 25
       isRoot: 0
       isGroup: 0
@@ -8971,8 +8975,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 12.073841, y: 5.0772166}
-    canvasZoom: 0.79000044
+    canvasScrollPosition: {x: 105.87302, y: 9.092441}
+    canvasZoom: 0.9
   - id: 26
     fields:
     - title: Title
@@ -38012,7 +38016,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 109
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -38221,7 +38225,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 110
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -38374,7 +38378,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       conversationID: 111
-      isRoot: 0
+      isRoot: 1
       isGroup: 0
       nodeColor: 
       delaySimStatus: 0
@@ -38449,7 +38453,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 263
+        x: 263.8
         y: 99
         width: 160
         height: 30
@@ -43180,7 +43184,13 @@ MonoBehaviour:
       delaySimStatus: 0
       falseConditionAction: Block
       conditionPriority: 2
-      outgoingLinks: []
+      outgoingLinks:
+      - originConversationID: 121
+        originDialogueID: 53
+        destinationConversationID: 121
+        destinationDialogueID: 67
+        isConnector: 0
+        priority: 2
       conditionsString: 
       userScript: 
       onExecute:
@@ -43532,9 +43542,58 @@ MonoBehaviour:
         y: 403.61478
         width: 160
         height: 30
+    - id: 67
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Description
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Actor
+        value: 4
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 2
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Dialogue Text
+        value: Elaina hsa joined your group.
+        type: 0
+        typeString: CustomFieldType_Text
+      - title: Sequence
+        value: 
+        type: 0
+        typeString: CustomFieldType_Text
+      conversationID: 121
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks: []
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 2143.319
+        y: 303.49042
+        width: 160
+        height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 475.1057, y: 204.06686}
-    canvasZoom: 0.6100004
+    canvasScrollPosition: {x: 1349.1282, y: 150.61913}
+    canvasZoom: 0.79000026
   - id: 122
     fields:
     - title: Title

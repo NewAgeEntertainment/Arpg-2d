@@ -486750,11 +486750,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dacf78c01fc21984ba676a5d0ceb4d10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  singleVCam: {fileID: 2036548380}
-  miniVCam: {fileID: 0}
-  fullscreenVCam: {fileID: 0}
+  minimapVCam: {fileID: 0}
   orthoSizeMinimap: 8
-  orthoSizeFullscreen: 35
   autoBindPlayerLocator: 1
   followOverride: {fileID: 0}
   retryInterval: 0.25
@@ -486975,11 +486972,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onSpawn:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 790288893}
+        m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 1882331019}
   preferPrefabOverExisting: 0
-  copyPoseFromExisting: 0
+  copyPoseFromExisting: 1
   destroyExistingOnReplace: 1
   bindCinemachine: 1
   alsoSetLookAt: 1

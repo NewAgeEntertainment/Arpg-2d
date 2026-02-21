@@ -96,7 +96,7 @@ public class PlayerSpawner : MonoBehaviour
             {
                 if (b == null) continue;
                 b.SetPlayerRoot(_player.gameObject);
-                b.RebindNow(); // (optionally) auto-plays depending on binder setting
+                b.RebindOnly(); // (optionally) auto-plays depending on binder setting
             }
         }
         else

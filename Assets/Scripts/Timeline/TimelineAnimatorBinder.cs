@@ -17,7 +17,7 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     [Header("Playback Options")]
     [Tooltip("If true, Play() is called right after a successful rebind.")]
-    public bool autoPlayAfterRebind = true;
+    public bool autoPlayAfterRebind = false;
 
     [Tooltip("Freeze Rigidbody2D on the player while Timeline is playing (prevents physics from fighting animation).")]
     public bool freezePhysicsDuringPlay = true;
@@ -492,48 +492,45 @@ public class TimelineAnimatorBinder : MonoBehaviour
     }
 
     /// Rebind tracks now (after a small delay), then optionally auto-play.
-    public void RebindNow()
+    public void RebindNow(bool allowPlay = false)
     {
         if (director == null) return;
 
-        // Remember whether this GO was active before we touched it:
         bool wasActive = director.gameObject.activeSelf;
-
-        // Make sure it's active so coroutines & bindings can run:
-        if (!wasActive)
-            director.gameObject.SetActive(true);
+        if (!wasActive) director.gameObject.SetActive(true);
 
         StopAllCoroutines();
-        StartCoroutine(RebindRoutine(wasActive));
+        StartCoroutine(RebindRoutine(wasActive, allowPlay));
     }
 
-    private IEnumerator RebindRoutine(bool wasActive)
+    private IEnumerator RebindRoutine(bool wasActive, bool playAfter)
     {
-        // Wait the configured number of frames:
         for (int i = 0; i < bindDelayFrames; i++) yield return null;
 
+        _bound = false;          // IMPORTANT: allow rebinding again if scene reloads
+        _saved.Clear();          // optional safety if you re-use binder
         TryBindTracks();
 
         if (_dual != null) _dual.EnableForTimeline();
 
-        if (autoPlayAfterRebind && director != null)
+        if (playAfter && director != null)
         {
             director.RebuildGraph();
             director.time = 0;
-            director.Evaluate();   // snap to first frame pose
+            director.Evaluate();
             director.Play();
         }
 
-        // If it *started* inactive and you don't want it active at start,
-        // put it back the way it was (only when we're not auto-playing).
         if (!keepDirectorActiveAfterRebind &&
             !wasActive &&
             director != null &&
-            !autoPlayAfterRebind)
+            !playAfter)
         {
             director.gameObject.SetActive(false);
         }
     }
+
+
 
     private void ForceHideFade()
     {
@@ -554,27 +551,60 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
     private void OnStopped(PlayableDirector d)
     {
-        // No matter how the Timeline ended (natural or skip),
-        // always make sure the fade overlay is hidden.
+        // Always hide fade when timeline ends.
         ForceHideFade();
 
         if (_dual != null) _dual.DisableWhenIdle();
         if (freezePhysicsDuringPlay) UnfreezePhysics();
 
-        // Fire event once.
-        if (!_timelineStopHandled)
+        if (_timelineStopHandled) return;
+        _timelineStopHandled = true;
+
+        onTimelineEnded?.Invoke();
+
+        if (deactivateDirectorOnStop && director != null)
         {
-            _timelineStopHandled = true;
+            // Cancel any previously scheduled invoke.
+            CancelInvoke(nameof(DeactivateDirectorNow));
 
-            if (onTimelineEnded != null)
-                onTimelineEnded.Invoke();
-
-            if (deactivateDirectorOnStop && director != null)
+            if (deactivateDelay <= 0f)
             {
-                if (_deactivateCo != null) StopCoroutine(_deactivateCo);
-                _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
+                DeactivateDirectorNow();
+            }
+            else
+            {
+                // Invoke works even when coroutines can't be started safely here.
+                Invoke(nameof(DeactivateDirectorNow), deactivateDelay);
             }
         }
+    }
+
+    private void DeactivateDirectorNow()
+    {
+        if (director != null)
+            director.gameObject.SetActive(false);
+    }
+
+    public void RebindOnly()
+    {
+        if (director == null) return;
+
+        bool wasActive = director.gameObject.activeSelf;
+        if (!wasActive) director.gameObject.SetActive(true);
+
+        StopAllCoroutines();
+        StartCoroutine(RebindRoutine(wasActive, playAfter: false));
+    }
+
+    public void RebindAndPlay()
+    {
+        if (director == null) return;
+
+        bool wasActive = director.gameObject.activeSelf;
+        if (!wasActive) director.gameObject.SetActive(true);
+
+        StopAllCoroutines();
+        StartCoroutine(RebindRoutine(wasActive, playAfter: true));
     }
 
 

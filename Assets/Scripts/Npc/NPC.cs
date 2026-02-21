@@ -158,37 +158,25 @@ public class NPC : Entity
     // ─────────────────────────────────────────────
     public void RebindFollow(Transform newTarget, bool startFollowing = true)
     {
-        if (newTarget == null)
+        followTarget = newTarget;
+
+        if (startFollowing)
         {
-            followTarget = null;
-            followCommanded = false;
-            if (stateMachine != null) stateMachine.ChangeState(idleState);
+            SetTimelineBindingEnabled(false); // ✅ follow rebind never timeline-binds
+            followCommanded = true;
+            TeleportNextToPlayer();
+            stateMachine.ChangeState(followState);
             return;
         }
 
-        followTarget = newTarget;
-        TeleportNextToPlayer();
-
+        // Only non-follow rebinds (cutscenes) are allowed to bind timeline:
         if (bindToTimelineOnRebind && autoFindTimeline && timelineDirector == null)
             TryAutoFindTimelineForThisNPC();
 
         if (bindToTimelineOnRebind)
             StartCoroutine(BindThisNPCToTimelineRoutine());
-
-        if (startFollowing)
-        {
-            followCommanded = true;
-            if (stateMachine != null && stateMachine.currentState != followState)
-                stateMachine.ChangeState(followState);
-        }
-        else
-        {
-            Vector2 dir = (newTarget.position - transform.position);
-            if (dir.sqrMagnitude > 0.0001f)
-                UpdateFacing(dir.normalized);   // ✅ stores lastFacing + sets anim
-        }
-
     }
+
 
     private void TeleportNextToPlayer()
     {
@@ -418,11 +406,21 @@ public class NPC : Entity
     // ─────────────────────────────────────────────
     public void StartFollowing(Transform targetT)
     {
+        SetTimelineBindingEnabled(false);   // ✅ followers never bind timelines
+
         followCommanded = true;
         followTarget = targetT;
         if (stateMachine.currentState != followState)
             stateMachine.ChangeState(followState);
     }
+
+
+    //public void EnableTimelineBinding(bool enable)
+    //{
+    //    bindToTimelineOnRebind = enable;
+    //    if (!enable) DisableTimelineWhileFollowing();
+    //}
+
 
     public void StartFollow(Transform targetT) => StartFollowing(targetT);
     public void StopFollow() => StopFollowing();
@@ -432,14 +430,48 @@ public class NPC : Entity
         followCommanded = false;
         followTarget = null;
 
-        // ✅ keep current facing when follow ends
-        ApplyLastFacing(); // (lastFacing was kept updated by UpdateFacing during follow)
+        ApplyLastFacing();
+
+        // OPTIONAL: re-enable timeline binding when no longer following
+        // bindToTimelineOnRebind = true;
 
         if (autoStartPatrol && patrolPoints != null && patrolPoints.Length > 0)
             stateMachine.ChangeState(patrolState);
         else
             stateMachine.ChangeState(idleState);
     }
+
+
+    private void DisableTimelineWhileFollowing()
+    {
+        // If we have a director, stop it so it doesn't keep driving animators.
+        if (timelineDirector != null)
+        {
+            try
+            {
+                // Stop any playback
+                if (timelineDirector.state == PlayState.Playing)
+                    timelineDirector.Stop();
+
+                // Restore original bindings (we saved them in _savedTimelineBindings)
+                if (_savedTimelineBindings.Count > 0)
+                {
+                    foreach (var kv in _savedTimelineBindings)
+                    {
+                        if (kv.Key != null)
+                            timelineDirector.SetGenericBinding(kv.Key, kv.Value);
+                    }
+                    _savedTimelineBindings.Clear();
+                }
+
+                // Rebuild to flush timeline control
+                timelineDirector.RebuildGraph();
+                timelineDirector.Evaluate();
+            }
+            catch { }
+        }
+    }
+
 
 
 #if UNITY_EDITOR
@@ -467,6 +499,33 @@ public class NPC : Entity
             Gizmos.DrawLine(p, q);
         }
     }
+
+    public void SetTimelineBindingEnabled(bool enabled)
+    {
+        bindToTimelineOnRebind = enabled;
+        autoFindTimeline = enabled;
+
+        if (!enabled)
+        {
+            // hard detach from any director so it can’t drive animators after follow/persist
+            timelineDirector = null;
+            rootTrackName = string.Empty;
+            modelTrackName = string.Empty;
+        }
+    }
+
+    // Optional: if you want to explicitly assign a director for a cutscene scene:
+    public void SetupTimeline(PlayableDirector director, string rootTrack, string modelTrack, bool autoPlay = false)
+    {
+        timelineDirector = director;
+        rootTrackName = rootTrack;
+        modelTrackName = modelTrack;
+
+        bindToTimelineOnRebind = true;
+        autoFindTimeline = false; // we explicitly gave it one
+        timelineAutoPlayAfterBind = autoPlay;
+    }
+
 
     private void OnValidate()
     {
@@ -506,35 +565,6 @@ public class NPC : Entity
         // but you said only face on use, so we leave it alone.
     }
 
-    // ===================== Dialogue callable follow controls =====================
-
-    // Start following the current player (PlayerLocator.Current if available, else Tag "Player")
-    public void StartFollowPlayer()
-    {
-        Transform t = null;
-
-        if (PlayerLocator.Current != null) t = PlayerLocator.Current;
-        else
-        {
-            var go = GameObject.FindGameObjectWithTag("Player");
-            if (go != null) t = go.transform;
-        }
-
-        if (t == null) return;
-
-        // Use your existing logic so it teleports + binds timeline if you want:
-        RebindFollow(t, startFollowing: true);
-    }
-
-    // Stop following (safe to call from dialogue)
-    public void StopFollowingCommand()
-    {
-        StopFollowing();
-    }
-
-
-
-
     private void BeginInteractionLock(Transform actor)
     {
         IsInteracting = true;
@@ -554,14 +584,9 @@ public class NPC : Entity
         IsInteracting = false;
         _interactor = null;
         SetZeroVelocity();
-        ApplyLastFacing();
 
-        if (followCommanded && followTarget != null)
-        {
-            stateMachine.ChangeState(followState);
-            _resumePatrolAfterInteraction = false;
-            return;
-        }
+        // keep lastFacing as-is so idle faces correctly
+        ApplyLastFacing();
 
         // ✅ Resume patrol toward CURRENT target (do not advance index)
         if (_resumePatrolAfterInteraction &&

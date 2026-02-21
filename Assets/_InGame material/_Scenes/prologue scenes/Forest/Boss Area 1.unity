@@ -14906,7 +14906,8 @@ MonoBehaviour:
   m_appendSaverTypeToKey: 0
   m_saveAcrossSceneChanges: 1
   m_restoreStateOnStart: 0
-  m_gameObjectsToWatch: []
+  m_gameObjectsToWatch:
+  - {fileID: 1796562052}
 --- !u!114 &759648320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27033,7 +27034,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onSpawn:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1796562054}
+        m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+        m_MethodName: Play
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   playerPrefab: {fileID: 2475480508921098455, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   spawnPoint: {fileID: 1125536994}
   preferPrefabOverExisting: 1

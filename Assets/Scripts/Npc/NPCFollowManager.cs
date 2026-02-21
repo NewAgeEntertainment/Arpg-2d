@@ -359,7 +359,8 @@ public class NPCFollowManager : MonoBehaviour
             {
                 Transform playerTransform = FindPlayerTransform();
                 if (playerTransform != null)
-                    npc.StartFollow(playerTransform);
+                    RebindOrStartFollow(npc, playerTransform, true);
+
             }
             return;
         }
@@ -378,7 +379,9 @@ public class NPCFollowManager : MonoBehaviour
             MakePersistentFollower(id, npcInstance.gameObject);
             Transform playerTransform = FindPlayerTransform();
             if (playerTransform != null)
-                npcInstance.StartFollow(playerTransform);
+                if (playerTransform != null)
+                    RebindOrStartFollow(npcInstance, playerTransform, true);
+
         }
         else
         {
@@ -509,7 +512,8 @@ public class NPCFollowManager : MonoBehaviour
         else
             TeleportIfFar3D(npc.transform, playerTransformNow, teleportOffsetDistance);
 
-        npc.StartFollow(playerTransformNow);
+        RebindOrStartFollow(npc, playerTransformNow, true);
+
     }
 
     /// <summary>
@@ -990,6 +994,32 @@ public class NPCFollowManager : MonoBehaviour
             Debug.LogWarning("[NPCFollowManager] RestoreFollowStateFromPrefs failed: " + e.Message);
         }
     }
+
+    private void RebindOrStartFollow(NPC npc, Transform playerTransform, bool shouldStartFollow)
+    {
+        if (npc == null || playerTransform == null) return;
+
+        // Prefer NPC.RebindFollow(Transform, bool)
+        var rebind2 = npc.GetType().GetMethod("RebindFollow", new Type[] { typeof(Transform), typeof(bool) });
+        if (rebind2 != null)
+        {
+            rebind2.Invoke(npc, new object[] { playerTransform, shouldStartFollow });
+            return;
+        }
+
+        // Fallback: NPC.RebindFollow(Transform)
+        var rebind1 = npc.GetType().GetMethod("RebindFollow", new Type[] { typeof(Transform) });
+        if (rebind1 != null)
+        {
+            rebind1.Invoke(npc, new object[] { playerTransform });
+            if (shouldStartFollow) npc.StartFollow(playerTransform);
+            return;
+        }
+
+        // Last fallback
+        if (shouldStartFollow) npc.StartFollow(playerTransform);
+    }
+
 
     // ------------------ NEW: Try auto-hooking save-system events (PixelCrushers etc) --------------------
 
