@@ -506,6 +506,35 @@ public class NPC : Entity
         // but you said only face on use, so we leave it alone.
     }
 
+    // ===================== Dialogue callable follow controls =====================
+
+    // Start following the current player (PlayerLocator.Current if available, else Tag "Player")
+    public void StartFollowPlayer()
+    {
+        Transform t = null;
+
+        if (PlayerLocator.Current != null) t = PlayerLocator.Current;
+        else
+        {
+            var go = GameObject.FindGameObjectWithTag("Player");
+            if (go != null) t = go.transform;
+        }
+
+        if (t == null) return;
+
+        // Use your existing logic so it teleports + binds timeline if you want:
+        RebindFollow(t, startFollowing: true);
+    }
+
+    // Stop following (safe to call from dialogue)
+    public void StopFollowingCommand()
+    {
+        StopFollowing();
+    }
+
+
+
+
     private void BeginInteractionLock(Transform actor)
     {
         IsInteracting = true;
@@ -525,9 +554,14 @@ public class NPC : Entity
         IsInteracting = false;
         _interactor = null;
         SetZeroVelocity();
-
-        // keep lastFacing as-is so idle faces correctly
         ApplyLastFacing();
+
+        if (followCommanded && followTarget != null)
+        {
+            stateMachine.ChangeState(followState);
+            _resumePatrolAfterInteraction = false;
+            return;
+        }
 
         // ✅ Resume patrol toward CURRENT target (do not advance index)
         if (_resumePatrolAfterInteraction &&

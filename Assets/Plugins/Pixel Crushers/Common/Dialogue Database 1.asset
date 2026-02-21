@@ -2386,7 +2386,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStop ("Elaina");
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -6133,7 +6133,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: SendMessageSystem("that", "way")
+      userScript: SendMessageSystem("that", "way")NPCFollowStart ("Elaina");
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -8951,6 +8951,10 @@ MonoBehaviour:
         value: 
         type: 0
         typeString: CustomFieldType_Text
+      - title: EventGuid
+        value: e3da496d-b3ac-4025-9cd6-8cfec162dbc1
+        type: 0
+        typeString: 
       conversationID: 25
       isRoot: 0
       isGroup: 0
@@ -8971,8 +8975,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 12.073841, y: 5.0772166}
-    canvasZoom: 0.79000044
+    canvasScrollPosition: {x: 105.87302, y: 9.092441}
+    canvasZoom: 0.9
   - id: 26
     fields:
     - title: Title
@@ -43182,7 +43186,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: NPCFollowStart ("Elaina");
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -43533,8 +43537,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 475.1057, y: 204.06686}
-    canvasZoom: 0.6100004
+    canvasScrollPosition: {x: 1149.6008, y: 224.0995}
+    canvasZoom: 0.73000026
   - id: 122
     fields:
     - title: Title

@@ -197,7 +197,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -3388,7 +3388,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -9945,11 +9945,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dacf78c01fc21984ba676a5d0ceb4d10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  singleVCam: {fileID: 611864376}
-  miniVCam: {fileID: 0}
-  fullscreenVCam: {fileID: 0}
+  minimapVCam: {fileID: 0}
   orthoSizeMinimap: 8
-  orthoSizeFullscreen: 35
   autoBindPlayerLocator: 1
   followOverride: {fileID: 0}
   retryInterval: 0.25
@@ -27488,43 +27485,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2522712541365959715, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: events.onUse.m_PersistentCalls.m_Calls.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2522712541365959715, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: events.onDeselect.m_PersistentCalls.m_Calls.Array.size
-      value: 0
-      objectReference: {fileID: 0}
+    - target: {fileID: 2295619395599401803, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 8829751501224059594, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
     - target: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_Name
       value: Elaina
       objectReference: {fileID: 0}
-    - target: {fileID: 6565012416590885019, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: conversation
-      value: Prologue/Boss Area/Directions to the Town
-      objectReference: {fileID: 0}
-    - target: {fileID: 6791633637907818236, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6791633637907818236, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8564477627029999769, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      propertyPath: m_Name
-      value: Dialogue 2 trigger
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 1323757641200966321, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-    m_RemovedGameObjects:
-    - {fileID: 2829905896886953376, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1517254164}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
 --- !u!95 &1517254160 stripped
 Animator:
@@ -27541,24 +27513,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
   m_PrefabInstance: {fileID: 1517254159}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1517254163 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-  m_PrefabInstance: {fileID: 1517254159}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1517254164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517254163}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1f50c76ec126d3418066d887042ffd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  id: Elaina
 --- !u!1 &1522709249
 GameObject:
   m_ObjectHideFlags: 0
@@ -41993,7 +41947,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 582dcf26d7460d44dbce2fed38905c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCheckPoints: []
   basicAttackScale:
     physical: 1
     elemental: 1
@@ -42265,7 +42218,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

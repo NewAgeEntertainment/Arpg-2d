@@ -12,13 +12,12 @@ public class MinimapUI : MonoBehaviour
     public Camera minimapCamera;
     public MinimapCameraFollow cameraFollow;
 
-    [Header("Layouts")]
+    [Header("Mini Layout")]
     public Vector2 miniAnchorMin = new Vector2(0.75f, 0.75f);
     public Vector2 miniAnchorMax = new Vector2(0.98f, 0.98f);
-    public Vector2 fullAnchorMin = new Vector2(0.0f, 0.0f);
-    public Vector2 fullAnchorMax = new Vector2(1.0f, 1.0f);
 
     public enum MiniLayoutMode { PercentOfScreen, FixedPixels }
+
     [Header("Mini Layout Mode")]
     public MiniLayoutMode miniLayoutMode = MiniLayoutMode.FixedPixels;
 
@@ -28,20 +27,12 @@ public class MinimapUI : MonoBehaviour
     [Tooltip("Margin from the top-right in pixels when FixedPixels")]
     public Vector2 miniMarginPx = new Vector2(16, 16);
 
-
-    public bool IsFullscreen => _isFullscreen;
-
-
-    [Header("Input")]
-    public KeyCode toggleKey = KeyCode.M;
-
     [Header("Fog Visuals")]
     [Tooltip("Tint color for undiscovered. Alpha is ignored because fogTexture alpha drives transparency.")]
     public Color fogTint = new Color(0, 0, 0, 0.85f);
 
+    [Header("Optional Cinemachine Bridge (minimap only)")]
     public MinimapCinemachineBridge cineBridge;
-
-    private bool _isFullscreen;
 
     // ─────────────────────────────────────────────
     // SexyTime integration
@@ -49,96 +40,58 @@ public class MinimapUI : MonoBehaviour
     [Tooltip("If true, minimap hides automatically whenever SexyTimeLogic.isSexyTimeGoingOn is true.")]
     [SerializeField] private bool disableDuringSexyTime = true;
 
-    private bool _wasSexyTime;               // last frame's SexyTime state
-    private bool _wasVisibleBeforeSexy;      // did we have the minimap visible?
-    private bool _wasFullscreenBeforeSexy;   // were we fullscreen or mini?
+    private bool _wasSexyTime;
+    private bool _wasVisibleBeforeSexy;
     // ─────────────────────────────────────────────
 
     private void Start()
     {
         ApplyFogTexture();
-        ApplyLayout(false);
+        ApplyMiniLayout();
+
+        // Ensure minimap camera/bridge are set to minimap mode (no fullscreen exists now)
+        if (cineBridge != null) cineBridge.RefreshFollow(snapLens: true);
     }
 
     private void Update()
     {
         HandleSexyTimeAutoHide();
-
-        // If SexyTime is currently active and we're configured to disable during SexyTime,
-        // ignore input so the player can't open the minimap over the minigame.
-        if (disableDuringSexyTime && SexyTimeLogic.isSexyTimeGoingOn)
-            return;
-
-        if (Input.GetKeyDown(toggleKey))
-            ToggleFullscreen();
+        // No fullscreen input, ever.
     }
 
-    public void SetFullscreen(bool full)
-    {
-        if (_isFullscreen == full) return;
-        _isFullscreen = full;
-        ApplyLayout(full);
-
-        if (cineBridge != null) cineBridge.SetFullscreen(full);
-        else if (cameraFollow != null) cameraFollow.SetFullscreen(full);
-    }
-
-    // already in your file; expose this so persistent controller can call it:
+    // Expose this so persistent controller can call it:
     public void ReapplyFogTexture()
     {
         if (fogImage == null) return;
         if (MinimapFog.Instance == null) return;
+
         fogImage.texture = MinimapFog.Instance.fogTexture;
         fogImage.color = fogTint;
     }
 
-    public void ToggleFullscreen()
+    private void ApplyMiniLayout()
     {
-        _isFullscreen = !_isFullscreen;
-        ApplyLayout(_isFullscreen);
+        if (container == null) return;
 
-        if (cineBridge != null)
-            cineBridge.SetFullscreen(_isFullscreen);
-        else if (cameraFollow != null)
-            cameraFollow.SetFullscreen(_isFullscreen);
-    }
-
-    private void ApplyLayout(bool full)
-    {
-        if (container != null)
+        if (miniLayoutMode == MiniLayoutMode.PercentOfScreen)
         {
-            if (full)
-            {
-                // Fullscreen = stretch to whole canvas
-                container.anchorMin = fullAnchorMin; // (0,0)
-                container.anchorMax = fullAnchorMax; // (1,1)
-                container.pivot = new Vector2(0.5f, 0.5f);
-                container.offsetMin = container.offsetMax = Vector2.zero;
-                container.anchoredPosition = Vector2.zero;
-            }
-            else
-            {
-                if (miniLayoutMode == MiniLayoutMode.PercentOfScreen)
-                {
-                    // Old behavior: percentage anchors (shrinks with screen/aspect)
-                    container.anchorMin = miniAnchorMin;
-                    container.anchorMax = miniAnchorMax;
-                    container.pivot = new Vector2(0.5f, 0.5f);
-                    container.offsetMin = container.offsetMax = Vector2.zero;
-                    container.anchoredPosition = Vector2.zero;
-                }
-                else // FixedPixels
-                {
-                    // Top-right fixed pixel size
-                    container.anchorMin = container.anchorMax = new Vector2(1f, 1f); // top-right
-                    container.pivot = new Vector2(1f, 1f);
-                    container.sizeDelta = miniSizePx;
-                    container.anchoredPosition = new Vector2(-miniMarginPx.x, -miniMarginPx.y);
-                }
-            }
+            container.anchorMin = miniAnchorMin;
+            container.anchorMax = miniAnchorMax;
+            container.pivot = new Vector2(0.5f, 0.5f);
+            container.offsetMin = container.offsetMax = Vector2.zero;
+            container.anchoredPosition = Vector2.zero;
+        }
+        else // FixedPixels
+        {
+            container.anchorMin = container.anchorMax = new Vector2(1f, 1f); // top-right
+            container.pivot = new Vector2(1f, 1f);
+            container.sizeDelta = miniSizePx;
+            container.anchoredPosition = new Vector2(-miniMarginPx.x, -miniMarginPx.y);
         }
 
-        if (cameraFollow != null) cameraFollow.SetFullscreen(full);
+        // If your MinimapCameraFollow had fullscreen zoom logic, make sure it stays in minimap zoom:
+        // (If MinimapCameraFollow requires a call, expose a SetMinimap() in that script instead.)
+        // For now we do nothing here.
     }
 
     private void ApplyFogTexture()
@@ -148,7 +101,6 @@ public class MinimapUI : MonoBehaviour
 
         fogImage.texture = MinimapFog.Instance.fogTexture;
         fogImage.color = fogTint;
-        // Default UI material respects the texture alpha = perfect.
     }
 
     // ─────────────────────────────────────────────
@@ -160,7 +112,6 @@ public class MinimapUI : MonoBehaviour
 
         bool sexyNow = SexyTimeLogic.isSexyTimeGoingOn;
 
-        // No change since last frame -> nothing to do
         if (sexyNow == _wasSexyTime)
             return;
 
@@ -168,9 +119,7 @@ public class MinimapUI : MonoBehaviour
 
         if (sexyNow)
         {
-            // SexyTime just started: remember current state, then hide.
             _wasVisibleBeforeSexy = container != null && container.gameObject.activeSelf;
-            _wasFullscreenBeforeSexy = _isFullscreen;
 
             if (container != null)
                 container.gameObject.SetActive(false);
@@ -180,7 +129,6 @@ public class MinimapUI : MonoBehaviour
         }
         else
         {
-            // SexyTime just ended: restore what we had.
             if (container != null)
                 container.gameObject.SetActive(_wasVisibleBeforeSexy);
 
@@ -189,14 +137,8 @@ public class MinimapUI : MonoBehaviour
 
             if (_wasVisibleBeforeSexy)
             {
-                // Restore layout and fullscreen state
-                _isFullscreen = _wasFullscreenBeforeSexy;
-                ApplyLayout(_isFullscreen);
-
-                if (cineBridge != null)
-                    cineBridge.SetFullscreen(_isFullscreen);
-                else if (cameraFollow != null)
-                    cameraFollow.SetFullscreen(_isFullscreen);
+                ApplyMiniLayout();
+                if (cineBridge != null) cineBridge.RefreshFollow(snapLens: true);
             }
         }
     }

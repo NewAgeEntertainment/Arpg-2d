@@ -174,7 +174,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -744,6 +744,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentDir: {x: 0, y: 0}
+  applyFacingOnStart: 0
+  startFacing: 2
+  animXParam: xInput
+  animYParam: yInput
   sexBonus_MaxArousalPerLevel: 5
   sexBonus_SexualDamagePerLevel: 1
   sexBonus_StrokePerLevel: 0
@@ -881,7 +885,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 582dcf26d7460d44dbce2fed38905c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCheckPoints: []
   basicAttackScale:
     physical: 2
     elemental: 1
@@ -1690,7 +1693,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 1943044436, guid: e025fbff303d24547a4c2fa92fd6e0da, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1713,7 +1716,7 @@ Animator:
   m_GameObject: {fileID: 5320716971898786402}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: e378c681803190b4584ecf11524a34c9, type: 2}
+  m_Controller: {fileID: 9100000, guid: 44353f5e9d31f2f4b80e1eb1678b8226, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

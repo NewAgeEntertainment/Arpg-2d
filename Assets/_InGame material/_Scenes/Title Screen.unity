@@ -2366,6 +2366,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2628584175232796444, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
+      propertyPath: alwaysAutoFocus
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3601606139087834392, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2510,7 +2514,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9216247904300650053, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.00001168251
+      value: -0.000018939376
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2935,6 +2939,8 @@ MonoBehaviour:
   wipeAllSlotsOnNewGame: 1
   fadeOverlay: {fileID: 0}
   fadeDuration: 0
+  playerID: 0
+  cancelAction: UICancel
 --- !u!1 &714694329
 GameObject:
   m_ObjectHideFlags: 0

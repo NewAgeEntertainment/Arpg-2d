@@ -3,35 +3,27 @@
 [RequireComponent(typeof(Camera))]
 public class MinimapCinemachineBridge : MonoBehaviour
 {
-    [Header("Assign either single VCam OR two VCams (toggle by priority)")]
+    [Header("Minimap VCam (single only)")]
     [Tooltip("Drag a CinemachineCamera (CM3) or CinemachineVirtualCamera (CM2).")]
-    public Component singleVCam;          // we resize orthographic size on toggle
-    public Component miniVCam;            // lower priority when fullscreen is OFF
-    public Component fullscreenVCam;      // higher priority when fullscreen is ON
+    public Component minimapVCam;
 
-    [Header("If using singleVCam, we’ll resize it")]
+    [Header("Minimap Lens")]
     public float orthoSizeMinimap = 8f;
-    public float orthoSizeFullscreen = 35f;
 
     [Header("Auto-Follow")]
-    [Tooltip("Use PlayerLocator.Current automatically when it changes.")]
     public bool autoBindPlayerLocator = true;
-    [Tooltip("Manual override. If set, this wins over PlayerLocator.")]
     public Transform followOverride;
 
     [Header("Robust binding")]
-    [Tooltip("How often to re-check for the player if none is bound yet.")]
     public float retryInterval = 0.25f;
-    [Tooltip("Automatically add a CinemachineBrain on this Camera if missing.")]
     public bool ensureBrainOnCamera = true;
 
-    private bool _isFullscreen;
     private Transform _currentFollow;
     private Coroutine _bindLoop;
 
     private void Awake()
     {
-        // Make sure this camera can drive Cinemachine VCams (CM2 or CM3)
+        // Ensure this Camera can drive Cinemachine VCams (CM2/CM3)
         if (ensureBrainOnCamera && GetComponent("CinemachineBrain") == null)
         {
             var brainType = System.Type.GetType("Cinemachine.CinemachineBrain, Cinemachine");
@@ -42,34 +34,25 @@ public class MinimapCinemachineBridge : MonoBehaviour
     private void OnEnable()
     {
         if (autoBindPlayerLocator)
-        {
-            // Subscribe to PlayerLocator changes (your provided class)
             PlayerLocator.OnChanged += HandlePlayerLocatorChanged;
-        }
 
-        // Small polling loop to catch late-spawned players or scene swaps
         if (_bindLoop == null) _bindLoop = StartCoroutine(BindLoop());
     }
 
     private void OnDisable()
     {
         if (autoBindPlayerLocator)
-        {
             PlayerLocator.OnChanged -= HandlePlayerLocatorChanged;
-        }
 
         if (_bindLoop != null) { StopCoroutine(_bindLoop); _bindLoop = null; }
     }
 
     private System.Collections.IEnumerator BindLoop()
     {
-        // Give other announcers a frame to initialize
         yield return null;
 
-        // Initial bind
-        RefreshFollow(true);
+        RefreshFollow(snapLens: true);
 
-        // Keep checking occasionally in case the player swaps/reloads
         while (true)
         {
             var resolved = ResolveFollowTarget();
@@ -82,53 +65,37 @@ public class MinimapCinemachineBridge : MonoBehaviour
 
     private void Start()
     {
-        // Immediate bind in case everything already exists
-        RefreshFollow(true);
+        RefreshFollow(snapLens: true);
 
-        // Set initial lens for single vcam
-        if (singleVCam != null)
-            SetLensSize(singleVCam, orthoSizeMinimap);
+        // Always minimap size (no fullscreen)
+        if (minimapVCam != null)
+            SetLensSize(minimapVCam, orthoSizeMinimap);
+
+        // Optional safety: keep minimap vcam priority high so it always wins
+        SetPriority(minimapVCam, 10);
     }
 
-    // ========================= Public API =========================
+    // ------------------- Public API (minimap only) -------------------
 
-    /// <summary>Manually re-resolve and bind the follow target.</summary>
     public void RefreshFollow(bool snapLens = false)
     {
         var follow = ResolveFollowTarget();
         ApplyFollow(follow);
 
-        if (snapLens && singleVCam != null)
-            SetLensSize(singleVCam, _isFullscreen ? orthoSizeFullscreen : orthoSizeMinimap);
+        if (snapLens && minimapVCam != null)
+            SetLensSize(minimapVCam, orthoSizeMinimap);
     }
 
-    /// <summary>Force a specific follow target (e.g., when you have the player Transform).</summary>
     public void SetFollowTarget(Transform t, bool snapLens = false)
     {
         followOverride = t;
         ApplyFollow(t);
 
-        if (snapLens && singleVCam != null)
-            SetLensSize(singleVCam, _isFullscreen ? orthoSizeFullscreen : orthoSizeMinimap);
+        if (snapLens && minimapVCam != null)
+            SetLensSize(minimapVCam, orthoSizeMinimap);
     }
 
-    /// <summary>Called by MinimapUI when toggling mini/full.</summary>
-    public void SetFullscreen(bool full)
-    {
-        _isFullscreen = full;
-
-        if (singleVCam != null)
-        {
-            SetLensSize(singleVCam, full ? orthoSizeFullscreen : orthoSizeMinimap);
-            return;
-        }
-
-        // Two-VCam approach: swap by priority
-        SetPriority(miniVCam, full ? 0 : 10);
-        SetPriority(fullscreenVCam, full ? 10 : 0);
-    }
-
-    // ========================= Internals ==========================
+    // ------------------------- Internals -----------------------------
 
     private void HandlePlayerLocatorChanged(Transform newPlayer)
     {
@@ -139,21 +106,16 @@ public class MinimapCinemachineBridge : MonoBehaviour
     private void ApplyFollow(Transform follow)
     {
         _currentFollow = follow;
-        SetFollow(singleVCam, follow);
-        SetFollow(miniVCam, follow);
-        SetFollow(fullscreenVCam, follow);
+        SetFollow(minimapVCam, follow);
     }
 
     private Transform ResolveFollowTarget()
     {
-        // 1) Manual override wins
         if (followOverride != null) return followOverride;
 
-        // 2) Your PlayerLocator
         if (autoBindPlayerLocator && PlayerLocator.Current != null)
             return PlayerLocator.Current;
 
-        // 3) Fallbacks (nice to have)
         var tagged = GameObject.FindGameObjectWithTag("Player");
         if (tagged != null) return tagged.transform;
 
@@ -163,7 +125,7 @@ public class MinimapCinemachineBridge : MonoBehaviour
         return null;
     }
 
-    // --------- Reflection helpers (CM2 & CM3 compatible) ----------
+    // ---------------- Reflection helpers (CM2 & CM3) -----------------
 
     private static void SetFollow(Component vcam, Transform t)
     {
@@ -196,7 +158,7 @@ public class MinimapCinemachineBridge : MonoBehaviour
                 if (orthoP != null && orthoP.CanWrite)
                 {
                     orthoP.SetValue(lensObj, size, null);
-                    lensProp.SetValue(vcam, lensObj, null); // assign the boxed struct back
+                    lensProp.SetValue(vcam, lensObj, null);
                     return;
                 }
             }
@@ -214,13 +176,13 @@ public class MinimapCinemachineBridge : MonoBehaviour
                 if (orthoP != null && orthoP.CanWrite)
                 {
                     orthoP.SetValue(lensObj, size, null);
-                    lensField.SetValue(vcam, lensObj); // reassign struct
+                    lensField.SetValue(vcam, lensObj);
                     return;
                 }
             }
         }
 
-        // Fallback (rare)
+        // Fallback
         var direct = t.GetProperty("OrthographicSize");
         if (direct != null && direct.CanWrite)
             direct.SetValue(vcam, size, null);

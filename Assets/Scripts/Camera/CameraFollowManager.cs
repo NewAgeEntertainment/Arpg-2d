@@ -36,7 +36,7 @@ public class CinemachineV3AutoFollow : MonoBehaviour
     private void OnSceneLoaded(Scene s, LoadSceneMode m)
     {
         if (bindCo != null) StopCoroutine(bindCo);
-        bindCo = StartCoroutine(RetryBindForSeconds(retryWindowSeconds));
+        bindCo = StartCoroutine(RetryBindAfterSettle(retryWindowSeconds));
     }
 
     private void OnPlayerRegistered(Player p)
@@ -44,8 +44,11 @@ public class CinemachineV3AutoFollow : MonoBehaviour
         if (p != null) BindTo(p.transform);
     }
 
-    private System.Collections.IEnumerator RetryBindForSeconds(float seconds)
+    private System.Collections.IEnumerator RetryBindAfterSettle(float seconds)
     {
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
         float t = 0f;
         while (t < seconds)
         {
@@ -72,8 +75,12 @@ public class CinemachineV3AutoFollow : MonoBehaviour
     private void BindTo(Transform target)
     {
         if (vcam == null || target == null) return;
+
         vcam.Target.TrackingTarget = target;
         if (alsoSetLookAt) vcam.Target.LookAtTarget = target;
-        // Debug.Log($"[CinemachineV3AutoFollow] Tracking '{target.name}'");
+
+        // Prevent blending from stale camera state across scene loads:
+        vcam.PreviousStateIsValid = false;
     }
+
 }

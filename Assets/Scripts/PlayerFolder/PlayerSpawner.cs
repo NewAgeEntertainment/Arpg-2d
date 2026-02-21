@@ -165,12 +165,13 @@ public class PlayerSpawner : MonoBehaviour
 
     private void Start()
     {
-        if (bindCinemachine)
-            StartCoroutine(BindCameraRetryCo(cameraBindRetrySeconds));
+        // Don't bind here (Option B)
+        // if (bindCinemachine)
+        //     StartCoroutine(BindCameraRetryCo(cameraBindRetrySeconds));
 
-        // Delay the OnSpawn event; QuestControl will send the message from that event.
         StartCoroutine(InvokeSpawnEventDelayed());
     }
+
 
     private IEnumerator InvokeSpawnEventDelayed()
     {
@@ -185,6 +186,10 @@ public class PlayerSpawner : MonoBehaviour
 
     private IEnumerator BindCameraRetryCo(float seconds)
     {
+        // Let SaveSystem / spawnpoint placement finish.
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
         float t = 0f;
         while (t < seconds)
         {
@@ -197,29 +202,31 @@ public class PlayerSpawner : MonoBehaviour
         }
 
 #if UNITY_CINEMACHINE
-        Debug.LogWarning("[PlayerSpawner] Timed out binding Cinemachine camera to Player.");
+    Debug.LogWarning("[PlayerSpawner] Timed out binding Cinemachine camera to Player.");
 #endif
     }
+
 
     private bool TryBindCameraOnce(Player p)
     {
         if (p == null) return false;
 
 #if UNITY_CINEMACHINE
-        var vcam = PickBestVcam();
-        if (vcam != null)
-        {
-            vcam.Follow = p.transform;
-            if (alsoSetLookAt) vcam.LookAt = p.transform;
+    var vcam = PickBestVcam();
+    if (vcam != null)
+    {
+        vcam.Follow = p.transform;
+        if (alsoSetLookAt) vcam.LookAt = p.transform;
 
-            // (Optional) You can also invoke onSpawn here if you want to signal "camera is bound":
-            // onSpawn?.Invoke(p);
+        // IMPORTANT: prevent blending from stale pre-load camera state:
+        vcam.PreviousStateIsValid = false;
 
-            return true;
-        }
+        return true;
+    }
 #endif
         return false;
     }
+
 
 #if UNITY_CINEMACHINE
     private CinemachineCamera PickBestVcam()
