@@ -26,13 +26,24 @@ public class SexyTimeInputRouter : MonoBehaviour
     public void Init(int? overridePlayerId = null)
     {
         int id = overridePlayerId ?? rewiredPlayerId;
+
+        if (!ReInput.isReady) { rPlayer = null; return; }
+
         rPlayer = ReInput.players.GetPlayer(id);
     }
 
     #region Category toggling
 
+    private void EnsurePlayer()
+    {
+        if (rPlayer != null) return;
+        if (!ReInput.isReady) return;
+        rPlayer = ReInput.players.GetPlayer(rewiredPlayerId);
+    }
+
     public void EnableSexyTimeMaps()
     {
+        EnsurePlayer();
         if (rPlayer == null) return;
         rPlayer.controllers.maps.SetMapsEnabled(false, gameplayCategory);
         rPlayer.controllers.maps.SetMapsEnabled(true, sexyTimeCategory);
@@ -40,6 +51,7 @@ public class SexyTimeInputRouter : MonoBehaviour
 
     public void DisableSexyTimeMaps()
     {
+        EnsurePlayer();
         if (rPlayer == null) return;
         rPlayer.controllers.maps.SetMapsEnabled(false, sexyTimeCategory);
         rPlayer.controllers.maps.SetMapsEnabled(true, gameplayCategory);

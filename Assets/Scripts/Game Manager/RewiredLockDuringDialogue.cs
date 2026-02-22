@@ -10,14 +10,13 @@ public class RewiredLockDuringDialogue : MonoBehaviour
 
     [Header("Map Categories")]
     [SerializeField] private string gameplayCategory = "Gameplay";
-    [SerializeField] private string sexyTimeCategory = "SexyTime";
     [SerializeField] private string uiCategory = "UI";
 
     [Header("Behavior")]
     [SerializeField] private bool keepUIEnabled = true;
 
     [Header("Optional hard-freeze (your Player script)")]
-    [SerializeField] private Player player; // your Player class
+    [SerializeField] private Player player;
 
     [Header("Optional physics stop")]
     [SerializeField] private Rigidbody2D rb2D;
@@ -28,7 +27,7 @@ public class RewiredLockDuringDialogue : MonoBehaviour
     {
         if (!player) player = GetComponent<Player>();
         if (!rb2D) rb2D = GetComponent<Rigidbody2D>();
-        CacheRewired(); // <-- this method exists below
+        CacheRewired();
     }
 
     void OnEnable()
@@ -59,21 +58,38 @@ public class RewiredLockDuringDialogue : MonoBehaviour
         if (rwPlayer == null) CacheRewired();
         if (rwPlayer == null) return;
 
-        // Disable gameplay + sexytime maps during dialogue:
-        rwPlayer.controllers.maps.SetMapsEnabled(!locked, gameplayCategory);
-        rwPlayer.controllers.maps.SetMapsEnabled(!locked, sexyTimeCategory);
+        // During dialogue: disable ONLY gameplay maps.
+        // Do NOT touch SexyTime maps here (SexyTimeLogic owns them).
+        if (locked)
+        {
+            rwPlayer.controllers.maps.SetMapsEnabled(false, gameplayCategory);
+        }
+        else
+        {
+            // Only restore gameplay if SexyTime isn't active.
+            if (SexyTimeLogic.isSexyTimeGoingOn == false)
+                rwPlayer.controllers.maps.SetMapsEnabled(true, gameplayCategory);
+        }
 
-        // Keep UI enabled so dialogue navigation works:
-        rwPlayer.controllers.maps.SetMapsEnabled(!(locked && !keepUIEnabled), uiCategory);
+        // Keep UI enabled (or disable if you want)
+        rwPlayer.controllers.maps.SetMapsEnabled(keepUIEnabled, uiCategory);
 
-        // Optional: stop physics drift immediately:
         if (locked && rb2D)
         {
             rb2D.velocity = Vector2.zero;
             rb2D.angularVelocity = 0f;
         }
 
-        // Freeze/unfreeze your gameplay logic (this already prevents stuck movement):
-        if (player) player.SetInputEnabled(!locked);
+        // Freeze/unfreeze player logic:
+        if (player)
+        {
+            if (locked) player.SetInputEnabled(false);
+            else
+            {
+                // Only unfreeze if SexyTime isn't active.
+                if (SexyTimeLogic.isSexyTimeGoingOn == false)
+                    player.SetInputEnabled(true);
+            }
+        }
     }
 }

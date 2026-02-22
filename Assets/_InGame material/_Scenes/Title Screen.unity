@@ -2366,10 +2366,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2628584175232796444, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: alwaysAutoFocus
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3601606139087834392, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2422,18 +2418,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8046216619999041331, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8046216619999041331, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8046216619999041331, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8542198899069406989, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2474,36 +2458,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.cameraSettings.defaultSequence
-      value: 'Delay({{end}})
-
-'
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.subtitleSettings.continueButton
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.cameraSettings.defaultPlayerSequence
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.inputSettings.cancelConversation.key
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.cameraSettings.defaultResponseMenuSequence
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.subtitleSettings.informSequenceStartAndEnd
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.subtitleSettings.requireContinueOnLastLine
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8747474213987982136, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -2512,13 +2466,17 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9057749040426245047, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
+      propertyPath: m_Value
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9216247904300650053, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9216247904300650053, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000018939376
+      value: -0.000016450882
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7937,18 +7895,6 @@ PrefabInstance:
     - target: {fileID: 1966454025167320162, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: m_Name
       value: Rewired Input Manager
-      objectReference: {fileID: 0}
-    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
-      propertyPath: _userData.keyboardMaps.Array.data[2].actionElementMaps.Array.data[12]._actionId
-      value: 29
-      objectReference: {fileID: 0}
-    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
-      propertyPath: _userData.players.Array.data[1]._controllerMapEnablerSettings._ruleSets.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
-      propertyPath: _userData.players.Array.data[1]._controllerMapEnablerSettings._ruleSets.Array.data[0]._enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8167799052081702518, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: m_LocalPosition.x

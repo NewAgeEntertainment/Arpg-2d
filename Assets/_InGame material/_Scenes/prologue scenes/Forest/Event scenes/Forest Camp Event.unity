@@ -8725,17 +8725,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7677773425774564799, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
   m_PrefabInstance: {fileID: 108205892}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &108205894 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5887857889998053990, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
-  m_PrefabInstance: {fileID: 108205892}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee64ca28202dbce42b7305ef1b171665, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &119581205
 GameObject:
   m_ObjectHideFlags: 0
@@ -63942,339 +63931,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &1364648833
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1364648834}
-  - component: {fileID: 1364648841}
-  - component: {fileID: 1364648840}
-  - component: {fileID: 1364648839}
-  - component: {fileID: 1364648838}
-  - component: {fileID: 1364648837}
-  - component: {fileID: 1364648836}
-  - component: {fileID: 1364648835}
-  - component: {fileID: 1364648842}
-  m_Layer: 5
-  m_Name: NewSexy time
-  m_TagString: Partner
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &1364648834
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 27.1, y: 3.8, z: -0.72976863}
-  m_LocalScale: {x: 0.9558369, y: 0.38829362, z: 0.0074099996}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1745488122}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1364648835
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05bed5176d0bec44ca50f06d1eb0b845, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rewiredPlayerId: 0
-  gameplayCategory: Gameplay
-  sexyTimeCategory: SexyTime
---- !u!114 &1364648836
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 272001bc424dc6d46b3ef4248a2d34db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  skillManager: {fileID: 5843875191212425359, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  ui: {fileID: 108205894}
-  inputRouter: {fileID: 1364648835}
-  autoStart: 1
-  barDecayPerSecond: 0
-  arousalPerStroke: 3
-  strokeMultiplier: 0
-  playerBarValueDeplete: 10
-  playerStats: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
-  partnerStats: {fileID: 0}
-  pussySqueeze: 0
-  pussySqueezeCooldown: 5
-  autoUnlockDeepBreath: 0
-  debugDeepBreathKey: 98
-  cumDuration: 5
-  cumReached: 0
-  cumTimeElapsed: 3.59
-  blueBarExp: 150
-  pinkBarExp: 150
-  blueBarAffectionAdd: 5
-  blueBarAffectionSubtract: 0
-  pinkBarAffectionAdd: 10
-  pinkBarAffectionSubtract: 0
-  OnPlayerBarFull:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4167030517014712310, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-        m_TargetAssemblyTypeName: ConquestLua, Assembly-CSharp
-        m_MethodName: UnlockRoster
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Elaina
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1364648842}
-        m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
-        m_MethodName: SendToMessageSystem
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: next:one
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnPartnerBarFull:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4167030517014712310, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-        m_TargetAssemblyTypeName: ConquestLua, Assembly-CSharp
-        m_MethodName: UnlockRoster
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Elaina
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1364648842}
-        m_TargetAssemblyTypeName: PixelCrushers.QuestMachine.QuestControl, Assembly-CSharp-firstpass
-        m_MethodName: SendToMessageSystem
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: next:one
-          m_BoolArgument: 0
-        m_CallState: 2
-  playerBarReachedOnce: 0
-  partnerBarReachedOnce: 0
-  snapObjectToCameraOnStart: 1
-  followCameraWithObject: 1
-  cameraLocalObjectOffset: {x: -14.4, y: 6.26, z: 10}
-  lockObjectZToStartPlane: 1
-  rotateObjectToCamera: 0
---- !u!33 &1364648837
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Mesh: {fileID: 0}
---- !u!114 &1364648838
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9db98c60740638449864eb028fbe7ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  skeletonDataAsset: {fileID: 11400000, guid: 036626989dfb7a74caad8fafd5214475, type: 2}
-  initialSkinName: 
-  fixPrefabOverrideViaMeshFilter: 2
-  initialFlipX: 0
-  initialFlipY: 0
-  updateWhenInvisible: 3
-  separatorSlotNames: []
-  zSpacing: 0
-  useClipping: 1
-  immutableTriangles: 0
-  pmaVertexColors: 1
-  clearStateOnDisable: 0
-  tintBlack: 0
-  singleSubmesh: 0
-  fixDrawOrder: 0
-  addNormals: 0
-  calculateTangents: 0
-  maskInteraction: 0
-  maskMaterials:
-    materialsMaskDisabled: []
-    materialsInsideMask: []
-    materialsOutsideMask: []
-  disableRenderingOnOverride: 1
-  physicsPositionInheritanceFactor: {x: 1, y: 1}
-  physicsRotationInheritanceFactor: 1
-  physicsMovementRelativeTo: {fileID: 0}
-  translator:
-    autoReset: 1
-    useCustomMixMode: 1
-    layerMixModes: 01000000
-    layerBlendModes: 01000000
-  updateTiming: 1
---- !u!114 &1364648839
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cb8edac0e90c4c4db15a5d083591399, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  logic: {fileID: 1364648836}
---- !u!95 &1364648840
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 8114f556bf293004d92755a6dabcbabb, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
---- !u!23 &1364648841
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  - {fileID: 2100000, guid: 735a162f47dc4414d8fe70dd6bf134b3, type: 2}
-  - {fileID: 2100000, guid: ea87a01dd1daabf41b51e8116b9e040b, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 1859501777
-  m_SortingLayer: 7
-  m_SortingOrder: 5
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1364648842
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364648833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d18230d3a29b2a418e94d126c53f276, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_questID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_questNodeID:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_counterName:
-    m_text: 
-    m_stringAsset: {fileID: 0}
-    m_textTable: {fileID: 0}
-    m_textTableFieldID: 0
-  m_conditionalEvent:
-    questID:
-      m_text: 
-      m_stringAsset: {fileID: 0}
-      m_textTable: {fileID: 0}
-      m_textTableFieldID: 0
-    requiredQuestState: 0
-    questNodeID:
-      m_text: 
-      m_stringAsset: {fileID: 0}
-      m_textTable: {fileID: 0}
-      m_textTableFieldID: 0
-    requiredQuestNodeState: 0
-    onConditionMet:
-      m_PersistentCalls:
-        m_Calls: []
 --- !u!1 &1365861992
 GameObject:
   m_ObjectHideFlags: 0
@@ -85226,7 +84882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9207617f8d499f84e8961a0d1a506f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sexyTimeLogicObject: {fileID: 1364648833}
+  sexyTimeLogicObject: {fileID: 0}
   partnerOverride: {fileID: 0}
   notEnoughGoldMessage: You need {0} gold.
   allowKeyboardFallback: 1
@@ -86790,7 +86446,7 @@ PrefabInstance:
     - target: {fileID: 1323757641200966321, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: sexyTimeLogicObject
       value: 
-      objectReference: {fileID: 1364648833}
+      objectReference: {fileID: 0}
     - target: {fileID: 1353090333386284742, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -86799,6 +86455,10 @@ PrefabInstance:
       propertyPath: conversationActor
       value: 
       objectReference: {fileID: 1793870750}
+    - target: {fileID: 2295619395599401803, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2415206637815481327, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: m_IsTrigger
       value: 0
@@ -87049,10 +86709,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 871326809236735106, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1364648834}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3822433045253184017, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       insertIndex: -1

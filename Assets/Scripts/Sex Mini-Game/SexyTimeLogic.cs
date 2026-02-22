@@ -337,7 +337,7 @@ public class SexyTimeLogic : MonoBehaviour
         GrantSexExpIfNeeded();
         GrantAffectionIfNeeded();
 
-        // 🔁 Switch Rewired maps back: SexyTime OFF, Gameplay ON
+        // Turn SexyTime OFF, Gameplay ON
         if (_mapsSwapped && inputRouter != null)
         {
             inputRouter.DisableSexyTimeMaps();
@@ -359,6 +359,13 @@ public class SexyTimeLogic : MonoBehaviour
 
         if (anim != null)
             anim.Play("idle", 0, 0f);
+
+        // ✅ Restore PLAYER script input gate NOW (before disabling this GO)
+        if (cachedPlayer == null)
+            cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (cachedPlayer != null)
+            cachedPlayer.SetInputEnabled(true);
 
         ui.Hide();
         gameObject.SetActive(false);

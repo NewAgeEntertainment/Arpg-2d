@@ -420,6 +420,7 @@ GameObject:
   - component: {fileID: 620084835912366469}
   - component: {fileID: 873019877890959062}
   - component: {fileID: 1532602733049190791}
+  - component: {fileID: 3763334655228978526}
   m_Layer: 7
   m_Name: Lioncard
   m_TagString: Player
@@ -1169,6 +1170,25 @@ MonoBehaviour:
   attackMiss: player_attackMiss
   soundDistance: 15
   showGizmo: 0
+--- !u!114 &3763334655228978526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3412577514713453343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22ac8bd6b92708d48b52ef0249a3f4df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rewiredPlayerId: 0
+  gameplayCategory: Gameplay
+  sexyTimeCategory: SexyTime
+  uiCategory: UI
+  keepUIEnabled: 1
+  player: {fileID: 2475480508921098455}
+  rb2D: {fileID: 5213953530006539592}
 --- !u!1 &3856814697552870799
 GameObject:
   m_ObjectHideFlags: 0
