@@ -264,6 +264,20 @@ public class TimelineAnimatorBinder : MonoBehaviour
         }
     }
 
+    public void PlayNow()
+    {
+        if (director == null) return;
+
+        // Make sure director GO is active so Play works
+        if (!director.gameObject.activeInHierarchy)
+            director.gameObject.SetActive(true);
+
+        director.RebuildGraph();
+        director.time = 0;
+        director.Evaluate();
+        director.Play();
+    }
+
 
     // ---------- Skip UI helpers ----------
 
@@ -564,17 +578,15 @@ public class TimelineAnimatorBinder : MonoBehaviour
 
         if (deactivateDirectorOnStop && director != null)
         {
-            // Cancel any previously scheduled invoke.
-            CancelInvoke(nameof(DeactivateDirectorNow));
-
-            if (deactivateDelay <= 0f)
+            if (!isActiveAndEnabled || !gameObject.activeInHierarchy || deactivateDelay <= 0f)
             {
-                DeactivateDirectorNow();
+                // can't coroutine if we're inactive; just do it now
+                director.gameObject.SetActive(false);
             }
             else
             {
-                // Invoke works even when coroutines can't be started safely here.
-                Invoke(nameof(DeactivateDirectorNow), deactivateDelay);
+                if (_deactivateCo != null) StopCoroutine(_deactivateCo);
+                _deactivateCo = StartCoroutine(DeactivateDirectorAfter(deactivateDelay));
             }
         }
     }

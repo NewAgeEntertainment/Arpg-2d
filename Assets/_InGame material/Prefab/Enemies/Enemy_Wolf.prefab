@@ -1110,6 +1110,7 @@ GameObject:
   - component: {fileID: 5133983823855385578}
   - component: {fileID: 176247453135557487}
   - component: {fileID: 5922825876006769586}
+  - component: {fileID: 5550305458992807661}
   m_Layer: 8
   m_Name: Enemy_Wolf
   m_TagString: Enemy
@@ -1564,6 +1565,25 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.56
+--- !u!114 &5550305458992807661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2488284637338199331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: DEATH
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  m_mode: 1
+  m_destroyMode: 0
+  m_destroyedVersionPrefab: {fileID: 0}
 --- !u!1 &2743883782825291007
 GameObject:
   m_ObjectHideFlags: 0
