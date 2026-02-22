@@ -8,7 +8,8 @@ public class Sex_IdleState : SexyTimeState
     {
         if (logic.anim != null)
         {
-            logic.anim.SetFloat("speed", 0f);
+            logic.anim.speed = 1f;
+            logic.anim.SetFloat("speed", 0f); // if you still use this param elsewhere
             logic.anim.Play("idle", 0, 0f);
         }
     }

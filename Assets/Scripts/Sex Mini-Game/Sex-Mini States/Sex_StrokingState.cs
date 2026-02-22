@@ -11,6 +11,14 @@ public class Sex_StrokingState : SexyTimeState
     private bool _strokeAnimPlaying;
     private bool _queuedNextStroke;
 
+    private float _strokeSpeed = 1f;
+    private float _speedSmoothVel = 0f;
+
+    [SerializeField] private float minStrokeSpeed = 1f;
+    [SerializeField] private float maxStrokeSpeed = 2.25f;
+    [SerializeField] private float fastTapWindow = 0.35f;     // how far apart taps count as "fast"
+    [SerializeField] private float speedDamp = 0.06f;         // smooth time for speed changes
+
     public Sex_StrokingState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine)
         : base(logic, stateMachine) { }
 
@@ -25,7 +33,18 @@ public class Sex_StrokingState : SexyTimeState
     public override void HandleStroke()
     {
         if (logic.shouldPause) return;
-        if (Time.time < _nextAllowedPressTime) return;
+        float dt = Time.time - _lastPressTime;
+        _lastPressTime = Time.time;
+
+        float t = 1f - Mathf.Clamp01(dt / fastTapWindow); // 0=slow tap, 1=very fast
+        float targetSpeed = Mathf.Lerp(minStrokeSpeed, maxStrokeSpeed, t);
+
+        // Smoothly move current speed toward target
+        _strokeSpeed = Mathf.SmoothDamp(_strokeSpeed, targetSpeed, ref _speedSmoothVel, speedDamp);
+
+        // Apply immediately if anim exists
+        if (logic.anim != null) logic.anim.speed = _strokeSpeed;
+        // so compute dt BEFORE updating _lastPressTime:
 
         _nextAllowedPressTime = Time.time + strokeCooldown;
         _lastPressTime = Time.time;
@@ -80,9 +99,8 @@ public class Sex_StrokingState : SexyTimeState
     {
         _strokeAnimPlaying = true;
 
-        // Play ONE full stroke (no looping!)
-        logic.anim.SetFloat("speed", 1f);
-        logic.anim.Play("fuck", 0, 0f); // <-- rename if your state is "Stroke"
+        logic.anim.speed = _strokeSpeed;   // keep current tap-driven speed
+        logic.anim.Play("fuck", 0, 0f);
 
         ApplyStrokeBars();
     }

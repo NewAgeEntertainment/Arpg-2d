@@ -14,7 +14,10 @@ public class Sex_ClimaxState : SexyTimeState
         logic.shouldPause = true;
 
         if (logic.anim != null)
+        {
+            logic.anim.speed = 1f;                 // ✅ force normal speed for climax
             logic.anim.Play("sperm shot", 0, 0f);
+        }
 
         logic.StartCoroutine(ClimaxRoutine());
     }
@@ -38,6 +41,7 @@ public class Sex_ClimaxState : SexyTimeState
             float lerp = 1f - (t / drainDuration);
             ui.UpdateBars(startPlayer * lerp, pMax, startPartner * lerp, partnerMax);
             yield return null;
+            if (logic.anim != null) logic.anim.speed = 1f;
         }
 
         ui.UpdateBars(0f, pMax, 0f, partnerMax);
