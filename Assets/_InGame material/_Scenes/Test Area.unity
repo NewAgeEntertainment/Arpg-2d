@@ -598,7 +598,7 @@ SpriteRenderer:
   m_SortingLayerID: 1831899741
   m_SortingLayer: 4
   m_SortingOrder: -1
-  m_Sprite: {fileID: 176539489, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
+  m_Sprite: {fileID: -2063378286, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -621,7 +621,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82a652d3cef4fb744a3c8f9f5c759eda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToAssign: {fileID: 11400000, guid: 9a26b7cdfac70cf48bc19b295c0125ce, type: 2}
+  itemToAssign: {fileID: 11400000, guid: 21731e7938f9fbc46b09061643497773, type: 2}
   iconRenderer: {fileID: 19920968}
   goldSprite: {fileID: 0}
   isGold: 0
@@ -21092,7 +21092,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3731350023784916908, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3924298719972313883, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -32398,7 +32398,9 @@ MonoBehaviour:
   ui: {fileID: 0}
   inputRouter: {fileID: 8931125114811120558}
   autoStart: 1
-  barDecayPerSecond: 0
+  blueDecayPerSecond: 0
+  pinkDecayPerSecond: 0
+  maxRestraintForDecay: 3
   arousalPerStroke: 3
   strokeMultiplier: 0
   playerBarValueDeplete: 10
@@ -32414,9 +32416,11 @@ MonoBehaviour:
   pussySqueezeCooldown: 5
   autoUnlockDeepBreath: 0
   debugDeepBreathKey: 98
+  startDialogue: {fileID: 0}
   blueWinFinishDialogue: {fileID: 0}
   pinkWinFinishDialogue: {fileID: 0}
   finishDialogue: {fileID: 0}
+  useStartDialogue: 1
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59

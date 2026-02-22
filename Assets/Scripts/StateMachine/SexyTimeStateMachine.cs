@@ -7,7 +7,7 @@ public class SexyTimeStateMachine : MonoBehaviour
 {
     public SexyTimeLogic logic;
     private SexyTimeState currentState;
-
+    public SexyTimeState CurrentState => currentState;
     private SexyTimeState _stateBeforePause;
 
     public void ChangeState(SexyTimeState newState)
@@ -53,4 +53,6 @@ public class SexyTimeStateMachine : MonoBehaviour
 
         _stateBeforePause = null;
     }
+
+
 }

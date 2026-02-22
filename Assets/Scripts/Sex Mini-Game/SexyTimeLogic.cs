@@ -28,8 +28,9 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Config")]
     [SerializeField] private bool autoStart = false;
     [Header("Config")]
-    [SerializeField] private float blueBarDecayPerSecond = 0f;
-    [SerializeField] private float pinkBarDecayPerSecond = 0f;
+    [SerializeField] private float blueDecayPerSecond = 0f;
+    [SerializeField] private float pinkDecayPerSecond = 0f;
+    [SerializeField] private float maxRestraintForDecay = 3f; // ✅ cap restraint effect on decay
     [SerializeField] private float arousalPerStroke = 3f;
     [SerializeField] private float strokeMultiplier = 1f;
     [SerializeField] private float playerBarValueDeplete = 10f;
@@ -66,7 +67,9 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Header("Optional Intro Dialogue")]
     [SerializeField] private bool useStartDialogue = true;
+
     
+
 
     [Header("Climax")]
     public float cumDuration = 5f;
@@ -222,7 +225,7 @@ public class SexyTimeLogic : MonoBehaviour
         UpdateNPCAttack();
         UpdateUI();
         HandleClimaxTimer();
-        DepletePlayerBar();
+        DepleteBars();
     }
 
     private void LateUpdate()
@@ -262,6 +265,17 @@ public class SexyTimeLogic : MonoBehaviour
         ResolveSkillManager();
         skillManager?.EnsureDeepBreathReady(true);
         BindToActivePlayerStats();
+
+        if (playerStats != null)
+        {
+            float r = playerStats.sex.sexualRestraint.GetValue();
+            Debug.Log($"[SexyTime] Player sexualRestraint = {r}");
+        }
+        if (partnerStats != null)
+        {
+            float r = partnerStats.sex.sexualRestraint.GetValue();
+            Debug.Log($"[SexyTime] Partner sexualRestraint = {r}");
+        }
 
         deepBreatheTimestamp = Time.time - deepBreatheCooldown;
 
@@ -459,27 +473,33 @@ public class SexyTimeLogic : MonoBehaviour
         }
     }
 
-    private void DepletePlayerBar()
+    private void DepleteBars()
     {
+        if (stateMachine == null) return;
+
+        // ✅ Only decay while idle
+        if (stateMachine.CurrentState is not Sex_IdleState)
+            return;
+
         if (cumReached || isFucking) return;
-        if (UI == null) return;
+        if (blueDecayPerSecond <= 0f && pinkDecayPerSecond <= 0f) return;
 
-        float dt = Time.deltaTime;
+        // ✅ restraint makes decay FASTER (opposite behavior)
+        float blueRestraint = (playerStats != null) ? playerStats.sex.sexualRestraint.GetValue() : 1f;
+        float pinkRestraint = (partnerStats != null) ? partnerStats.sex.sexualRestraint.GetValue() : 1f;
 
-        float oldBlue = UI.PlayerBarValue;
-        float oldPink = UI.PartnerBarValue;
+        // ✅ clamp so 0 doesn't kill decay, and high values don't explode it
+        blueRestraint = Mathf.Clamp(blueRestraint, 1f, maxRestraintForDecay);
+        pinkRestraint = Mathf.Clamp(pinkRestraint, 1f, maxRestraintForDecay);
 
-        float newBlue = oldBlue;
-        float newPink = oldPink;
+        float blueOld = UI.PlayerBarValue;
+        float pinkOld = UI.PartnerBarValue;
 
-        if (blueBarDecayPerSecond > 0f)
-            newBlue = Mathf.Max(0f, oldBlue - blueBarDecayPerSecond * dt);
+        float blueNew = Mathf.Max(0f, blueOld - (blueDecayPerSecond * blueRestraint) * Time.deltaTime);
+        float pinkNew = Mathf.Max(0f, pinkOld - (pinkDecayPerSecond * pinkRestraint) * Time.deltaTime);
 
-        if (pinkBarDecayPerSecond > 0f)
-            newPink = Mathf.Max(0f, oldPink - pinkBarDecayPerSecond * dt);
-
-        if (!Mathf.Approximately(newBlue, oldBlue) || !Mathf.Approximately(newPink, oldPink))
-            UI.UpdateBars(newBlue, UI.PlayerBarMax, newPink, UI.PartnerBarMax);
+        if (!Mathf.Approximately(blueNew, blueOld) || !Mathf.Approximately(pinkNew, pinkOld))
+            UI.UpdateBars(blueNew, UI.PlayerBarMax, pinkNew, UI.PartnerBarMax);
     }
 
     private void CheckBarsForClimaxAndEvents()

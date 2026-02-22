@@ -132,6 +132,17 @@ public class Entity_Stats : MonoBehaviour
 
     public float GetArmorReduction() => offense.armorReduction.GetValue() / 100f;
 
+    public float GetArousalDecayMultiplier()
+    {
+        float r = sex.sexualRestraint.GetValue();
+        r = Mathf.Max(0.1f, r);          // prevents divide-by-zero
+
+        float mult = 1f / r;             // higher restraint => slower decay
+        return Mathf.Clamp(mult, 0.1f, 3f);
+    }
+
+
+
     public float GetEvasion()
     {
         float baseEvasion = defense.evasion.GetValue();
