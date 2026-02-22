@@ -2497,8 +2497,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
-      propertyPath: displaySettings.subtitleSettings.requireContinueOnLastLine
+      propertyPath: displaySettings.subtitleSettings.informSequenceStartAndEnd
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8659589153447856888, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
+      propertyPath: displaySettings.subtitleSettings.requireContinueOnLastLine
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8747474213987982136, guid: 0d3066c6611edbf40837c9e65f44ef07, type: 3}
       propertyPath: m_AnchorMax.x
@@ -7933,6 +7937,18 @@ PrefabInstance:
     - target: {fileID: 1966454025167320162, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: m_Name
       value: Rewired Input Manager
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.keyboardMaps.Array.data[2].actionElementMaps.Array.data[12]._actionId
+      value: 29
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.players.Array.data[1]._controllerMapEnablerSettings._ruleSets.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4820715197377101300, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
+      propertyPath: _userData.players.Array.data[1]._controllerMapEnablerSettings._ruleSets.Array.data[0]._enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8167799052081702518, guid: 4880cbe37b7d02747bdb5c39b314ad0c, type: 3}
       propertyPath: m_LocalPosition.x
