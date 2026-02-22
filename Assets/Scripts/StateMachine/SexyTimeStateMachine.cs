@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SexyTimeStateMachine : MonoBehaviour 
+public class SexyTimeStateMachine : MonoBehaviour
 {
     public SexyTimeLogic logic;
     private SexyTimeState currentState;
 
+    private SexyTimeState _stateBeforePause;
 
     public void ChangeState(SexyTimeState newState)
     {
@@ -33,16 +34,23 @@ public class SexyTimeStateMachine : MonoBehaviour
 
     public void PauseForDialogue()
     {
-        //currentState = new SexyTimeDialoguePauseState(logic, this, currentState);
-        currentState.EnterState();
+        // Don’t pause twice
+        if (currentState is Sex_PausedState) return;
+
+        _stateBeforePause = currentState;
+        ChangeState(new Sex_PausedState(logic, this));
     }
 
     public void ResumeAfterDialogue()
     {
-        //if (currentState is SexyTimeDialoguePauseState pauseState)
-        {
-            //pauseState.ResumeFromPause();
-        }
-    }
+        if (!(currentState is Sex_PausedState)) return;
 
+        // If something went wrong, fallback to Idle
+        if (_stateBeforePause == null)
+            ChangeState(new Sex_IdleState(logic, this));
+        else
+            ChangeState(_stateBeforePause);
+
+        _stateBeforePause = null;
+    }
 }

@@ -10,9 +10,11 @@ public class Sex_ClimaxState : SexyTimeState
     {
         Debug.Log("Entering Climax State");
 
-        logic.anim.Play("sperm shot", 0, 0f);
-        logic.shouldPause = true;
         logic.cumReached = true;
+        logic.shouldPause = true;
+
+        if (logic.anim != null)
+            logic.anim.Play("sperm shot", 0, 0f);
 
         logic.StartCoroutine(ClimaxRoutine());
     }
@@ -40,17 +42,34 @@ public class Sex_ClimaxState : SexyTimeState
 
         ui.UpdateBars(0f, pMax, 0f, partnerMax);
 
-        // ✅ Wait for the 'sperm shot' animation to finish
-        AnimatorStateInfo animState = logic.anim.GetCurrentAnimatorStateInfo(0);
+        // ✅ Wait a frame so Animator state is correct
+        yield return null;
 
-        if (animState.IsName("sperm shot"))
+        // ✅ Wait for animation to finish (more reliable)
+        if (logic.anim != null)
         {
-            float remainingTime = animState.length * (1f - animState.normalizedTime);
-            yield return new WaitForSeconds(remainingTime);
+            AnimatorStateInfo st = logic.anim.GetCurrentAnimatorStateInfo(0);
+
+            // If we didn't land in the state yet, give it up to a few frames:
+            int safetyFrames = 5;
+            while (!st.IsName("sperm shot") && safetyFrames-- > 0)
+            {
+                yield return null;
+                st = logic.anim.GetCurrentAnimatorStateInfo(0);
+            }
+
+            if (st.IsName("sperm shot"))
+            {
+                float remaining = st.length * (1f - st.normalizedTime);
+                yield return new WaitForSeconds(remaining);
+            }
+            else
+            {
+                yield return new WaitForSeconds(1f);
+            }
         }
         else
         {
-            Debug.LogWarning("[Sex_ClimaxState] Animation state mismatch; defaulting to delay.");
             yield return new WaitForSeconds(1f);
         }
 

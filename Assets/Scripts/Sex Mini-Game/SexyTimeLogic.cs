@@ -1,7 +1,17 @@
 ﻿using Rewired;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+
+
+[System.Serializable]
+public class DialogueTriggerProperties
+{
+    [HideInInspector] public bool isAlreadyTriggered;
+    public float valueToTriggerAt;
+    public NPC_Dialogue dialogueToTrigger;
+}
 
 [RequireComponent(typeof(SexyTimeStateMachine))]
 public class SexyTimeLogic : MonoBehaviour
@@ -21,6 +31,11 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private float arousalPerStroke = 3f;
     [SerializeField] private float strokeMultiplier = 1f;
     [SerializeField] private float playerBarValueDeplete = 10f;
+
+    [Header("Dialogue Triggers (bar thresholds)")]
+    [SerializeField] private DialogueTypewriter typewriter; // your typewriter system
+    [SerializeField] private List<DialogueTriggerProperties> blueBarDialogues = new();
+    [SerializeField] private List<DialogueTriggerProperties> pinkBarDialogues = new();
 
     [Header("Entities")]
     public Entity_Stats playerStats;
@@ -203,7 +218,7 @@ public class SexyTimeLogic : MonoBehaviour
         // NEW: while holding SkillModifier, stroke is NOT allowed
         if (ReInput.isReady)
         {
-            var rp = ReInput.players.GetPlayer(0); // or your playerID if you use one here
+            var rp = ReInput.players.GetPlayer(inputRouter != null ? 0 : 0);
             if (rp != null && rp.GetButton("SkillModifier"))
                 return;
         }
@@ -248,6 +263,7 @@ public class SexyTimeLogic : MonoBehaviour
         winner = FinishWinner.None;
         expGranted = false;
         affectionGranted = false;
+        ResetDialogueTriggers();
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
@@ -279,6 +295,12 @@ public class SexyTimeLogic : MonoBehaviour
             ResetNPCAttack();
             isCoroutineRunning = true;
         }
+    }
+
+    private void ResetDialogueTriggers()
+    {
+        foreach (var t in blueBarDialogues) if (t != null) t.isAlreadyTriggered = false;
+        foreach (var t in pinkBarDialogues) if (t != null) t.isAlreadyTriggered = false;
     }
 
     private void BindToActivePlayerStats()
@@ -397,6 +419,7 @@ public class SexyTimeLogic : MonoBehaviour
         npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
         CheckBarsForClimaxAndEvents();
+        
     }
 
     private void UpdateUI()
@@ -446,6 +469,101 @@ public class SexyTimeLogic : MonoBehaviour
             cumReached = true;
             cumTimeElapsed = 0f;
             stateMachine.ChangeState(new Sex_ClimaxState(this, stateMachine));
+        }
+    }
+
+    private void TryTriggerDialogueFromBars()
+    {
+        if (shouldPause) return;
+        if (typewriter == null) typewriter = DialogueTypewriter.Instance;
+        if (typewriter == null) return;
+
+        // BLUE triggers
+        for (int i = 0; i < blueBarDialogues.Count; i++)
+        {
+            var t = blueBarDialogues[i];
+            if (t == null || t.isAlreadyTriggered || t.dialogueToTrigger == null) continue;
+
+            if (UI.PlayerBarValue >= t.valueToTriggerAt)
+            {
+                t.isAlreadyTriggered = true;
+                TriggerDialogue(t.dialogueToTrigger);   // ✅ fixed
+                return;
+            }
+        }
+
+        // PINK triggers
+        for (int i = 0; i < pinkBarDialogues.Count; i++)
+        {
+            var t = pinkBarDialogues[i];
+            if (t == null || t.isAlreadyTriggered || t.dialogueToTrigger == null) continue;
+
+            if (UI.PartnerBarValue >= t.valueToTriggerAt)
+            {
+                t.isAlreadyTriggered = true;
+                TriggerDialogue(t.dialogueToTrigger);   // ✅ fixed
+                return;
+            }
+        }
+    }
+
+    private void OnEndSexyDialogue()
+    {
+        shouldPause = false;
+        stateMachine.ResumeAfterDialogue();
+    }
+
+    
+
+    private void TriggerDialogue(NPC_Dialogue dialogue)
+    {
+        if (dialogue == null) return;
+
+        // ✅ THIS IS THE SNIPPET YOU ASKED ABOUT:
+        shouldPause = true;
+        stateMachine.PauseForDialogue();
+
+        if (typewriter == null) typewriter = DialogueTypewriter.Instance;
+
+        typewriter.StartDialogue(dialogue, () =>
+        {
+            shouldPause = false;
+            stateMachine.ResumeAfterDialogue();
+        });
+    }
+
+    public void CheckDialogueTriggersAfterBars(float blueValue, float pinkValue)
+    {
+        // don’t trigger during climax/finish
+        if (cumReached) return;
+        if (shouldPause) return;
+
+        // BLUE list
+        for (int i = 0; i < blueBarDialogues.Count; i++)
+        {
+            var t = blueBarDialogues[i];
+            if (t == null || t.isAlreadyTriggered || t.dialogueToTrigger == null) continue;
+
+            if (blueValue >= t.valueToTriggerAt)
+            {
+                t.isAlreadyTriggered = true;
+                TriggerDialogue(t.dialogueToTrigger);
+                return;
+            }
+        }
+
+        // PINK list
+        for (int i = 0; i < pinkBarDialogues.Count; i++)
+        {
+            var t = pinkBarDialogues[i];
+            if (t == null || t.isAlreadyTriggered || t.dialogueToTrigger == null) continue;
+
+            if (pinkValue >= t.valueToTriggerAt)
+            {
+                t.isAlreadyTriggered = true;
+                TriggerDialogue(t.dialogueToTrigger);
+                return;
+            }
         }
     }
 
@@ -587,3 +705,5 @@ public class SexyTimeLogic : MonoBehaviour
     }
     // ─────────────────────────────────────────────────────────────
 }
+
+

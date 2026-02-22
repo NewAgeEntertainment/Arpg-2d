@@ -7,16 +7,22 @@ public class Sex_IdleState : SexyTimeState
     public override void EnterState()
     {
         if (logic.anim != null)
-            logic.anim.Play("fuck", 0, 0f);
-        else
-            Debug.LogWarning("[Sex_IdleState] Animator is null on logic.");
+            logic.anim.Play("idle", 0, 0f);   // use idle, not "fuck"
     }
 
     public override void UpdateState()
     {
-        // Immediately switch to stroking (same behavior you had)
+        // Do nothing. Idle is a real idle now.
+    }
+
+    public override void HandleStroke()
+    {
+        // Only transition when player actually strokes
         stateMachine.ChangeState(new Sex_StrokingState(logic, stateMachine));
     }
 
-    public override void HandleStroke() { }
+    public override void HandleDeepBreathe()
+    {
+        logic.CastDeepBreathe();
+    }
 }

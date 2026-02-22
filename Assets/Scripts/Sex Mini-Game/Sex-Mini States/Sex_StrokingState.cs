@@ -17,6 +17,7 @@ public class Sex_StrokingState : SexyTimeState
 
     public override void HandleStroke()
     {
+        if (logic.shouldPause) return;   // ✅ add this
         if (Time.time - lastStrokeTime < strokeCooldown)
             return;
 
@@ -62,6 +63,8 @@ public class Sex_StrokingState : SexyTimeState
         float newPartnerVal = Mathf.Min(ui.PartnerBarValue + partnerIncrease, partnerMaxArousal);
 
         ui.UpdateBars(newPlayerVal, playerMaxArousal, newPartnerVal, partnerMaxArousal);
+        logic.CheckDialogueTriggersAfterBars(newPlayerVal, newPartnerVal);
+        if (logic.shouldPause) return;
 
         // ----- Check events / climax -----
         if (newPlayerVal >= playerMaxArousal && !logic.playerBarReachedOnce)
