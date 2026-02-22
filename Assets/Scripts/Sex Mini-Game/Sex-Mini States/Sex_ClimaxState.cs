@@ -79,8 +79,8 @@ public class Sex_ClimaxState : SexyTimeState
 
         logic.shouldPause = false;
 
-        // ✅ Close the mini-game cleanly
-        logic.ResetSexyTime();
+        logic.shouldPause = false;
+        stateMachine.ChangeState(new Sex_FinishState(logic, stateMachine));
     }
 
     public override void UpdateState() { }

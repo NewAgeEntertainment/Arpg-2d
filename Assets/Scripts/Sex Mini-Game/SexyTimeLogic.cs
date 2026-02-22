@@ -52,6 +52,13 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private bool autoUnlockDeepBreath = false;
     [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B;
 
+    [Header("Post-Climax Dialogue")]
+    [SerializeField] private NPC_Dialogue blueWinFinishDialogue;
+    [SerializeField] private NPC_Dialogue pinkWinFinishDialogue;
+
+    [Header("Post-Climax Dialogue")]
+    public NPC_Dialogue finishDialogue;
+
     [Header("Climax")]
     public float cumDuration = 5f;
     public bool cumReached = false;
@@ -513,7 +520,17 @@ public class SexyTimeLogic : MonoBehaviour
         stateMachine.ResumeAfterDialogue();
     }
 
-    
+    // Used by FinishState
+    public NPC_Dialogue GetFinishDialogueForWinner()
+    {
+        // winner is your private enum field in SexyTimeLogic
+        switch (winner)
+        {
+            case FinishWinner.PlayerBlue: return blueWinFinishDialogue;
+            case FinishWinner.PartnerPink: return pinkWinFinishDialogue;
+            default: return null;
+        }
+    }
 
     private void TriggerDialogue(NPC_Dialogue dialogue)
     {

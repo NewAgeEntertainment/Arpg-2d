@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class Sex_FinishState : SexyTimeState
 {
-    public Sex_FinishState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine) : base(logic, stateMachine) { }
+    public Sex_FinishState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine)
+        : base(logic, stateMachine) { }
 
     public override void EnterState()
     {
@@ -12,12 +13,32 @@ public class Sex_FinishState : SexyTimeState
 
     private IEnumerator FinishRoutine()
     {
-        yield return new WaitForSeconds(0.75f);
+        // small beat after climax ends (optional)
+        yield return new WaitForSeconds(0.25f);
 
+        var typewriter = DialogueTypewriter.Instance;
+        var dialogue = logic.GetFinishDialogueForWinner();
+
+        if (typewriter != null && dialogue != null)
+        {
+            // ✅ Pause SexyTime while dialogue runs (mini-game stays active + UI stays up)
+            logic.shouldPause = true;
+
+            // Ensure climax isn't sped up / paused weirdly
+            if (logic.anim != null) logic.anim.speed = 1f;
+
+            bool done = false;
+            typewriter.StartDialogue(dialogue, () => done = true);
+
+            // Wait for player to finish the dialogue
+            yield return new WaitUntil(() => done);
+
+            logic.shouldPause = false;
+        }
+
+        // ✅ Now close the mini-game
         logic.ResetSexyTime();
     }
-
-
 
     public override void UpdateState() { }
     public override void ExitState() { }

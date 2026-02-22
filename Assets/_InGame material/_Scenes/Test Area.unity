@@ -32285,6 +32285,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 306936031, guid: ce1bb4bee1ecd0d4f9a52ab9868d30c8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 486462973}
+    - target: {fileID: 306936031, guid: ce1bb4bee1ecd0d4f9a52ab9868d30c8, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetGoToNextLineTrue
+      objectReference: {fileID: 0}
     - target: {fileID: 4112603212065396804, guid: ce1bb4bee1ecd0d4f9a52ab9868d30c8, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas
@@ -32406,6 +32414,9 @@ MonoBehaviour:
   pussySqueezeCooldown: 5
   autoUnlockDeepBreath: 0
   debugDeepBreathKey: 98
+  blueWinFinishDialogue: {fileID: 0}
+  pinkWinFinishDialogue: {fileID: 0}
+  finishDialogue: {fileID: 0}
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59
@@ -35163,6 +35174,10 @@ PrefabInstance:
       propertyPath: barDecayPerSecond
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1091007884351760036, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
+      propertyPath: blueWinFinishDialogue
+      value: 
+      objectReference: {fileID: 11400000, guid: 79218fd14d85fe645bfb2e3fbc7d57f4, type: 2}
     - target: {fileID: 1091007884351760036, guid: 2c8973bdc613d654799386a33d34c799, type: 3}
       propertyPath: blueBarDialogues.Array.size
       value: 1
