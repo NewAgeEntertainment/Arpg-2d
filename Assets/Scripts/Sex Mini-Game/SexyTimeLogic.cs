@@ -27,7 +27,9 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Header("Config")]
     [SerializeField] private bool autoStart = false;
-    [SerializeField] private float barDecayPerSecond = 0f;
+    [Header("Config")]
+    [SerializeField] private float blueBarDecayPerSecond = 0f;
+    [SerializeField] private float pinkBarDecayPerSecond = 0f;
     [SerializeField] private float arousalPerStroke = 3f;
     [SerializeField] private float strokeMultiplier = 1f;
     [SerializeField] private float playerBarValueDeplete = 10f;
@@ -52,12 +54,19 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private bool autoUnlockDeepBreath = false;
     [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B;
 
+    [Header("Intro Dialogue")]
+    [SerializeField] private NPC_Dialogue startDialogue;
+
     [Header("Post-Climax Dialogue")]
     [SerializeField] private NPC_Dialogue blueWinFinishDialogue;
     [SerializeField] private NPC_Dialogue pinkWinFinishDialogue;
 
     [Header("Post-Climax Dialogue")]
     public NPC_Dialogue finishDialogue;
+
+    [Header("Optional Intro Dialogue")]
+    [SerializeField] private bool useStartDialogue = true;
+    
 
     [Header("Climax")]
     public float cumDuration = 5f;
@@ -285,7 +294,10 @@ public class SexyTimeLogic : MonoBehaviour
             SnapObjectToCamera();
 
         stateMachine.logic = this;
-        stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
+        if (useStartDialogue && startDialogue != null && DialogueTypewriter.Instance != null)
+            stateMachine.ChangeState(new Sex_StartingState(this, stateMachine, startDialogue));
+        else
+            stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
 
         if (!isCoroutineRunning)
         {
@@ -449,12 +461,25 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void DepletePlayerBar()
     {
-        if (cumReached || isFucking || barDecayPerSecond <= 0f) return;
+        if (cumReached || isFucking) return;
+        if (UI == null) return;
 
-        float oldVal = UI.PlayerBarValue;
-        float newVal = Mathf.Max(0f, oldVal - barDecayPerSecond * Time.deltaTime);
-        if (Mathf.Abs(newVal - oldVal) > Mathf.Epsilon)
-            UI.UpdateBars(newVal, UI.PlayerBarMax, UI.PartnerBarValue, UI.PartnerBarMax);
+        float dt = Time.deltaTime;
+
+        float oldBlue = UI.PlayerBarValue;
+        float oldPink = UI.PartnerBarValue;
+
+        float newBlue = oldBlue;
+        float newPink = oldPink;
+
+        if (blueBarDecayPerSecond > 0f)
+            newBlue = Mathf.Max(0f, oldBlue - blueBarDecayPerSecond * dt);
+
+        if (pinkBarDecayPerSecond > 0f)
+            newPink = Mathf.Max(0f, oldPink - pinkBarDecayPerSecond * dt);
+
+        if (!Mathf.Approximately(newBlue, oldBlue) || !Mathf.Approximately(newPink, oldPink))
+            UI.UpdateBars(newBlue, UI.PlayerBarMax, newPink, UI.PartnerBarMax);
     }
 
     private void CheckBarsForClimaxAndEvents()
@@ -583,6 +608,8 @@ public class SexyTimeLogic : MonoBehaviour
             }
         }
     }
+
+
 
     private void OnBlueWinsFirst()
     {

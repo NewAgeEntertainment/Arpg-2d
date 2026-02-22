@@ -19,24 +19,31 @@ public class Sex_FinishState : SexyTimeState
         var typewriter = DialogueTypewriter.Instance;
         var dialogue = logic.GetFinishDialogueForWinner();
 
+        // Hide SexyTime UI so only dialogue is visible
+        if (logic.UI != null)
+            logic.UI.HideAllSexyUIForFinishDialogue();
+
         if (typewriter != null && dialogue != null)
         {
-            // ✅ Pause SexyTime while dialogue runs (mini-game stays active + UI stays up)
+            // Pause SexyTime while dialogue runs (mini-game stays active)
             logic.shouldPause = true;
 
-            // Ensure climax isn't sped up / paused weirdly
+            // Ensure we’re at normal animator speed during dialogue
             if (logic.anim != null) logic.anim.speed = 1f;
 
             bool done = false;
             typewriter.StartDialogue(dialogue, () => done = true);
 
-            // Wait for player to finish the dialogue
             yield return new WaitUntil(() => done);
 
             logic.shouldPause = false;
         }
 
-        // ✅ Now close the mini-game
+        // Optional: show sexy UI again briefly (usually not needed since we reset next)
+        // if (logic.UI != null)
+        //     logic.UI.ShowAllSexyUIAfterFinishDialogue();
+
+        // Now close the mini-game cleanly
         logic.ResetSexyTime();
     }
 

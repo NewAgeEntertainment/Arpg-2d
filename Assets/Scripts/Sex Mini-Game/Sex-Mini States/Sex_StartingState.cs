@@ -1,34 +1,54 @@
-//using UnityEngine;
-//using System.Collections;
-//using System.Collections.Generic;
-//using System;
-//using UnityEngine.UI;
+using System.Collections;
+using UnityEngine;
 
-//public class Sex_StartingState : SexyTimeState
-//{
-//    public Sex_StartingState(SexyTimeLogic context) : base(context) 
-//    {
-        
-//    }
+public class Sex_StartingState : SexyTimeState
+{
+    private readonly NPC_Dialogue introDialogue;
 
-//    //public override void Enter()
-//    //{
-//    //    context.StartCoroutine(StartSexyTimeCoroutine());
-//    //}
+    public Sex_StartingState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine, NPC_Dialogue introDialogue)
+        : base(logic, stateMachine)
+    {
+        this.introDialogue = introDialogue;
+    }
 
-//    //private IEnumerator StartSexyTimeCoroutine()
-//    //{
-//    //    yield return new WaitForSeconds(0.75f);
+    public override void EnterState()
+    {
+        logic.StartCoroutine(RunIntro());
+    }
 
-//    //    if (context.canvasBackground != null)
-//    //        context.canvasBackground.SetActive(true);
+    private IEnumerator RunIntro()
+    {
+        logic.shouldPause = true;
 
-//    //    if (context.goToPlayerPosition)
-//    //        context.transform.position = GameObject.FindGameObjectWithTag("Player").transform.position + context.offsetForPosition;
-//    //    else
-//    //        context.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, Camera.main.nearClipPlane)) + context.offsetForPosition;
+        // Optional: hide sex UI during intro dialogue
+        if (logic.UI != null)
+            logic.UI.HideAllSexyUIForFinishDialogue();
 
-//    //    context.ChangeState(new Sex_StrokingState(context));
-//    //}
-//}
+        // If no dialogue, proceed immediately
+        if (introDialogue == null || DialogueTypewriter.Instance == null)
+        {
+            yield return null;
+            BeginPlayable();
+            yield break;
+        }
 
+        bool done = false;
+        DialogueTypewriter.Instance.StartDialogue(introDialogue, () => done = true);
+        yield return new WaitUntil(() => done);
+
+        BeginPlayable();
+    }
+
+    private void BeginPlayable()
+    {
+        if (logic.UI != null)
+            logic.UI.ShowAllSexyUIAfterFinishDialogue();
+
+        logic.shouldPause = false;
+        stateMachine.ChangeState(new Sex_IdleState(logic, stateMachine));
+    }
+
+    public override void UpdateState() { }
+    public override void HandleStroke() { }
+    public override void HandleDeepBreathe() { }
+}

@@ -503,5 +503,15 @@ public class SexyTimeUIController : MonoBehaviour
             SetCombatHotbarHidden(false);
     }
 
+    public void HideAllSexyUIForFinishDialogue()
+    {
+        if (panel != null) panel.SetActive(false); // hides the whole sex UI
+    }
+
+    public void ShowAllSexyUIAfterFinishDialogue()
+    {
+        if (panel != null) panel.SetActive(true); // shows it again (if needed)
+    }
+
 
 }
