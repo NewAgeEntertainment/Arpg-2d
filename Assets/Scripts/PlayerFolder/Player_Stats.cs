@@ -32,6 +32,8 @@ public class Player_Stats : Entity_Stats
     private const float SEX_EXP_BASE_REQ = 75f;
     private const float SEX_EXP_GROWTH = 1.4f;
 
+    private const int MAX_LEVEL_CAP = 200; // pick your game’s max
+
     // Buffs
     private readonly List<string> activeBuff = new List<string>();
     private Inventory_Player inventory;
@@ -201,10 +203,75 @@ public class Player_Stats : Entity_Stats
 
     // ========= Save/Load helpers =========
 
-    public void SetLevelAndExp(int level, float exp)
+    private void RebuildLevelUpBonusesPreserveResources()
+    {
+        // Preserve current % values so they don't "drop" when max changes
+        var hp = GetComponent<Entity_Health>();
+        var mp = GetComponent<Entity_Mana>();
+
+        float hpPct = (hp != null && hp.GetMaxHealth() > 0f) ? (hp.GetCurrentHealth() / hp.GetMaxHealth()) : 1f;
+        float mpPct = (mp != null && mp.GetMaxMana() > 0f) ? (mp.GetCurrentMana() / mp.GetMaxMana()) : 1f;
+
+        // 1) Clear existing level-up tags
+        for (int lvl = 1; lvl <= MAX_LEVEL_CAP; lvl++)
+        {
+            string tag = $"{LEVEL_UP_TAG_PREFIX}{lvl}";
+            resources.maxHealth.RemoveModifier(tag);
+            resources.maxMana.RemoveModifier(tag);
+            major.strength.RemoveModifier(tag);
+            defense.armor.RemoveModifier(tag);
+            major.intelligence.RemoveModifier(tag);
+            major.luck.RemoveModifier(tag);
+            major.vitality.RemoveModifier(tag);
+        }
+
+        // 2) Re-apply bonuses for all levels up to CurrentLevel
+        for (int lvl = 2; lvl <= CurrentLevel; lvl++)
+        {
+            float hpGain = StatGrowthCalculator.GetMaxHealth(lvl);
+            float mpGain = StatGrowthCalculator.GetMaxMana(lvl);
+            float strGain = StatGrowthCalculator.GetStrength(lvl);
+            float defGain = StatGrowthCalculator.GetDefense(lvl);
+            float intGain = StatGrowthCalculator.GetIntelligence(lvl);
+            float luckGain = StatGrowthCalculator.GetLuck(lvl);
+            float vitGain = StatGrowthCalculator.GetVitality(lvl);
+
+            string tag = $"{LEVEL_UP_TAG_PREFIX}{lvl}";
+
+            resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
+            resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
+            major.strength.AddModifier(strGain, StatModType.Flat, tag);
+            defense.armor.AddModifier(defGain, StatModType.Flat, tag);
+            major.intelligence.AddModifier(intGain, StatModType.Flat, tag);
+            major.luck.AddModifier(luckGain, StatModType.Flat, tag);
+            major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
+        }
+
+        // 3) Restore HP/MP by percent (prevents perceived "drop")
+        if (hp != null) hp.SetHealthToPercent(hpPct);
+        if (mp != null) mp.SetManaToPercent(mpPct);
+
+        NotifyStatsChanged();
+    }
+
+    public void SetLevelAndExp(int level, float exp)              // LOAD
     {
         CurrentLevel = Mathf.Max(1, level);
         CurrentEXP = Mathf.Max(0, exp);
+
+        RebuildLevelUpBonuses(false);   // don't touch mana/health
+
+        OnLevelChanged?.Invoke(CurrentLevel);
+        RaiseExp();
+    }
+
+    public void SetLevelAndExpRuntime(int level, float exp)       // NOT load
+    {
+        CurrentLevel = Mathf.Max(1, level);
+        CurrentEXP = Mathf.Max(0, exp);
+
+        RebuildLevelUpBonuses(true);    // preserve % values
+
         OnLevelChanged?.Invoke(CurrentLevel);
         RaiseExp();
     }
@@ -219,6 +286,7 @@ public class Player_Stats : Entity_Stats
     public void SetLevel(int level)
     {
         CurrentLevel = Mathf.Max(1, level);
+        RebuildLevelUpBonuses(true); // or false if it's load-only usage
         OnLevelChanged?.Invoke(CurrentLevel);
         RaiseExp();
     }
@@ -234,6 +302,63 @@ public class Player_Stats : Entity_Stats
         OnLevelChanged?.Invoke(CurrentLevel);
         RaiseExp();
         RaiseSex();
+    }
+
+    private void RebuildLevelUpBonuses(bool preservePercent)
+    {
+        var hp = GetComponent<Entity_Health>();
+        var mp = GetComponent<Entity_Mana>();
+
+        float hpPct = 1f, mpPct = 1f;
+        if (preservePercent)
+        {
+            hpPct = (hp != null && hp.GetMaxHealth() > 0f) ? (hp.GetCurrentHealth() / hp.GetMaxHealth()) : 1f;
+            mpPct = (mp != null && mp.GetMaxMana() > 0f) ? (mp.GetCurrentMana() / mp.GetMaxMana()) : 1f;
+        }
+
+        // 1) Clear existing level-up tags
+        for (int lvl = 1; lvl <= MAX_LEVEL_CAP; lvl++)
+        {
+            string tag = $"{LEVEL_UP_TAG_PREFIX}{lvl}";
+            resources.maxHealth.RemoveModifier(tag);
+            resources.maxMana.RemoveModifier(tag);
+            major.strength.RemoveModifier(tag);
+            defense.armor.RemoveModifier(tag);
+            major.intelligence.RemoveModifier(tag);
+            major.luck.RemoveModifier(tag);
+            major.vitality.RemoveModifier(tag);
+        }
+
+        // 2) Re-apply bonuses for all levels up to CurrentLevel
+        for (int lvl = 2; lvl <= CurrentLevel; lvl++)
+        {
+            float hpGain = StatGrowthCalculator.GetMaxHealth(lvl);
+            float mpGain = StatGrowthCalculator.GetMaxMana(lvl);
+            float strGain = StatGrowthCalculator.GetStrength(lvl);
+            float defGain = StatGrowthCalculator.GetDefense(lvl);
+            float intGain = StatGrowthCalculator.GetIntelligence(lvl);
+            float luckGain = StatGrowthCalculator.GetLuck(lvl);
+            float vitGain = StatGrowthCalculator.GetVitality(lvl);
+
+            string tag = $"{LEVEL_UP_TAG_PREFIX}{lvl}";
+
+            resources.maxHealth.AddModifier(hpGain, StatModType.Flat, tag);
+            resources.maxMana.AddModifier(mpGain, StatModType.Flat, tag);
+            major.strength.AddModifier(strGain, StatModType.Flat, tag);
+            defense.armor.AddModifier(defGain, StatModType.Flat, tag);
+            major.intelligence.AddModifier(intGain, StatModType.Flat, tag);
+            major.luck.AddModifier(luckGain, StatModType.Flat, tag);
+            major.vitality.AddModifier(vitGain, StatModType.Flat, tag);
+        }
+
+        // 3) Restore % only if requested (runtime)
+        if (preservePercent)
+        {
+            if (hp != null) hp.SetHealthToPercent(hpPct);
+            if (mp != null) mp.SetManaToPercent(mpPct);
+        }
+
+        NotifyStatsChanged();
     }
 
     public float GetStatValue(StatType type) => GetStatByType(type).GetValue();

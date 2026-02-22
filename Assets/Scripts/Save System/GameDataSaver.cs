@@ -92,37 +92,39 @@ public class GameDataSaver : Saver
         var data = SaveSystem.Deserialize<SaveBlob>(s);
         if (data == null) return;
 
-        // Vitals
-        if (health != null)
-            health.SetCurrentHealth(Mathf.Clamp(data.currentHealth, 0f, stats != null ? stats.GetMaxHealth() : data.currentHealth));
-
-        if (mana != null)
-            mana.SetCurrentMana(Mathf.Clamp(data.currentMana, 0f, stats != null ? stats.GetMaxMana() : data.currentMana));
-
-        // Normal Level/EXP
+        // 1) Level first -> this rebuilds maxMana/maxHealth via your RebuildLevelUpBonuses...
         if (stats != null)
             stats.SetLevelAndExp(data.level, data.currentExp);
 
-        // Sex Level/EXP
+        // 2) Now vitals (clamp against the CORRECT max)
+        if (health != null)
+            health.SetCurrentHealth(Mathf.Clamp(
+                data.currentHealth, 0f,
+                stats != null ? stats.GetMaxHealth() : data.currentHealth));
+
+        if (mana != null)
+            mana.SetCurrentMana(Mathf.Clamp(
+                data.currentMana, 0f,
+                stats != null ? stats.GetMaxMana() : data.currentMana));
+
+        // 3) Sex EXP
         if (player != null)
         {
             player.SetSexLevel(data.sexLevel);
             player.SetCurrentSexEXP(data.sexExp);
         }
 
-        // Optional: reposition player if desired
-        // if (player != null) player.transform.position = data.lastPlayerPosition;
-
-        // UI refresh (no inventory touches here)
+        // UI refresh...
         player?.ui?.inGameUI?.UpdateExpBar();
         player?.ui?.inGameUI?.UpdateSexExpBar();
         player?.ui?.playerHealthBar?.UpdateHealth(health?.GetCurrentHealth() ?? 0, stats?.GetMaxHealth() ?? 0);
         player?.ui?.playerManaBar?.UpdateMana(mana?.GetCurrentMana() ?? 0, stats?.GetMaxMana() ?? 0);
         player?.ui?.StatusPanel?.UpdateStatus(player);
 
-        // Apply skill tree after UI awake
         StartCoroutine(ApplySkillTreeWhenReady(data.skillTree));
     }
+
+   
 
     private SkillTreeState CaptureSkillTreeState()
     {
