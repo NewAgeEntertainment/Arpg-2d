@@ -51,6 +51,29 @@ public class SexyTimeLogic : MonoBehaviour
     private float originalPussySqueeze;
     private float originalPussySqueezeCooldown;
 
+    [Header("Partner Attack Scaling")]
+    [SerializeField] private float npcAttackDamageMult = 0.25f;  // scales with partner sexual damage
+    [SerializeField] private float npcAttackFlatBonus = 0f;      // extra flat amount
+    [SerializeField] private float npcAttackMin = 2f;
+    [SerializeField] private float npcAttackMax = 15f;
+
+    [SerializeField] private float npcAttackCooldownMult = 1f;   // optional: scale cooldown
+    [SerializeField] private float npcAttackCooldownMin = 1f;
+    [SerializeField] private float npcAttackCooldownMax = 8f;
+
+    [Header("Partner Attack (scaled by partner level)")]
+    [SerializeField] private int partnerBaseLevel = 1;
+
+    [SerializeField] private float pussySqueezeBase = 4f;          // damage at base level
+    [SerializeField] private float pussySqueezePerLevel = 0.75f;   // + per level after base
+    [SerializeField] private float pussySqueezeMin = 2f;
+    [SerializeField] private float pussySqueezeMax = 25f;
+
+    [SerializeField] private float pussySqueezeCooldownBase = 5f;    // cooldown at base level
+    [SerializeField] private float cooldownReductionPerLevel = 0.03f; // seconds reduced per level
+    [SerializeField] private float cooldownMin = 1.25f;
+    [SerializeField] private float cooldownMax = 8f;
+
     [Header("Skills / Debug")]
     [SerializeField] private bool autoUnlockDeepBreath = false;
     [SerializeField] private KeyCode debugDeepBreathKey = KeyCode.B;
@@ -255,79 +278,65 @@ public class SexyTimeLogic : MonoBehaviour
         if (ui == null)
         {
             ui = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-            if (ui == null)
-            {
-                Debug.LogError("[SexyTimeLogic] UI Controller not assigned!");
-                return;
-            }
+            if (ui == null) { Debug.LogError("[SexyTimeLogic] UI Controller not assigned!"); return; }
         }
+
+        if (cachedPlayer == null)
+            cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
         ResolveSkillManager();
-        skillManager?.EnsureDeepBreathReady(true);
         BindToActivePlayerStats();
+        // (Make sure partnerStats is assigned somewhere before scaling)
 
-        if (playerStats != null)
-        {
-            float r = playerStats.sex.sexualRestraint.GetValue();
-            Debug.Log($"[SexyTime] Player sexualRestraint = {r}");
-        }
-        if (partnerStats != null)
-        {
-            float r = partnerStats.sex.sexualRestraint.GetValue();
-            Debug.Log($"[SexyTime] Partner sexualRestraint = {r}");
-        }
+        ApplyPartnerFixedLevelScaling();   // updates partnerStats (including stroke)
+        RecalculatePartnerAttack();        // converts stroke -> squeeze + cooldown
+        ResetNPCAttack();                  // sets next attack timestamp using new cooldown
 
-        deepBreatheTimestamp = Time.time - deepBreatheCooldown;
+        originalPussySqueeze = pussySqueeze;
+        originalPussySqueezeCooldown = pussySqueezeCooldown;
 
-        Current = this;
-
-        // 🔁 Switch Rewired maps: Gameplay OFF, SexyTime ON
+        // Rewired maps: Gameplay OFF, SexyTime ON
         if (inputRouter != null && !_mapsSwapped)
         {
             inputRouter.EnableSexyTimeMaps();
             _mapsSwapped = true;
         }
 
-
-
         winner = FinishWinner.None;
         expGranted = false;
         affectionGranted = false;
         ResetDialogueTriggers();
+
+        deepBreatheTimestamp = Time.time - deepBreatheCooldown;
+        Current = this;
+
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
-        // Init / show UI
+        // Init UI after scaling
         float playerMax = playerStats != null ? playerStats.sex.maxArousal.GetValue() : 100f;
         float partnerMax = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : 100f;
+
         ui.InitBars(playerMax, partnerMax);
         ui.UpdatePower(arousalPerStroke, arousalPerStroke);
+
+        // show UI once
         ui.Show();
+
+        // ensure hotbar reflects current assigned sex skills
+        ui.RefreshSexHotbarFromPlayer(skillManager, cachedPlayer != null ? cachedPlayer.mana : null);
+
+        skillManager?.EnsureDeepBreathReady(true);
 
         if (snapObjectToCameraOnStart)
             SnapObjectToCamera();
 
         stateMachine.logic = this;
+
         if (useStartDialogue && startDialogue != null && DialogueTypewriter.Instance != null)
             stateMachine.ChangeState(new Sex_StartingState(this, stateMachine, startDialogue));
         else
             stateMachine.ChangeState(new Sex_IdleState(this, stateMachine));
-
-        if (!isCoroutineRunning)
-        {
-            if (partnerStats != null)
-            {
-                bool isCrit;
-                float partnerSexualDamage = partnerStats.GetSexualDamage(out isCrit);
-                pussySqueeze = Mathf.Clamp(partnerSexualDamage * 0.25f, 2f, 15f);
-            }
-
-            originalPussySqueeze = pussySqueeze;
-            originalPussySqueezeCooldown = pussySqueezeCooldown;
-
-            ResetNPCAttack();
-            isCoroutineRunning = true;
-        }
     }
 
     private void ResetDialogueTriggers()
@@ -338,16 +347,13 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void BindToActivePlayerStats()
     {
+        if (playerStats != null) return; // keep your drag-n-drop
+
         var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-        if (p != null)
-        {
-            var ps = p.GetComponent<Player_Stats>();
-            if (ps != null && playerStats != ps)
-                playerStats = ps;
-        }
+        if (p != null) playerStats = p.GetComponent<Player_Stats>();
     }
 
-    
+
 
     /// <summary>Call this when a sex hotbar skill successfully fires.</summary>
     public void SuppressStrokeThisFrame()
@@ -422,6 +428,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (cachedPlayer != null)
             cachedPlayer.SetInputEnabled(true);
 
+        ui?.Show(); // this calls SetCombatHotbarHidden(true) inside SexyTimeUIController.Show()
         ui.Hide();
         gameObject.SetActive(false);
     }
@@ -453,6 +460,25 @@ public class SexyTimeLogic : MonoBehaviour
 
         CheckBarsForClimaxAndEvents();
         
+    }
+
+    private void RecalculatePartnerAttack()
+    {
+        if (partnerStats == null) return;
+
+        // Partner "bar fill power"
+        float stroke = partnerStats.sex.stroke.GetValue();
+
+        // Damage/fill amount from stroke
+        pussySqueeze = stroke * npcAttackDamageMult + npcAttackFlatBonus;
+        pussySqueeze = Mathf.Clamp(pussySqueeze, npcAttackMin, npcAttackMax);
+
+        // Cooldown: base / (1 + k*stroke)  (stable, diminishing returns)
+        float denom = 1f + Mathf.Max(0f, stroke) * npcAttackCooldownMult;
+        float cd = pussySqueezeCooldownBase / denom;
+        pussySqueezeCooldown = Mathf.Clamp(cd, npcAttackCooldownMin, npcAttackCooldownMax);
+
+        Debug.Log($"[SexyTime] Stroke-scaled: stroke={stroke:F2} -> squeeze={pussySqueeze:F2}, cd={pussySqueezeCooldown:F2}");
     }
 
     private void UpdateUI()
@@ -736,6 +762,41 @@ public class SexyTimeLogic : MonoBehaviour
         }
 
         affectionGranted = true;
+    }
+
+    private void ApplyPartnerFixedLevelScaling()
+    {
+        if (partnerStats == null) return;
+
+        var scaler =
+            partnerStats.GetComponent<PartnerSexLevelScaler>() ??
+            partnerStats.GetComponentInParent<PartnerSexLevelScaler>(true) ??
+            partnerStats.GetComponentInChildren<PartnerSexLevelScaler>(true);
+
+        if (scaler == null)
+        {
+            Debug.Log("[SexyTime] No PartnerSexLevelScaler found on partner.");
+            return;
+        }
+
+        // BEFORE
+        Debug.Log($"[SexyTime] Partner BEFORE scaling: " +
+                  $"LvlScaler={scaler.name}, " +
+                  $"maxArousal={partnerStats.sex.maxArousal.GetValue()}, " +
+                  $"sexualDamage={partnerStats.sex.sexualDamage.GetValue()}, " +
+                  $"resilience={partnerStats.sex.resilience.GetValue()}, " +
+                  $"restraint={partnerStats.sex.sexualRestraint.GetValue()}, " +
+                  $"stroke={partnerStats.sex.stroke.GetValue()}");
+
+        scaler.ApplyScaling();
+
+        // AFTER
+        Debug.Log($"[SexyTime] Partner AFTER scaling: " +
+                  $"maxArousal={partnerStats.sex.maxArousal.GetValue()}, " +
+                  $"sexualDamage={partnerStats.sex.sexualDamage.GetValue()}, " +
+                  $"resilience={partnerStats.sex.resilience.GetValue()}, " +
+                  $"restraint={partnerStats.sex.sexualRestraint.GetValue()}, " +
+                  $"stroke={partnerStats.sex.stroke.GetValue()}");
     }
 
     private CharacterProfileSO FindPartnerProfile()

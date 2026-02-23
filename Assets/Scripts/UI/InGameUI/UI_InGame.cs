@@ -250,8 +250,7 @@ public class UI_InGame : MonoBehaviour
         if (!mod) return;
 
         // Determine if SexyTime UI is visible (if so, prefer sex hotbar first)
-        var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-        bool preferSex = sexUI != null && sexUI.IsVisible;
+        bool preferSex = SexyTimeLogic.isSexyTimeGoingOn;
 
         if (rplayer.GetButtonDown(skillSlotAAction)) HandleSkillHotkeys(0, UISkillSlotId.SlotA, preferSex);
         if (rplayer.GetButtonDown(skillSlotBAction)) HandleSkillHotkeys(1, UISkillSlotId.SlotB, preferSex);

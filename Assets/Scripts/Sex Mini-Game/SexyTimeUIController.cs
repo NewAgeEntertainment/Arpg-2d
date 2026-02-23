@@ -1,6 +1,8 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Reflection; // add at top of file
 
 public class SexyTimeUIController : MonoBehaviour
 {
@@ -38,6 +40,18 @@ public class SexyTimeUIController : MonoBehaviour
 
     private bool _combatWasHiddenBySexUI;
 
+    [Header("Default Sex Skill Assignment")]
+    [SerializeField] private bool assignDefaultsIfEmpty = true;
+
+    [Tooltip("If true, slot 0 will be filled with the player's Deep Breath skill (if available).")]
+    [SerializeField] private bool putDeepBreathInSlot0 = true;
+
+    [Tooltip("Fallback defaults (Sex-category only). Filled into remaining slots in order.")]
+    [SerializeField] private List<Skill_DataSO> defaultSexSkills = new();
+    [Header("Default Sex Skills (optional)")]
+    [SerializeField] private bool applyDefaultsIfNoneAssigned = true;
+
+    
 
     [Header("Single DeepBreath Slot (optional)")]
     [SerializeField] private UI_SkillSlot deepBreathSlot;
@@ -255,28 +269,126 @@ public class SexyTimeUIController : MonoBehaviour
         _combatWasHiddenBySexUI = hide;
     }
 
+    private static bool TryGetSkillDataSO(object runtimeSkill, out Skill_DataSO so)
+    {
+        so = null;
+        if (runtimeSkill == null) return false;
+
+        var t = runtimeSkill.GetType();
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        // Common field names
+        string[] fieldNames = { "data", "Data", "skillData", "SkillData", "dataSO", "DataSO", "skillDataSO", "SkillDataSO" };
+        foreach (var n in fieldNames)
+        {
+            var f = t.GetField(n, flags);
+            if (f != null && typeof(Skill_DataSO).IsAssignableFrom(f.FieldType))
+            {
+                so = f.GetValue(runtimeSkill) as Skill_DataSO;
+                if (so != null) return true;
+            }
+        }
+
+        // Common property names
+        string[] propNames = { "data", "Data", "SkillData", "DataSO", "SkillDataSO" };
+        foreach (var n in propNames)
+        {
+            var p = t.GetProperty(n, flags);
+            if (p != null && typeof(Skill_DataSO).IsAssignableFrom(p.PropertyType))
+            {
+                so = p.GetValue(runtimeSkill) as Skill_DataSO;
+                if (so != null) return true;
+            }
+        }
+
+        return false;
+    }
+
 
     public void Show()
     {
         if (panel != null) panel.SetActive(true);
+        gameObject.SetActive(true);
 
-        // NEW: hide combat hotbar while sex mini game UI is active
         SetCombatHotbarHidden(true);
 
-        HideCrit();
-        RefreshAffordability(null);
-        ApplyPendingSexSkillsToHotbar();
-        if (followTarget != null) SnapToTarget();
+        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+        var mana = FindFirstObjectByType<Entity_Mana>(FindObjectsInactive.Include);
+
+        // ✅ Add this:
+        EnsureDefaultSexSkills(mgr);
+
+        RefreshSexHotbarFromPlayer(mgr, mana);
     }
 
     public void Hide()
     {
         if (panel != null) panel.SetActive(false);
 
-        // NEW: restore combat hotbar when sex UI closes
+        // restore combat hotbar when sex UI closes
         SetCombatHotbarHidden(false);
     }
 
+    public void RefreshSexHotbarFromPlayer(Player_SkillManager mgr, Entity_Mana mana)
+    {
+        if (sexHotbar == null || sexHotbar.Slots == null) return;
+
+        // ✅ Apply defaults only if nothing is assigned yet
+        EnsureDefaultSexSkills(mgr);
+
+        // ✅ Place indexed first, then fill empties
+        ApplyPendingSexSkillsToHotbar();
+
+        // ✅ Refresh visuals
+        foreach (var slot in sexHotbar.Slots)
+        {
+            if (slot == null) continue;
+            slot.RefreshText(mgr);
+            slot.UpdateAffordability(mana);
+        }
+
+        if (deepBreathSlot != null && deepBreathSlot.gameObject.activeSelf)
+        {
+            deepBreathSlot.RefreshText(mgr);
+            deepBreathSlot.UpdateAffordability(mana);
+        }
+    }
+
+    private bool HasAnyPersistentSexSkills()
+    {
+        if (s_indexedSexSkills.Count > 0) return true;
+        for (int i = 0; i < s_pendingSexSkills.Count; i++)
+            if (s_pendingSexSkills[i] != null) return true;
+        return false;
+    }
+
+    private void EnsureDefaultSexSkills(Player_SkillManager mgr)
+    {
+        if (!applyDefaultsIfNoneAssigned) return;
+        if (HasAnyPersistentSexSkills()) return; // don't overwrite player choices
+
+        // 1) Apply inspector defaults by index
+        if (defaultSexSkills != null)
+        {
+            for (int i = 0; i < defaultSexSkills.Count; i++)   // ✅ Count (List)
+            {
+                var so = defaultSexSkills[i];
+                if (so == null) continue;
+                if (so.category != SkillCategory.Sex) continue;
+
+                SetPersistentSexSkillAtIndex(i, so);
+            }
+        }
+
+        // 2) If slot 0 still empty, try Deep Breath from SkillManager data
+        //    (Only if it exists + is Sex category)
+        if (mgr != null && mgr.DeepBreathData != null)
+        {
+            bool slot0AlreadySet = s_indexedSexSkills.ContainsKey(0) && s_indexedSexSkills[0] != null;
+            if (!slot0AlreadySet && mgr.DeepBreathData.category == SkillCategory.Sex)
+                SetPersistentSexSkillAtIndex(0, mgr.DeepBreathData);
+        }
+    }
 
     // ---------- Bars ----------
     public void InitBars(float playerMax, float partnerMax)
@@ -512,6 +624,13 @@ public class SexyTimeUIController : MonoBehaviour
     {
         if (panel != null) panel.SetActive(true); // shows it again (if needed)
     }
+
+
+
+    // SexyTimeUIController.cs
+    
+
+    
 
 
 }

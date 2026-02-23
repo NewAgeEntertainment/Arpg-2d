@@ -29,6 +29,7 @@ public class Player_SkillManager : MonoBehaviour
     [SerializeField] private bool verboseLogs = true;
 
     private bool _loggedDeepBreathInitOnce = false;
+    public Skill_DataSO DeepBreathData => deepBreathData;
 
     private void Awake()
     {

@@ -587,16 +587,26 @@ MonoBehaviour:
   ui: {fileID: 0}
   inputRouter: {fileID: 3682690989083651970}
   autoStart: 1
-  barDecayPerSecond: 0
+  blueDecayPerSecond: 0
+  pinkDecayPerSecond: 0
+  maxRestraintForDecay: 3
   arousalPerStroke: 3
   strokeMultiplier: 0
   playerBarValueDeplete: 10
+  typewriter: {fileID: 0}
+  blueBarDialogues: []
+  pinkBarDialogues: []
   playerStats: {fileID: 875733981393590875, guid: 9594be7399a2be34894eb95771397a0b, type: 3}
   partnerStats: {fileID: 6919098888851937354}
   pussySqueeze: 0
   pussySqueezeCooldown: 5
   autoUnlockDeepBreath: 0
   debugDeepBreathKey: 98
+  startDialogue: {fileID: 0}
+  blueWinFinishDialogue: {fileID: 0}
+  pinkWinFinishDialogue: {fileID: 0}
+  finishDialogue: {fileID: 0}
+  useStartDialogue: 1
   cumDuration: 5
   cumReached: 0
   cumTimeElapsed: 3.59
@@ -735,6 +745,7 @@ GameObject:
   m_Component:
   - component: {fileID: 871326809236735106}
   - component: {fileID: 6919098888851937354}
+  - component: {fileID: 1275937474874027658}
   - component: {fileID: 5228444149971703623}
   - component: {fileID: 8320445127633882828}
   - component: {fileID: 8291246116589962730}
@@ -878,6 +889,20 @@ MonoBehaviour:
     sexualRestraint:
       baseValue: 0
       modifiers: []
+--- !u!114 &1275937474874027658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3822433045253184017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 972dc26ef43b39c4c8dd7bd494c68aa7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  level: 1
+  scaling: {fileID: 11400000, guid: 035b51b683ab0884397179860b1a1bc2, type: 2}
 --- !u!95 &5228444149971703623
 Animator:
   serializedVersion: 5
