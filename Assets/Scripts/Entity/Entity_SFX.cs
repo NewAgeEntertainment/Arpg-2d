@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Entity_SFX : MonoBehaviour
 {
-    private AudioSource audioSource;
+    [SerializeField] private AudioSource audioSource;
 
     [Header("SFX Names")]
     [SerializeField] private string attackHit;
@@ -13,12 +13,12 @@ public class Entity_SFX : MonoBehaviour
 
     private void Awake()
     {
-        audioSource = GetComponentInChildren<AudioSource>();
+        if (audioSource == null)
+            audioSource = GetComponentInChildren<AudioSource>();
 
         if (audioSource == null)
         {
-            Debug.LogWarning($"[Entity_SFX] No AudioSource found on {name} or its children. " +
-                             "Attack SFX will be muted.");
+            Debug.LogWarning($"[Entity_SFX] No AudioSource found on {name} or its children. Attack SFX will be muted.");
         }
     }
 
@@ -31,10 +31,7 @@ public class Entity_SFX : MonoBehaviour
         }
 
         if (audioSource == null)
-        {
-            // already warned in Awake, but guard again so we don’t crash
             return;
-        }
 
         if (string.IsNullOrEmpty(attackHit))
         {
@@ -53,7 +50,9 @@ public class Entity_SFX : MonoBehaviour
             return;
         }
 
-        if (audioSource == null) return;
+        if (audioSource == null)
+            return;
+
         if (string.IsNullOrEmpty(attackMiss))
         {
             Debug.LogWarning("[Entity_SFX] attackMiss clip name is empty.");
@@ -65,10 +64,10 @@ public class Entity_SFX : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (showGizmo)
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(transform.position, soundDistance);
-        }
+        if (!showGizmo)
+            return;
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, soundDistance);
     }
 }

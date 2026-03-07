@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System.Reflection;
 using Rewired;
+using UnityEngine.Audio;
 
 #if REWIRED
 using Rewired.UI.ControlMapper;
@@ -19,6 +20,19 @@ public class UI_Options : MonoBehaviour
     [Header("Option Toggles")]
     [SerializeField] private Toggle healthBarToggle;
     [SerializeField] private Toggle manaBarToggle;
+
+    [Header("Audio Sliders")]
+    [SerializeField] private Slider bgmSlider;
+    [SerializeField] private Slider sfxSlider;
+
+    [Header("Audio Mixer")]
+    [SerializeField] private AudioMixer audioMixer;
+    [SerializeField] private string bgmVolumeParameter = "BGMVolume";
+    [SerializeField] private string sfxVolumeParameter = "SFXVolume";
+
+    [Header("Saved Audio Pref Keys")]
+    [SerializeField] private string bgmPrefsKey = "Options_BGMVolume";
+    [SerializeField] private string sfxPrefsKey = "Options_SFXVolume";
 
     [Header("Controls (Rewired Control Mapper)")]
     [SerializeField] private Button controlsButton;
@@ -39,10 +53,12 @@ public class UI_Options : MonoBehaviour
     [SerializeField] private bool returnToUIMenuWhenMapperCloses = true;
 
     private CanvasGroup cg;
-    private Player player; // gameplay Player (null on title screen)
-
-    // Cache a scene-level TitleMenuManager (it may be a sibling, not a parent)
+    private Player player;
     private TitleMenuManager titleMenuManagerScene;
+
+    private const float MinLinearVolume = 0.0001f;
+    private const float MinMixerDb = -80f;
+    private const float MaxMixerDb = 0f;
 
     private void Awake()
     {
@@ -52,8 +68,24 @@ public class UI_Options : MonoBehaviour
         if (manaBarToggle != null) manaBarToggle.onValueChanged.AddListener(OnManaToggleChanged);
         if (controlsButton != null) controlsButton.onClick.AddListener(OnClickOpenControlMapper);
 
+        if (bgmSlider != null)
+        {
+            bgmSlider.minValue = 0f;
+            bgmSlider.maxValue = 1f;
+            bgmSlider.onValueChanged.AddListener(OnBgmSliderChanged);
+        }
+
+        if (sfxSlider != null)
+        {
+            sfxSlider.minValue = 0f;
+            sfxSlider.maxValue = 1f;
+            sfxSlider.onValueChanged.AddListener(OnSfxSliderChanged);
+        }
+
         cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+
+        LoadAudioSettings();
     }
 
     private void Start()
@@ -67,7 +99,7 @@ public class UI_Options : MonoBehaviour
 #if REWIRED
         HookMapperEvents(true);
 #endif
-        CacheTitleMenuManager(); // scene could have changed
+        CacheTitleMenuManager();
     }
 
     private void OnDisable()
@@ -83,8 +115,6 @@ public class UI_Options : MonoBehaviour
         if (rPlayer.GetButtonDown(cancelAction)) HandleCancel();
     }
 
-    // ---------- Public API ----------
-
     public void OpenOptions()
     {
         if (!gameObject.activeSelf) gameObject.SetActive(true);
@@ -95,23 +125,19 @@ public class UI_Options : MonoBehaviour
 
     public bool HandleCancel()
     {
-        // Title screen context stays as-is (TitleMenuManager controls that flow)
         if (IsTitleScreenContext())
         {
             ReturnToTitleMainAndCloseSelf();
             return true;
         }
 
-        // In-game: route through UI.cs so it returns to mainMenuPanel
         if (UI.Instance != null)
             UI.Instance.CloseOptions();
         else
-            ClosePanel(); // fallback
+            ClosePanel();
 
         return true;
     }
-
-
 
     public void ClosePanel()
     {
@@ -119,9 +145,6 @@ public class UI_Options : MonoBehaviour
         gameObject.SetActive(false);
         Debug.Log("[UI_Options] Closed.");
     }
-
-
-    // ---------- Toggles ----------
 
     private void OnHealthToggleChanged(bool isOn)
     {
@@ -139,14 +162,58 @@ public class UI_Options : MonoBehaviour
     {
         get
         {
-            // active + interactable (so it doesn't count while hidden behind ControlMapper)
             if (!gameObject.activeInHierarchy) return false;
             return cg == null ? true : cg.blocksRaycasts;
         }
     }
 
+    private void OnBgmSliderChanged(float value)
+    {
+        SetMixerVolume(bgmVolumeParameter, value);
+        PlayerPrefs.SetFloat(bgmPrefsKey, value);
+        PlayerPrefs.Save();
+    }
 
-    // ---------- Control Mapper ----------
+    private void OnSfxSliderChanged(float value)
+    {
+        SetMixerVolume(sfxVolumeParameter, value);
+        PlayerPrefs.SetFloat(sfxPrefsKey, value);
+        PlayerPrefs.Save();
+    }
+
+    private void LoadAudioSettings()
+    {
+        float savedBgm = PlayerPrefs.GetFloat(bgmPrefsKey, 0.75f);
+        float savedSfx = PlayerPrefs.GetFloat(sfxPrefsKey, 0.75f);
+
+        if (bgmSlider != null)
+            bgmSlider.SetValueWithoutNotify(savedBgm);
+
+        if (sfxSlider != null)
+            sfxSlider.SetValueWithoutNotify(savedSfx);
+
+        SetMixerVolume(bgmVolumeParameter, savedBgm);
+        SetMixerVolume(sfxVolumeParameter, savedSfx);
+    }
+
+    private void SetMixerVolume(string parameterName, float sliderValue)
+    {
+        if (audioMixer == null || string.IsNullOrWhiteSpace(parameterName))
+            return;
+
+        float clamped = Mathf.Clamp(sliderValue, 0f, 1f);
+
+        if (clamped <= 0f)
+        {
+            audioMixer.SetFloat(parameterName, MinMixerDb);
+            return;
+        }
+
+        float db = Mathf.Log10(Mathf.Max(clamped, MinLinearVolume)) * 20f;
+        db = Mathf.Clamp(db, MinMixerDb, MaxMixerDb);
+
+        audioMixer.SetFloat(parameterName, db);
+    }
 
     private void OnClickOpenControlMapper()
     {
@@ -161,7 +228,6 @@ public class UI_Options : MonoBehaviour
             return;
         }
 
-        // Hide Options while mapper is visible
         HideOptionsForMapper(true);
 
         try { cm.Open(); }
@@ -220,15 +286,13 @@ public class UI_Options : MonoBehaviour
     {
         if (IsTitleScreenContext())
         {
-            // Title screen: close ALL option panels and return to main
             ReturnToTitleMainAndCloseSelf();
             return;
         }
 
-        // In-game: go to UI main menu if desired
         if (returnToUIMenuWhenMapperCloses)
         {
-            UI.Instance?.CloseOptions();   // ✅ book closes then menu appears
+            UI.Instance?.CloseOptions();
         }
         else
         {
@@ -239,8 +303,6 @@ public class UI_Options : MonoBehaviour
         }
     }
 #endif
-
-    // ---------- Helpers ----------
 
     private void TryCacheRewired()
     {
@@ -258,26 +320,18 @@ public class UI_Options : MonoBehaviour
 
     private bool IsTitleScreenContext()
     {
-        // If there is a TitleMenuManager anywhere in the scene, we consider this the title screen
         return titleMenuManagerScene != null;
     }
 
-    // UI_Options.cs
     private void ReturnToTitleMainAndCloseSelf()
     {
-        // Don't block clicks during the switch
         HideOptionsForMapper(true);
 
-        // If we’re on the title screen, force-close all option panels
         if (titleMenuManagerScene != null)
-        {
             titleMenuManagerScene.CloseAllOptionPanels();
-        }
 
-        // Hide this options instance (there may be a second Options under gameplay UI)
         gameObject.SetActive(false);
     }
-
 
     private void HideOptionsForMapper(bool hide)
     {
@@ -297,7 +351,7 @@ public class UI_Options : MonoBehaviour
     {
         if (cg != null)
         {
-            cg.alpha = 1f;          // keep visible unless explicitly hiding
+            cg.alpha = 1f;
             cg.interactable = on;
             cg.blocksRaycasts = on;
         }

@@ -21,10 +21,47 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 85cc5216c69530348a6695a47dd628a5, type: 3}
     maxVolume: 1
-  uiAudio: []
-  mainMenuMusic: []
+  - audioName: PlayerDash
+    clips:
+    - {fileID: 8300000, guid: 61b2f847f32d01345add5e66dd32b267, type: 3}
+    maxVolume: 1
+  - audioName: PlayerThrust
+    clips:
+    - {fileID: 8300000, guid: 61b2f847f32d01345add5e66dd32b267, type: 3}
+    maxVolume: 1
+  enemy:
+  - audioName: Enemy_Hit
+    clips:
+    - {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+    maxVolume: 1
+  uiAudio:
+  - audioName: UIButtonConfirm
+    clips:
+    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    maxVolume: 1
+  - audioName: UIButtonCancel
+    clips:
+    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    maxVolume: 1
+  - audioName: UIOpenPanel
+    clips:
+    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    maxVolume: 1
+  - audioName: UIClosePanel
+    clips:
+    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    maxVolume: 1
+  - audioName: UIButtonMove
+    clips:
+    - {fileID: 8300000, guid: 19f89c6e740e7447f9e12a8310d3e973, type: 3}
+    maxVolume: 1
+  mainMenuMusic:
+  - audioName: MainMenuMusic
+    clips:
+    - {fileID: 8300000, guid: d2d51f061b7a4904b83eabb40db09308, type: 3}
+    maxVolume: 1
   levelMusic:
   - audioName: playlist_levels
     clips:
     - {fileID: 8300000, guid: 50410ad3e8416d947a9b3bc18aedc67a, type: 3}
-    maxVolume: 0
+    maxVolume: 1

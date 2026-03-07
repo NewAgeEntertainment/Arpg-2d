@@ -2915,6 +2915,13 @@ MonoBehaviour:
   fadeDuration: 0
   playerID: 0
   cancelAction: UICancel
+  playTitleBgmOnAwake: 1
+  titleBgmGroup: MainMenuMusic
+  gameplayBgmGroup: LevelMusic
+  uiConfirmSfx: UIButtonConfirm
+  uiCancelSfx: UIButtonCancel
+  uiOpenPanelSfx: UIOpenPanel
+  uiClosePanelSfx: UIClosePanel
 --- !u!1 &714694329
 GameObject:
   m_ObjectHideFlags: 0
@@ -5106,6 +5113,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 796167297}
   m_CullTransparentMesh: 1
+--- !u!1001 &808442792
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4114007981348317906, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_Name
+      value: ___ AUDIO MANAGER ___
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6527338104142793159, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
 --- !u!1 &861398809
 GameObject:
   m_ObjectHideFlags: 0
@@ -5194,8 +5258,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerID: 0
   cancelAction: Cancel
-  healthBarToggle: {fileID: 0}
-  manaBarToggle: {fileID: 0}
+  healthBarToggle: {fileID: 1513352931}
+  manaBarToggle: {fileID: 1156155122}
+  bgmSlider: {fileID: 2011376672}
+  sfxSlider: {fileID: 1434682088}
+  audioMixer: {fileID: 24100000, guid: 83317a7aa08bdcd45ba7e07ee7837962, type: 2}
+  bgmVolumeParameter: BGMVolume
+  sfxVolumeParameter: SFXVolume
+  bgmPrefsKey: Options_BGMVolume
+  sfxPrefsKey: Options_SFXVolume
   controlsButton: {fileID: 768593792}
   controlMapper: {fileID: 56901902}
   controlMapperPrefab: {fileID: 2087723836}
@@ -5775,7 +5846,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1201936269
 AudioSource:
   m_ObjectHideFlags: 0
@@ -6281,7 +6352,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Background Music
+  m_text: BGM Volume
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -6920,7 +6991,7 @@ GameObject:
   - component: {fileID: 1434682087}
   - component: {fileID: 1434682088}
   m_Layer: 5
-  m_Name: SFX Volume
+  m_Name: SFXVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9502,7 +9573,7 @@ GameObject:
   - component: {fileID: 2011376671}
   - component: {fileID: 2011376672}
   m_Layer: 5
-  m_Name: SFX Volume
+  m_Name: BGMVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15845,3 +15916,4 @@ SceneRoots:
   - {fileID: 1594163808}
   - {fileID: 1567848382}
   - {fileID: 1561037326}
+  - {fileID: 808442792}

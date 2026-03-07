@@ -7,13 +7,13 @@ using Rewired;
 public class TitleMenuManager : MonoBehaviour
 {
     [Header("Panels")]
-    [SerializeField] private GameObject mainPanel;     // "MainMenu" root (this object stays active)
-    [SerializeField] private GameObject loadPanel;     // "Save_Load Panel" (has UI_SaveLoadPanel)
-    [SerializeField] private GameObject optionsPanel;  // root that holds UI_Options
+    [SerializeField] private GameObject mainPanel;
+    [SerializeField] private GameObject loadPanel;
+    [SerializeField] private GameObject optionsPanel;
     [SerializeField] private GameObject controlsPanel;
 
     [Header("Main Buttons Root (hide when Save/Load/Options are open)")]
-    [SerializeField] private GameObject mainButtonsRoot; // drag your "Button Holder" here
+    [SerializeField] private GameObject mainButtonsRoot;
 
     [Header("Buttons (optional wire-up)")]
     [SerializeField] private Button playButton;
@@ -31,33 +31,41 @@ public class TitleMenuManager : MonoBehaviour
     [SerializeField] private CanvasGroup fadeOverlay;
     [SerializeField, Min(0f)] private float fadeDuration = 0.35f;
 
+    [Header("Input")]
     [SerializeField] private int playerID = 0;
     [SerializeField] private string cancelAction = "UICancel";
     private Rewired.Player rPlayer;
+
+    [Header("Title Menu Audio")]
+    [SerializeField] private bool playTitleBgmOnAwake = true;
+    [SerializeField] private string titleBgmGroup = "MainMenuMusic";
+    [SerializeField] private string gameplayBgmGroup = "LevelMusic";
+
+
+    [Header("UI SFX Names")]
+    [SerializeField] private string uiConfirmSfx = "UIButtonConfirm";
+    [SerializeField] private string uiCancelSfx = "UIButtonCancel";
+    [SerializeField] private string uiOpenPanelSfx = "UIOpenPanel";
+    [SerializeField] private string uiClosePanelSfx = "UIClosePanel";
 
     private LoadMenu loadMenu;
     private UI_Options optionsUI;
     private bool isTransitioning = false;
 
-    // Save/Load handling (like UI.cs)
     private UI_SaveLoadPanel uiSaveLoad;
     private bool saveLoadHooked = false;
 
-    // NEW: keep manager alive—never disable mainPanel; use CanvasGroup instead
     private CanvasGroup mainPanelCG;
 
     private void Awake()
     {
         rPlayer = ReInput.players.GetPlayer(playerID);
 
-
-        // Ensure initial visibility
         if (mainPanel != null) mainPanel.SetActive(true);
         if (loadPanel != null) loadPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
         if (controlsPanel != null) controlsPanel.SetActive(false);
 
-        // If button root isn’t wired, try to guess it under mainPanel
         if (mainButtonsRoot == null && mainPanel != null)
         {
             foreach (Transform child in mainPanel.transform)
@@ -79,6 +87,11 @@ public class TitleMenuManager : MonoBehaviour
         if (optionsButton != null) optionsButton.onClick.AddListener(OpenOptions);
         if (quitButton != null) quitButton.onClick.AddListener(OnClickQuit);
 
+        AddHoverSfx(playButton);
+        AddHoverSfx(loadButton);
+        AddHoverSfx(optionsButton);
+        AddHoverSfx(quitButton);
+
         SaveSystem.autoUnloadAdditiveScenes = true;
         SaveSystem.debug = Debug.isDebugBuild;
 
@@ -89,14 +102,18 @@ public class TitleMenuManager : MonoBehaviour
             fadeOverlay.interactable = false;
         }
 
-        // NEW: Add/Use CanvasGroup on mainPanel so we can disable input without disabling the object
         if (mainPanel != null)
         {
             mainPanelCG = mainPanel.GetComponent<CanvasGroup>();
             if (mainPanelCG == null) mainPanelCG = mainPanel.AddComponent<CanvasGroup>();
+
             mainPanelCG.interactable = true;
             mainPanelCG.blocksRaycasts = true;
-            // alpha remains whatever your UI art needs; we are not fading the menu here
+        }
+
+        if (playTitleBgmOnAwake && AudioManager.instance != null && !string.IsNullOrWhiteSpace(titleBgmGroup))
+        {
+            AudioManager.instance.StartBGM(titleBgmGroup);
         }
     }
 
@@ -110,43 +127,67 @@ public class TitleMenuManager : MonoBehaviour
 
         if (!rPlayer.GetButtonDown(cancelAction)) return;
 
-        // Save/Load: let the panel swallow ESC first (handles overwrite dialogs, etc.)
         if (uiSaveLoad != null && uiSaveLoad.IsOpen)
         {
-            if (uiSaveLoad.HandleCancel()) return;
+            if (uiSaveLoad.HandleCancel())
+            {
+                PlayUiSfx(uiCancelSfx);
+                return;
+            }
         }
 
-        // Controls (inside Options)
-        if (controlsPanel != null && controlsPanel.activeSelf) { CloseControls(); return; }
+        if (controlsPanel != null && controlsPanel.activeSelf)
+        {
+            PlayUiSfx(uiCancelSfx);
+            CloseControls();
+            return;
+        }
 
-        // Options
         if (optionsPanel != null && optionsPanel.activeSelf)
         {
             if (optionsUI == null && optionsPanel != null)
                 optionsUI = optionsPanel.GetComponentInChildren<UI_Options>(true);
 
-            // Options.HandleCancel() in title context calls TitleMenuManager.CloseAllOptionPanels()
-            if (optionsUI != null && optionsUI.HandleCancel()) return;
+            if (optionsUI != null && optionsUI.HandleCancel())
+            {
+                PlayUiSfx(uiCancelSfx);
+                return;
+            }
 
+            PlayUiSfx(uiCancelSfx);
             CloseOptions();
             return;
         }
 
-        // Legacy load wrapper
-        if (loadPanel != null && loadPanel.activeSelf) { CloseLoad(); return; }
+        if (loadPanel != null && loadPanel.activeSelf)
+        {
+            PlayUiSfx(uiCancelSfx);
+            CloseLoad();
+            return;
+        }
     }
 
+    private void AddHoverSfx(Button button)
+    {
+        if (button == null) return;
 
-    // ----------------- Play/Quit -----------------
+        var hover = button.GetComponent<UI_ButtonHoverSfx>();
+        if (hover == null)
+            hover = button.gameObject.AddComponent<UI_ButtonHoverSfx>();
+    }
 
     public void OnClickPlay()
     {
         if (isTransitioning) return;
+
+        PlayUiSfx(uiConfirmSfx);
         StartCoroutine(NewGameTransition_Co());
     }
 
     public void OnClickQuit()
     {
+        PlayUiSfx(uiConfirmSfx);
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -154,16 +195,15 @@ public class TitleMenuManager : MonoBehaviour
 #endif
     }
 
-    // ----------------- LOAD -----------------
-
     public void OpenLoad()
     {
         if (isTransitioning) return;
 
+        PlayUiSfx(uiOpenPanelSfx);
+
         EnsureActiveAncestors(loadPanel);
         loadPanel?.SetActive(true);
 
-        // Keep manager alive: hide buttons + disable mainPanel raycasts
         HideMainMenuInteractivity();
 
         if (uiSaveLoad == null && loadPanel != null)
@@ -197,20 +237,18 @@ public class TitleMenuManager : MonoBehaviour
             uiSaveLoad.ClosePanel();
 
         loadPanel?.SetActive(false);
-
-        // Restore main menu interactivity & buttons
         RestoreMainMenuInteractivity();
-
         HookSaveLoadClosed(false);
-    }
 
-    // ----------------- OPTIONS -----------------
+        PlayUiSfx(uiClosePanelSfx);
+    }
 
     public void OpenOptions()
     {
         if (optionsPanel == null || isTransitioning) return;
 
-        // Keep manager alive: hide buttons + disable mainPanel raycasts
+        PlayUiSfx(uiOpenPanelSfx);
+
         HideMainMenuInteractivity();
 
         EnsureActiveAncestors(optionsPanel);
@@ -234,29 +272,36 @@ public class TitleMenuManager : MonoBehaviour
             optionsUI.ClosePanel();
 
         controlsPanel?.SetActive(false);
-
-        // Restore main menu interactivity & buttons
         RestoreMainMenuInteractivity();
+
+        PlayUiSfx(uiClosePanelSfx);
     }
 
     public void OpenControls()
     {
         if (controlsPanel == null || optionsPanel == null) return;
+
         controlsPanel.SetActive(true);
+        PlayUiSfx(uiOpenPanelSfx);
     }
 
     public void CloseControls()
     {
         if (controlsPanel == null) return;
-        controlsPanel.SetActive(false);
-    }
 
-    // ----------------- Transitions -----------------
+        controlsPanel.SetActive(false);
+        PlayUiSfx(uiClosePanelSfx);
+    }
 
     private IEnumerator NewGameTransition_Co()
     {
         isTransitioning = true;
         SetMenuInteractable(false);
+
+        if (wipeAllSlotsOnNewGame)
+        {
+            WipeAllSaveSlotMetadata();
+        }
 
         SaveSystem.ResetGameState();
         PlayerPrefs.DeleteKey(SaveSystem.LastSavedGameSlotPlayerPrefsKey);
@@ -264,12 +309,36 @@ public class TitleMenuManager : MonoBehaviour
 
         yield return StartCoroutine(LocalFadeGuard_Co(show: true, duration: fadeDuration));
 
+        if (AudioManager.instance != null)
+        {
+            if (!string.IsNullOrWhiteSpace(gameplayBgmGroup))
+                AudioManager.instance.StartBGM(gameplayBgmGroup);
+            else
+                AudioManager.instance.StopBGM();
+        }
+
         PlayTimeTracker.ResetAndStart();
         PixelCrushers.SaveSystem.sceneLoaded += OnFirstGameplayLoaded_StartTimer;
 
         SaveSystem.RestartGame(firstLevelSceneName);
     }
 
+    private void WipeAllSaveSlotMetadata()
+    {
+        // Adjust this count to match your actual number of save slots.
+        const int slotCount = 3;
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_scene");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_sceneDisplay");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_playSeconds");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_time");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_exists");
+        }
+
+        PlayerPrefs.Save();
+    }
 
     private void OnFirstGameplayLoaded_StartTimer(string sceneName, int sceneIndex)
     {
@@ -294,6 +363,7 @@ public class TitleMenuManager : MonoBehaviour
     {
         var cg = go ? go.GetComponent<CanvasGroup>() : null;
         if (cg == null) return;
+
         cg.interactable = interactable;
         cg.blocksRaycasts = interactable;
     }
@@ -308,6 +378,7 @@ public class TitleMenuManager : MonoBehaviour
         float start = fadeOverlay.alpha;
         float end = show ? 1f : 0f;
         float t = 0f;
+
         while (t < duration)
         {
             t += Time.unscaledDeltaTime;
@@ -315,6 +386,7 @@ public class TitleMenuManager : MonoBehaviour
             fadeOverlay.alpha = Mathf.Lerp(start, end, k);
             yield return null;
         }
+
         fadeOverlay.alpha = end;
 
         if (!show)
@@ -334,11 +406,10 @@ public class TitleMenuManager : MonoBehaviour
 #endif
     }
 
-    // ----------------- Save/Load bounce-back -----------------
-
     private void HookSaveLoadClosed(bool hook)
     {
         if (uiSaveLoad == null) return;
+
         if (hook && !saveLoadHooked)
         {
             uiSaveLoad.Closed += OnSaveLoadClosedFromTitle;
@@ -351,20 +422,19 @@ public class TitleMenuManager : MonoBehaviour
         }
     }
 
-
     private void OnSaveLoadClosedFromTitle(UI_SaveLoadPanel.OpenContext ctx)
     {
         loadPanel?.SetActive(false);
         RestoreMainMenuInteractivity();
         HookSaveLoadClosed(false);
+
+        PlayUiSfx(uiClosePanelSfx);
     }
-
-
-    // ----------------- Helpers -----------------
 
     private static void EnsureActiveAncestors(GameObject go)
     {
         if (go == null) return;
+
         var t = go.transform.parent;
         while (t != null)
         {
@@ -375,43 +445,57 @@ public class TitleMenuManager : MonoBehaviour
 
     private void SetMainButtonsVisible(bool visible)
     {
-        if (mainButtonsRoot != null) mainButtonsRoot.SetActive(visible);
+        if (mainButtonsRoot != null)
+            mainButtonsRoot.SetActive(visible);
     }
 
-    // NEW: centralize main menu interactivity toggles so manager never gets disabled
     private void HideMainMenuInteractivity()
     {
         SetMainButtonsVisible(false);
+
         if (mainPanelCG != null)
         {
             mainPanelCG.interactable = false;
             mainPanelCG.blocksRaycasts = false;
-            // alpha unchanged (keep background art)
         }
     }
 
-    // TitleMenuManager.cs
     public void CloseAllOptionPanels()
     {
-        // Close sub-panels first
         if (controlsPanel != null) controlsPanel.SetActive(false);
         if (optionsPanel != null) optionsPanel.SetActive(false);
 
-        // Show the title main panel + buttons again
         if (mainPanel != null) mainPanel.SetActive(true);
-        SetMainButtonsVisible(true);   // uses your existing mainButtonsRoot
-    }
-
-
-    private void RestoreMainMenuInteractivity()
-    {
         SetMainButtonsVisible(true);
+
         if (mainPanelCG != null)
         {
             mainPanelCG.interactable = true;
             mainPanelCG.blocksRaycasts = true;
         }
+
+        PlayUiSfx(uiClosePanelSfx);
+    }
+
+    private void RestoreMainMenuInteractivity()
+    {
+        SetMainButtonsVisible(true);
+
+        if (mainPanelCG != null)
+        {
+            mainPanelCG.interactable = true;
+            mainPanelCG.blocksRaycasts = true;
+        }
+
         if (mainPanel != null && !mainPanel.activeSelf)
-            mainPanel.SetActive(true); // safety in case someone else disabled it
+            mainPanel.SetActive(true);
+    }
+
+    private void PlayUiSfx(string soundName)
+    {
+        if (AudioManager.instance == null) return;
+        if (string.IsNullOrWhiteSpace(soundName)) return;
+
+        AudioManager.instance.PlayGlobalSFX(soundName);
     }
 }
