@@ -354,6 +354,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!114 &56901902 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 11452084, guid: 03b9a6db219d12e4f8ec2934e0c7e721, type: 3}
@@ -1202,6 +1204,7 @@ GameObject:
   - component: {fileID: 379489800}
   - component: {fileID: 379489799}
   - component: {fileID: 379489798}
+  - component: {fileID: 379489801}
   m_Layer: 0
   m_Name: EndGameBtn
   m_TagString: Untagged
@@ -1311,6 +1314,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 379489796}
   m_CullTransparentMesh: 1
+--- !u!114 &379489801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379489796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
+--- !u!82 &427065196 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 3468218557498022801, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+  m_PrefabInstance: {fileID: 808442792}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &436824560
 GameObject:
   m_ObjectHideFlags: 0
@@ -1742,6 +1765,7 @@ GameObject:
   - component: {fileID: 536048172}
   - component: {fileID: 536048171}
   - component: {fileID: 536048170}
+  - component: {fileID: 536048174}
   m_Layer: 5
   m_Name: Slot (3)
   m_TagString: Untagged
@@ -1890,6 +1914,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 536048168}
   m_CullTransparentMesh: 1
+--- !u!114 &536048174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536048168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &541489159
 GameObject:
   m_ObjectHideFlags: 0
@@ -3114,6 +3153,7 @@ GameObject:
   - component: {fileID: 726761121}
   - component: {fileID: 726761120}
   - component: {fileID: 726761119}
+  - component: {fileID: 726761122}
   m_Layer: 0
   m_Name: OptionBtn
   m_TagString: Untagged
@@ -3235,6 +3275,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 726761117}
   m_CullTransparentMesh: 1
+--- !u!114 &726761122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726761117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &749288965
 GameObject:
   m_ObjectHideFlags: 0
@@ -5165,6 +5220,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6598837295380714861, guid: 07378218e9f6abe439c7a9467d11cc9f, type: 3}
+      propertyPath: audioMixer
+      value: 
+      objectReference: {fileID: 24100000, guid: 83317a7aa08bdcd45ba7e07ee7837962, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5211,8 +5270,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 13.320068, y: 9.5}
-  m_SizeDelta: {x: 1920, y: 1080}
+  m_AnchoredPosition: {x: 0.009903, y: 4.7499}
+  m_SizeDelta: {x: 1920, y: 1070.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &861398811
 MonoBehaviour:
@@ -5227,15 +5286,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.3529412}
+  m_Color: {r: 0.5245282, g: 0.5245282, b: 0.5245282, a: 0.3529412}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 086be30d7ec765140b1971566a8c9f58, type: 3}
-  m_Type: 1
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -5262,11 +5321,14 @@ MonoBehaviour:
   manaBarToggle: {fileID: 1156155122}
   bgmSlider: {fileID: 2011376672}
   sfxSlider: {fileID: 1434682088}
+  applyButton: {fileID: 1526400170}
   audioMixer: {fileID: 24100000, guid: 83317a7aa08bdcd45ba7e07ee7837962, type: 2}
   bgmVolumeParameter: BGMVolume
   sfxVolumeParameter: SFXVolume
   bgmPrefsKey: Options_BGMVolume
   sfxPrefsKey: Options_SFXVolume
+  healthBarPrefsKey: Options_ShowHealthBar
+  manaBarPrefsKey: Options_ShowManaBar
   controlsButton: {fileID: 768593792}
   controlMapper: {fileID: 56901902}
   controlMapperPrefab: {fileID: 2087723836}
@@ -5330,6 +5392,7 @@ GameObject:
   - component: {fileID: 1104692130}
   - component: {fileID: 1104692129}
   - component: {fileID: 1104692128}
+  - component: {fileID: 1104692131}
   m_Layer: 0
   m_Name: PlayBtn
   m_TagString: Untagged
@@ -5439,6 +5502,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104692126}
   m_CullTransparentMesh: 1
+--- !u!114 &1104692131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104692126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1111845902
 GameObject:
   m_ObjectHideFlags: 0
@@ -5667,7 +5745,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Save & Exit
+  m_text: Apply
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7430,7 +7508,7 @@ GameObject:
   - component: {fileID: 1526400171}
   - component: {fileID: 1526400170}
   m_Layer: 5
-  m_Name: Storage menuBtn
+  m_Name: ApplyBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7499,31 +7577,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1526400171}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 861398809}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1526400171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7575,6 +7629,7 @@ GameObject:
   - component: {fileID: 1535308692}
   - component: {fileID: 1535308691}
   - component: {fileID: 1535308690}
+  - component: {fileID: 1535308695}
   m_Layer: 5
   m_Name: Slot (2)
   m_TagString: Untagged
@@ -7723,6 +7778,21 @@ RectTransform:
   m_AnchoredPosition: {x: 603.7611, y: -527.56573}
   m_SizeDelta: {x: 1146.1273, y: 141.9955}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1535308695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535308689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1537887986
 GameObject:
   m_ObjectHideFlags: 0
@@ -7846,6 +7916,7 @@ GameObject:
   - component: {fileID: 1548238439}
   - component: {fileID: 1548238438}
   - component: {fileID: 1548238437}
+  - component: {fileID: 1548238440}
   m_Layer: 0
   m_Name: LoadBtn
   m_TagString: Untagged
@@ -7967,6 +8038,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1548238435}
   m_CullTransparentMesh: 1
+--- !u!114 &1548238440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548238435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1001 &1561037326
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13539,7 +13625,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43271b77accadc046af9789a230e6ca1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  root: {fileID: 0}
+  root: {fileID: 5245286544117433830}
   layout: 1
   gridColumnsOverride: 0
   items:
@@ -13559,6 +13645,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!114 &5325667316562811815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14662,7 +14750,7 @@ MonoBehaviour:
   savingVisualRoot: {fileID: 1835298821341299902}
   savingText: {fileID: 7262341043890871120}
   minimumShowTime: 0.35
-  sfx: {fileID: 0}
+  sfx: {fileID: 427065196}
   openDialogSfx: {fileID: 8300000, guid: 37cc5c4c34e880e4ea94f0daa8bb4aef, type: 3}
   confirmSfx: {fileID: 8300000, guid: 37cc5c4c34e880e4ea94f0daa8bb4aef, type: 3}
   cancelSfx: {fileID: 8300000, guid: 37cc5c4c34e880e4ea94f0daa8bb4aef, type: 3}
@@ -14938,6 +15026,7 @@ GameObject:
   - component: {fileID: 4190418572691170919}
   - component: {fileID: 1108308568363207323}
   - component: {fileID: 388797881017181525}
+  - component: {fileID: 9208387997707080008}
   m_Layer: 5
   m_Name: Slot
   m_TagString: Untagged
@@ -15033,6 +15122,7 @@ GameObject:
   - component: {fileID: 5437014796811620106}
   - component: {fileID: 5708920006969187238}
   - component: {fileID: 8290398865690069744}
+  - component: {fileID: 8712999496619439207}
   m_Layer: 5
   m_Name: Slot (1)
   m_TagString: Untagged
@@ -15187,6 +15277,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!224 &7822103742490399812
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15698,6 +15790,7 @@ GameObject:
   - component: {fileID: 1396090889313974435}
   - component: {fileID: 1018210715580754045}
   - component: {fileID: 8575060352110346890}
+  - component: {fileID: 8575060352110346891}
   m_Layer: 5
   m_Name: AutoSave Slot
   m_TagString: Untagged
@@ -15743,6 +15836,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 4878583113028925471}
   saveButton: {fileID: 1018210715580754045}
   loadButton: {fileID: 1018210715580754045}
+--- !u!114 &8575060352110346891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8461957915468434549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!222 &8676965393606815016
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15767,6 +15875,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7447921562980418221}
   m_CullTransparentMesh: 1
+--- !u!114 &8712999496619439207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7447921562980418221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!222 &8718388107540370577
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15898,6 +16021,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7264757297885032968}
   m_CullTransparentMesh: 1
+--- !u!114 &9208387997707080008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7264757297885032968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

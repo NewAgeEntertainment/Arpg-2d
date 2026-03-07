@@ -286,21 +286,27 @@ public class UI_SaveLoadPanel : MonoBehaviour
             try { sceneName = SaveSystem.GetCurrentSceneName(); }
             catch { sceneName = SceneManager.GetActiveScene().name; }
 
-            // Find a nice display title if available (pretty name for the UI)
             string sceneDisplay = SceneManager.GetActiveScene().name;
             var provider = FindFirstObjectByType<SceneDisplayNameProvider>(FindObjectsInactive.Include);
             if (provider != null && !string.IsNullOrEmpty(provider.DisplayName))
                 sceneDisplay = provider.DisplayName;
 
-            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);                 // unique internal
-            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_sceneDisplay", sceneDisplay);       // pretty title
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_scene", sceneName);
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_sceneDisplay", sceneDisplay);
 
-            // >>> CHANGED: save the exact time shown in the UI (falls back to tracker if UI not present)
             int uiSeconds = UI.Instance != null ? UI.Instance.CurrentTimePlayedSeconds : PlayTimeTracker.TotalSecondsInt;
             PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_playSeconds", uiSeconds);
 
             PlayerPrefs.SetString($"SaveSlot_{slotIndex}_time", DateTime.Now.ToString(TimeFormat, CultureInfo.InvariantCulture));
             PlayerPrefs.SetInt($"SaveSlot_{slotIndex}_exists", 1);
+
+            // Save current level music group too
+            string musicGroup = string.Empty;
+            if (LevelManager.Instance != null && !string.IsNullOrWhiteSpace(LevelManager.Instance.MusicGroupName))
+                musicGroup = LevelManager.Instance.MusicGroupName;
+
+            PlayerPrefs.SetString($"SaveSlot_{slotIndex}_musicGroup", musicGroup);
+
             PlayerPrefs.Save();
         }
         catch (Exception ex)
@@ -325,6 +331,10 @@ public class UI_SaveLoadPanel : MonoBehaviour
         RefreshAllSlots();
     }
 
+    public static string GetSavedMusicGroup(int slotIndex)
+    {
+        return PlayerPrefs.GetString($"SaveSlot_{slotIndex}_musicGroup", string.Empty);
+    }
 
     private IEnumerator AnimateSavingDots()
     {

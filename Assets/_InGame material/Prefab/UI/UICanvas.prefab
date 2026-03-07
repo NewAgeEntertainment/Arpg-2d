@@ -6498,6 +6498,7 @@ GameObject:
   - component: {fileID: 2287084924686800889}
   - component: {fileID: 5140428972396176708}
   - component: {fileID: 3898033373836768601}
+  - component: {fileID: 8023597794897353386}
   m_Layer: 5
   m_Name: StatusBtn
   m_TagString: Untagged
@@ -6642,6 +6643,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &8023597794897353386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265376630538779164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &271084536068343517
 GameObject:
   m_ObjectHideFlags: 0
@@ -7155,9 +7171,9 @@ RectTransform:
   - {fileID: 3148942304683000711}
   m_Father: {fileID: 891446507108727066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 157.47614, y: -31.9654}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 62, y: 63}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5316180563406798228
@@ -8187,6 +8203,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &347649166496206741
 GameObject:
   m_ObjectHideFlags: 0
@@ -9800,6 +9818,7 @@ GameObject:
   - component: {fileID: 347170795952654887}
   - component: {fileID: 4852267561864124816}
   - component: {fileID: 7266645488338884979}
+  - component: {fileID: 3094105810161174839}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -9938,6 +9957,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3094105810161174839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 421821424913644237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &422901547543195122
 GameObject:
   m_ObjectHideFlags: 0
@@ -10075,6 +10109,7 @@ GameObject:
   - component: {fileID: 3894054299968291961}
   - component: {fileID: 4225158621177806541}
   - component: {fileID: 6637259457817530774}
+  - component: {fileID: 2621154943155689344}
   m_Layer: 5
   m_Name: UI_Item Slot
   m_TagString: Untagged
@@ -10100,9 +10135,9 @@ RectTransform:
   - {fileID: 3664334317997173613}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -38.05}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4225158621177806541
@@ -10169,6 +10204,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2621154943155689344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431117158876003571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &432530925374482792
 GameObject:
   m_ObjectHideFlags: 0
@@ -10962,6 +11012,7 @@ GameObject:
   - component: {fileID: 7154258283788615498}
   - component: {fileID: 5422674135034651472}
   - component: {fileID: 8319425452249416506}
+  - component: {fileID: 2803264443551627173}
   m_Layer: 5
   m_Name: CloseBtn
   m_TagString: Untagged
@@ -11112,6 +11163,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2803264443551627173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 458403540471432817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &464862493062159487
 GameObject:
   m_ObjectHideFlags: 0
@@ -11421,6 +11487,7 @@ GameObject:
   - component: {fileID: 5941977809372085246}
   - component: {fileID: 5870838481811750170}
   - component: {fileID: 379999097560054125}
+  - component: {fileID: 3541611649111960634}
   m_Layer: 5
   m_Name: ExitBtn
   m_TagString: Untagged
@@ -11565,6 +11632,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &3541611649111960634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475883049129631991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &483657561156858279
 GameObject:
   m_ObjectHideFlags: 0
@@ -15987,6 +16069,7 @@ GameObject:
   - component: {fileID: 6471707335450814270}
   - component: {fileID: 286822334634377211}
   - component: {fileID: 4712416427770364578}
+  - component: {fileID: 5073315778224096755}
   m_Layer: 5
   m_Name: SkillsBtn
   m_TagString: Untagged
@@ -16168,6 +16251,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5073315778224096755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 633588358708933866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &643015185362991472
 GameObject:
   m_ObjectHideFlags: 0
@@ -16183,6 +16281,7 @@ GameObject:
   - component: {fileID: 6454283046703934002}
   - component: {fileID: 607801013017374782}
   - component: {fileID: 6565819149278053457}
+  - component: {fileID: 2808731603927334386}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -16355,6 +16454,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &2808731603927334386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 643015185362991472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &646090290399661660
 GameObject:
   m_ObjectHideFlags: 0
@@ -17004,6 +17118,7 @@ GameObject:
   - component: {fileID: 4421451784363795479}
   - component: {fileID: 3242229116149749041}
   - component: {fileID: 1194254336030660407}
+  - component: {fileID: 8462831297047412793}
   m_Layer: 5
   m_Name: Quick Slot 2Btn
   m_TagString: Untagged
@@ -17148,6 +17263,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &8462831297047412793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658079446475531489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &665921727610839914
 GameObject:
   m_ObjectHideFlags: 0
@@ -17968,6 +18098,7 @@ GameObject:
   - component: {fileID: 7192601676579279843}
   - component: {fileID: 2006663666383688251}
   - component: {fileID: 7191091646430713937}
+  - component: {fileID: 5547956254287027874}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -18152,6 +18283,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &5547956254287027874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699145504481522301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &704454678491477780
 GameObject:
   m_ObjectHideFlags: 0
@@ -20289,6 +20435,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &781561788001465333
 GameObject:
   m_ObjectHideFlags: 0
@@ -22821,6 +22969,7 @@ GameObject:
   - component: {fileID: 5241223669041549490}
   - component: {fileID: 1385191899067342250}
   - component: {fileID: 6715350168150769330}
+  - component: {fileID: 5970584142985642188}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -22993,6 +23142,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &5970584142985642188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 931401890659718483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &933693758267487273
 GameObject:
   m_ObjectHideFlags: 0
@@ -27060,6 +27224,7 @@ GameObject:
   - component: {fileID: 7700048756004379025}
   - component: {fileID: 2170528078099187103}
   - component: {fileID: 279730327929002195}
+  - component: {fileID: 4206991548729117126}
   m_Layer: 5
   m_Name: NoBtn
   m_TagString: Untagged
@@ -27181,6 +27346,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &4206991548729117126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075077830514634495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1075657350710944106
 GameObject:
   m_ObjectHideFlags: 0
@@ -29780,8 +29960,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1025709113831522673}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.13662875}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.028548777}
+  m_AnchorMax: {x: 1, y: 0.99999994}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -32361,6 +32541,7 @@ GameObject:
   - component: {fileID: 5322601227274594188}
   - component: {fileID: 6292722700992054101}
   - component: {fileID: 7691847278943656516}
+  - component: {fileID: 8698211113823282097}
   m_Layer: 5
   m_Name: UI_Item Slot (5)
   m_TagString: Untagged
@@ -32386,9 +32567,9 @@ RectTransform:
   - {fileID: 831977345822123641}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -439.99997}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6292722700992054101
@@ -32455,6 +32636,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8698211113823282097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1287420940278733337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1292274207102169863
 GameObject:
   m_ObjectHideFlags: 0
@@ -33276,6 +33472,7 @@ GameObject:
   - component: {fileID: 6733467640439669415}
   - component: {fileID: 8773412381414054227}
   - component: {fileID: 8395492995052473159}
+  - component: {fileID: 8105996480387536737}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -33414,6 +33611,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8105996480387536737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333409394430993301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1341833476866036103
 GameObject:
   m_ObjectHideFlags: 0
@@ -37108,6 +37320,7 @@ GameObject:
   - component: {fileID: 5659834228831923461}
   - component: {fileID: 462049131379410257}
   - component: {fileID: 4077806391101010652}
+  - component: {fileID: 8442124870614799300}
   m_Layer: 5
   m_Name: ItemsBtn (1)
   m_TagString: Untagged
@@ -37280,6 +37493,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &8442124870614799300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1458722306711240244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1461623317268013438
 GameObject:
   m_ObjectHideFlags: 0
@@ -40335,6 +40563,7 @@ GameObject:
   - component: {fileID: 809154778681704436}
   - component: {fileID: 3305742615708304391}
   - component: {fileID: 1082334852424670385}
+  - component: {fileID: 695814007172111615}
   m_Layer: 5
   m_Name: UI_EquippedSlot - Weapon
   m_TagString: Untagged
@@ -40504,6 +40733,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &695814007172111615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625564054976394533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1630994618745743572
 GameObject:
   m_ObjectHideFlags: 0
@@ -42095,10 +42339,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5933873044852750077}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 390.9236, y: -114.205}
-  m_SizeDelta: {x: 611.8472, y: 164.41}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2886584882581107157
 CanvasRenderer:
@@ -44141,7 +44385,7 @@ RectTransform:
   m_Father: {fileID: 1322811013295875154}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -46326,7 +46570,7 @@ RectTransform:
   m_Father: {fileID: 3003127738692759933}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -47573,6 +47817,7 @@ GameObject:
   - component: {fileID: 5071929796314431236}
   - component: {fileID: 7416843545923024201}
   - component: {fileID: 8301344156586799034}
+  - component: {fileID: 3142551150726432783}
   m_Layer: 5
   m_Name: Player Profile Boarder (2)
   m_TagString: Untagged
@@ -47666,6 +47911,23 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
+--- !u!114 &3142551150726432783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1926121851740116561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1930145774319049058
 GameObject:
   m_ObjectHideFlags: 0
@@ -48400,6 +48662,7 @@ GameObject:
   - component: {fileID: 8299746601194617105}
   - component: {fileID: 2050077295110118351}
   - component: {fileID: 3347559372270580269}
+  - component: {fileID: 330031285123384951}
   m_Layer: 5
   m_Name: UI_Item Slot (13)
   m_TagString: Untagged
@@ -48425,9 +48688,9 @@ RectTransform:
   - {fileID: 7732238281389816869}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -1083.1201}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2050077295110118351
@@ -48494,6 +48757,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &330031285123384951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944119289374648792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &1944702543026979764
 GameObject:
   m_ObjectHideFlags: 0
@@ -50726,7 +51004,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1036803293830001183}
   m_HandleRect: {fileID: 8147998787965696359}
   m_Direction: 2
-  m_Value: 1.0000002
+  m_Value: 0.00000031547606
   m_Size: 0.57396096
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -50919,7 +51197,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 8.35022, y: 580.41}
-  m_SizeDelta: {x: 1046.1, y: 0}
+  m_SizeDelta: {x: 1046.1, y: 1362.3401}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &8644795927333149063
 MonoBehaviour:
@@ -50977,6 +51255,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!114 &4276261978470944001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51647,9 +51927,9 @@ RectTransform:
   - {fileID: 2549932440979663326}
   m_Father: {fileID: 891446507108727066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 94.48568, y: -31.9654}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 62, y: 63}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6874568190610336830
@@ -53354,6 +53634,7 @@ GameObject:
   - component: {fileID: 5158416761792329417}
   - component: {fileID: 7797607384833257760}
   - component: {fileID: 6715816445827112327}
+  - component: {fileID: 7868369658444774081}
   m_Layer: 5
   m_Name: YesBtn
   m_TagString: Untagged
@@ -53475,6 +53756,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7868369658444774081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147970046778453925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2187178051024390838
 GameObject:
   m_ObjectHideFlags: 0
@@ -53853,6 +54149,7 @@ GameObject:
   - component: {fileID: 5972827553945545882}
   - component: {fileID: 8593248622155722791}
   - component: {fileID: 2297663863080746630}
+  - component: {fileID: 6508956079350504142}
   m_Layer: 5
   m_Name: ItemsBtn
   m_TagString: Untagged
@@ -54018,6 +54315,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6508956079350504142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2193778475670598735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2195048918486921996
 GameObject:
   m_ObjectHideFlags: 0
@@ -54126,6 +54438,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &2195304424627778329
 GameObject:
   m_ObjectHideFlags: 0
@@ -54401,7 +54715,7 @@ RectTransform:
   m_Father: {fileID: 3760816498336671274}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -58800,6 +59114,7 @@ GameObject:
   - component: {fileID: 4138647927363349051}
   - component: {fileID: 204312452341276316}
   - component: {fileID: 6516898468091103242}
+  - component: {fileID: 4442846823374915376}
   m_Layer: 5
   m_Name: JournalBtn
   m_TagString: Untagged
@@ -58969,6 +59284,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &4442846823374915376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2344846847942835482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2351652980034977020
 GameObject:
   m_ObjectHideFlags: 0
@@ -61596,6 +61926,7 @@ GameObject:
   - component: {fileID: 4216672449743917764}
   - component: {fileID: 8828385308556183901}
   - component: {fileID: 5752781882734147624}
+  - component: {fileID: 268719275202276616}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -61768,6 +62099,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &268719275202276616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2450923535517675083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2454023470651057816
 GameObject:
   m_ObjectHideFlags: 0
@@ -62190,6 +62536,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &2463008840273311622
 GameObject:
   m_ObjectHideFlags: 0
@@ -64458,6 +64806,7 @@ GameObject:
   - component: {fileID: 6641249123796225831}
   - component: {fileID: 6669980323022718698}
   - component: {fileID: 5449223374176649002}
+  - component: {fileID: 8199175377846262496}
   m_Layer: 5
   m_Name: UI_Item Slot (15)
   m_TagString: Untagged
@@ -64483,9 +64832,9 @@ RectTransform:
   - {fileID: 5429108636635964086}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -1243.9001}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6669980323022718698
@@ -64552,6 +64901,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8199175377846262496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2534117177018969972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2536857280721732576
 GameObject:
   m_ObjectHideFlags: 0
@@ -67530,7 +67894,7 @@ RectTransform:
   m_Father: {fileID: 6923723781242735649}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -67795,6 +68159,7 @@ GameObject:
   - component: {fileID: 5080400843109818838}
   - component: {fileID: 3526097588283653567}
   - component: {fileID: 6925601113014988942}
+  - component: {fileID: 8638295674343440611}
   m_Layer: 5
   m_Name: QuickSlot 1Btn
   m_TagString: Untagged
@@ -67939,6 +68304,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &8638295674343440611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2635375509287959267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2637738330284810944
 GameObject:
   m_ObjectHideFlags: 0
@@ -68584,6 +68964,7 @@ GameObject:
   - component: {fileID: 1273161778294507314}
   - component: {fileID: 3880443384675496267}
   - component: {fileID: 1337411105355925187}
+  - component: {fileID: 1312211631180384308}
   m_Layer: 5
   m_Name: ArmorListBtn
   m_TagString: Untagged
@@ -68606,10 +68987,10 @@ RectTransform:
   - {fileID: 4018624311030654001}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 622.5035, y: -37.78}
+  m_SizeDelta: {x: 230.54, y: 56.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1225092334611269434
 CanvasRenderer:
@@ -68740,6 +69121,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &1312211631180384308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2661699583096289102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2672660535596357906
 GameObject:
   m_ObjectHideFlags: 0
@@ -73147,6 +73543,7 @@ GameObject:
   - component: {fileID: 1907140293413394278}
   - component: {fileID: 1225038219690313788}
   - component: {fileID: 1627246057466642553}
+  - component: {fileID: 1902253024460652119}
   m_Layer: 5
   m_Name: UI_Item Slot (11)
   m_TagString: Untagged
@@ -73172,9 +73569,9 @@ RectTransform:
   - {fileID: 1349842828451877553}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -922.34}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1225038219690313788
@@ -73241,6 +73638,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1902253024460652119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2825853555676779820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &2841046011633991971
 GameObject:
   m_ObjectHideFlags: 0
@@ -82550,6 +82962,7 @@ GameObject:
   - component: {fileID: 3921004842119750227}
   - component: {fileID: 4348912551455645678}
   - component: {fileID: 8031285585489956210}
+  - component: {fileID: 7829349291902132368}
   m_Layer: 5
   m_Name: OptionBtn
   m_TagString: Untagged
@@ -82694,6 +83107,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &7829349291902132368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3200301906933745769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3206842828381466787
 GameObject:
   m_ObjectHideFlags: 0
@@ -84087,7 +84515,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Save & Exit
+  m_text: Apply
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -84961,6 +85389,7 @@ GameObject:
   - component: {fileID: 3186435525646762937}
   - component: {fileID: 9200846593455813607}
   - component: {fileID: 7813046108840252341}
+  - component: {fileID: 8798547935702392315}
   m_Layer: 5
   m_Name: UI_Item Slot (1)
   m_TagString: Untagged
@@ -84986,9 +85415,9 @@ RectTransform:
   - {fileID: 1027730479717987087}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -118.44}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &9200846593455813607
@@ -85055,6 +85484,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8798547935702392315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3267053560456885685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3270365927495845304
 GameObject:
   m_ObjectHideFlags: 0
@@ -88822,6 +89266,7 @@ GameObject:
   - component: {fileID: 7086153536130033779}
   - component: {fileID: 3417695916578037602}
   - component: {fileID: 5438872344997942200}
+  - component: {fileID: 8269111181149230217}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -89006,6 +89451,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &8269111181149230217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3406343960536917587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3408444940243954398
 GameObject:
   m_ObjectHideFlags: 0
@@ -89309,6 +89769,7 @@ GameObject:
   - component: {fileID: 5709713027836093681}
   - component: {fileID: 8130606157747138219}
   - component: {fileID: 3010337727835457363}
+  - component: {fileID: 2609852081396599182}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -89481,6 +89942,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &2609852081396599182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3413918687785595620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3416806790348430364
 GameObject:
   m_ObjectHideFlags: 0
@@ -89836,6 +90312,7 @@ GameObject:
   - component: {fileID: 1984751660986085980}
   - component: {fileID: 152775172406010729}
   - component: {fileID: 3867576703996688446}
+  - component: {fileID: 8829783786119423780}
   m_Layer: 5
   m_Name: Player Profile Boarder
   m_TagString: Untagged
@@ -89929,6 +90406,23 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
+--- !u!114 &8829783786119423780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3427402709224005138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3431945803664949459
 GameObject:
   m_ObjectHideFlags: 0
@@ -90228,6 +90722,7 @@ GameObject:
   - component: {fileID: 1337015282202706169}
   - component: {fileID: 6622874990644218243}
   - component: {fileID: 1805247235019122895}
+  - component: {fileID: 3496938352657807340}
   m_Layer: 5
   m_Name: UI_EquippedSlot - trinket
   m_TagString: Untagged
@@ -90397,6 +90892,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &3496938352657807340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3452212458005907620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3457814332786276804
 GameObject:
   m_ObjectHideFlags: 0
@@ -90879,6 +91389,7 @@ GameObject:
   - component: {fileID: 7224215258903703803}
   - component: {fileID: 907663742741646341}
   - component: {fileID: 7934701282544517113}
+  - component: {fileID: 9112958668578751428}
   m_Layer: 5
   m_Name: Button (2)
   m_TagString: Untagged
@@ -91000,6 +91511,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &9112958668578751428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3477342101207130581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3479027259303039424
 GameObject:
   m_ObjectHideFlags: 0
@@ -91365,6 +91891,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &3515439089997434427
 GameObject:
   m_ObjectHideFlags: 0
@@ -93284,6 +93812,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &3606713037102568909
 GameObject:
   m_ObjectHideFlags: 0
@@ -94964,6 +95494,7 @@ GameObject:
   - component: {fileID: 1019163430525366199}
   - component: {fileID: 7479538716112503785}
   - component: {fileID: 4230519638968598083}
+  - component: {fileID: 2847897918226774024}
   m_Layer: 5
   m_Name: WeaponListBtn
   m_TagString: Untagged
@@ -94986,10 +95517,10 @@ RectTransform:
   - {fileID: 432548934068669179}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 385.79346, y: -37.78}
+  m_SizeDelta: {x: 230.54, y: 56.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8290264164516888762
 CanvasRenderer:
@@ -95120,6 +95651,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &2847897918226774024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3693505312051440602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3698455903144974827
 GameObject:
   m_ObjectHideFlags: 0
@@ -95908,7 +96454,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &918225544780521014
 RectTransform:
   m_ObjectHideFlags: 0
@@ -96242,7 +96788,7 @@ GameObject:
   - component: {fileID: 1058915222592855998}
   - component: {fileID: 7507190772955625750}
   m_Layer: 5
-  m_Name: Storage menuBtn
+  m_Name: ApplyBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -97221,6 +97767,7 @@ GameObject:
   - component: {fileID: 1448931695491959713}
   - component: {fileID: 7719359104940555229}
   - component: {fileID: 6616086267998303054}
+  - component: {fileID: 6861636827105669076}
   m_Layer: 5
   m_Name: UI_EquippedSlot - Armor
   m_TagString: Untagged
@@ -97390,6 +97937,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &6861636827105669076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3774854677063137800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3777923437968053652
 GameObject:
   m_ObjectHideFlags: 0
@@ -97500,9 +98062,9 @@ RectTransform:
   m_Father: {fileID: 5097971148642366769}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -17, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1547685288536910200
 CanvasRenderer:
@@ -97569,6 +98131,7 @@ GameObject:
   - component: {fileID: 4138776674536666156}
   - component: {fileID: 1599286761842367724}
   - component: {fileID: 4721909488330017957}
+  - component: {fileID: 4626434400442006810}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -97733,6 +98296,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &4626434400442006810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3778084554425249388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3784194277126671578
 GameObject:
   m_ObjectHideFlags: 0
@@ -97932,6 +98510,7 @@ GameObject:
   - component: {fileID: 5941813602720869932}
   - component: {fileID: 5470035689679977678}
   - component: {fileID: 1036143845887320888}
+  - component: {fileID: 8073086382033306049}
   m_Layer: 5
   m_Name: UI_Item Slot (10)
   m_TagString: Untagged
@@ -97957,9 +98536,9 @@ RectTransform:
   - {fileID: 4926216848610481892}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -841.95}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5470035689679977678
@@ -98026,6 +98605,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8073086382033306049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3795720147815350931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3801782165841549230
 GameObject:
   m_ObjectHideFlags: 0
@@ -99714,6 +100308,7 @@ GameObject:
   - component: {fileID: 8100569829768835650}
   - component: {fileID: 5965107855151453844}
   - component: {fileID: 5330012754586121475}
+  - component: {fileID: 8203742644622385195}
   m_Layer: 5
   m_Name: UI_Item Slot (14)
   m_TagString: Untagged
@@ -99739,9 +100334,9 @@ RectTransform:
   - {fileID: 5127875782395507206}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -1163.5101}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5965107855151453844
@@ -99808,6 +100403,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8203742644622385195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3859970859639897975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &3861624183310753906
 GameObject:
   m_ObjectHideFlags: 0
@@ -103717,6 +104327,7 @@ GameObject:
   - component: {fileID: 1602250177144443962}
   - component: {fileID: 7066248185982290038}
   - component: {fileID: 8839397310368888929}
+  - component: {fileID: 7910702236172026899}
   m_Layer: 5
   m_Name: ItemsBtn
   m_TagString: Untagged
@@ -103889,6 +104500,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &7910702236172026899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4056906927924491619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4059755385121801535
 GameObject:
   m_ObjectHideFlags: 0
@@ -105412,6 +106038,7 @@ GameObject:
   - component: {fileID: 2322613333969397613}
   - component: {fileID: 4050203758514868048}
   - component: {fileID: 8851874194977276695}
+  - component: {fileID: 3078347275685839369}
   m_Layer: 5
   m_Name: UI_Item Slot (6)
   m_TagString: Untagged
@@ -105437,9 +106064,9 @@ RectTransform:
   - {fileID: 6975547049065979204}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -520.38995}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4050203758514868048
@@ -105506,6 +106133,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3078347275685839369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4111796433227886212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4115060002463546999
 GameObject:
   m_ObjectHideFlags: 0
@@ -111573,6 +112215,7 @@ GameObject:
   - component: {fileID: 3547124374521284409}
   - component: {fileID: 5137692381946030108}
   - component: {fileID: 6819044979427379471}
+  - component: {fileID: 4510527382206008632}
   m_Layer: 5
   m_Name: ConquestBtn
   m_TagString: Untagged
@@ -111713,6 +112356,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &4510527382206008632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4339292572459207044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4342212186132092334
 GameObject:
   m_ObjectHideFlags: 0
@@ -113876,7 +114534,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1280344048034132200
 RectTransform:
   m_ObjectHideFlags: 0
@@ -116236,6 +116894,7 @@ GameObject:
   - component: {fileID: 5471199213910621860}
   - component: {fileID: 765569774263716609}
   - component: {fileID: 7700293352891572000}
+  - component: {fileID: 2328330885070234281}
   m_Layer: 5
   m_Name: Player Profile Boarder (1)
   m_TagString: Untagged
@@ -116329,6 +116988,23 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
+--- !u!114 &2328330885070234281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4548235437209207457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4548300429470396364
 GameObject:
   m_ObjectHideFlags: 0
@@ -116438,7 +117114,7 @@ RectTransform:
   m_Father: {fileID: 729491183469964478}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -123377,6 +124053,7 @@ GameObject:
   - component: {fileID: 7451462298294918106}
   - component: {fileID: 5330290495318392889}
   - component: {fileID: 4871502888057145074}
+  - component: {fileID: 6660895406487414272}
   m_Layer: 5
   m_Name: UI_Item Slot (7)
   m_TagString: Untagged
@@ -123402,9 +124079,9 @@ RectTransform:
   - {fileID: 4649728281775780795}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -600.77997}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5330290495318392889
@@ -123471,6 +124148,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6660895406487414272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4878278687249716557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4884068594283366195
 GameObject:
   m_ObjectHideFlags: 0
@@ -124123,6 +124815,7 @@ GameObject:
   - component: {fileID: 7707259590260268084}
   - component: {fileID: 6914061575234591049}
   - component: {fileID: 1927553358925294497}
+  - component: {fileID: 6526422137956233782}
   m_Layer: 5
   m_Name: ItemBtn
   m_TagString: Untagged
@@ -124145,10 +124838,10 @@ RectTransform:
   - {fileID: 8484951585478777484}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 149.08347, y: -37.78}
+  m_SizeDelta: {x: 230.54, y: 56.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5047248323777406395
 CanvasRenderer:
@@ -124291,6 +124984,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &6526422137956233782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4900698109670991347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &4903126580818090541
 GameObject:
   m_ObjectHideFlags: 0
@@ -124728,9 +125436,9 @@ RectTransform:
   - {fileID: 2822415357276710850}
   m_Father: {fileID: 891446507108727066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 31.495226, y: -31.9654}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 62, y: 63}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5572530966301925376
@@ -126574,6 +127282,7 @@ GameObject:
   - component: {fileID: 9188038347403493506}
   - component: {fileID: 4748182652353690075}
   - component: {fileID: 5663582503300348934}
+  - component: {fileID: 4483506762148841393}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -126746,6 +127455,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &4483506762148841393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5016170886465322168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &5021929003929652535
 GameObject:
   m_ObjectHideFlags: 0
@@ -135679,6 +136403,7 @@ GameObject:
   - component: {fileID: 675815450275325283}
   - component: {fileID: 4090688876187468131}
   - component: {fileID: 716388324783290754}
+  - component: {fileID: 2595154256504865288}
   m_Layer: 5
   m_Name: UI_Item Slot (8)
   m_TagString: Untagged
@@ -135704,9 +136429,9 @@ RectTransform:
   - {fileID: 4007182466287654860}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -681.17}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4090688876187468131
@@ -135773,6 +136498,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2595154256504865288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5419674980152980683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &5420958416048968834
 GameObject:
   m_ObjectHideFlags: 0
@@ -144244,6 +144984,7 @@ GameObject:
   - component: {fileID: 6084576960264251543}
   - component: {fileID: 3518361176297403358}
   - component: {fileID: 1877381577231734879}
+  - component: {fileID: 6888138957040936970}
   m_Layer: 5
   m_Name: Slot (3)
   m_TagString: Untagged
@@ -144392,6 +145133,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 7514295912913847412}
   saveButton: {fileID: 3518361176297403358}
   loadButton: {fileID: 3518361176297403358}
+--- !u!114 &6888138957040936970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5754689470163156614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &5763141373089128134
 GameObject:
   m_ObjectHideFlags: 0
@@ -145511,6 +146267,7 @@ GameObject:
   - component: {fileID: 168867603465282725}
   - component: {fileID: 249219991904964118}
   - component: {fileID: 7684982346619501672}
+  - component: {fileID: 3422055871425206728}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -145632,6 +146389,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &3422055871425206728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5840822862043858566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &5840904324757016053
 GameObject:
   m_ObjectHideFlags: 0
@@ -147868,7 +148640,7 @@ RectTransform:
   m_Father: {fileID: 6567599960404005558}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206741, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -149578,7 +150350,7 @@ RectTransform:
   m_Father: {fileID: 3912416080839908593}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206741, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -155602,7 +156374,7 @@ RectTransform:
   m_Father: {fileID: 5985235824058471076}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -156914,6 +157686,7 @@ GameObject:
   - component: {fileID: 1258106309451666186}
   - component: {fileID: 3121703822730562102}
   - component: {fileID: 2244324705486972881}
+  - component: {fileID: 3980066357262981013}
   m_Layer: 5
   m_Name: Quick Slot 4Btn
   m_TagString: Untagged
@@ -157058,6 +157831,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &3980066357262981013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6245916417788303305}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &6246877214340406091
 GameObject:
   m_ObjectHideFlags: 0
@@ -159368,7 +160156,7 @@ RectTransform:
   m_Father: {fileID: 2113317324905936311}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -159559,6 +160347,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &6400195974372185912
 GameObject:
   m_ObjectHideFlags: 0
@@ -160966,8 +161756,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 594727370273291002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.0000003077917}
-  m_AnchorMax: {x: 0, y: 0.024358232}
+  m_AnchorMin: {x: 0, y: 0.00000013440511}
+  m_AnchorMax: {x: 1, y: 0.5739611}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -166368,6 +167158,7 @@ GameObject:
   - component: {fileID: 3181379203055741387}
   - component: {fileID: 6306517528658531962}
   - component: {fileID: 491763782448416898}
+  - component: {fileID: 1648530751307171917}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -166506,6 +167297,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1648530751307171917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6674983579339857857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &6678268072752697907
 GameObject:
   m_ObjectHideFlags: 0
@@ -167983,6 +168789,7 @@ GameObject:
   - component: {fileID: 6649519453479396424}
   - component: {fileID: 883697328024563431}
   - component: {fileID: 5714275780998692873}
+  - component: {fileID: 6089036843706220696}
   m_Layer: 5
   m_Name: Slot
   m_TagString: Untagged
@@ -168131,6 +168938,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 5018776738987869170}
   saveButton: {fileID: 883697328024563431}
   loadButton: {fileID: 883697328024563431}
+--- !u!114 &6089036843706220696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6741618767605889250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &6752312298603307560
 GameObject:
   m_ObjectHideFlags: 0
@@ -168142,6 +168964,7 @@ GameObject:
   - component: {fileID: 3050716046663751572}
   - component: {fileID: 5402330750714910052}
   - component: {fileID: 8346925974239036330}
+  - component: {fileID: 1882566355614950135}
   m_Layer: 5
   m_Name: UI_Item Slot (16)
   m_TagString: Untagged
@@ -168167,9 +168990,9 @@ RectTransform:
   - {fileID: 7341846029386620010}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -1324.2902}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5402330750714910052
@@ -168236,6 +169059,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1882566355614950135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6752312298603307560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &6759978881241381829
 GameObject:
   m_ObjectHideFlags: 0
@@ -172907,7 +173745,7 @@ RectTransform:
   m_Father: {fileID: 3470419352355304864}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.120697, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -173139,9 +173977,9 @@ RectTransform:
   - {fileID: 7625246665930088326}
   m_Father: {fileID: 891446507108727066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 220.46658, y: -31.9654}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 62, y: 63}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &660292785638311526
@@ -173484,7 +174322,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 2501.3203, y: 121.50001}
-  m_SizeDelta: {x: 796.8472, y: 230.41}
+  m_SizeDelta: {x: 796.8472, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2707483339632803580
 MonoBehaviour:
@@ -176678,6 +177516,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!114 &2914269998326637235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176710,6 +177550,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &7083173031448172298
 GameObject:
   m_ObjectHideFlags: 0
@@ -177511,6 +178353,7 @@ GameObject:
   - component: {fileID: 4196689746981370427}
   - component: {fileID: 346852435958774230}
   - component: {fileID: 4413275313908185085}
+  - component: {fileID: 3006806325822874387}
   m_Layer: 5
   m_Name: UI_Item Slot (12)
   m_TagString: Untagged
@@ -177536,9 +178379,9 @@ RectTransform:
   - {fileID: 5732215362175278524}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -1002.73004}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &346852435958774230
@@ -177605,6 +178448,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3006806325822874387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7123843663641318945}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7130250109480100173
 GameObject:
   m_ObjectHideFlags: 0
@@ -177616,6 +178474,7 @@ GameObject:
   - component: {fileID: 840821782543956487}
   - component: {fileID: 3213418285680167984}
   - component: {fileID: 1934501926773312350}
+  - component: {fileID: 3690767913313066476}
   m_Layer: 5
   m_Name: UI_Item Slot (2)
   m_TagString: Untagged
@@ -177641,9 +178500,9 @@ RectTransform:
   - {fileID: 2676249893290268495}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -198.83}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3213418285680167984
@@ -177710,6 +178569,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3690767913313066476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7130250109480100173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7131937531644389735
 GameObject:
   m_ObjectHideFlags: 0
@@ -178595,7 +179469,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5819927390828500422
 RectTransform:
   m_ObjectHideFlags: 0
@@ -178651,11 +179525,14 @@ MonoBehaviour:
   manaBarToggle: {fileID: 0}
   bgmSlider: {fileID: 9119536380709022120}
   sfxSlider: {fileID: 242596633653072150}
+  applyButton: {fileID: 7507190772955625750}
   audioMixer: {fileID: 24100000, guid: 83317a7aa08bdcd45ba7e07ee7837962, type: 2}
   bgmVolumeParameter: BGMVolume
   sfxVolumeParameter: SFXVolume
   bgmPrefsKey: Options_BGMVolume
   sfxPrefsKey: Options_SFXVolume
+  healthBarPrefsKey: Options_ShowHealthBar
+  manaBarPrefsKey: Options_ShowManaBar
   controlsButton: {fileID: 3107268496357586176}
   controlMapper: {fileID: 0}
   controlMapperPrefab: {fileID: 0}
@@ -178893,6 +179770,7 @@ GameObject:
   - component: {fileID: 3407809284316191155}
   - component: {fileID: 9176760329453058154}
   - component: {fileID: 5837690109988492267}
+  - component: {fileID: 2733471218394580751}
   m_Layer: 5
   m_Name: AutoSave Slot
   m_TagString: Untagged
@@ -179041,6 +179919,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 3731324186760970197}
   saveButton: {fileID: 9176760329453058154}
   loadButton: {fileID: 9176760329453058154}
+--- !u!114 &2733471218394580751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7183954098301337875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7194755410351968532
 GameObject:
   m_ObjectHideFlags: 0
@@ -189243,6 +190136,7 @@ GameObject:
   - component: {fileID: 2148188445495089313}
   - component: {fileID: 6409517021993831073}
   - component: {fileID: 6907981888746479591}
+  - component: {fileID: 573372090068641796}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -189415,6 +190309,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &573372090068641796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7662789219880739737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7663548788785420721
 GameObject:
   m_ObjectHideFlags: 0
@@ -189429,6 +190338,7 @@ GameObject:
   - component: {fileID: 3575926898591088225}
   - component: {fileID: 8764771670629627087}
   - component: {fileID: 9001525820982410842}
+  - component: {fileID: 7152891139037961892}
   m_Layer: 5
   m_Name: UI_EquippedSlot - trinket
   m_TagString: Untagged
@@ -189598,6 +190508,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &7152891139037961892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7663548788785420721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7664606041206206912
 GameObject:
   m_ObjectHideFlags: 0
@@ -190982,7 +191907,7 @@ RectTransform:
   m_Father: {fileID: 1829072208516406585}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -191518,7 +192443,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3129239056405865971
 RectTransform:
   m_ObjectHideFlags: 0
@@ -192295,6 +193220,7 @@ GameObject:
   - component: {fileID: 2781659745723710890}
   - component: {fileID: 927511719555054660}
   - component: {fileID: 3123469895430786833}
+  - component: {fileID: 4712774314751423215}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -192433,6 +193359,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4712774314751423215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7771485444667457370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7775500569563439053
 GameObject:
   m_ObjectHideFlags: 0
@@ -195770,6 +196711,7 @@ GameObject:
   - component: {fileID: 4192106766557529882}
   - component: {fileID: 1708748685525652132}
   - component: {fileID: 4316205377131536542}
+  - component: {fileID: 8803776971340944636}
   m_Layer: 5
   m_Name: Quick Slot 3Btn
   m_TagString: Untagged
@@ -195914,6 +196856,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &8803776971340944636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7908936551898513223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &7921465815680066178
 GameObject:
   m_ObjectHideFlags: 0
@@ -196422,7 +197379,7 @@ RectTransform:
   m_Father: {fileID: 1305965203925968299}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -197354,8 +198311,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3411107835618389499}
   m_HandleRect: {fileID: 9002324160449281093}
   m_Direction: 2
-  m_Value: 0.9999974
-  m_Size: 0.43168557
+  m_Value: 1
+  m_Size: 0.9714512
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -199725,6 +200682,7 @@ GameObject:
   - component: {fileID: 7097059215883178584}
   - component: {fileID: 8973400929137279541}
   - component: {fileID: 1485179768028497976}
+  - component: {fileID: 5964907115304201443}
   m_Layer: 5
   m_Name: UI_Item Slot (4)
   m_TagString: Untagged
@@ -199750,9 +200708,9 @@ RectTransform:
   - {fileID: 4053698333259344349}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -359.61}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8973400929137279541
@@ -199819,6 +200777,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5964907115304201443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8069180815932182814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8072825351953940088
 GameObject:
   m_ObjectHideFlags: 0
@@ -200790,6 +201763,7 @@ GameObject:
   - component: {fileID: 8346884598501991236}
   - component: {fileID: 8782215337971527782}
   - component: {fileID: 2010954746937766218}
+  - component: {fileID: 8041551560340646465}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -200962,6 +201936,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &8041551560340646465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8100668298460653191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8114960574585055620
 GameObject:
   m_ObjectHideFlags: 0
@@ -208536,6 +209525,7 @@ GameObject:
   - component: {fileID: 4924670514015917601}
   - component: {fileID: 5043506500081693512}
   - component: {fileID: 6061815528831439591}
+  - component: {fileID: 5854564233010750385}
   m_Layer: 5
   m_Name: Slot (1)
   m_TagString: Untagged
@@ -208684,6 +209674,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 873936978247077098}
   saveButton: {fileID: 5043506500081693512}
   loadButton: {fileID: 5043506500081693512}
+--- !u!114 &5854564233010750385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8376899705050497227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8377596403743403406
 GameObject:
   m_ObjectHideFlags: 0
@@ -212240,7 +213245,7 @@ RectTransform:
   m_Father: {fileID: 4362151615966367999}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -1.1206665, y: 0}
   m_SizeDelta: {x: -2.2323, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -213067,6 +214072,7 @@ GameObject:
   - component: {fileID: 8820474321792226582}
   - component: {fileID: 6460633517771892665}
   - component: {fileID: 7234443045495261153}
+  - component: {fileID: 8733160753941823987}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -213239,6 +214245,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &8733160753941823987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8571223358364952506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8572566803999713918
 GameObject:
   m_ObjectHideFlags: 0
@@ -214030,6 +215051,7 @@ GameObject:
   - component: {fileID: 6902507654826808767}
   - component: {fileID: 1058206088247755392}
   - component: {fileID: 6403671590962733892}
+  - component: {fileID: 8988925167835925764}
   m_Layer: 5
   m_Name: CloseBtn (1)
   m_TagString: Untagged
@@ -214168,6 +215190,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8988925167835925764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8593995119186948255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8600731693914747297
 GameObject:
   m_ObjectHideFlags: 0
@@ -215632,6 +216669,7 @@ GameObject:
   - component: {fileID: 7757650485694172668}
   - component: {fileID: 8018180775880823382}
   - component: {fileID: 4864766090281441617}
+  - component: {fileID: 284294902274185687}
   m_Layer: 5
   m_Name: KeyItemsListBtn
   m_TagString: Untagged
@@ -215654,10 +216692,10 @@ RectTransform:
   - {fileID: 3601155467144813493}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 385.79346, y: -96.09}
+  m_SizeDelta: {x: 230.54, y: 56.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3327244214256804071
 CanvasRenderer:
@@ -215788,6 +216826,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &284294902274185687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8686225672879585655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8704213094251646368
 GameObject:
   m_ObjectHideFlags: 0
@@ -216648,6 +217701,7 @@ GameObject:
   - component: {fileID: 3713511526453087220}
   - component: {fileID: 3470137167772731921}
   - component: {fileID: 3302241041588520286}
+  - component: {fileID: 6798829122595945448}
   m_Layer: 5
   m_Name: NextPanelBtn
   m_TagString: Untagged
@@ -216820,6 +217874,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &6798829122595945448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8737222861126553661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8739225429439206594
 GameObject:
   m_ObjectHideFlags: 0
@@ -217697,6 +218766,7 @@ GameObject:
   - component: {fileID: 3113004027114094667}
   - component: {fileID: 8242678729986952844}
   - component: {fileID: 1543424821947957004}
+  - component: {fileID: 3636171229461246111}
   m_Layer: 5
   m_Name: UI_Item Slot (9)
   m_TagString: Untagged
@@ -217722,9 +218792,9 @@ RectTransform:
   - {fileID: 7214581735331935573}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -761.56}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8242678729986952844
@@ -217791,6 +218861,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3636171229461246111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8771851223490286059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8775512974850948014
 GameObject:
   m_ObjectHideFlags: 0
@@ -217913,6 +218998,7 @@ GameObject:
   - component: {fileID: 5742287337432154646}
   - component: {fileID: 7224980582753612791}
   - component: {fileID: 3637326228997085700}
+  - component: {fileID: 8836054336932119671}
   m_Layer: 5
   m_Name: UI_Item Slot (3)
   m_TagString: Untagged
@@ -217938,9 +219024,9 @@ RectTransform:
   - {fileID: 29567179862858612}
   m_Father: {fileID: 9184020082757886228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 411.8683, y: -279.22}
   m_SizeDelta: {x: 823.7366, y: 76.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7224980582753612791
@@ -218007,6 +219093,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8836054336932119671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8780223618170599745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8783970780191933496
 GameObject:
   m_ObjectHideFlags: 0
@@ -218022,6 +219123,7 @@ GameObject:
   - component: {fileID: 6134587977583203618}
   - component: {fileID: 5310648297685862358}
   - component: {fileID: 1731461644172617366}
+  - component: {fileID: 2289209596003631672}
   m_Layer: 5
   m_Name: PreviousBtn
   m_TagString: Untagged
@@ -218194,6 +219296,21 @@ MonoBehaviour:
   pressTrigger: Press
   selectedTrigger: Selected
   disabledTrigger: Disabled
+--- !u!114 &2289209596003631672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8783970780191933496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8784186168172735337
 GameObject:
   m_ObjectHideFlags: 0
@@ -218336,6 +219453,7 @@ GameObject:
   - component: {fileID: 8451608051096366157}
   - component: {fileID: 7762129398439635277}
   - component: {fileID: 1025020477081249433}
+  - component: {fileID: 7163968422445394395}
   m_Layer: 5
   m_Name: EquipmentBtn
   m_TagString: Untagged
@@ -218480,6 +219598,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &7163968422445394395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8789083425041527551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8790066324073045905
 GameObject:
   m_ObjectHideFlags: 0
@@ -218493,6 +219626,7 @@ GameObject:
   - component: {fileID: 5551032123381338174}
   - component: {fileID: 3232484419512847746}
   - component: {fileID: 7592899778663937552}
+  - component: {fileID: 4289809752146752316}
   m_Layer: 5
   m_Name: AccessoryListBtn
   m_TagString: Untagged
@@ -218515,10 +219649,10 @@ RectTransform:
   - {fileID: 974304627249499173}
   m_Father: {fileID: 6420692652016540313}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 149.08347, y: -96.09}
+  m_SizeDelta: {x: 230.54, y: 56.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6897218991416216382
 CanvasRenderer:
@@ -218649,6 +219783,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &4289809752146752316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8790066324073045905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8800220707330016517
 GameObject:
   m_ObjectHideFlags: 0
@@ -221517,6 +222666,7 @@ GameObject:
   - component: {fileID: 6343454950981651728}
   - component: {fileID: 3036572155509428998}
   - component: {fileID: 1989259051768056464}
+  - component: {fileID: 2299982121139885447}
   m_Layer: 5
   m_Name: UI_EquipmentSlot - Empty
   m_TagString: Untagged
@@ -221655,6 +222805,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2299982121139885447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8925461232563188597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &8933336009404446143
 GameObject:
   m_ObjectHideFlags: 0
@@ -223378,6 +224543,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &9040012620768824164
 GameObject:
   m_ObjectHideFlags: 0
@@ -223548,6 +224715,7 @@ GameObject:
   - component: {fileID: 520714036765158616}
   - component: {fileID: 4018157987040880778}
   - component: {fileID: 7174994953761127493}
+  - component: {fileID: 8122519219913787664}
   m_Layer: 5
   m_Name: SaveBtn
   m_TagString: Untagged
@@ -223692,6 +224860,21 @@ MonoBehaviour:
   padding: 8
   autoScrollVertical: 1
   autoScrollHorizontal: 0
+--- !u!114 &8122519219913787664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9050594614454685375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &9051410238068006749
 GameObject:
   m_ObjectHideFlags: 0
@@ -225962,6 +227145,7 @@ GameObject:
   - component: {fileID: 2038138871461728941}
   - component: {fileID: 7789916293412928077}
   - component: {fileID: 4724383162892792529}
+  - component: {fileID: 9211270291957525028}
   m_Layer: 5
   m_Name: Slot (2)
   m_TagString: Untagged
@@ -226110,6 +227294,21 @@ MonoBehaviour:
   playerSpriteImage: {fileID: 3946361060217365961}
   saveButton: {fileID: 7789916293412928077}
   loadButton: {fileID: 7789916293412928077}
+--- !u!114 &9211270291957525028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9161059722467618018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba424566e9c1efb4990141da16b60439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playOnPointerEnter: 1
+  playOnSelect: 0
+  hoverSoundName: UIButtonMove
 --- !u!1 &9196480659552645888
 GameObject:
   m_ObjectHideFlags: 0

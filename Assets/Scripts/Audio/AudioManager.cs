@@ -18,6 +18,19 @@ public class AudioManager : MonoBehaviour
     [Header("BGM Settings")]
     [SerializeField] private float bgmFadeDuration = 1f;
 
+    [Header("Audio Mixer Volume Params")]
+    [SerializeField] private AudioMixer audioMixer;
+    [SerializeField] private string bgmVolumeParameter = "BGMVolume";
+    [SerializeField] private string sfxVolumeParameter = "SFXVolume";
+
+    [Header("Saved Audio Pref Keys")]
+    [SerializeField] private string bgmPrefsKey = "Options_BGMVolume";
+    [SerializeField] private string sfxPrefsKey = "Options_SFXVolume";
+
+    private const float MinLinearVolume = 0.0001f;
+    private const float MinMixerDb = -80f;
+    private const float MaxMixerDb = 0f;
+
     private Transform player;
 
     private AudioClip lastMusicPlayed;
@@ -25,11 +38,6 @@ public class AudioManager : MonoBehaviour
     private bool bgmShouldPlay;
 
     private Coroutine bgmRoutine;
-
-    private void Start()
-    {
-        ApplyMixerGroups();
-    }
 
     private void Awake()
     {
@@ -51,7 +59,16 @@ public class AudioManager : MonoBehaviour
         if (audioDB == null)
             Debug.LogWarning("[AudioManager] AudioDatabaseSO is not assigned.");
 
-        ApplyMixerGroups();
+        if (audioMixer == null)
+            Debug.LogWarning("[AudioManager] AudioMixer is not assigned.");
+
+        RefreshAudioSetup();
+    }
+
+    private void Start()
+    {
+        // Safety pass in case mixer groups or other refs initialize later.
+        RefreshAudioSetup();
     }
 
     private void Update()
@@ -81,6 +98,74 @@ public class AudioManager : MonoBehaviour
 
         Debug.Log($"[AudioManager] BGM Source Group = {bgmGroup}");
         Debug.Log($"[AudioManager] SFX Source Group = {sfxGroup}");
+
+        if (audioMixer != null)
+        {
+            if (audioMixer.GetFloat(bgmVolumeParameter, out float bgmDb))
+                Debug.Log($"[AudioManager] {bgmVolumeParameter} = {bgmDb} dB");
+
+            if (audioMixer.GetFloat(sfxVolumeParameter, out float sfxDb))
+                Debug.Log($"[AudioManager] {sfxVolumeParameter} = {sfxDb} dB");
+        }
+    }
+
+    private void RefreshAudioSetup()
+    {
+        ApplyMixerGroups();
+        ApplySavedMixerVolumes();
+    }
+
+    private void ApplySavedMixerVolumes()
+    {
+        if (audioMixer == null)
+            return;
+
+        float savedBgm = PlayerPrefs.GetFloat(bgmPrefsKey, 0.75f);
+        float savedSfx = PlayerPrefs.GetFloat(sfxPrefsKey, 0.75f);
+
+        SetBgmVolume(savedBgm, saveToPrefs: false);
+        SetSfxVolume(savedSfx, saveToPrefs: false);
+    }
+
+    public void SetBgmVolume(float sliderValue, bool saveToPrefs = true)
+    {
+        SetMixerVolume(bgmVolumeParameter, sliderValue);
+
+        if (saveToPrefs)
+        {
+            PlayerPrefs.SetFloat(bgmPrefsKey, Mathf.Clamp01(sliderValue));
+            PlayerPrefs.Save();
+        }
+    }
+
+    public void SetSfxVolume(float sliderValue, bool saveToPrefs = true)
+    {
+        SetMixerVolume(sfxVolumeParameter, sliderValue);
+
+        if (saveToPrefs)
+        {
+            PlayerPrefs.SetFloat(sfxPrefsKey, Mathf.Clamp01(sliderValue));
+            PlayerPrefs.Save();
+        }
+    }
+
+    private void SetMixerVolume(string parameterName, float sliderValue)
+    {
+        if (audioMixer == null || string.IsNullOrWhiteSpace(parameterName))
+            return;
+
+        float clamped = Mathf.Clamp(sliderValue, 0f, 1f);
+
+        if (clamped <= 0f)
+        {
+            audioMixer.SetFloat(parameterName, MinMixerDb);
+            return;
+        }
+
+        float db = Mathf.Log10(Mathf.Max(clamped, MinLinearVolume)) * 20f;
+        db = Mathf.Clamp(db, MinMixerDb, MaxMixerDb);
+
+        audioMixer.SetFloat(parameterName, db);
     }
 
     public void StartBGM(string musicGroup)

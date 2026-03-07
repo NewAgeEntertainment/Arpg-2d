@@ -25,6 +25,9 @@ public class UI_Options : MonoBehaviour
     [SerializeField] private Slider bgmSlider;
     [SerializeField] private Slider sfxSlider;
 
+    [Header("Apply Button")]
+    [SerializeField] private Button applyButton;
+
     [Header("Audio Mixer")]
     [SerializeField] private AudioMixer audioMixer;
     [SerializeField] private string bgmVolumeParameter = "BGMVolume";
@@ -33,6 +36,10 @@ public class UI_Options : MonoBehaviour
     [Header("Saved Audio Pref Keys")]
     [SerializeField] private string bgmPrefsKey = "Options_BGMVolume";
     [SerializeField] private string sfxPrefsKey = "Options_SFXVolume";
+
+    [Header("Toggle Pref Keys")]
+    [SerializeField] private string healthBarPrefsKey = "Options_ShowHealthBar";
+    [SerializeField] private string manaBarPrefsKey = "Options_ShowManaBar";
 
     [Header("Controls (Rewired Control Mapper)")]
     [SerializeField] private Button controlsButton;
@@ -60,6 +67,20 @@ public class UI_Options : MonoBehaviour
     private const float MinMixerDb = -80f;
     private const float MaxMixerDb = 0f;
 
+    // Applied values (the currently saved/committed settings)
+    private float appliedBgm = 0.75f;
+    private float appliedSfx = 0.75f;
+    private bool appliedHealthBar = true;
+    private bool appliedManaBar = true;
+
+    // Pending values (what the user is changing right now)
+    private float pendingBgm = 0.75f;
+    private float pendingSfx = 0.75f;
+    private bool pendingHealthBar = true;
+    private bool pendingManaBar = true;
+
+    private bool suppressCallbacks = false;
+
     private void Awake()
     {
         player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
@@ -67,6 +88,7 @@ public class UI_Options : MonoBehaviour
         if (healthBarToggle != null) healthBarToggle.onValueChanged.AddListener(OnHealthToggleChanged);
         if (manaBarToggle != null) manaBarToggle.onValueChanged.AddListener(OnManaToggleChanged);
         if (controlsButton != null) controlsButton.onClick.AddListener(OnClickOpenControlMapper);
+        if (applyButton != null) applyButton.onClick.AddListener(ApplyChanges);
 
         if (bgmSlider != null)
         {
@@ -85,7 +107,10 @@ public class UI_Options : MonoBehaviour
         cg = GetComponent<CanvasGroup>();
         if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
 
-        LoadAudioSettings();
+        LoadAppliedSettings();
+        ResetPendingToApplied();
+        RefreshControlsFromPending();
+        UpdateApplyButtonState();
     }
 
     private void Start()
@@ -100,6 +125,11 @@ public class UI_Options : MonoBehaviour
         HookMapperEvents(true);
 #endif
         CacheTitleMenuManager();
+
+        // Every time options opens, start from last applied values
+        ResetPendingToApplied();
+        RefreshControlsFromPending();
+        UpdateApplyButtonState();
     }
 
     private void OnDisable()
@@ -120,11 +150,18 @@ public class UI_Options : MonoBehaviour
         if (!gameObject.activeSelf) gameObject.SetActive(true);
         BringToFront();
         SetInteractable(true);
+
+        ResetPendingToApplied();
+        RefreshControlsFromPending();
+        UpdateApplyButtonState();
+
         Debug.Log("[UI_Options] Options panel opened.");
     }
 
     public bool HandleCancel()
     {
+        RevertPendingChanges();
+
         if (IsTitleScreenContext())
         {
             ReturnToTitleMainAndCloseSelf();
@@ -141,6 +178,7 @@ public class UI_Options : MonoBehaviour
 
     public void ClosePanel()
     {
+        RevertPendingChanges();
         SetInteractable(false);
         gameObject.SetActive(false);
         Debug.Log("[UI_Options] Closed.");
@@ -148,14 +186,28 @@ public class UI_Options : MonoBehaviour
 
     private void OnHealthToggleChanged(bool isOn)
     {
+        if (suppressCallbacks) return;
+
+        pendingHealthBar = isOn;
+
+        // Preview immediately
         if (player != null && player.health != null)
             player.health.EnableHealthBar(isOn);
+
+        UpdateApplyButtonState();
     }
 
     private void OnManaToggleChanged(bool isOn)
     {
+        if (suppressCallbacks) return;
+
+        pendingManaBar = isOn;
+
+        // Preview immediately
         if (player != null && player.mana != null)
             player.mana.EnableManaBar(isOn);
+
+        UpdateApplyButtonState();
     }
 
     public bool IsOpen
@@ -169,31 +221,142 @@ public class UI_Options : MonoBehaviour
 
     private void OnBgmSliderChanged(float value)
     {
-        SetMixerVolume(bgmVolumeParameter, value);
-        PlayerPrefs.SetFloat(bgmPrefsKey, value);
-        PlayerPrefs.Save();
+        if (suppressCallbacks) return;
+
+        pendingBgm = value;
+
+        // Preview immediately, but do not save yet
+        if (AudioManager.instance != null)
+            AudioManager.instance.SetBgmVolume(value, saveToPrefs: false);
+        else
+            SetMixerVolume(bgmVolumeParameter, value);
+
+        UpdateApplyButtonState();
     }
 
     private void OnSfxSliderChanged(float value)
     {
-        SetMixerVolume(sfxVolumeParameter, value);
-        PlayerPrefs.SetFloat(sfxPrefsKey, value);
-        PlayerPrefs.Save();
+        if (suppressCallbacks) return;
+
+        pendingSfx = value;
+
+        // Preview immediately, but do not save yet
+        if (AudioManager.instance != null)
+            AudioManager.instance.SetSfxVolume(value, saveToPrefs: false);
+        else
+            SetMixerVolume(sfxVolumeParameter, value);
+
+        UpdateApplyButtonState();
     }
 
-    private void LoadAudioSettings()
+    public void ApplyChanges()
     {
-        float savedBgm = PlayerPrefs.GetFloat(bgmPrefsKey, 0.75f);
-        float savedSfx = PlayerPrefs.GetFloat(sfxPrefsKey, 0.75f);
+        appliedBgm = pendingBgm;
+        appliedSfx = pendingSfx;
+        appliedHealthBar = pendingHealthBar;
+        appliedManaBar = pendingManaBar;
+
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.SetBgmVolume(appliedBgm, saveToPrefs: true);
+            AudioManager.instance.SetSfxVolume(appliedSfx, saveToPrefs: true);
+        }
+        else
+        {
+            SetMixerVolume(bgmVolumeParameter, appliedBgm);
+            SetMixerVolume(sfxVolumeParameter, appliedSfx);
+
+            PlayerPrefs.SetFloat(bgmPrefsKey, appliedBgm);
+            PlayerPrefs.SetFloat(sfxPrefsKey, appliedSfx);
+        }
+
+        PlayerPrefs.SetInt(healthBarPrefsKey, appliedHealthBar ? 1 : 0);
+        PlayerPrefs.SetInt(manaBarPrefsKey, appliedManaBar ? 1 : 0);
+        PlayerPrefs.Save();
+
+        ApplyGameplayToggles(appliedHealthBar, appliedManaBar);
+        UpdateApplyButtonState();
+
+        Debug.Log("[UI_Options] Changes applied.");
+    }
+
+    private void RevertPendingChanges()
+    {
+        ResetPendingToApplied();
+
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.SetBgmVolume(appliedBgm, saveToPrefs: false);
+            AudioManager.instance.SetSfxVolume(appliedSfx, saveToPrefs: false);
+        }
+        else
+        {
+            SetMixerVolume(bgmVolumeParameter, appliedBgm);
+            SetMixerVolume(sfxVolumeParameter, appliedSfx);
+        }
+
+        ApplyGameplayToggles(appliedHealthBar, appliedManaBar);
+        RefreshControlsFromPending();
+        UpdateApplyButtonState();
+    }
+
+    private void LoadAppliedSettings()
+    {
+        appliedBgm = PlayerPrefs.GetFloat(bgmPrefsKey, 0.75f);
+        appliedSfx = PlayerPrefs.GetFloat(sfxPrefsKey, 0.75f);
+        appliedHealthBar = PlayerPrefs.GetInt(healthBarPrefsKey, 1) == 1;
+        appliedManaBar = PlayerPrefs.GetInt(manaBarPrefsKey, 1) == 1;
+
+        ApplyGameplayToggles(appliedHealthBar, appliedManaBar);
+    }
+
+    private void ResetPendingToApplied()
+    {
+        pendingBgm = appliedBgm;
+        pendingSfx = appliedSfx;
+        pendingHealthBar = appliedHealthBar;
+        pendingManaBar = appliedManaBar;
+    }
+
+    private void RefreshControlsFromPending()
+    {
+        suppressCallbacks = true;
 
         if (bgmSlider != null)
-            bgmSlider.SetValueWithoutNotify(savedBgm);
+            bgmSlider.SetValueWithoutNotify(pendingBgm);
 
         if (sfxSlider != null)
-            sfxSlider.SetValueWithoutNotify(savedSfx);
+            sfxSlider.SetValueWithoutNotify(pendingSfx);
 
-        SetMixerVolume(bgmVolumeParameter, savedBgm);
-        SetMixerVolume(sfxVolumeParameter, savedSfx);
+        if (healthBarToggle != null)
+            healthBarToggle.SetIsOnWithoutNotify(pendingHealthBar);
+
+        if (manaBarToggle != null)
+            manaBarToggle.SetIsOnWithoutNotify(pendingManaBar);
+
+        suppressCallbacks = false;
+    }
+
+    private void ApplyGameplayToggles(bool healthOn, bool manaOn)
+    {
+        if (player != null && player.health != null)
+            player.health.EnableHealthBar(healthOn);
+
+        if (player != null && player.mana != null)
+            player.mana.EnableManaBar(manaOn);
+    }
+
+    private void UpdateApplyButtonState()
+    {
+        if (applyButton == null) return;
+
+        bool hasChanges =
+            !Mathf.Approximately(pendingBgm, appliedBgm) ||
+            !Mathf.Approximately(pendingSfx, appliedSfx) ||
+            pendingHealthBar != appliedHealthBar ||
+            pendingManaBar != appliedManaBar;
+
+        applyButton.interactable = hasChanges;
     }
 
     private void SetMixerVolume(string parameterName, float sliderValue)
