@@ -226,6 +226,7 @@ public class Entity_Stats : MonoBehaviour
 
         defense.armor.SetBaseValue(defaultStatSetup.armor);
         defense.evasion.SetBaseValue(defaultStatSetup.evasion);
+        
 
         defense.fireRes.SetBaseValue(defaultStatSetup.fireResistance);
         defense.iceRes.SetBaseValue(defaultStatSetup.iceResistance);

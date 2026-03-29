@@ -3,8 +3,8 @@
 public class Sex_StrokingState : SexyTimeState
 {
     [Header("Timing")]
-    private float idleReturnDelay = 0.35f;   // how long without presses before going idle
-    private float strokeCooldown = 0.08f;    // prevents accidental double-taps
+    private float idleReturnDelay = 0.35f;
+    private float strokeCooldown = 0.08f;
 
     private float _nextAllowedPressTime;
     private float _lastPressTime;
@@ -16,8 +16,8 @@ public class Sex_StrokingState : SexyTimeState
 
     [SerializeField] private float minStrokeSpeed = 1f;
     [SerializeField] private float maxStrokeSpeed = 2.25f;
-    [SerializeField] private float fastTapWindow = 0.35f;     // how far apart taps count as "fast"
-    [SerializeField] private float speedDamp = 0.06f;         // smooth time for speed changes
+    [SerializeField] private float fastTapWindow = 0.35f;
+    [SerializeField] private float speedDamp = 0.06f;
 
     public Sex_StrokingState(SexyTimeLogic logic, SexyTimeStateMachine stateMachine)
         : base(logic, stateMachine) { }
@@ -36,21 +36,16 @@ public class Sex_StrokingState : SexyTimeState
         float dt = Time.time - _lastPressTime;
         _lastPressTime = Time.time;
 
-        float t = 1f - Mathf.Clamp01(dt / fastTapWindow); // 0=slow tap, 1=very fast
+        float t = 1f - Mathf.Clamp01(dt / fastTapWindow);
         float targetSpeed = Mathf.Lerp(minStrokeSpeed, maxStrokeSpeed, t);
 
-        // Smoothly move current speed toward target
         _strokeSpeed = Mathf.SmoothDamp(_strokeSpeed, targetSpeed, ref _speedSmoothVel, speedDamp);
 
-        // Apply immediately if anim exists
         if (logic.anim != null) logic.anim.speed = _strokeSpeed;
-        // so compute dt BEFORE updating _lastPressTime:
 
         _nextAllowedPressTime = Time.time + strokeCooldown;
         _lastPressTime = Time.time;
 
-        // If a stroke is currently playing, DON'T restart it.
-        // Just buffer one next stroke.
         if (_strokeAnimPlaying)
         {
             _queuedNextStroke = true;
@@ -69,12 +64,10 @@ public class Sex_StrokingState : SexyTimeState
         {
             var st = logic.anim.GetCurrentAnimatorStateInfo(0);
 
-            // Wait until the stroke clip finishes
             if (st.IsName("fuck") && st.normalizedTime >= 1f)
             {
                 _strokeAnimPlaying = false;
 
-                // If player pressed during the stroke, chain immediately
                 if (_queuedNextStroke)
                 {
                     _queuedNextStroke = false;
@@ -82,14 +75,12 @@ public class Sex_StrokingState : SexyTimeState
                     return;
                 }
 
-                // No buffered press: only return to idle if player hasn't pressed recently
                 if (Time.time - _lastPressTime >= idleReturnDelay)
                     stateMachine.ChangeState(new Sex_IdleState(logic, stateMachine));
             }
         }
         else
         {
-            // Not currently stroking — if player stops pressing for a bit, go idle
             if (Time.time - _lastPressTime >= idleReturnDelay)
                 stateMachine.ChangeState(new Sex_IdleState(logic, stateMachine));
         }
@@ -99,7 +90,9 @@ public class Sex_StrokingState : SexyTimeState
     {
         _strokeAnimPlaying = true;
 
-        logic.anim.speed = _strokeSpeed;   // keep current tap-driven speed
+        logic.PlayStrokeSfx();
+
+        logic.anim.speed = _strokeSpeed;
         logic.anim.Play("fuck", 0, 0f);
 
         ApplyStrokeBars();
@@ -115,17 +108,19 @@ public class Sex_StrokingState : SexyTimeState
         float playerMaxArousal = ui.PlayerBarMax;
         float partnerMaxArousal = ui.PartnerBarMax;
 
-        // BLUE
         float strokeGainBlue = logic.playerStats.GetBlueBarStrokeValue();
         float resilience = logic.playerStats.GetResilienceMitigation(0f);
         float reduction = 1f - (resilience / 100f);
         float blueIncrease = logic.ArousalPerStroke * reduction;
         float newPlayerVal = Mathf.Min(ui.PlayerBarValue + (strokeGainBlue + blueIncrease), playerMaxArousal);
 
-        // PINK
         bool isCrit;
         float strokeDamage = logic.playerStats.GetSexualDamage(out isCrit);
-        if (isCrit) logic.ShowCritFeedback();
+        if (isCrit)
+        {
+            logic.ShowCritFeedback();
+            logic.PlayCritStrokeSfx();
+        }
 
         float partnerResilience = logic.partnerStats?.GetResilienceMitigation(0f) ?? 0f;
         float partnerRedMult = 1f - (partnerResilience / 100f);
@@ -153,6 +148,7 @@ public class Sex_StrokingState : SexyTimeState
         {
             logic.cumReached = true;
             logic.cumTimeElapsed = 0f;
+            logic.PlayClimaxSfx();
             stateMachine.ChangeState(new Sex_ClimaxState(logic, stateMachine));
         }
     }

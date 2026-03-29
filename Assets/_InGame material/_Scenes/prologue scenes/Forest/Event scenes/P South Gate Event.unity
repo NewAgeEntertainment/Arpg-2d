@@ -11855,8 +11855,7 @@ Transform:
   m_LocalPosition: {x: -3.02, y: 2.83, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 945849155}
+  m_Children: []
   m_Father: {fileID: 1032119308}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &326424602
@@ -11995,9 +11994,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.02037037
-    width: 0.35781252
-    height: 0.35823098
+    y: 0.038888887
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 34
@@ -41180,11 +41179,11 @@ Transform:
   m_GameObject: {fileID: 945849154}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -3.02, y: 2.83, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 326424601}
+  m_Father: {fileID: 1032119308}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &945849156
 MonoBehaviour:
@@ -48730,6 +48729,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 326424601}
+  - {fileID: 945849155}
   - {fileID: 463761017}
   m_Father: {fileID: 1924152029}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -109136,6 +109136,10 @@ MonoBehaviour:
   turnRightStateName: Book Turn Right
   turnLeftTriggerName: TurnLeft
   turnRightTriggerName: TurnRight
+  bookOpenSfx: BookOpen
+  bookCloseSfx: BookClose
+  pageTurnLeftSfx: BookPageTurn
+  pageTurnRightSfx: BookPageTurn
   insideMenuRoot: {fileID: 0}
 --- !u!114 &2137755313
 MonoBehaviour:

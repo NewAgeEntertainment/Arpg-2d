@@ -4,7 +4,6 @@ public abstract class ItemEffect_DataSO : ScriptableObject
 {
     [TextArea] public string effectDescription;
 
-    // 🔒 Use-gating fields you can set per effect asset in the Inspector
     [Header("Use Gating")]
     [Tooltip("If true, block use when target HP is full.")]
     [SerializeField] private bool affectsHealth = false;
@@ -18,24 +17,22 @@ public abstract class ItemEffect_DataSO : ScriptableObject
     [Tooltip("Optional key used to group lockouts. Leave empty to use this asset's name.")]
     [SerializeField] private string effectKeyOverride = "";
 
-    protected Player player;
+    protected Component targetCharacter;
 
-    // ✅ Inventory will read these; override if you need dynamic behavior
     public virtual bool AffectsHealth => affectsHealth;
     public virtual bool AffectsMana => affectsMana;
     public virtual float DurationSeconds => Mathf.Max(0f, reuseLockSeconds);
     public virtual string EffectKey => string.IsNullOrEmpty(effectKeyOverride) ? name : effectKeyOverride;
 
-    public virtual bool CanBeUsed(Player player) => true;
+    public virtual bool CanBeUsed(Component target) => true;
 
-    public virtual void ExecuteEffect(Player target)
+    public virtual void ExecuteEffect(Component target)
     {
-        this.player = target;
+        targetCharacter = target;
     }
 
-    public virtual void Subscribe(Player player) => this.player = player;
-    public virtual void Unsubscribe() => player = null;
+    public virtual void Subscribe(Component target) => targetCharacter = target;
+    public virtual void Unsubscribe() => targetCharacter = null;
 
-    // ✅ If your effect doesn’t need a target, override and return false.
     public virtual bool RequiresTarget => true;
 }

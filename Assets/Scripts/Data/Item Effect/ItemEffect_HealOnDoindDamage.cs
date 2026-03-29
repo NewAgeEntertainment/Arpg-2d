@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "RPG Setup/Item Data/Item effect/Heal on doing damage", fileName = "Item effect data - Heal on doing Phys Damage")]
@@ -7,35 +5,71 @@ public class ItemEffect_HealOnDoindDamage : ItemEffect_DataSO
 {
     [SerializeField] private float percentHealerOnAttack = 0.2f;
 
-    public override void Subscribe(Player player)
+    private Player subscribedPlayer;
+    private Companion subscribedCompanion;
+
+    public override void Subscribe(Component target)
     {
-        base.Subscribe(player);
-        player.combat.OnDoingPhysicalDamage += HealOnDoingDamage;
+        base.Subscribe(target);
+
+        Unsubscribe();
+
+        if (target == null)
+            return;
+
+        subscribedPlayer = target.GetComponent<Player>();
+        if (subscribedPlayer != null && subscribedPlayer.combat != null)
+        {
+            subscribedPlayer.combat.OnDoingPhysicalDamage += HealOnDoingDamage;
+            return;
+        }
+
+        subscribedCompanion = target.GetComponent<Companion>();
+        if (subscribedCompanion != null && subscribedCompanion.combat != null)
+        {
+            subscribedCompanion.combat.OnDoingPhysicalDamage += HealOnDoingDamage;
+        }
     }
 
     public override void Unsubscribe()
     {
-        if (player != null)
-        {
-            player.combat.OnDoingPhysicalDamage -= HealOnDoingDamage;
-            player = null;
-        }
+        if (subscribedPlayer != null && subscribedPlayer.combat != null)
+            subscribedPlayer.combat.OnDoingPhysicalDamage -= HealOnDoingDamage;
+
+        if (subscribedCompanion != null && subscribedCompanion.combat != null)
+            subscribedCompanion.combat.OnDoingPhysicalDamage -= HealOnDoingDamage;
+
+        subscribedPlayer = null;
+        subscribedCompanion = null;
+        targetCharacter = null;
     }
 
-    public override void ExecuteEffect(Player target)
+    public override void ExecuteEffect(Component target)
     {
-        // This type of effect doesn't "activate" on use, but it still must be valid.
-        Debug.Log($"[ItemEffect_HealOnDoindDamage] Subscribed to {target.name}");
+        if (target == null)
+        {
+            Debug.LogWarning("[ItemEffect_HealOnDoindDamage] Target is null.");
+            return;
+        }
+
+        base.ExecuteEffect(target);
         Subscribe(target);
+
+        Debug.Log($"[ItemEffect_HealOnDoindDamage] Subscribed to {target.name}");
     }
 
     private void HealOnDoingDamage(float damage)
     {
-        if (player != null)
-        {
-            float healAmount = damage * percentHealerOnAttack;
-            player.health.IncreaseHealth(healAmount);
-            Debug.Log($"[HealOnDoindDamage] Healed {player.name} for {healAmount} from physical damage.");
-        }
+        if (targetCharacter == null)
+            return;
+
+        Entity_Health health = targetCharacter.GetComponent<Entity_Health>();
+        if (health == null)
+            return;
+
+        float healAmount = damage * percentHealerOnAttack;
+        health.IncreaseHealth(healAmount);
+
+        Debug.Log($"[HealOnDoindDamage] Healed {targetCharacter.name} for {healAmount} from physical damage.");
     }
 }

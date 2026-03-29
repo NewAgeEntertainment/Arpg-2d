@@ -18,18 +18,18 @@ public class Inventory_Base : MonoBehaviour
     // --- Runtime lockout store (per-player, per-effect) ---
     private static readonly Dictionary<string, float> _activeConsumables = new();
 
-    private static string MakeLockKey(Player p, string effectKey)
-        => $"{(p ? p.gameObject.GetInstanceID() : 0)}::{effectKey}";
+    private static string MakeLockKey(Component target, string effectKey)
+    => $"{(target ? target.gameObject.GetInstanceID() : 0)}::{effectKey}";
 
-    private static bool IsLockActive(Player p, string effectKey)
+    private static bool IsLockActive(Component target, string effectKey)
         => !string.IsNullOrEmpty(effectKey)
-           && _activeConsumables.TryGetValue(MakeLockKey(p, effectKey), out var until)
+           && _activeConsumables.TryGetValue(MakeLockKey(target, effectKey), out var until)
            && Time.time < until;
 
-    private static void StartLock(Player p, string effectKey, float seconds)
+    private static void StartLock(Component target, string effectKey, float seconds)
     {
-        if (p == null || string.IsNullOrEmpty(effectKey) || seconds <= 0f) return;
-        _activeConsumables[MakeLockKey(p, effectKey)] = Time.time + seconds;
+        if (target == null || string.IsNullOrEmpty(effectKey) || seconds <= 0f) return;
+        _activeConsumables[MakeLockKey(target, effectKey)] = Time.time + seconds;
     }
 
     protected virtual void Awake()
@@ -96,51 +96,57 @@ public class Inventory_Base : MonoBehaviour
         => itemList.Find(item => item.itemData == itemToFind.itemData);
 
     // === GUARDS + USE ===
-    public bool TryUseItemChecked(Inventory_Item itemToUse, Player targetPlayer)
+    public bool TryUseItemChecked(Inventory_Item itemToUse, Component targetCharacter)
     {
         if (itemToUse == null || !itemList.Contains(itemToUse)) return false;
+        if (targetCharacter == null) return false;
 
         var effect = itemToUse.itemEffect;
         if (effect == null) return false;
 
-        // 🔎 Read gating directly from ItemEffect_DataSO
         bool affectsHealth = effect.AffectsHealth;
         bool affectsMana = effect.AffectsMana;
         float duration = effect.DurationSeconds;
         string effectKey = effect.EffectKey;
 
-        // ❌ Block at full HP
-        if (affectsHealth && targetPlayer?.health != null && targetPlayer.stats != null)
+        var health = targetCharacter.GetComponent<Entity_Health>();
+        var mana = targetCharacter.GetComponent<Entity_Mana>();
+        var stats = targetCharacter.GetComponent<Player_Stats>();
+
+        if (affectsHealth && health != null && stats != null)
         {
-            if (targetPlayer.health.GetCurrentHealth() >= targetPlayer.stats.GetMaxHealth())
+            if (health.GetCurrentHealth() >= stats.GetMaxHealth())
             {
                 Debug.Log("[Inventory] Cannot use: Health already full.");
                 return false;
             }
         }
 
-        // ❌ Block at full MP
-        if (affectsMana && targetPlayer?.mana != null && targetPlayer.stats != null)
+        if (affectsMana && mana != null && stats != null)
         {
-            if (targetPlayer.mana.GetCurrentMana() >= targetPlayer.stats.GetMaxMana())
+            if (mana.GetCurrentMana() >= stats.GetMaxMana())
             {
                 Debug.Log("[Inventory] Cannot use: Mana already full.");
                 return false;
             }
         }
 
-        // ❌ Block while same effect active
-        if (duration > 0f && IsLockActive(targetPlayer, effectKey))
+        if (duration > 0f && IsLockActive(targetCharacter, effectKey))
         {
             Debug.Log("[Inventory] Cannot use: Effect still active.");
             return false;
         }
 
-        if (!effect.CanBeUsed(targetPlayer)) return false;
+        if (!effect.CanBeUsed(targetCharacter))
+            return false;
 
-        effect.ExecuteEffect(targetPlayer);
+        effect.ExecuteEffect(targetCharacter);
 
-        if (duration > 0f) StartLock(targetPlayer, effectKey, duration);
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlayGlobalSFX("Consumable_Use");
+
+        if (duration > 0f)
+            StartLock(targetCharacter, effectKey, duration);
 
         if (itemToUse.stackSize > 1) itemToUse.RemoveStack();
         else RemoveOneItem(itemToUse);
@@ -148,6 +154,11 @@ public class Inventory_Base : MonoBehaviour
         NotifyInventoryChanged();
         return true;
     }
+
+   
+
+    public void TryUseItem(Inventory_Item itemToUse, Component targetCharacter)
+        => TryUseItemChecked(itemToUse, targetCharacter);
 
 
     public void TryUseItem(Inventory_Item itemToUse, Player targetPlayer)

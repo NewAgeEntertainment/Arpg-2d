@@ -17,9 +17,11 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private GameObject goldDisplayRoot;
     [SerializeField] private TextMeshProUGUI goldGainText;
     [SerializeField] private float goldDisplayDuration = 2.0f;
+
+    [Header("Gold UI Audio")]
+    [SerializeField] private string goldPickupSfx = "GoldPickup";
+
     private Coroutine goldGainRoutine;
-    [SerializeField] private AudioClip goldPickupClip;
-    [SerializeField] private float goldPickupVolume = 1f;
 
     [Header("Quick Slots")]
     [SerializeField] private UI_QuickItemSlot quickSlot1;
@@ -28,15 +30,14 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private UI_QuickItemSlot quickSlot4;
 
     [Header("Combat Hotbar (A/B/C/D)")]
-    [SerializeField] private List<UI_SkillSlot> skillSlots = new();  // these must be UISkillCategory.Combat
+    [SerializeField] private List<UI_SkillSlot> skillSlots = new();
 
     [Header("Combat Hotbar Visibility")]
-    [SerializeField] private GameObject combatHotbarRoot; // drag the parent that contains A/B/C/D combat slots (recommended)
+    [SerializeField] private GameObject combatHotbarRoot;
 
     private bool _combatHiddenBySex;
     private bool _prevCombatHotbarRootActive;
     private readonly Dictionary<UI_SkillSlot, bool> _prevCombatSlotsActive = new();
-
 
     [Header("Health & Mana")]
     [SerializeField] private Slider healthSlider;
@@ -71,12 +72,14 @@ public class UI_InGame : MonoBehaviour
 
     [Header("Default Slot Assignments (Combat only)")]
     [SerializeField] private bool applyDefaultAssignmentsOnStart = true;
+
     [System.Serializable]
     public struct DefaultSlotAssignment
     {
         public UISkillSlotId slotId;
-        public Skill_DataSO skill; // must be category=Combat
+        public Skill_DataSO skill;
     }
+
     [SerializeField] private List<DefaultSlotAssignment> defaultAssignments = new();
 
     [HideInInspector] public Inventory_Player playerInventory;
@@ -84,24 +87,28 @@ public class UI_InGame : MonoBehaviour
     private Player _subscribedPlayer;
     private Player_Stats _subscribedStats;
 
-    // ==== Item Pickup Toasts ====
     [Header("Item Pickup Toasts")]
     [SerializeField] private RectTransform pickupToastParent;
     [SerializeField] private UI_ItemPickupToast toastPrefab;
-    [SerializeField] private AudioClip itemPickupClip;
-    [SerializeField] private float itemPickupVolume = 1f;
+
+    [Header("Item Pickup Toast Audio")]
+    [SerializeField] private string itemPickupSfx = "ItemPickup";
 
     [Header("Toast Queue Settings")]
     [SerializeField] private float toastLifetimeOverride = 0f;
     [SerializeField] private int maxQueue = 50;
     [SerializeField] private float lifetimePadding = 0.05f;
 
-    private struct ToastRequest { public Sprite icon; public string name; public int amount; }
+    private struct ToastRequest
+    {
+        public Sprite icon;
+        public string name;
+        public int amount;
+    }
+
     private readonly Queue<ToastRequest> _toastQueue = new();
     private bool _isPlayingQueue = false;
     private float _cachedToastLifetime = -1f;
-
-    // ================= Unity =================
 
     private void Awake()
     {
@@ -124,15 +131,14 @@ public class UI_InGame : MonoBehaviour
         UpdateManaBar();
         UpdateQuickSlots();
 
-        // Example: A/B/C/D in a row
         var selects = skillSlots
             .Where(s => s != null)
             .Select(s => s.GetComponent<Selectable>())
             .Where(s => s != null)
             .ToArray();
+
         UI ui = UI.Instance;
         if (ui != null) UI.WireLinearNav(selects, horizontal: true);
-
 
         StartCoroutine(ForceOneMorePaintNextFrame());
     }
@@ -141,7 +147,7 @@ public class UI_InGame : MonoBehaviour
     {
         yield return null;
         ForceRefreshFromCurrentState();
-        ApplyDefaultAssignmentsIfEmpty();     // Combat only
+        ApplyDefaultAssignmentsIfEmpty();
         RefreshAllSkillCostsAndAfford();
     }
 
@@ -166,8 +172,6 @@ public class UI_InGame : MonoBehaviour
             playerInventory.OnInventoryChange -= UpdateQuickSlots;
         }
     }
-
-    // ============== Hook / Unhook ==============
 
     private void HookPlayer(Player p)
     {
@@ -233,23 +237,18 @@ public class UI_InGame : MonoBehaviour
         _subscribedPlayer = null;
     }
 
-    // ============== Input ==============
-
     private void Update()
     {
         if (playerInventory == null || rplayer == null) return;
 
-        // Quick items
         if (rplayer.GetButtonDown(quickSlot1Action)) playerInventory.TryUseQuickItemInSlot(1);
         if (rplayer.GetButtonDown(quickSlot2Action)) playerInventory.TryUseQuickItemInSlot(2);
         if (rplayer.GetButtonDown(quickSlot3Action)) playerInventory.TryUseQuickItemInSlot(3);
         if (rplayer.GetButtonDown(quickSlot4Action)) playerInventory.TryUseQuickItemInSlot(4);
 
-        // Ys-style skills via modifier
         bool mod = rplayer.GetButton(skillModifierAction);
         if (!mod) return;
 
-        // Determine if SexyTime UI is visible (if so, prefer sex hotbar first)
         bool preferSex = SexyTimeLogic.isSexyTimeGoingOn;
 
         if (rplayer.GetButtonDown(skillSlotAAction)) HandleSkillHotkeys(0, UISkillSlotId.SlotA, preferSex);
@@ -262,7 +261,6 @@ public class UI_InGame : MonoBehaviour
     {
         if (preferSex)
         {
-            // Try Sex first; if it fails, only try Combat if the combat bar isn't hidden
             if (!TryUseSexSkillFromIndex(sexIndex))
             {
                 if (!CombatHotbarHidden)
@@ -274,21 +272,13 @@ public class UI_InGame : MonoBehaviour
             if (!TryUseCombatSkillFromSlotSmart(combatId, pulseOnFail: false))
                 TryUseSexSkillFromIndex(sexIndex);
         }
-
     }
 
-
-
-    /// <summary>
-    /// New: Use a combat skill from bar, returning success. Optionally pulse on failure.
-    /// Keeps original behavior intact elsewhere.
-    /// </summary>
     private bool TryUseCombatSkillFromSlotSmart(UISkillSlotId id, bool pulseOnFail)
     {
         var slot = FindSlotById(id);
         if (slot == null) return false;
         if (!slot.HasSkill) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
-        // NEW: if already cooling down, do nothing (and do NOT reset the UI cooldown)
         if (!slot.IsReady)
         {
             slot.PulseConflict(0.2f);
@@ -302,7 +292,6 @@ public class UI_InGame : MonoBehaviour
 
         var sm = player.skillManager;
 
-        // Route stateful skills to states — do not manually Commit here.
         switch (data.skillType)
         {
             case SkillType.Dash:
@@ -330,14 +319,11 @@ public class UI_InGame : MonoBehaviour
                 }
         }
 
-        // Instant skills (projectiles, heals, etc.)
         var runtime = sm.GetSkillByType(data.skillType);
         if (runtime == null) { if (pulseOnFail) slot.PulseConflict(0.2f); return false; }
 
-        // TryUseSkill usually does its own gating + commit
         runtime.TryUseSkill();
 
-        // UI feedback
         slot.StartCooldown(slot.CooldownSeconds);
         slot.RefreshText(sm);
         slot.UpdateAffordability(player.mana);
@@ -347,10 +333,6 @@ public class UI_InGame : MonoBehaviour
 
     public bool CombatHotbarHidden => _combatHiddenBySex;
 
-    /// <summary>
-    /// Hides/restores the combat hotbar UI (A/B/C/D). Uses combatHotbarRoot if assigned,
-    /// otherwise falls back to enabling/disabling individual combat slots.
-    /// </summary>
     public void SetCombatHotbarHidden(bool hide)
     {
         if (hide)
@@ -397,17 +379,15 @@ public class UI_InGame : MonoBehaviour
         if (runtime == null) return false;
 
         var t = runtime.GetType();
-        const System.Reflection.BindingFlags flags =
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.NonPublic;
+        const BindingFlags flags =
+            BindingFlags.Instance |
+            BindingFlags.Public |
+            BindingFlags.NonPublic;
 
-        // 1) bool CanUseSkillCheck()
         var m0 = t.GetMethod("CanUseSkillCheck", flags, null, System.Type.EmptyTypes, null);
         if (m0 != null && m0.ReturnType == typeof(bool))
             return (bool)m0.Invoke(runtime, null);
 
-        // 2) bool CanUseSkillCheck(out <something>)
         foreach (var m in t.GetMethods(flags))
         {
             if (m.Name != "CanUseSkillCheck") continue;
@@ -419,24 +399,17 @@ public class UI_InGame : MonoBehaviour
 
             object[] args = new object[] { null };
             try { return (bool)m.Invoke(runtime, args); }
-            catch { return true; } // if reflection fails, don't hard-block use
+            catch { return true; }
         }
 
-        // If there's no CanUseSkillCheck, assume TryUseSkill will gate internally
         return true;
     }
 
-
-
-    /// <summary>
-    /// Original method (kept intact). Now unused by Update(), but preserved as requested.
-    /// </summary>
     private void TryUseSkillFromSlot(UISkillSlotId id)
     {
         var slot = FindSlotById(id);
         if (slot == null || !slot.HasSkill) { slot?.PulseConflict(0.2f); return; }
 
-        // Safety: Combat hotbar ONLY
         if (slot.slotCategory != UISkillCategory.Combat) { slot.PulseConflict(0.2f); return; }
 
         var data = slot.Data;
@@ -444,7 +417,6 @@ public class UI_InGame : MonoBehaviour
 
         var sm = player.skillManager;
 
-        // Route stateful skills to their states — do not manually Commit here.
         switch (data.skillType)
         {
             case SkillType.Dash:
@@ -462,13 +434,11 @@ public class UI_InGame : MonoBehaviour
                 return;
         }
 
-        // Instant skills (projectiles, heals, etc.)
         var runtime = sm.GetSkillByType(data.skillType);
         if (runtime == null) { slot.PulseConflict(0.2f); return; }
-        runtime.TryUseSkill(); // does its own checks+commit if implemented
+        runtime.TryUseSkill();
     }
 
-    // New: Try to use a Sex skill from SexyTime hotbar at given index.
     private bool TryUseSexSkillFromIndex(int index)
     {
         var sexUI = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
@@ -481,13 +451,11 @@ public class UI_InGame : MonoBehaviour
         var slot = hotbar.Slots[index];
         if (slot == null || !slot.HasSkill) { PulseSexConflict(index, 0.2f); return false; }
 
-        // NEW: if it's on cooldown, don't do anything and DON'T restart cooldown UI
         if (!slot.IsReady)
         {
             slot.PulseConflict(0.2f);
             return false;
         }
-
 
         if (slot == null || !slot.HasSkill) { PulseSexConflict(index, 0.2f); return false; }
         if (slot.slotCategory != UISkillCategory.Sex) { PulseSexConflict(index, 0.2f); return false; }
@@ -499,18 +467,14 @@ public class UI_InGame : MonoBehaviour
         var runtime = sm.GetSkillByType(data.skillType);
         if (runtime == null) { PulseSexConflict(index, 0.2f); return false; }
 
-        // Use the skill (runtime handles gating/commit). Then reflect UI (cooldown/affordability).
-        // Only count as "using a sex skill" if it can actually fire
         if (!RuntimeCanUseSkill(runtime))
         {
             PulseSexConflict(index, 0.2f);
             return false;
         }
 
-        // Use the skill (runtime handles commit)
         runtime.TryUseSkill();
 
-        // NEW: prevent stroke this frame if the same physical button overlaps
         SexyTimeLogic.Current?.SuppressStrokeThisFrame();
 
         slot.StartCooldown(slot.CooldownSeconds);
@@ -518,7 +482,6 @@ public class UI_InGame : MonoBehaviour
         sexUI.RefreshAffordability(player.mana);
 
         return true;
-
     }
 
     public bool AnySkillSlotHasSkill()
@@ -528,7 +491,6 @@ public class UI_InGame : MonoBehaviour
             if (s != null && s.HasSkill) return true;
         return false;
     }
-
 
     private void PulseSexConflict(int index, float seconds)
     {
@@ -541,8 +503,6 @@ public class UI_InGame : MonoBehaviour
             if (s != null) { s.PulseConflict(seconds); return; }
         }
     }
-
-    // ============== GOLD UI ==============
 
     public void UpdateGoldDisplay(int currentGold)
     {
@@ -561,8 +521,7 @@ public class UI_InGame : MonoBehaviour
         if (goldDisplayRoot != null)
             goldDisplayRoot.SetActive(true);
 
-        if (goldPickupClip != null && Camera.main != null)
-            AudioSource.PlayClipAtPoint(goldPickupClip, Camera.main.transform.position, goldPickupVolume);
+        PlayUiSfx(goldPickupSfx);
 
         goldGainRoutine = StartCoroutine(HideGoldGainAfterDelay());
     }
@@ -573,8 +532,6 @@ public class UI_InGame : MonoBehaviour
         if (goldDisplayRoot != null)
             goldDisplayRoot.SetActive(false);
     }
-
-    // ============== HEALTH & MANA UI ==============
 
     private void UpdateHealthBar()
     {
@@ -601,10 +558,8 @@ public class UI_InGame : MonoBehaviour
     private void OnManaChanged()
     {
         UpdateManaBar();
-        RefreshAllSkillCostsAndAfford(); // reflect unaffordable overlay immediately
+        RefreshAllSkillCostsAndAfford();
     }
-
-    // ============== EXP UI ==============
 
     private void OnExpChanged(float current, float next)
     {
@@ -640,8 +595,6 @@ public class UI_InGame : MonoBehaviour
         OnSexExpChanged(player.stats.CurrentSexEXP, player.stats.GetNextSexLevelRequirement(), player.stats.CurrentSexLevel);
     }
 
-    // ============== QUICK ITEM UI ==============
-
     public void UpdateQuickSlots()
     {
         if (playerInventory == null) return;
@@ -658,23 +611,13 @@ public class UI_InGame : MonoBehaviour
         if (quickSlot4) quickSlot4.UpdateQuickSlotUI(playerInventory.quickSlots[3]);
     }
 
-    // ====== Skill assignment (Combat only) ======
-
-    /// <summary>
-    /// Called from the tree when a skill is unlocked. Combat-only in this HUD.
-    /// Sex skills are ignored here (they belong to SexyTimeHotbar).
-    /// </summary>
     public void NotifySkillUnlocked(SkillType type, Skill_DataSO data, bool preferDefaults = true)
     {
         if (data == null) return;
-
-        // ONLY Combat
         if (data.category != SkillCategory.Combat) return;
 
-        // Already placed? done
         if (FindSlotByType(type) != null) return;
 
-        // Prefer inspector defaults if they match this SO
         if (preferDefaults && defaultAssignments != null)
         {
             foreach (var def in defaultAssignments)
@@ -717,12 +660,10 @@ public class UI_InGame : MonoBehaviour
         return null;
     }
 
-    /// <summary>Assign a specific skill to a combat slot (replaces anything there).</summary>
     public void AssignSkillToSlot(Skill_DataSO data, UISkillSlotId id)
     {
         if (data == null || data.category != SkillCategory.Combat) return;
 
-        // keep only one slot per SkillType
         var dupe = FindSlotByType(data.skillType);
         if (dupe != null && dupe.slotId != id)
             dupe.ClearSlot();
@@ -747,9 +688,6 @@ public class UI_InGame : MonoBehaviour
             if (s != null) s.ClearSlot();
     }
 
-    /// <summary>
-    /// Only fills empty combat slots with defaults and only if the skill is unlocked.
-    /// </summary>
     public void ApplyDefaultAssignmentsIfEmpty()
     {
         if (!applyDefaultAssignmentsOnStart || defaultAssignments == null) return;
@@ -771,7 +709,6 @@ public class UI_InGame : MonoBehaviour
         }
     }
 
-    /// <summary>Compatibility with saver/UI: populates combat bar from unlocked tree skills.</summary>
     public void RefreshSkillSlotsFromTree(UI_SkillTree tree)
     {
         if (tree == null) return;
@@ -784,18 +721,17 @@ public class UI_InGame : MonoBehaviour
         foreach (var n in nodes)
         {
             if (n == null || !n.isUnlocked || n.skillData == null) continue;
-            if (n.skillData.category != SkillCategory.Combat) continue; // ignore Sex
+            if (n.skillData.category != SkillCategory.Combat) continue;
 
-            // Already placed this type?
             if (FindSlotByType(n.skillData.skillType) != null) continue;
 
-            // Find first empty combat slot
             UI_SkillSlot empty = null;
             foreach (var s in skillSlots)
             {
                 if (s != null && s.slotCategory == UISkillCategory.Combat && !s.HasSkill)
                 {
-                    empty = s; break;
+                    empty = s;
+                    break;
                 }
             }
             if (empty == null) break;
@@ -806,8 +742,6 @@ public class UI_InGame : MonoBehaviour
         RefreshAllSkillCostsAndAfford();
     }
 
-    // ===== Helpers =====
-
     private void RefreshAllSkillCostsAndAfford()
     {
         var sm = player != null ? player.skillManager : null;
@@ -816,9 +750,13 @@ public class UI_InGame : MonoBehaviour
         foreach (var s in skillSlots)
         {
             if (s == null) continue;
-            if (!s.HasSkill) { s.RefreshText(sm); s.UpdateAffordability(mana); continue; }
+            if (!s.HasSkill)
+            {
+                s.RefreshText(sm);
+                s.UpdateAffordability(mana);
+                continue;
+            }
 
-            // Only combat bar – but harmless if sex slot sneaks in
             s.RefreshText(sm);
             s.UpdateAffordability(mana);
         }
@@ -840,14 +778,10 @@ public class UI_InGame : MonoBehaviour
         RefreshAllSkillCostsAndAfford();
     }
 
-    // UI_InGame.cs  (add inside the class, e.g. near other helpers)
     public UI_SkillSlot GetSkillSlot(SkillType type)
     {
-        // Combat bar only: looks up by skill type among the combat slots
         return FindSlotByType(type);
     }
-
-    // ============== ITEM PICKUP TOASTS ==============
 
     public void ShowItemPickup(Sprite icon, string itemName, int amount = 1)
     {
@@ -874,8 +808,7 @@ public class UI_InGame : MonoBehaviour
             toast.gameObject.SetActive(true);
             toast.Setup(req.icon, req.name, req.amount);
 
-            if (itemPickupClip != null && Camera.main != null)
-                AudioSource.PlayClipAtPoint(itemPickupClip, Camera.main.transform.position, itemPickupVolume);
+            PlayUiSfx(itemPickupSfx);
 
             yield return new WaitForSecondsRealtime(lifetime + lifetimePadding);
         }
@@ -905,6 +838,17 @@ public class UI_InGame : MonoBehaviour
             _cachedToastLifetime = Mathf.Max(0.1f, vin + vhold + vout);
             return _cachedToastLifetime;
         }
-        catch { return fallback; }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private void PlayUiSfx(string soundName)
+    {
+        if (AudioManager.instance == null) return;
+        if (string.IsNullOrWhiteSpace(soundName)) return;
+
+        AudioManager.instance.PlayGlobalSFX(soundName);
     }
 }

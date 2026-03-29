@@ -6,12 +6,15 @@ using System;
 
 public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [Header("Linked Player (optional)")]
-    [SerializeField] public Player linkedPlayer;   // assign in Inspector if desired
+    [Header("Linked Character (optional)")]
+    [SerializeField] public Component linkedCharacter;
 
     [Header("Core")]
     [SerializeField] private Button button;
     [SerializeField] private TextMeshProUGUI nameText;
+
+    [Header("Portrait")]
+    [SerializeField] private Image portraitImage;
 
     [Header("Bars")]
     [SerializeField] private Slider healthSlider;
@@ -24,63 +27,67 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     [Header("Highlight")]
     [SerializeField] private GameObject highlighter;
 
-    // Live refs
+    private Component character;
     private Entity_Health playerHealth;
     private Entity_Mana playerMana;
-    private Player player;
+    private Entity_Stats entityStats;
 
-    // Legacy callback (still supported)
-    private Action<Player> onClickCallback;
+    private Action<Component> onClickCallback;
 
-    // Use-item context
-    private Inventory_Item _pendingItem;
-    private Inventory_Player _inventory;
-    private Action _afterUse;
+    private Inventory_Item pendingItem;
+    private Inventory_Player inventory;
+    private Action afterUse;
 
-    private void OnDisable() => UnsubscribeVitals();
+    private void OnDisable()
+    {
+        UnsubscribeVitals();
+    }
 
     private void OnDestroy()
     {
         UnsubscribeVitals();
-        if (button != null) button.onClick.RemoveAllListeners();
+
+        if (button != null)
+            button.onClick.RemoveAllListeners();
     }
 
     private void UnsubscribeVitals()
     {
-        if (playerHealth != null) playerHealth.OnHealthUpdate -= UpdateHealthBar;
-        if (playerMana != null) playerMana.OnManaUpdate -= UpdateManaBar;
+        if (playerHealth != null)
+            playerHealth.OnHealthUpdate -= UpdateHealthBar;
+
+        if (playerMana != null)
+            playerMana.OnManaUpdate -= UpdateManaBar;
+
         playerHealth = null;
         playerMana = null;
+        entityStats = null;
     }
 
-    /// <summary>Full setup with explicit player (initial draw + live subscriptions).</summary>
-    public void Setup(Player player, Action<Player> onClick)
+    public void Setup(Component target, Action<Component> onClick)
     {
         UnsubscribeVitals();
 
-        // If a prefab or invalid scene object was passed, grab the live Player:
-        if (player == null || !player.gameObject.scene.IsValid())
-            player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-
-        if (player == null)
+        if (target == null || !target.gameObject.scene.IsValid())
         {
-            Debug.LogWarning("[ProfileButton] No runtime Player found.");
+            Debug.LogWarning("[ProfileButton] No valid runtime character found.");
             return;
         }
 
-        this.player = player;
-        this.onClickCallback = onClick;
+        character = target;
+        linkedCharacter = target;
+        onClickCallback = onClick;
 
-        playerHealth = player.health ?? player.GetComponent<Entity_Health>();
-        playerMana = player.mana ?? player.GetComponent<Entity_Mana>();
-
-        if (nameText != null) nameText.text = string.IsNullOrEmpty(player.name) ? "Player" : player.name;
-
+        CacheCharacterRefs();
+        UpdateName();
         UpdateHealthBar();
         UpdateManaBar();
 
-        if (playerHealth != null) playerHealth.OnHealthUpdate += UpdateHealthBar;
-        if (playerMana != null) playerMana.OnManaUpdate += UpdateManaBar;
+        if (playerHealth != null)
+            playerHealth.OnHealthUpdate += UpdateHealthBar;
+
+        if (playerMana != null)
+            playerMana.OnManaUpdate += UpdateManaBar;
 
         if (button != null)
         {
@@ -91,57 +98,52 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         HighlightOff();
     }
 
-
-    /// <summary>Setup using serialized linkedPlayer.</summary>
-    public void Setup(Action<Player> onClick)
+    public void Setup(Action<Component> onClick)
     {
-        if (linkedPlayer == null)
+        if (linkedCharacter == null)
         {
-            Debug.LogError("[ProfileButton] linkedPlayer is not assigned!");
+            Debug.LogError("[ProfileButton] linkedCharacter is not assigned!");
             return;
         }
-        Setup(linkedPlayer, onClick);
+
+        Setup(linkedCharacter, onClick);
     }
 
-    /// <summary>Provide an item + inventory so clicking this profile uses the item on this player.</summary>
     public void SetUseItemContext(Inventory_Item pendingItem, Inventory_Player inventory, Action afterUse = null)
     {
-        _pendingItem = pendingItem;
-        _inventory = inventory;
-        _afterUse = afterUse;
+        this.pendingItem = pendingItem;
+        this.inventory = inventory;
+        this.afterUse = afterUse;
     }
 
     private void HandleClick()
     {
-        // Prefer use-item context, else use legacy delegate:
-        if (TryUsePendingItem()) return;
-        onClickCallback?.Invoke(player);
+        if (TryUsePendingItem())
+            return;
+
+        onClickCallback?.Invoke(character);
     }
 
     private bool TryUsePendingItem()
     {
-        if (_pendingItem == null || _pendingItem.itemData == null || _inventory == null)
+        if (pendingItem == null || pendingItem.itemData == null || inventory == null)
             return false;
 
-        // Resolve a live player if needed
-        if (player == null || !player.gameObject.scene.IsValid())
-            player = linkedPlayer && linkedPlayer.gameObject.scene.IsValid()
-                ? linkedPlayer
-                : FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        if (character == null || !character.gameObject.scene.IsValid())
+            character = linkedCharacter;
 
-        if (player == null)
+        if (character == null)
         {
-            Debug.LogError("[ProfileButton] No runtime Player to use the item on.");
+            Debug.LogError("[ProfileButton] No runtime character to use the item on.");
             return false;
         }
 
-        // Only usable consumables here
-        if (_pendingItem.itemData.itemType != ItemType.Consumable || !_pendingItem.itemData.isUsable)
+        if (pendingItem.itemData.itemType != ItemType.Consumable || !pendingItem.itemData.isUsable)
             return false;
 
-        // Find a concrete inventory instance to consume
-        var instance = FindSameItemInstance(_inventory, _pendingItem)
-                       ?? _inventory.itemList.Find(it => it != null && it.itemData == _pendingItem.itemData);
+        Inventory_Item instance =
+            FindSameItemInstance(inventory, pendingItem) ??
+            inventory.itemList.Find(it => it != null && it.itemData == pendingItem.itemData);
 
         if (instance == null)
         {
@@ -149,77 +151,151 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
             return false;
         }
 
-        // ✅ Use the same pipeline as quickslots
-        _inventory.TryUseItem(instance, player);
+        bool used = inventory.TryUseItemChecked(instance, character);
+        if (!used)
+            return false;
 
-        // Refresh local bars + outer UI if provided
         RefreshBars();
-        _afterUse?.Invoke();
+        afterUse?.Invoke();
         return true;
     }
 
-
-
-    /// <summary>Try to match an inventory instance by data and (if present) instance modifiers.</summary>
     private Inventory_Item FindSameItemInstance(Inventory_Player inv, Inventory_Item sample)
     {
-        // Prefer an exact instance reference if the same object is in the list:
-        foreach (var it in inv.itemList)
-            if (ReferenceEquals(it, sample)) return it;
-
-        // Otherwise, match by ItemData (and optionally modifiers if you rely on them):
         foreach (var it in inv.itemList)
         {
-            if (it == null || it.itemData != sample.itemData) continue;
-            // If you track per-instance modifiers, you could compare them here.
+            if (ReferenceEquals(it, sample))
+                return it;
+        }
+
+        foreach (var it in inv.itemList)
+        {
+            if (it == null || it.itemData != sample.itemData)
+                continue;
+
             return it;
         }
+
         return null;
+    }
+
+    private void CacheCharacterRefs()
+    {
+        if (character == null)
+            return;
+
+        playerHealth = character.GetComponent<Entity_Health>();
+        playerMana = character.GetComponent<Entity_Mana>();
+        entityStats = character.GetComponent<Entity_Stats>();
+    }
+
+    private void UpdateName()
+    {
+        if (nameText == null || character == null)
+            return;
+
+        string displayName = character.name;
+
+        Player player = character.GetComponent<Player>();
+        if (player != null && !string.IsNullOrWhiteSpace(player.name))
+        {
+            displayName = player.name;
+        }
+        else
+        {
+            Companion companion = character.GetComponent<Companion>();
+            if (companion != null && !string.IsNullOrWhiteSpace(companion.name))
+                displayName = companion.name;
+        }
+
+        nameText.text = string.IsNullOrWhiteSpace(displayName) ? "Character" : displayName;
+    }
+
+    public void SetPortrait(Sprite sprite)
+    {
+        if (portraitImage == null)
+            return;
+
+        portraitImage.sprite = sprite;
+        portraitImage.enabled = sprite != null;
+    }
+
+    public void ClearPortrait()
+    {
+        SetPortrait(null);
     }
 
     public void RefreshBars()
     {
+        CacheCharacterRefs();
+        UpdateName();
         UpdateHealthBar();
         UpdateManaBar();
     }
 
     private void UpdateHealthBar()
     {
-        if (player == null) return;
-        playerHealth ??= player.GetComponent<Entity_Health>();
-        var stats = player.stats ?? player.GetComponent<Player_Stats>();
-        if (playerHealth == null || stats == null || healthSlider == null) return;
+        if (character == null)
+            return;
 
-        float max = Mathf.Max(1f, stats.GetMaxHealth());
+        playerHealth ??= character.GetComponent<Entity_Health>();
+        entityStats ??= character.GetComponent<Entity_Stats>();
+
+        if (playerHealth == null || entityStats == null || healthSlider == null)
+            return;
+
+        float max = Mathf.Max(1f, entityStats.GetMaxHealth());
         float cur = Mathf.RoundToInt(playerHealth.GetCurrentHealth());
+
         healthSlider.value = Mathf.Clamp01(cur / max);
-        if (healthText) healthText.text = $"{cur} / {max}";
+
+        if (healthText != null)
+            healthText.text = $"{cur} / {max}";
     }
 
     private void UpdateManaBar()
     {
-        if (player == null) return;
-        playerMana ??= player.GetComponent<Entity_Mana>();
-        var stats = player.stats ?? player.GetComponent<Player_Stats>();
-        if (playerMana == null || stats == null || manaSlider == null) return;
+        if (character == null)
+            return;
 
-        float max = Mathf.Max(1f, stats.GetMaxMana());
+        playerMana ??= character.GetComponent<Entity_Mana>();
+        entityStats ??= character.GetComponent<Entity_Stats>();
+
+        if (playerMana == null || entityStats == null || manaSlider == null)
+            return;
+
+        float max = Mathf.Max(1f, entityStats.GetMaxMana());
         float cur = Mathf.RoundToInt(playerMana.GetCurrentMana());
+
         manaSlider.value = Mathf.Clamp01(cur / max);
-        if (manaText) manaText.text = $"{cur} / {max}";
+
+        if (manaText != null)
+            manaText.text = $"{cur} / {max}";
     }
 
+    public void HighlightOn()
+    {
+        highlighter?.SetActive(true);
+    }
 
-    public void HighlightOn() => highlighter?.SetActive(true);
-    public void HighlightOff() => highlighter?.SetActive(false);
+    public void HighlightOff()
+    {
+        highlighter?.SetActive(false);
+    }
 
-    public void OnPointerEnter(PointerEventData eventData) => HighlightOn();
-    public void OnPointerExit(PointerEventData eventData) => HighlightOff();
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        HighlightOn();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        HighlightOff();
+    }
 
     public void SetSelected(bool selected)
     {
         if (selected) HighlightOn();
         else HighlightOff();
     }
-
 }

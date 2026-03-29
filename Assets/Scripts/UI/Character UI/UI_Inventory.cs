@@ -1,4 +1,5 @@
 ﻿using Rewired;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -21,15 +22,15 @@ public class UI_Inventory : UI_Panel
     [SerializeField] private GameObject categoryPanel;
     [SerializeField] private GameObject itemListPanel;
     [SerializeField] private GameObject actorSelectPanel;
-    [SerializeField] private GameObject assignPopupPanel; // (legacy panel; safe to keep)
+    [SerializeField] private GameObject assignPopupPanel;
 
-    [SerializeField] private UI_AssignPopup assignPopup; // ← drag your popup here
+    [SerializeField] private UI_AssignPopup assignPopup;
+    [SerializeField] private UI_CharacterTargetPanel actorTargetPanel;
 
     [Header("Assign Popup UI")]
     [SerializeField] private TMP_InputField assignAmountInput;
 
     [Header("Actor Select")]
-    [SerializeField] private List<UI_CharacterProfileButton> actorButtons;
     [SerializeField] private TextMeshProUGUI actorSelectItemLabel;
 
     [Header("Sound")]
@@ -40,28 +41,17 @@ public class UI_Inventory : UI_Panel
     [SerializeField] private AudioClip itemUsedSound;
     [SerializeField] private AudioSource audioSource;
 
-    [SerializeField] private InventoryMenuController menuController; // <- drag in Inspector
+    [SerializeField] private InventoryMenuController menuController;
 
-    // -------- Legacy compatibility: assignslot / AssignSlot (uses UI_ItemSlot) --------
     [Header("Legacy Slot Binding (optional)")]
     [Tooltip("Enables AssignSlot/assignslot compatibility for older code paths.")]
     [SerializeField] private bool enableLegacyAssignSlot = true;
     private readonly List<UI_ItemSlot> _legacySlots = new();
 
-    // ======== Navigation ========
     [Header("Navigation (Main Menu Controller)")]
     [SerializeField] private InventoryMenuController menuNav;
 
-    private void EnsureMenuNav()
-    {
-        if (menuNav == null)
-            menuNav = GetComponent<InventoryMenuController>();
-        if (menuNav == null)
-            menuNav = FindFirstObjectByType<InventoryMenuController>(FindObjectsInactive.Include);
-    }
-
     private bool _playedNoItemSFXThisOpen = false;
-
     private bool isOpen = false;
     private bool _dirty = false;
     private ItemType? currentFilter = null;
@@ -72,12 +62,9 @@ public class UI_Inventory : UI_Panel
 
     private System.Action<int> _goldChangedHandler;
 
-    // ========= Tooltip =========
     [Header("Tooltip")]
     [SerializeField] private UI_ItemToolTip itemTooltip;
     private readonly HashSet<UI_ItemSlot> _wiredFocusSlots = new HashSet<UI_ItemSlot>();
-    // ===========================
-
 
     private void Awake()
     {
@@ -111,7 +98,8 @@ public class UI_Inventory : UI_Panel
         if (inventory != null)
         {
             inventory.OnInventoryChange -= HandleInventoryChanged;
-            if (_goldChangedHandler != null) inventory.OnGoldChanged -= _goldChangedHandler;
+            if (_goldChangedHandler != null)
+                inventory.OnGoldChanged -= _goldChangedHandler;
         }
 
         if (backpackSlotsParent != null)
@@ -120,7 +108,8 @@ public class UI_Inventory : UI_Panel
 
     private void Update()
     {
-        if (rPlayer == null || !isOpen) return;
+        if (rPlayer == null || !isOpen)
+            return;
 
         if (rPlayer.GetButtonDown(cancelAction))
             HandleCancel();
@@ -129,8 +118,13 @@ public class UI_Inventory : UI_Panel
         {
             if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
             {
-                if (selected.itemData.itemType == ItemType.Consumable && !selected.itemData.isUsable)
+                if (selected != null &&
+                    selected.itemData != null &&
+                    selected.itemData.itemType == ItemType.Consumable &&
+                    !selected.itemData.isUsable)
+                {
                     OpenAssignPopup(selected);
+                }
             }
         }
 
@@ -138,10 +132,24 @@ public class UI_Inventory : UI_Panel
         {
             if (backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected))
             {
-                if (selected.itemData.itemType == ItemType.Consumable && selected.itemData.isUsable)
+                if (selected != null &&
+                    selected.itemData != null &&
+                    selected.itemData.itemType == ItemType.Consumable &&
+                    selected.itemData.isUsable)
+                {
                     OpenActorSelectPanel(selected);
+                }
             }
         }
+    }
+
+    private void EnsureMenuNav()
+    {
+        if (menuNav == null)
+            menuNav = GetComponent<InventoryMenuController>();
+
+        if (menuNav == null)
+            menuNav = FindFirstObjectByType<InventoryMenuController>(FindObjectsInactive.Include);
     }
 
     private void HandleInventoryChanged()
@@ -157,7 +165,7 @@ public class UI_Inventory : UI_Panel
 
         if (currentState == PanelState.ActorSelect)
         {
-            UpdateActorSelectButtons();
+            actorTargetPanel?.RefreshNow();
             UpdateActorSelectHeader();
             MaybePlayNoItemSFX();
             EnsureMenuNav();
@@ -179,10 +187,18 @@ public class UI_Inventory : UI_Panel
         EnsureMenuNav();
         switch (currentState)
         {
-            case PanelState.Category: menuNav?.BuildForCategory(); break;
-            case PanelState.ItemList: menuNav?.BuildForItemGrid(); break;
-            case PanelState.ActorSelect: menuNav?.BuildForActorGrid(); break;
-            case PanelState.AssignPopup: menuNav?.BuildForAssignPopup(); break;
+            case PanelState.Category:
+                menuNav?.BuildForCategory();
+                break;
+            case PanelState.ItemList:
+                menuNav?.BuildForItemGrid();
+                break;
+            case PanelState.ActorSelect:
+                menuNav?.BuildForActorGrid();
+                break;
+            case PanelState.AssignPopup:
+                menuNav?.BuildForAssignPopup();
+                break;
         }
     }
 
@@ -192,7 +208,8 @@ public class UI_Inventory : UI_Panel
         gameObject.SetActive(true);
         OpenCategoryPanel();
 
-        if (_dirty) ForceRefresh();
+        if (_dirty)
+            ForceRefresh();
     }
 
     public void CloseInventory()
@@ -201,10 +218,7 @@ public class UI_Inventory : UI_Panel
         CloseAllPanels();
         gameObject.SetActive(false);
         PlayCloseSound();
-
-        HideTooltip(); // NEW
-
-        //FindFirstObjectByType<UI>()?.OpenMainMenuDirect();
+        HideTooltip();
     }
 
     public bool IsOpen() => isOpen;
@@ -214,29 +228,29 @@ public class UI_Inventory : UI_Panel
         switch (currentState)
         {
             case PanelState.ActorSelect:
-                actorSelectPanel.SetActive(false);
+                if (actorTargetPanel != null)
+                    actorTargetPanel.Close();
+
                 OpenItemListPanel();
                 PlayCloseSound();
                 return true;
 
             case PanelState.AssignPopup:
-                if (assignPopupPanel != null) assignPopupPanel.SetActive(false);
+                CloseAssignPopupOnly();
                 OpenItemListPanel();
                 PlayCloseSound();
                 return true;
 
             case PanelState.ItemList:
-                itemListPanel.SetActive(false);
                 OpenCategoryPanel();
                 PlayCloseSound();
                 return true;
 
             case PanelState.Category:
-                // Close via UI manager so it returns to Main Menu correctly
                 if (UI.Instance != null)
                     UI.Instance.CloseInventory();
                 else
-                    CloseInventory(); // fallback if singleton missing
+                    CloseInventory();
 
                 return true;
 
@@ -244,8 +258,6 @@ public class UI_Inventory : UI_Panel
                 return false;
         }
     }
-
-
 
     public void SetFilter(string filterName)
     {
@@ -285,19 +297,6 @@ public class UI_Inventory : UI_Panel
         }
     }
 
-    private void TryOpenAssignPopupFromSelection()
-    {
-        if (currentState != PanelState.ItemList) return;
-        if (backpackSlotsParent == null) return;
-
-        if (!backpackSlotsParent.TryGetSelectedItem(out Inventory_Item selected) ||
-            selected == null || selected.itemData == null)
-            return;
-
-        if (selected.itemData.itemType == ItemType.Consumable && !selected.itemData.isUsable)
-            OpenAssignPopup(selected);
-    }
-
     private void PlayItemUsedSFX()
     {
         if (audioSource != null && itemUsedSound != null)
@@ -327,7 +326,7 @@ public class UI_Inventory : UI_Panel
         CloseAllPanels();
         categoryPanel.SetActive(true);
         currentState = PanelState.Category;
-        HideTooltip(); // NEW
+        HideTooltip();
         PlayOpenSound();
         menuController?.BuildForCategory();
     }
@@ -338,10 +337,9 @@ public class UI_Inventory : UI_Panel
         itemListPanel.SetActive(true);
         currentState = PanelState.ItemList;
 
-        HideTooltip(); // NEW
+        HideTooltip();
         ForceRefresh();
         PlayOpenSound();
-
         menuNav?.BuildForItemGrid();
     }
 
@@ -352,28 +350,30 @@ public class UI_Inventory : UI_Panel
         currentState = PanelState.ActorSelect;
         itemBeingAssigned = item;
         _playedNoItemSFXThisOpen = false;
-        HideTooltip(); // NEW
+        HideTooltip();
         PlayOpenSound();
 
-        foreach (var btn in actorButtons)
+        if (actorTargetPanel != null)
         {
-            if (btn == null) continue;
-
-            btn.Setup(OnActorPicked);
-            btn.SetUseItemContext(itemBeingAssigned, inventory, () =>
+            actorTargetPanel.Open(itemBeingAssigned, inventory, OnActorPicked, () =>
             {
-                int remainingBefore = inventory.CountItem(itemBeingAssigned.itemData);
-                bool used = remainingBefore > 0;
-                if (used) PlayItemUsedSFX(); else PlayNoItemSFX();
-
-                UpdateActorSelectButtons();
+                PlayItemUsedSFX();
                 UpdateActorSelectHeader();
-            });
 
-            btn.SetSelected(false);
+                Player mainPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+                mainPlayer?.ui?.inGameUI?.ForceRefreshFromCurrentState();
+
+                if (inventory != null && itemBeingAssigned != null && itemBeingAssigned.itemData != null)
+                {
+                    if (inventory.FindItem(itemBeingAssigned.itemData) == null)
+                    {
+                        HandleCancel();
+                        return;
+                    }
+                }
+            });
         }
 
-        UpdateActorSelectButtons();
         UpdateActorSelectHeader();
         menuNav?.BuildForActorGrid();
     }
@@ -381,30 +381,45 @@ public class UI_Inventory : UI_Panel
     public void OpenAssignPopup(Inventory_Item item)
     {
         CloseAllPanels();
-        currentState = PanelState.AssignPopup;
 
         if (assignPopup == null)
         {
             Debug.LogError("[UI_Inventory] assignPopup is not set in the Inspector.");
+            OpenItemListPanel();
             return;
         }
 
-        HideTooltip(); // NEW
+        currentState = PanelState.AssignPopup;
+        HideTooltip();
+
+        if (assignPopupPanel != null)
+            assignPopupPanel.SetActive(true);
+
         assignPopup.gameObject.SetActive(true);
         assignPopup.Open(item, OnAssignConfirmedToSlot);
+        PlayOpenSound();
         StartCoroutine(DelayBuildAssignPopup());
     }
 
-    private System.Collections.IEnumerator DelayBuildAssignPopup()
+    private IEnumerator DelayBuildAssignPopup()
     {
-        yield return null; // next frame after elements exist
+        yield return null;
         menuNav?.BuildForAssignPopup();
     }
 
-    // ------------------------------ Assign-to-slot (NEW)
+    private void CloseAssignPopupOnly()
+    {
+        if (assignPopup != null)
+            assignPopup.gameObject.SetActive(false);
+
+        if (assignPopupPanel != null)
+            assignPopupPanel.SetActive(false);
+    }
+
     private void OnAssignConfirmedToSlot(Inventory_Item item, int amount, int slotIndex1Based)
     {
-        if (inventory == null || item == null || item.itemData == null) return;
+        if (inventory == null || item == null || item.itemData == null)
+            return;
 
         inventory.SetQuickItemInSlot(slotIndex1Based, item, Mathf.Max(1, amount), useFreshInstance: true);
 
@@ -414,6 +429,7 @@ public class UI_Inventory : UI_Panel
         var ui = FindFirstObjectByType<UI>(FindObjectsInactive.Include);
         ui?.inGameUI?.UpdateQuickSlots();
 
+        CloseAssignPopupOnly();
         OpenItemListPanel();
         ForceRefresh();
     }
@@ -422,6 +438,7 @@ public class UI_Inventory : UI_Panel
     {
         if (inventory == null)
             inventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
+
         if (inventory == null || item == null || item.itemData == null)
         {
             Debug.LogWarning("[UI_Inventory] AssignToSpecificQuickSlot: missing inventory or item.");
@@ -438,17 +455,18 @@ public class UI_Inventory : UI_Panel
         var uiRoot = FindFirstObjectByType<UI>(FindObjectsInactive.Include);
         uiRoot?.inGameUI?.UpdateQuickSlots();
 
-        if (assignPopupPanel != null) assignPopupPanel.SetActive(false);
+        CloseAssignPopupOnly();
         OpenItemListPanel();
         ForceRefresh();
     }
 
     private void OnAssignConfirmed(Inventory_Item item, int amount)
     {
-        if (inventory == null || item == null || item.itemData == null) return;
+        if (inventory == null || item == null || item.itemData == null)
+            return;
 
         AssignToQuickSlots(item, amount);
-
+        CloseAssignPopupOnly();
         OpenItemListPanel();
         ForceRefresh();
 
@@ -506,12 +524,20 @@ public class UI_Inventory : UI_Panel
         itemListPanel?.SetActive(false);
         actorSelectPanel?.SetActive(false);
         assignPopupPanel?.SetActive(false);
+
+        if (assignPopup != null)
+            assignPopup.gameObject.SetActive(false);
+
+        if (actorTargetPanel != null)
+            actorTargetPanel.gameObject.SetActive(false);
+
         currentState = PanelState.None;
     }
 
     public void UpdateUI(bool force = false)
     {
-        if (!force && !isOpen) return;
+        if (!force && !isOpen)
+            return;
 
         if (goldText != null && inventory != null)
             goldText.text = $"{inventory.gold:N0}g.";
@@ -541,10 +567,7 @@ public class UI_Inventory : UI_Panel
             return;
         }
 
-        // Build slots
         backpackSlotsParent.UpdateSlots(filtered);
-
-        // Wire focus -> tooltip once per slot
         WireItemSlotFocusCallbacks();
 
         if (currentState == PanelState.ItemList)
@@ -554,16 +577,10 @@ public class UI_Inventory : UI_Panel
         }
     }
 
-    private void OnActorPicked(Player p)
+    private void OnActorPicked(Component target)
     {
-        foreach (var btn in actorButtons)
-            btn?.SetSelected(btn.linkedPlayer == p);
-    }
-
-    private void UpdateActorSelectButtons()
-    {
-        foreach (var button in actorButtons)
-            button?.RefreshBars();
+        // Selection visuals are handled by UI_CharacterTargetPanel.
+        // Keep this hook in case you want extra behavior later.
     }
 
     private void UpdateActorSelectHeader()
@@ -572,13 +589,10 @@ public class UI_Inventory : UI_Panel
             return;
 
         int remaining = inventory != null ? inventory.CountItem(itemBeingAssigned.itemData) : 0;
-
         actorSelectItemLabel.text = $"{itemBeingAssigned.itemData.itemName} x{remaining}";
 
         if (remaining <= 0 && noItemSound != null && audioSource != null)
-        {
             audioSource.PlayOneShot(noItemSound);
-        }
     }
 
     private int GetAssignAmount()
@@ -589,7 +603,8 @@ public class UI_Inventory : UI_Panel
 
     private void OnItemSlotSubmit(Inventory_Item item)
     {
-        if (item == null || item.itemData == null) return;
+        if (item == null || item.itemData == null)
+            return;
 
         if (item.itemData.itemType != ItemType.Consumable)
         {
@@ -609,15 +624,17 @@ public class UI_Inventory : UI_Panel
     {
         if (!enableLegacyAssignSlot || slot == null) return;
 
-        while (_legacySlots.Count <= index) _legacySlots.Add(null);
-        _legacySlots[index] = slot;
+        while (_legacySlots.Count <= index)
+            _legacySlots.Add(null);
 
+        _legacySlots[index] = slot;
         RefreshLegacySlot(index);
     }
 
     private void RefreshLegacySlot(int index)
     {
         if (index < 0 || index >= _legacySlots.Count) return;
+
         var slot = _legacySlots[index];
         if (slot == null) return;
 
@@ -634,10 +651,10 @@ public class UI_Inventory : UI_Panel
 
     private void RefreshAllLegacySlots()
     {
-        for (int i = 0; i < _legacySlots.Count; i++) RefreshLegacySlot(i);
+        for (int i = 0; i < _legacySlots.Count; i++)
+            RefreshLegacySlot(i);
     }
 
-    // ============ NEW: Tooltip helpers + wiring ============
     private void ShowTooltip(Inventory_Item item)
     {
         if (itemTooltip == null) return;
@@ -650,7 +667,6 @@ public class UI_Inventory : UI_Panel
         itemTooltip.Hide();
     }
 
-
     private void WireItemSlotFocusCallbacks()
     {
         if (backpackSlotsParent == null) return;
@@ -662,9 +678,7 @@ public class UI_Inventory : UI_Panel
 
             s.OnSlotFocus += ShowTooltip;
             s.OnSlotBlur += HideTooltip;
-
             _wiredFocusSlots.Add(s);
         }
     }
-    // =======================================================
 }

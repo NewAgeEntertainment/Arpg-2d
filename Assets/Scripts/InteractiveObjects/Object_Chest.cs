@@ -7,34 +7,38 @@ public class Object_Chest : MonoBehaviour, IDamageable
 
     [SerializeField] private bool canDropItems = true;
 
-    // === Interact hook for InteractionTooltipTrigger2D ===
+    [Header("Audio")]
+    [SerializeField] private string chestOpenSfx = "ChestOpen";
+
     public void OnUse(Transform actor)
     {
-        OpenChest();
+        OpenChest(actor);
     }
 
-    // Keep damage opening too (optional)
     public bool TakeDamage(float damage, float ele, ElementType type, Transform dealer)
     {
         if (!canDropItems) return false;
-        OpenChest();
+        OpenChest(dealer);
         return true;
     }
 
-    private void OpenChest()
+    private void OpenChest(Transform opener = null)
     {
         if (!canDropItems) return;
         canDropItems = false;
 
+        PlayChestOpenSfx();
+
         if (anim) anim.SetBool("chestOpen", true);
         dropManager?.DropItems();
 
-        // 🔥 NEW — Trigger GiveRewardOnInteract
         var reward = GetComponent<GiveRewardOnInteract>();
         if (reward != null)
         {
-            // Find the player (Interaction sends actor, damage won’t)
-            Transform player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            Transform player = opener;
+
+            if (player == null)
+                player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
             if (player != null)
                 reward.Give(player);
@@ -42,13 +46,18 @@ public class Object_Chest : MonoBehaviour, IDamageable
                 Debug.LogWarning("Chest opened but Player not found.");
         }
 
-        // Disable chest collider after use
         var col = GetComponent<Collider2D>();
         if (col) col.enabled = false;
     }
 
+    private void PlayChestOpenSfx()
+    {
+        if (AudioManager.instance == null) return;
+        if (string.IsNullOrWhiteSpace(chestOpenSfx)) return;
 
-    // Dev test
+        AudioManager.instance.PlayGlobalSFX(chestOpenSfx);
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.K)) OnUse(null);

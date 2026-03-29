@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-
 [System.Serializable]
 public class DialogueTriggerProperties
 {
@@ -16,7 +15,6 @@ public class DialogueTriggerProperties
 [RequireComponent(typeof(SexyTimeStateMachine))]
 public class SexyTimeLogic : MonoBehaviour
 {
-    // 🔑 Static reference to the currently active instance
     public static SexyTimeLogic Current { get; private set; }
 
     [SerializeField] private Player_SkillManager skillManager;
@@ -27,16 +25,22 @@ public class SexyTimeLogic : MonoBehaviour
 
     [Header("Config")]
     [SerializeField] private bool autoStart = false;
-    [Header("Config")]
     [SerializeField] private float blueDecayPerSecond = 0f;
     [SerializeField] private float pinkDecayPerSecond = 0f;
-    [SerializeField] private float maxRestraintForDecay = 3f; // ✅ cap restraint effect on decay
+    [SerializeField] private float maxRestraintForDecay = 3f;
     [SerializeField] private float arousalPerStroke = 3f;
     [SerializeField] private float strokeMultiplier = 1f;
     [SerializeField] private float playerBarValueDeplete = 10f;
 
+    [Header("SexyTime Audio")]
+    [SerializeField] private string strokeSfx = "SexStroke";
+    [SerializeField] private string climaxSfx = "SexClimax";
+    [SerializeField] private string npcAttackSfx = "SexNpcAttack";
+    [SerializeField] private string critStrokeSfx = "SexCritStroke";
+    [SerializeField] private string deepBreathSfx = "SexDeepBreath";
+
     [Header("Dialogue Triggers (bar thresholds)")]
-    [SerializeField] private DialogueTypewriter typewriter; // your typewriter system
+    [SerializeField] private DialogueTypewriter typewriter;
     [SerializeField] private List<DialogueTriggerProperties> blueBarDialogues = new();
     [SerializeField] private List<DialogueTriggerProperties> pinkBarDialogues = new();
 
@@ -52,25 +56,25 @@ public class SexyTimeLogic : MonoBehaviour
     private float originalPussySqueezeCooldown;
 
     [Header("Partner Attack Scaling")]
-    [SerializeField] private float npcAttackDamageMult = 0.25f;  // scales with partner sexual damage
-    [SerializeField] private float npcAttackFlatBonus = 0f;      // extra flat amount
+    [SerializeField] private float npcAttackDamageMult = 0.25f;
+    [SerializeField] private float npcAttackFlatBonus = 0f;
     [SerializeField] private float npcAttackMin = 2f;
     [SerializeField] private float npcAttackMax = 15f;
 
-    [SerializeField] private float npcAttackCooldownMult = 1f;   // optional: scale cooldown
+    [SerializeField] private float npcAttackCooldownMult = 1f;
     [SerializeField] private float npcAttackCooldownMin = 1f;
     [SerializeField] private float npcAttackCooldownMax = 8f;
 
     [Header("Partner Attack (scaled by partner level)")]
     [SerializeField] private int partnerBaseLevel = 1;
 
-    [SerializeField] private float pussySqueezeBase = 4f;          // damage at base level
-    [SerializeField] private float pussySqueezePerLevel = 0.75f;   // + per level after base
+    [SerializeField] private float pussySqueezeBase = 4f;
+    [SerializeField] private float pussySqueezePerLevel = 0.75f;
     [SerializeField] private float pussySqueezeMin = 2f;
     [SerializeField] private float pussySqueezeMax = 25f;
 
-    [SerializeField] private float pussySqueezeCooldownBase = 5f;    // cooldown at base level
-    [SerializeField] private float cooldownReductionPerLevel = 0.03f; // seconds reduced per level
+    [SerializeField] private float pussySqueezeCooldownBase = 5f;
+    [SerializeField] private float cooldownReductionPerLevel = 0.03f;
     [SerializeField] private float cooldownMin = 1.25f;
     [SerializeField] private float cooldownMax = 8f;
 
@@ -91,9 +95,6 @@ public class SexyTimeLogic : MonoBehaviour
     [Header("Optional Intro Dialogue")]
     [SerializeField] private bool useStartDialogue = true;
 
-    
-
-
     [Header("Climax")]
     public float cumDuration = 5f;
     public bool cumReached = false;
@@ -104,19 +105,11 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private int pinkBarExp = 100;
 
     [Header("Affection Rewards / Penalties")]
-    [Tooltip("When BLUE (player) reaches climax first, add this many affection points.")]
     [SerializeField] private int blueBarAffectionAdd = 5;
-
-    [Tooltip("When BLUE wins, subtract this many affection points as a penalty (set 0 to ignore).")]
     [SerializeField] private int blueBarAffectionSubtract = 0;
-
-    [Tooltip("When PINK (partner) reaches climax first, add this many affection points.")]
     [SerializeField] private int pinkBarAffectionAdd = 10;
-
-    [Tooltip("When PINK wins, subtract this many affection points as a penalty (set 0 to ignore).")]
     [SerializeField] private int pinkBarAffectionSubtract = 0;
 
-    // ===== Stroke suppression (prevents stroke when a sex skill uses on same button) =====
     private int _suppressStrokeFrame = -999;
 
     public UnityEvent OnPlayerBarFull = new UnityEvent();
@@ -145,29 +138,16 @@ public class SexyTimeLogic : MonoBehaviour
     private FinishWinner winner = FinishWinner.None;
     private bool expGranted = false;
     private bool affectionGranted = false;
+    private bool climaxSfxPlayed = false;
 
-    // ─────────────────────────────────────────────────────────────
-    // Placement: Snap THIS mini-game object to the **Camera**
     [Header("Placement (Snap GameObject To Camera)")]
-    [Tooltip("If true, when SexyTime starts, this GameObject snaps to the main camera (with a local offset).")]
     [SerializeField] private bool snapObjectToCameraOnStart = true;
-
-    [Tooltip("If true, while SexyTime is active, this GameObject follows the camera every frame.")]
     [SerializeField] private bool followCameraWithObject = true;
-
-    [Tooltip("Offset in camera LOCAL space (x=right, y=up, z=forward). For 2D, set z ≈ distance from camera to gameplay plane (e.g., 10).")]
     [SerializeField] private Vector3 cameraLocalObjectOffset = new Vector3(0f, 0f, 10f);
-
-    [Tooltip("Keep the object's Z on its original plane (useful for 2D so sorting/layers remain correct).")]
     [SerializeField] private bool lockObjectZToStartPlane = true;
-
-    [Tooltip("If true, rotate this object to face/align with the camera.")]
     [SerializeField] private bool rotateObjectToCamera = false;
 
     private float _objectStartZ;
-    // ─────────────────────────────────────────────────────────────
-
-    // Track map swap to avoid double toggles & ensure restore
     private bool _mapsSwapped;
 
     private void OnEnable()
@@ -184,7 +164,6 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (Current == this) Current = null;
 
-        // Failsafe: always restore gameplay maps if disabled mid-minigame
         if (_mapsSwapped && inputRouter != null)
         {
             inputRouter.DisableSexyTimeMaps();
@@ -197,7 +176,6 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Same failsafe as OnDisable
         if (_mapsSwapped && inputRouter != null)
         {
             inputRouter.DisableSexyTimeMaps();
@@ -257,7 +235,6 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isSexyTimeGoingOn) return;
         if (inputRouter == null) return;
 
-        // NEW: while holding SkillModifier, stroke is NOT allowed
         if (ReInput.isReady)
         {
             var rp = ReInput.players.GetPlayer(inputRouter != null ? 0 : 0);
@@ -271,7 +248,25 @@ public class SexyTimeLogic : MonoBehaviour
             stateMachine.Stroke();
     }
 
+    public void PlayStrokeSfx() => PlaySexySfx(strokeSfx);
+    public void PlayNpcAttackSfx() => PlaySexySfx(npcAttackSfx);
+    public void PlayCritStrokeSfx() => PlaySexySfx(critStrokeSfx);
+    public void PlayDeepBreathSfx() => PlaySexySfx(deepBreathSfx);
 
+    public void PlayClimaxSfx()
+    {
+        if (climaxSfxPlayed) return;
+        climaxSfxPlayed = true;
+        PlaySexySfx(climaxSfx);
+    }
+
+    private void PlaySexySfx(string soundName)
+    {
+        if (AudioManager.instance == null) return;
+        if (string.IsNullOrWhiteSpace(soundName)) return;
+
+        AudioManager.instance.PlayGlobalSFX(soundName);
+    }
 
     public void StartSexyTime()
     {
@@ -286,16 +281,13 @@ public class SexyTimeLogic : MonoBehaviour
 
         ResolveSkillManager();
         BindToActivePlayerStats();
-        // (Make sure partnerStats is assigned somewhere before scaling)
-
-        ApplyPartnerFixedLevelScaling();   // updates partnerStats (including stroke)
-        RecalculatePartnerAttack();        // converts stroke -> squeeze + cooldown
-        ResetNPCAttack();                  // sets next attack timestamp using new cooldown
+        ApplyPartnerFixedLevelScaling();
+        RecalculatePartnerAttack();
+        ResetNPCAttack();
 
         originalPussySqueeze = pussySqueeze;
         originalPussySqueezeCooldown = pussySqueezeCooldown;
 
-        // Rewired maps: Gameplay OFF, SexyTime ON
         if (inputRouter != null && !_mapsSwapped)
         {
             inputRouter.EnableSexyTimeMaps();
@@ -305,6 +297,7 @@ public class SexyTimeLogic : MonoBehaviour
         winner = FinishWinner.None;
         expGranted = false;
         affectionGranted = false;
+        climaxSfxPlayed = false;
         ResetDialogueTriggers();
 
         deepBreatheTimestamp = Time.time - deepBreatheCooldown;
@@ -313,17 +306,12 @@ public class SexyTimeLogic : MonoBehaviour
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
 
-        // Init UI after scaling
         float playerMax = playerStats != null ? playerStats.sex.maxArousal.GetValue() : 100f;
         float partnerMax = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : 100f;
 
         ui.InitBars(playerMax, partnerMax);
         ui.UpdatePower(arousalPerStroke, arousalPerStroke);
-
-        // show UI once
         ui.Show();
-
-        // ensure hotbar reflects current assigned sex skills
         ui.RefreshSexHotbarFromPlayer(skillManager, cachedPlayer != null ? cachedPlayer.mana : null);
 
         skillManager?.EnsureDeepBreathReady(true);
@@ -347,23 +335,18 @@ public class SexyTimeLogic : MonoBehaviour
 
     private void BindToActivePlayerStats()
     {
-        if (playerStats != null) return; // keep your drag-n-drop
+        if (playerStats != null) return;
 
         var p = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
         if (p != null) playerStats = p.GetComponent<Player_Stats>();
     }
 
-
-
-    /// <summary>Call this when a sex hotbar skill successfully fires.</summary>
     public void SuppressStrokeThisFrame()
     {
         _suppressStrokeFrame = Time.frameCount;
     }
 
-    /// <summary>True if stroke should be blocked this frame.</summary>
     public bool IsStrokeSuppressedThisFrame => _suppressStrokeFrame == Time.frameCount;
-
 
     private bool ResolveSkillManager()
     {
@@ -398,7 +381,6 @@ public class SexyTimeLogic : MonoBehaviour
         GrantSexExpIfNeeded();
         GrantAffectionIfNeeded();
 
-        // Turn SexyTime OFF, Gameplay ON
         if (_mapsSwapped && inputRouter != null)
         {
             inputRouter.DisableSexyTimeMaps();
@@ -417,18 +399,18 @@ public class SexyTimeLogic : MonoBehaviour
         cumReached = false;
         cumTimeElapsed = 0f;
         isFucking = false;
+        climaxSfxPlayed = false;
 
         if (anim != null)
             anim.Play("idle", 0, 0f);
 
-        // ✅ Restore PLAYER script input gate NOW (before disabling this GO)
         if (cachedPlayer == null)
             cachedPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
         if (cachedPlayer != null)
             cachedPlayer.SetInputEnabled(true);
 
-        ui?.Show(); // this calls SetCombatHotbarHidden(true) inside SexyTimeUIController.Show()
+        ui?.Show();
         ui.Hide();
         gameObject.SetActive(false);
     }
@@ -437,15 +419,12 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (inputRouter == null) return;
 
-        // Stroke moved to LateUpdate() so sex skills can suppress it this frame
-
         if (inputRouter.DeepBreathePressed())
             CastDeepBreathe();
 
         if (inputRouter.PausePressed())
             stateMachine.PauseForDialogue();
     }
-
 
     private void UpdateNPCAttack()
     {
@@ -456,24 +435,22 @@ public class SexyTimeLogic : MonoBehaviour
         float newPlayerValue = Mathf.Clamp(UI.PlayerBarValue + (pussySqueeze * reduction), 0f, UI.PlayerBarMax);
         UI.UpdateBars(newPlayerValue, UI.PlayerBarMax, UI.PartnerBarValue, UI.PartnerBarMax);
 
+        PlayNpcAttackSfx();
+
         npcAttackBarFillTimestamp = Time.time + pussySqueezeCooldown;
 
         CheckBarsForClimaxAndEvents();
-        
     }
 
     private void RecalculatePartnerAttack()
     {
         if (partnerStats == null) return;
 
-        // Partner "bar fill power"
         float stroke = partnerStats.sex.stroke.GetValue();
 
-        // Damage/fill amount from stroke
         pussySqueeze = stroke * npcAttackDamageMult + npcAttackFlatBonus;
         pussySqueeze = Mathf.Clamp(pussySqueeze, npcAttackMin, npcAttackMax);
 
-        // Cooldown: base / (1 + k*stroke)  (stable, diminishing returns)
         float denom = 1f + Mathf.Max(0f, stroke) * npcAttackCooldownMult;
         float cd = pussySqueezeCooldownBase / denom;
         pussySqueezeCooldown = Mathf.Clamp(cd, npcAttackCooldownMin, npcAttackCooldownMax);
@@ -502,19 +479,13 @@ public class SexyTimeLogic : MonoBehaviour
     private void DepleteBars()
     {
         if (stateMachine == null) return;
-
-        // ✅ Only decay while idle
-        if (stateMachine.CurrentState is not Sex_IdleState)
-            return;
-
+        if (stateMachine.CurrentState is not Sex_IdleState) return;
         if (cumReached || isFucking) return;
         if (blueDecayPerSecond <= 0f && pinkDecayPerSecond <= 0f) return;
 
-        // ✅ restraint makes decay FASTER (opposite behavior)
         float blueRestraint = (playerStats != null) ? playerStats.sex.sexualRestraint.GetValue() : 1f;
         float pinkRestraint = (partnerStats != null) ? partnerStats.sex.sexualRestraint.GetValue() : 1f;
 
-        // ✅ clamp so 0 doesn't kill decay, and high values don't explode it
         blueRestraint = Mathf.Clamp(blueRestraint, 1f, maxRestraintForDecay);
         pinkRestraint = Mathf.Clamp(pinkRestraint, 1f, maxRestraintForDecay);
 
@@ -546,6 +517,7 @@ public class SexyTimeLogic : MonoBehaviour
         {
             cumReached = true;
             cumTimeElapsed = 0f;
+            PlayClimaxSfx();
             stateMachine.ChangeState(new Sex_ClimaxState(this, stateMachine));
         }
     }
@@ -556,7 +528,6 @@ public class SexyTimeLogic : MonoBehaviour
         if (typewriter == null) typewriter = DialogueTypewriter.Instance;
         if (typewriter == null) return;
 
-        // BLUE triggers
         for (int i = 0; i < blueBarDialogues.Count; i++)
         {
             var t = blueBarDialogues[i];
@@ -565,12 +536,11 @@ public class SexyTimeLogic : MonoBehaviour
             if (UI.PlayerBarValue >= t.valueToTriggerAt)
             {
                 t.isAlreadyTriggered = true;
-                TriggerDialogue(t.dialogueToTrigger);   // ✅ fixed
+                TriggerDialogue(t.dialogueToTrigger);
                 return;
             }
         }
 
-        // PINK triggers
         for (int i = 0; i < pinkBarDialogues.Count; i++)
         {
             var t = pinkBarDialogues[i];
@@ -579,7 +549,7 @@ public class SexyTimeLogic : MonoBehaviour
             if (UI.PartnerBarValue >= t.valueToTriggerAt)
             {
                 t.isAlreadyTriggered = true;
-                TriggerDialogue(t.dialogueToTrigger);   // ✅ fixed
+                TriggerDialogue(t.dialogueToTrigger);
                 return;
             }
         }
@@ -591,10 +561,8 @@ public class SexyTimeLogic : MonoBehaviour
         stateMachine.ResumeAfterDialogue();
     }
 
-    // Used by FinishState
     public NPC_Dialogue GetFinishDialogueForWinner()
     {
-        // winner is your private enum field in SexyTimeLogic
         switch (winner)
         {
             case FinishWinner.PlayerBlue: return blueWinFinishDialogue;
@@ -607,7 +575,6 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (dialogue == null) return;
 
-        // ✅ THIS IS THE SNIPPET YOU ASKED ABOUT:
         shouldPause = true;
         stateMachine.PauseForDialogue();
 
@@ -622,11 +589,9 @@ public class SexyTimeLogic : MonoBehaviour
 
     public void CheckDialogueTriggersAfterBars(float blueValue, float pinkValue)
     {
-        // don’t trigger during climax/finish
         if (cumReached) return;
         if (shouldPause) return;
 
-        // BLUE list
         for (int i = 0; i < blueBarDialogues.Count; i++)
         {
             var t = blueBarDialogues[i];
@@ -640,7 +605,6 @@ public class SexyTimeLogic : MonoBehaviour
             }
         }
 
-        // PINK list
         for (int i = 0; i < pinkBarDialogues.Count; i++)
         {
             var t = pinkBarDialogues[i];
@@ -654,8 +618,6 @@ public class SexyTimeLogic : MonoBehaviour
             }
         }
     }
-
-
 
     private void OnBlueWinsFirst()
     {
@@ -703,6 +665,8 @@ public class SexyTimeLogic : MonoBehaviour
     {
         if (!ResolveSkillManager()) { Debug.Log("Deep Breathe blocked: no SkillManager."); return; }
         if (!IsDeepBreathUnlocked()) return;
+
+        PlayDeepBreathSfx();
         skillManager.deepBreath.TryUseSkill();
     }
 
@@ -779,7 +743,6 @@ public class SexyTimeLogic : MonoBehaviour
             return;
         }
 
-        // BEFORE
         Debug.Log($"[SexyTime] Partner BEFORE scaling: " +
                   $"LvlScaler={scaler.name}, " +
                   $"maxArousal={partnerStats.sex.maxArousal.GetValue()}, " +
@@ -790,7 +753,6 @@ public class SexyTimeLogic : MonoBehaviour
 
         scaler.ApplyScaling();
 
-        // AFTER
         Debug.Log($"[SexyTime] Partner AFTER scaling: " +
                   $"maxArousal={partnerStats.sex.maxArousal.GetValue()}, " +
                   $"sexualDamage={partnerStats.sex.sexualDamage.GetValue()}, " +
@@ -808,9 +770,6 @@ public class SexyTimeLogic : MonoBehaviour
         return r ? r.profile : null;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Camera snap helpers (ONLY placement behavior kept)
-
     private Camera ResolveGameCamera() => Camera.main;
 
     private void SnapObjectToCamera()
@@ -821,14 +780,11 @@ public class SexyTimeLogic : MonoBehaviour
         Vector3 worldPos = cam.transform.TransformPoint(cameraLocalObjectOffset);
 
         if (lockObjectZToStartPlane)
-            worldPos.z = _objectStartZ; // keep on original plane (2D-friendly)
+            worldPos.z = _objectStartZ;
 
         transform.position = worldPos;
 
         if (rotateObjectToCamera)
             transform.rotation = cam.transform.rotation;
     }
-    // ─────────────────────────────────────────────────────────────
 }
-
-

@@ -55,6 +55,9 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
     [Tooltip("Rewired player id (usually 0).")]
     public int rewiredPlayerId = 0;
 
+    [Header("Direct Use Target (optional)")]
+    public MonoBehaviour directUseTarget;
+
     // -------- Debug --------
     [Header("Debug")]
     [SerializeField] private bool logTextChanges = false;
@@ -187,9 +190,16 @@ public class InteractionTooltipTrigger2D : MonoBehaviour
         var effectiveActor = actor ? actor : _currentActor;
 
         if (useUsableIntegration && usable && callOnUse)
+        {
             usable.gameObject.SendMessage("OnUse", effectiveActor, SendMessageOptions.DontRequireReceiver);
+        }
         else
-            onUse?.Invoke(effectiveActor);
+        {
+            if (directUseTarget != null)
+                directUseTarget.SendMessage("OnUse", effectiveActor, SendMessageOptions.DontRequireReceiver);
+            else
+                onUse?.Invoke(effectiveActor);
+        }
 
         SetVisible(false);
     }

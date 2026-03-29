@@ -53,7 +53,8 @@ public class UI_StatToolTip : UI_ToolTip
                 return "Increases physical damage by 1 per point.\nIncreases physical damage by 0.5% per point.";
             case StatType.Luck:
                 return "Increases critical chance by 0.3% per point.\nIncreases evasion by 0.5% per point.";
-            // ➜ and so on ...
+            case StatType.Intelligence:
+                return "Increase Magical Damage by 1 per point. \nIncrease Elemental Restance by 0.5% per point.";
             default:
                 return "No tooltip available for this stat.";
         }

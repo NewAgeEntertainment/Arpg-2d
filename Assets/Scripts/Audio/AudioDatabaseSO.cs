@@ -6,6 +6,9 @@ public class AudioDatabaseSO : ScriptableObject
 {
     public List<AudioClipData> player;
     public List<AudioClipData> enemy;
+    public List<AudioClipData> sexytime;
+    public List<AudioClipData> chest;
+    public List<AudioClipData> Consumable_Use;
     public List<AudioClipData> uiAudio;
 
     [Header("Music Lists")]
@@ -25,6 +28,9 @@ public class AudioDatabaseSO : ScriptableObject
 
         AddToCollection(player);
         AddToCollection(enemy);
+        AddToCollection(sexytime);
+        AddToCollection(Consumable_Use);
+        AddToCollection(chest);
         AddToCollection(uiAudio);
         AddToCollection(mainMenuMusic);
         AddToCollection(levelMusic);

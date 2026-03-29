@@ -1577,27 +1577,38 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // 2️⃣ Inventory → ALWAYS back to main menu
+        // 2️⃣ Inventory → let inventory handle its own back stack first
         if (inventoryUI != null && inventoryUI.IsOpen())
         {
-            inventoryUI.HandleCancel(); // allow internal cleanup
-            CloseInventory();           // force return to main menu
+            bool handled = inventoryUI.HandleCancel();
+
+            // If inventory did not handle it internally, then close the inventory
+            if (!handled || inventoryUI.IsOpen() == false)
+            {
+                // optional fallback if needed
+            }
+
             return;
         }
 
-        // 3️⃣ Equipment → ALWAYS back to main menu
+        // 3️⃣ Equipment → let equipment handle its own back stack first
         if (equipmentInventoryPanel != null && equipmentInventoryPanel.IsOpen)
         {
-            equipmentInventoryPanel.HandleCancel();
-            CloseEquipment();
+            bool handled = equipmentInventoryPanel.HandleCancel();
+
+            if (!handled || equipmentInventoryPanel.IsOpen == false)
+            {
+                // optional fallback if needed
+            }
+
             return;
         }
 
-        // 4️⃣ Crafting → stays in book (DO NOT bounce to main menu)
+        // 4️⃣ Crafting → stays in book
         if (craftUI != null && isCraftOpen && craftUI.HandleCancel())
             return;
 
-        // 5️⃣ Merchant → stays in book (DO NOT bounce to main menu)
+        // 5️⃣ Merchant → stays in book
         if (merchantUI != null && merchantUI.IsOpen && merchantUI.HandleCancel())
             return;
 
@@ -1621,11 +1632,9 @@ public class UI : MonoBehaviour
         {
             conquestUI.HandleCancel();
 
-            // still active => Details -> Roster
             if (conquestUI.gameObject.activeInHierarchy)
                 return;
 
-            // closed => back to main menu (robust close)
             CloseConquest();
             return;
         }
@@ -1637,7 +1646,7 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // 9️⃣ Quest Journal → ALWAYS back to main menu
+        // 🔟 Quest Journal → ALWAYS back to main menu
         if (isQuestJournalOpen ||
             (questJournalUI != null && questJournalUI.gameObject.activeInHierarchy))
         {
@@ -1645,18 +1654,14 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // 🔟 Save Panel → ALWAYS back to main menu
-        // 🔟 Save Panel → close book + return to main menu
+        // ⓫ Save Panel → close book + return to main menu
         if (saveLoadPanel != null && saveLoadPanel.IsOpen)
         {
             CloseSavePanel();
             return;
         }
 
-
-
-
-        // ⓫ Main Menu → exit UI completely
+        // ⓬ Main Menu → exit UI completely
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
         {
             mainMenuPanel.SetActive(false);
@@ -1674,7 +1679,7 @@ public class UI : MonoBehaviour
             return;
         }
 
-        // ⓬ Failsafe
+        // ⓭ Failsafe
         if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen())
         {
             OpenMainMenuDirect();
