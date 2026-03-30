@@ -68,12 +68,16 @@ public class Companion : Entity
     // Unity lifecycle
     // ====================================================================
 
+    private CharacterEquipmentProfile equipmentProfile;
+
     protected override void Awake()
     {
         base.Awake();
         stateMachine = new StateMachine();
         combat = GetComponent<CompanionCombat>();
         _health = GetComponent<Entity_Health>();
+
+        equipmentProfile = GetComponent<CharacterEquipmentProfile>();
     }
 
     private void OnEnable()
@@ -127,6 +131,12 @@ public class Companion : Entity
         if (stateMachine.currentState == null)
             stateMachine.Initialize(idleState);
 
+        var player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        if (equipmentProfile != null && player != null && player.inventory != null)
+        {
+            equipmentProfile.SetSharedEquipmentInventory(player.inventory.equipmentInventory, GetComponent<Entity_Stats>());
+        }
+
         AfterStateMachineInitialized();
     }
 
@@ -141,6 +151,9 @@ public class Companion : Entity
 
         stateMachine.UpdateActiveState();
     }
+
+
+
 
     // ====================================================================
     // Player binding (GLUE)

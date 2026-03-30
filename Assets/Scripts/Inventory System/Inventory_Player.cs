@@ -20,6 +20,8 @@ public class Inventory_Player : Inventory_Base
 
     public List<Inventory_Equipped> equipList = new List<Inventory_Equipped>();
 
+    private CharacterEquipmentProfile equipmentProfile;
+
     [Serializable]
     public struct QuickSlot
     {
@@ -40,6 +42,11 @@ public class Inventory_Player : Inventory_Base
         }
 
         equipmentInventory = equipmentInventoryRef != null ? equipmentInventoryRef : FindFirstObjectByType<Inventory_Equipment>();
+        equipmentProfile = GetComponent<CharacterEquipmentProfile>();
+        if (equipmentProfile == null)
+            equipmentProfile = gameObject.AddComponent<CharacterEquipmentProfile>();
+
+        equipmentProfile.InitializeBridge(this, player != null ? player.stats : GetComponent<Entity_Stats>());
         storage = storageRef != null ? storageRef : FindFirstObjectByType<Inventory_Storage>();
 
         if (equipmentInventory == null) Debug.LogWarning("[Inventory_Player] Equipment inventory not found. Assign via Inspector.");
@@ -297,34 +304,22 @@ public class Inventory_Player : Inventory_Base
 
     public Inventory_Item GetEquippedItemByType(ItemType type)
     {
-        if (equipList == null) return null;
-        foreach (var eq in equipList)
-            if (eq != null && eq.slotType == type && eq.HasItem())
-                return eq.equipedItem;
-        return null;
+        if (equipmentProfile == null)
+            return null;
+
+        return equipmentProfile.GetEquippedItemByType(type);
     }
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
     {
-        var inventoryItem = equipmentInventory.FindItem(item.itemData);
-        var matchingSlots = equipList.FindAll(slot => slot.slotType == item.itemData.itemType);
-
-        foreach (var slot in matchingSlots)
+        if (equipmentProfile == null)
         {
-            if (!slot.HasItem())
-            {
-                EquipItem(inventoryItem, slot);
-                equipmentInventory.RemoveOneItem(inventoryItem);
-                return;
-            }
+            Debug.LogWarning("[Inventory_Player] CharacterEquipmentProfile missing.");
+            return;
         }
 
-        var slotToReplace = matchingSlots[0];
-        var itemToUnequip = slotToReplace.equipedItem;
-
-        UnequipItem(itemToUnequip, true);
-        EquipItem(inventoryItem, slotToReplace);
-        equipmentInventory.RemoveOneItem(inventoryItem);
+        equipmentProfile.TryEquipFromEquipmentInventory(item);
+        NotifyInventoryChanged();
     }
 
     private void EquipItem(Inventory_Item itemToEquip, Inventory_Equipped slot)
@@ -339,45 +334,38 @@ public class Inventory_Player : Inventory_Base
 
     public void UnequipItem(Inventory_Item itemToUnequip, bool replacing = false)
     {
-        var slot = equipList.Find(slot => slot.equipedItem == itemToUnequip);
-        if (slot != null) slot.equipedItem = null;
+        if (equipmentProfile == null)
+        {
+            Debug.LogWarning("[Inventory_Player] CharacterEquipmentProfile missing.");
+            return;
+        }
 
-        itemToUnequip.RemoveModifiers(player.stats);
-        itemToUnequip.RemoveItemEffect();
-
-        equipmentInventory.AddItem(itemToUnequip);
+        equipmentProfile.UnequipItem(itemToUnequip, replacing);
         NotifyInventoryChanged();
     }
 
     public void SwapEquippedItem(Inventory_Item oldEquippedItem, Inventory_Item newInventoryItem)
     {
-        var equippedSlot = equipList.Find(slot => slot.equipedItem == oldEquippedItem);
-        if (equippedSlot == null)
+        if (equipmentProfile == null)
         {
-            Debug.LogWarning("[Inventory_Player] No equipped slot found for item.");
+            Debug.LogWarning("[Inventory_Player] CharacterEquipmentProfile missing.");
             return;
         }
 
-        UnequipItem(oldEquippedItem, true);
-        EquipItem(newInventoryItem, equippedSlot);
-        equipmentInventory.RemoveOneItem(newInventoryItem);
-
-        Debug.Log($"[Inventory_Player] Swapped {oldEquippedItem.itemData.itemName} with {newInventoryItem.itemData.itemName}.");
+        equipmentProfile.SwapEquippedItem(oldEquippedItem, newInventoryItem);
         NotifyInventoryChanged();
     }
 
     public void UnequipItemByType(ItemType slotType)
     {
-        var equippedSlot = equipList.Find(slot => slot.slotType == slotType && slot.HasItem());
-        if (equippedSlot != null)
+        if (equipmentProfile == null)
         {
-            UnequipItem(equippedSlot.equipedItem);
-            Debug.Log($"[Inventory_Player] Unequipped item from slot type: {slotType}");
+            Debug.LogWarning("[Inventory_Player] CharacterEquipmentProfile missing.");
+            return;
         }
-        else
-        {
-            Debug.Log($"[Inventory_Player] No item equipped in slot type: {slotType}");
-        }
+
+        equipmentProfile.UnequipItemByType(slotType);
+        NotifyInventoryChanged();
     }
 
     // ---- Counting helpers ----

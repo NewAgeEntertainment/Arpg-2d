@@ -49,6 +49,8 @@ public class Player : Entity
     public Player_DeathState deadState { get; private set; }
     public Player_CounterAttackState counterAttackState { get; private set; }
 
+    public CharacterEquipmentProfile equipmentProfile { get; private set; }
+
     [Header("Rewired")]
     [SerializeField] private int playerID = 0;
     [SerializeField] private Rewired.Player rPlayer;
@@ -199,6 +201,12 @@ public class Player : Entity
         combat = GetComponent<Player_Combat>();
         inventory = GetComponent<Inventory_Player>();
         stats = GetComponent<Player_Stats>();
+        equipmentProfile = GetComponent<CharacterEquipmentProfile>();
+        equipmentProfile = GetComponent<CharacterEquipmentProfile>();
+        if (equipmentProfile == null)
+            equipmentProfile = gameObject.AddComponent<CharacterEquipmentProfile>();
+
+        equipmentProfile.InitializeBridge(inventory, stats);
 
         input = new PlayerInputSet();
 

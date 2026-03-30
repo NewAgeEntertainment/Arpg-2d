@@ -6,7 +6,7 @@ using TMPro;
 
 public class UI_EquipmentInventory : UI_Panel
 {
-    [Header("Inventory References")]
+    [Header("Fallback References")]
     [SerializeField] private Inventory_Equipment equipmentInventory;
     [SerializeField] private Inventory_Player playerInventory;
 
@@ -51,9 +51,11 @@ public class UI_EquipmentInventory : UI_Panel
     private GameObject currentCharacter;
     private Player currentPlayer;
     private Companion currentCompanion;
+    private CharacterEquipmentProfile currentEquipmentProfile;
 
     private readonly List<GameObject> partyMembers = new List<GameObject>();
     private int currentIndex = 0;
+
 
     private enum PanelState { None, EquippedPanel, ItemList }
     private PanelState currentState = PanelState.None;
@@ -97,10 +99,10 @@ public class UI_EquipmentInventory : UI_Panel
             return;
         }
 
-        if (rPlayer.GetButtonDown(cancelAction))
-        {
-            HandleCancel();
-        }
+        //if (rPlayer.GetButtonDown(cancelAction))
+        //{
+        //    HandleCancel();
+        //}
     }
 
     private void OnEnable()
@@ -115,18 +117,30 @@ public class UI_EquipmentInventory : UI_Panel
     private void HookEvents()
     {
         if (subscribed) return;
-        if (equipmentInventory != null) equipmentInventory.OnInventoryChange += UpdateUI;
-        if (playerInventory != null) playerInventory.OnInventoryChange += UpdateUI;
+
+        if (equipmentInventory != null)
+            equipmentInventory.OnInventoryChange += UpdateUI;
+
+        if (playerInventory != null)
+            playerInventory.OnInventoryChange += UpdateUI;
+
         subscribed = true;
     }
 
     private void UnhookEvents()
     {
         if (!subscribed) return;
-        if (equipmentInventory != null) equipmentInventory.OnInventoryChange -= UpdateUI;
-        if (playerInventory != null) playerInventory.OnInventoryChange -= UpdateUI;
+
+        if (equipmentInventory != null)
+            equipmentInventory.OnInventoryChange -= UpdateUI;
+
+        if (playerInventory != null)
+            playerInventory.OnInventoryChange -= UpdateUI;
+
         subscribed = false;
     }
+
+
 
     public void Open()
     {
@@ -209,9 +223,26 @@ public class UI_EquipmentInventory : UI_Panel
         currentCharacter = partyMembers[currentIndex];
         currentPlayer = currentCharacter != null ? currentCharacter.GetComponent<Player>() : null;
         currentCompanion = currentCharacter != null ? currentCharacter.GetComponent<Companion>() : null;
+        currentEquipmentProfile = currentCharacter != null ? currentCharacter.GetComponent<CharacterEquipmentProfile>() : null;
+
+        if (equipmentToolTip != null)
+            equipmentToolTip.SetCurrentCharacter(currentCharacter);
 
         RefreshCharacterHeader();
+        RebindFallbackReferencesForCurrentCharacter();
         UpdateUI();
+    }
+
+    private void RebindFallbackReferencesForCurrentCharacter()
+    {
+        if (currentPlayer != null)
+        {
+            if (playerInventory == null)
+                playerInventory = currentPlayer.GetComponent<Inventory_Player>();
+
+            if (equipmentInventory == null && playerInventory != null)
+                equipmentInventory = playerInventory.equipmentInventory;
+        }
     }
 
     public void ShowNextCharacter()
@@ -297,15 +328,38 @@ public class UI_EquipmentInventory : UI_Panel
         UpdateEquippedSlots();
     }
 
+    private Inventory_Equipment GetCurrentEquipmentInventory()
+    {
+        if (currentEquipmentProfile != null && currentEquipmentProfile.EquipmentInventory != null)
+            return currentEquipmentProfile.EquipmentInventory;
+
+        return equipmentInventory;
+    }
+
+    private List<Inventory_Equipped> GetCurrentEquipList()
+    {
+        if (currentEquipmentProfile != null && currentEquipmentProfile.EquipList != null)
+            return currentEquipmentProfile.EquipList;
+
+        if (playerInventory != null)
+            return playerInventory.equipList;
+
+        return null;
+    }
+
     private void UpdateUnequippedItemList()
     {
-        if (equipmentInventory == null || equipmentSlotPanel == null) return;
+        Inventory_Equipment activeInventory = GetCurrentEquipmentInventory();
+        if (activeInventory == null || equipmentSlotPanel == null) return;
 
-        var items = equipmentInventory.itemList;
+        var items = activeInventory.itemList;
         List<Inventory_Item> filteredItems = new List<Inventory_Item>();
 
         foreach (var item in items)
         {
+            if (item == null || item.itemData == null)
+                continue;
+
             if (currentFilter == null || item.itemData.itemType == currentFilter)
                 filteredItems.Add(item);
         }
@@ -333,8 +387,10 @@ public class UI_EquipmentInventory : UI_Panel
 
     private void UpdateEquippedSlots()
     {
-        if (equippedSlotsPanel == null || playerInventory == null) return;
-        equippedSlotsPanel.UpdateEquipmentSlots(playerInventory.equipList);
+        var activeEquipList = GetCurrentEquipList();
+        if (equippedSlotsPanel == null || activeEquipList == null) return;
+
+        equippedSlotsPanel.UpdateEquipmentSlots(activeEquipList);
     }
 
     public void ShowEquipmentInventoryPanel(ItemType filterType)
@@ -349,25 +405,43 @@ public class UI_EquipmentInventory : UI_Panel
 
     public void RemoveCurrentlyEquipped()
     {
-        if (currentFilter == null) return;
+        if (currentFilter == null)
+            return;
 
-        playerInventory.UnequipItemByType(currentFilter.Value);
+        if (currentEquipmentProfile != null)
+        {
+            currentEquipmentProfile.UnequipItemByType(currentFilter.Value);
+        }
+        else if (playerInventory != null)
+        {
+            playerInventory.UnequipItemByType(currentFilter.Value);
+        }
+
         PlaySound(unequipSound);
-
         ShowEquippedPanel();
         UpdateUI();
     }
 
     public void SwapEquippedItem(Inventory_Item newItem)
     {
-        if (newItem == null) return;
+        if (newItem == null)
+            return;
 
-        playerInventory.TryEquipFromEquipmentInventory(newItem);
+        if (currentEquipmentProfile != null)
+        {
+            currentEquipmentProfile.TryEquipFromEquipmentInventory(newItem);
+        }
+        else if (playerInventory != null)
+        {
+            playerInventory.TryEquipFromEquipmentInventory(newItem);
+        }
+
         PlaySound(equipSound);
-
         ShowEquippedPanel();
         UpdateUI();
     }
+
+  
 
     private void ShowEquippedPanel()
     {
@@ -406,14 +480,17 @@ public class UI_EquipmentInventory : UI_Panel
     {
         Debug.Log("[UI_EquipmentInventory] HandleCancel() called. Current state: " + currentState);
 
-        if (IsOnItemListPanel() || currentState == PanelState.ItemList)
+        // If we're in the unequipped item list, go back to the equipped slots panel first
+        if (currentState == PanelState.ItemList || IsOnItemListPanel())
         {
-            Debug.Log("[UI_EquipmentInventory] Returning to Equipped Slot Panel");
+            Debug.Log("[UI_EquipmentInventory] Backing out from item list to equipped slots panel");
             ShowEquippedPanel();
             return true;
         }
 
-        Debug.Log("[UI_EquipmentInventory] Request close via UI.Instance");
+        // If we're already on the equipped slots panel, close Equipment and return to main menu
+        Debug.Log("[UI_EquipmentInventory] Backing out from equipped slots panel to main menu");
+
         if (UI.Instance != null)
             UI.Instance.CloseEquipment();
         else

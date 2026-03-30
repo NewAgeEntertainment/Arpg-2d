@@ -26,16 +26,13 @@ public class UI_EquipmentToolTip : MonoBehaviour
     [Header("Optional: Unique Effect Text")]
     [SerializeField] private TextMeshProUGUI uniqueEffectText;
 
-    private Player_Stats playerStats;
-    private Inventory_Player playerInventory;
+    private Entity_Stats currentStats;
+    private CharacterEquipmentProfile currentEquipmentProfile;
 
     private const float EPSILON = 0.0001f;
 
     private void Awake()
     {
-        playerStats = FindObjectOfType<Player_Stats>();
-        playerInventory = FindObjectOfType<Inventory_Player>();
-
         if (tooltipPanel != null)
         {
             tooltipPanel.SetActive(true);
@@ -45,6 +42,22 @@ public class UI_EquipmentToolTip : MonoBehaviour
         {
             Debug.LogWarning("[UI_EquipmentToolTip] Tooltip panel not assigned!");
         }
+    }
+
+    public void SetCurrentCharacter(GameObject character)
+    {
+        if (character == null)
+        {
+            currentStats = null;
+            currentEquipmentProfile = null;
+            ShowBaseStats();
+            return;
+        }
+
+        currentStats = character.GetComponent<Entity_Stats>();
+        currentEquipmentProfile = character.GetComponent<CharacterEquipmentProfile>();
+
+        ShowBaseStats();
     }
 
     public void ShowEquipmentToolTip(bool show, Inventory_Item item)
@@ -108,21 +121,18 @@ public class UI_EquipmentToolTip : MonoBehaviour
         }
     }
 
-    #region Base Stat Helpers
     private void SetBaseStat(TextMeshProUGUI field, StatType type, bool asPercent = false)
     {
         if (field == null) return;
 
-        float value = playerStats != null
-            ? playerStats.GetStatByType(type)?.GetValue() ?? 0f
+        float value = currentStats != null
+            ? currentStats.GetStatByType(type)?.GetValue() ?? 0f
             : 0f;
 
         string formattedValue = asPercent ? $"{value:0.##}%" : $"{value:0.##}";
         field.text = $"{type}: {formattedValue}";
     }
-    #endregion
 
-    #region Comparison Helpers
     private void SetEquipmentStatComparison(Inventory_Item newItem)
     {
         SetStatComparison(strengthText, StatType.Strength, newItem);
@@ -140,8 +150,8 @@ public class UI_EquipmentToolTip : MonoBehaviour
     {
         if (field == null) return;
 
-        float currentWithAllGear = playerStats != null
-            ? playerStats.GetStatByType(statType)?.GetValue() ?? 0f
+        float currentWithAllGear = currentStats != null
+            ? currentStats.GetStatByType(statType)?.GetValue() ?? 0f
             : 0f;
 
         Inventory_Item equippedItem = FindEquippedItemOfSameType(newItem.itemData.itemType);
@@ -208,8 +218,7 @@ public class UI_EquipmentToolTip : MonoBehaviour
 
     private Inventory_Item FindEquippedItemOfSameType(ItemType type)
     {
-        if (playerInventory == null) return null;
-        return playerInventory.GetEquippedItemByType(type);
+        if (currentEquipmentProfile == null) return null;
+        return currentEquipmentProfile.GetEquippedItemByType(type);
     }
-    #endregion
 }
