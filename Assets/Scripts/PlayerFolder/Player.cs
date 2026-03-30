@@ -537,7 +537,8 @@ public class Player : Entity
     {
         if (stats == null) return;
         stats.AddEXP(amount);
-        ui?.StatusPanel?.UpdateStatus(this);
+        if (ui?.StatusPanel != null && ui.StatusPanel.IsOpen)
+            ui.StatusPanel.RefreshCurrentCharacter();
         ui?.inGameUI?.UpdateExpBar(); // harmless (events also repaint)
     }
 
@@ -545,7 +546,8 @@ public class Player : Entity
     {
         if (stats == null) return;
         stats.AddSexEXP(amount); // stats fires event -> UI repaints
-        ui?.StatusPanel?.UpdateStatus(this);
+        if (ui?.StatusPanel != null && ui.StatusPanel.IsOpen)
+            ui.StatusPanel.RefreshCurrentCharacter();
         ui?.inGameUI?.UpdateSexExpBar(); // harmless (events also repaint)
     }
 

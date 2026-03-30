@@ -4,23 +4,27 @@ using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class UI_CompanionHPMPBinder : MonoBehaviour
+public class UI_CompanionHPMPBinder : MonoBehaviour, IPointerClickHandler
 {
     [Header("Portrait + Name")]
-    [SerializeField] private Image portraitImage;          // drag the portrait Image on the card
-    [SerializeField] private TMP_Text nameText;            // optional display name
+    [SerializeField] private Image portraitImage;
+    [SerializeField] private TMP_Text nameText;
 
     [Header("HP")]
-    [SerializeField] private Slider hpSlider;              // 0..1 expected
-    [SerializeField] private TMP_Text hpText;              // "cur/max" (optional)
+    [SerializeField] private Slider hpSlider;
+    [SerializeField] private TMP_Text hpText;
 
     [Header("MP")]
-    [SerializeField] private Slider mpSlider;              // 0..1 expected
-    [SerializeField] private TMP_Text mpText;              // "cur/max" (optional)
+    [SerializeField] private Slider mpSlider;
+    [SerializeField] private TMP_Text mpText;
 
     [Header("Fallback")]
-    [SerializeField] private float pollSeconds = 0.25f;    // polling if no events available
+    [SerializeField] private float pollSeconds = 0.25f;
+
+    [Header("Optional")]
+    [SerializeField] private Button button; // optional: if the card root also has a Button
 
     private GameObject target;
     private Component health;
@@ -33,23 +37,39 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
     private Delegate hpDel, mpDel;
     private Coroutine pollCo;
 
+    private void Awake()
+    {
+        if (button != null)
+        {
+            button.onClick.RemoveListener(HandleClick);
+            button.onClick.AddListener(HandleClick);
+        }
+
+        // These sliders are used like fill bars
+        if (hpSlider != null)
+        {
+            hpSlider.minValue = 0f;
+            hpSlider.maxValue = 1f;
+        }
+
+        if (mpSlider != null)
+        {
+            mpSlider.minValue = 0f;
+            mpSlider.maxValue = 1f;
+        }
+    }
+
     private void OnDisable() => Unbind();
 
     // ---------- Public API ----------
-    /// <summary>
-    /// Bind this card to a character GameObject.
-    /// Optionally override portrait/name for the card (useful for player slot).
-    /// </summary>
     public void Bind(GameObject go, Sprite portraitOverride = null, string nameOverride = null)
     {
         Unbind();
 
         target = go;
 
-        // Portrait & name
         ApplyPortraitAndName(go, portraitOverride, nameOverride);
 
-        // Find health/mana-like components from your project
         health = FindByNames(go, "Entity_Health", "Health", "Player_Health", "HP", "PlayerHealth");
         mana = FindByNames(go, "Entity_Mana", "Mana", "Player_Mana", "MP", "PlayerMana");
 
@@ -59,20 +79,39 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
         RefreshHP();
         RefreshMP();
 
-        // Start fallback polling
         if (pollCo != null) StopCoroutine(pollCo);
         pollCo = StartCoroutine(PollLoop());
     }
 
-    /// <summary>Clear UI and detach from the current target.</summary>
     public void Unbind()
     {
-        if (pollCo != null) { StopCoroutine(pollCo); pollCo = null; }
+        if (pollCo != null)
+        {
+            StopCoroutine(pollCo);
+            pollCo = null;
+        }
+
         TryUnsubscribe();
 
-        target = null; health = null; mana = null;
+        target = null;
+        health = null;
+        mana = null;
 
-        if (portraitImage) { portraitImage.sprite = null; portraitImage.enabled = false; }
+        m_GetCurHP = null;
+        m_GetMaxHP = null;
+        m_GetHPpct = null;
+        m_GetCurMP = null;
+        m_GetMaxMP = null;
+        m_GetMPpct = null;
+        e_OnHP = null;
+        e_OnMP = null;
+
+        if (portraitImage)
+        {
+            portraitImage.sprite = null;
+            portraitImage.enabled = false;
+        }
+
         if (nameText) nameText.text = string.Empty;
 
         if (hpSlider) hpSlider.value = 0f;
@@ -81,10 +120,43 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
         if (mpText) mpText.text = string.Empty;
     }
 
-    // ---------- internals ----------
+    // ---------- Click handling ----------
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        HandleClick();
+    }
+
+    private void HandleClick()
+    {
+        Debug.Log($"[Binder] HandleClick fired on {gameObject.name}. target={(target != null ? target.name : "NULL")}");
+
+        if (target == null || UI.Instance == null)
+            return;
+
+        Debug.Log($"[Binder] StatusMode={UI.Instance.IsStatusSelectionModeActive()}, EquipmentMode={UI.Instance.IsEquipmentSelectionModeActive()}");
+
+        if (UI.Instance.IsStatusSelectionModeActive())
+        {
+            Debug.Log($"[Binder] Routing to SelectStatusCharacter: {target.name}");
+            UI.Instance.SelectStatusCharacter(target);
+            return;
+        }
+
+        if (UI.Instance.IsEquipmentSelectionModeActive())
+        {
+            Debug.Log($"[Binder] Routing to SelectEquipmentCharacter: {target.name}");
+            UI.Instance.SelectEquipmentCharacter(target);
+            return;
+        }
+
+        Debug.Log("[Binder] No selection mode active.");
+    }
+
+    // ---------- Internals ----------
     private IEnumerator PollLoop()
     {
         var wait = new WaitForSecondsRealtime(pollSeconds);
+
         while (target)
         {
             RefreshHP();
@@ -95,20 +167,32 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
 
     private void RefreshHP()
     {
-        if (!health) { SetHP(0, 1); return; }
+        if (!health)
+        {
+            SetHP(0, 1);
+            return;
+        }
+
         float cur = CallF(m_GetCurHP, health);
         float max = CallF(m_GetMaxHP, health);
         float pct = SafePct(cur, max, CallF(m_GetHPpct, health));
+
         if (hpSlider) hpSlider.value = pct;
         if (hpText) hpText.text = $"{Mathf.RoundToInt(cur)}/{Mathf.RoundToInt(max)}";
     }
 
     private void RefreshMP()
     {
-        if (!mana) { SetMP(0, 1); return; }
+        if (!mana)
+        {
+            SetMP(0, 1);
+            return;
+        }
+
         float cur = CallF(m_GetCurMP, mana);
         float max = CallF(m_GetMaxMP, mana);
         float pct = SafePct(cur, max, CallF(m_GetMPpct, mana));
+
         if (mpSlider) mpSlider.value = pct;
         if (mpText) mpText.text = $"{Mathf.RoundToInt(cur)}/{Mathf.RoundToInt(max)}";
     }
@@ -127,11 +211,14 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
 
     private static Component FindByNames(GameObject go, params string[] names)
     {
+        if (go == null) return null;
+
         foreach (var n in names)
         {
             var c = go.GetComponent(n);
             if (c) return c;
         }
+
         return null;
     }
 
@@ -145,6 +232,7 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
             m_GetHPpct = t.GetMethod("GetHealthPercent");
             e_OnHP = t.GetEvent("OnHealthUpdate") ?? t.GetEvent("OnHealthChanged");
         }
+
         if (mana)
         {
             var t = mana.GetType();
@@ -164,33 +252,42 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
                 hpDel = Delegate.CreateDelegate(e_OnHP.EventHandlerType, this, nameof(OnHPEvent));
                 e_OnHP.AddEventHandler(health, hpDel);
             }
+
             if (mana && e_OnMP != null)
             {
                 mpDel = Delegate.CreateDelegate(e_OnMP.EventHandlerType, this, nameof(OnMPEvent));
                 e_OnMP.AddEventHandler(mana, mpDel);
             }
         }
-        catch { /* fail-soft: polling still works */ }
+        catch
+        {
+            // polling fallback still works
+        }
     }
 
     private void TryUnsubscribe()
     {
         try
         {
-            if (health && e_OnHP != null && hpDel != null) e_OnHP.RemoveEventHandler(health, hpDel);
-            if (mana && e_OnMP != null && mpDel != null) e_OnMP.RemoveEventHandler(mana, mpDel);
+            if (health && e_OnHP != null && hpDel != null)
+                e_OnHP.RemoveEventHandler(health, hpDel);
+
+            if (mana && e_OnMP != null && mpDel != null)
+                e_OnMP.RemoveEventHandler(mana, mpDel);
         }
         catch { }
-        hpDel = mpDel = null;
+
+        hpDel = null;
+        mpDel = null;
     }
 
-    // compatible with () and (args…) events
     private void OnHPEvent() => RefreshHP();
     private void OnMPEvent() => RefreshMP();
 
     private static float CallF(MethodInfo mi, object inst)
     {
         if (mi == null || inst == null) return -1f;
+
         try
         {
             var v = mi.Invoke(inst, null);
@@ -199,6 +296,7 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
             if (v is double d) return (float)d;
         }
         catch { }
+
         return -1f;
     }
 
@@ -211,16 +309,13 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
 
     private void ApplyPortraitAndName(GameObject go, Sprite portraitOverride, string nameOverride)
     {
-        // Name
         if (nameText)
             nameText.text = !string.IsNullOrEmpty(nameOverride) ? nameOverride : (go ? go.name : "");
 
-        // Portrait
         Sprite chosen = portraitOverride;
 
         if (chosen == null && go != null)
         {
-            // Try a CharacterProfileRef.profile.portrait if you use that in your project
             var profRef = go.GetComponent("CharacterProfileRef");
             if (profRef != null)
             {
@@ -228,16 +323,16 @@ public class UI_CompanionHPMPBinder : MonoBehaviour
                 {
                     var piProfile = profRef.GetType().GetProperty("profile");
                     var profileObj = piProfile != null ? piProfile.GetValue(profRef) : null;
+
                     if (profileObj != null)
                     {
                         var piPortrait = profileObj.GetType().GetProperty("portrait");
                         chosen = piPortrait != null ? (Sprite)piPortrait.GetValue(profileObj) : null;
                     }
                 }
-                catch { /* ignore */ }
+                catch { }
             }
 
-            // Fallback: sprite from a SpriteRenderer on the target (common for 2D)
             if (chosen == null)
             {
                 var sr = go.GetComponentInChildren<SpriteRenderer>(true);

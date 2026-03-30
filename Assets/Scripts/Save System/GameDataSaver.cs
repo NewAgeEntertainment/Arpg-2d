@@ -119,7 +119,8 @@ public class GameDataSaver : Saver
         player?.ui?.inGameUI?.UpdateSexExpBar();
         player?.ui?.playerHealthBar?.UpdateHealth(health?.GetCurrentHealth() ?? 0, stats?.GetMaxHealth() ?? 0);
         player?.ui?.playerManaBar?.UpdateMana(mana?.GetCurrentMana() ?? 0, stats?.GetMaxMana() ?? 0);
-        player?.ui?.StatusPanel?.UpdateStatus(player);
+        if (player?.ui?.StatusPanel != null && player.ui.StatusPanel.IsOpen)
+            player.ui.StatusPanel.RefreshCurrentCharacter();
 
         StartCoroutine(ApplySkillTreeWhenReady(data.skillTree));
     }

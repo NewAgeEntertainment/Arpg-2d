@@ -118,6 +118,7 @@ public class PlayerStatsSaver : Saver
         player.ui?.inGameUI?.UpdateGoldDisplay(data.gold);
         player.ui?.inGameUI?.UpdateExpBar();
         player.ui?.inGameUI?.UpdateSexExpBar();
-        player.ui?.StatusPanel?.UpdateStatus(player);
+        if (player.ui?.StatusPanel != null && player.ui.StatusPanel.IsOpen)
+            player.ui.StatusPanel.RefreshCurrentCharacter();
     }
 }

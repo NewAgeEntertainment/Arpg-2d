@@ -4,58 +4,80 @@ using UnityEngine.EventSystems;
 
 public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    private Entity_Stats boundStats;
     private Player_Stats playerStats;
+    private Companion_Stats companionStats;
+
     private RectTransform rect;
     private UI ui;
 
     [SerializeField] private StatType statSlotType;
     public StatType StatType => statSlotType;
+
     [SerializeField] private TextMeshProUGUI statName;
     [SerializeField] private TextMeshProUGUI statValue;
 
     public Inventory_Item hoveredItem;
+
     private void OnValidate()
     {
-        // this will give the gameobject a name.
         gameObject.name = "UI_Stat - " + statSlotType.GetStatName();
-        statName.text = GetStatNameByType(statSlotType);
+
+        if (statName != null)
+            statName.text = GetStatNameByType(statSlotType);
     }
 
     private void Awake()
     {
         ui = GetComponentInParent<UI>();
         rect = GetComponent<RectTransform>();
-        // ❌ DO NOT grab playerStats here
     }
 
-    public void Setup(Player_Stats stats)
+    public void Setup(Entity_Stats stats)
     {
-        playerStats = stats;
+        boundStats = stats;
+        playerStats = stats as Player_Stats;
+        companionStats = stats as Companion_Stats;
+
+        UpdateStatValue();
+    }
+
+    public void Clear()
+    {
+        boundStats = null;
+        playerStats = null;
+        companionStats = null;
+
+        if (statValue != null)
+            statValue.text = "--";
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        ui.statToolTip.ShowToolTip(true, rect, statSlotType);
+        if (ui != null && ui.statToolTip != null)
+            ui.statToolTip.ShowToolTip(true, rect, statSlotType);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        ui.statToolTip.ShowToolTip(false, null);
-        
+        if (ui != null && ui.statToolTip != null)
+            ui.statToolTip.ShowToolTip(false, null);
     }
 
     public void UpdateStatDisplay(string text)
     {
-        statValue.text = text;
+        if (statValue != null)
+            statValue.text = text;
     }
 
     public void UpdateStatValue()
     {
-        Stat statToUpdate = playerStats.GetStatByType(statSlotType);
+        if (statValue == null)
+            return;
 
-        if (statToUpdate == null && statSlotType != StatType.ElementalDamage)
+        if (boundStats == null)
         {
-            Debug.LogError("Stat not found: " + statSlotType);
+            statValue.text = "--";
             return;
         }
 
@@ -66,110 +88,149 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             // -------- Major Stats --------
             case StatType.Strength:
-                value = playerStats.major.strength.GetValue();
-                // also show resulting physical damage
-                float physDmg = playerStats.GetBaseDamage();
-                displayText = $"{value}  (Phys: {physDmg})";
+                value = boundStats.major.strength.GetValue();
+                //displayText = $"{value}  (Phys: {boundStats.GetBaseDamage()})";
                 break;
 
             case StatType.Luck:
-                value = playerStats.major.luck.GetValue();
+                value = boundStats.major.luck.GetValue();
                 break;
+
             case StatType.Intelligence:
-                value = playerStats.major.intelligence.GetValue();
+                value = boundStats.major.intelligence.GetValue();
                 break;
+
             case StatType.Vitality:
-                value = playerStats.major.vitality.GetValue();
+                value = boundStats.major.vitality.GetValue();
                 break;
 
             // -------- Offensive Stats --------
             case StatType.Damage:
-                value = playerStats.GetBaseDamage();
+                value = boundStats.GetBaseDamage();
                 break;
+
             case StatType.CritChance:
-                value = playerStats.GetCritChance();
+                value = boundStats.GetCritChance();
                 break;
+
             case StatType.CritPower:
-                value = playerStats.GetCritPower();
+                value = boundStats.GetCritPower();
                 break;
+
             case StatType.ArmorReduction:
-                value = playerStats.GetArmorReduction() * 100f;
+                value = boundStats.GetArmorReduction() * 100f;
                 break;
+
             case StatType.AttackSpeed:
-                value = playerStats.offense.attackSpeed.GetValue() * 100f;
+                value = boundStats.offense.attackSpeed.GetValue() * 100f;
                 break;
 
             // -------- Defense Stats --------
             case StatType.MaxHealth:
-                value = playerStats.GetMaxHealth();
+                value = boundStats.GetMaxHealth();
                 break;
+
             case StatType.HealthRegen:
-                value = playerStats.resources.healthRegen.GetValue();
+                value = boundStats.resources.healthRegen.GetValue();
                 break;
+
             case StatType.MaxMana:
-                value = playerStats.GetMaxMana();
+                value = boundStats.GetMaxMana();
                 break;
+
             case StatType.ManaRegen:
-                value = playerStats.resources.manaRegen.GetValue();
+                value = boundStats.resources.manaRegen.GetValue();
                 break;
+
             case StatType.Evasion:
-                value = playerStats.GetEvasion();
+                value = boundStats.GetEvasion();
                 break;
+
             case StatType.Defense:
-                value = playerStats.GetBaseArmor();
+                value = boundStats.GetBaseArmor();
                 break;
 
             // -------- Elemental damage --------
             case StatType.IceDamage:
-                value = playerStats.offense.iceDamage.GetValue();
+                value = boundStats.offense.iceDamage.GetValue();
                 break;
+
             case StatType.FireDamage:
-                // small bug fix: this should be fire, not lightning
-                value = playerStats.offense.fireDamage.GetValue();
+                value = boundStats.offense.fireDamage.GetValue();
                 break;
+
             case StatType.PoisonDamage:
-                value = playerStats.offense.poisonDamage.GetValue();
+                value = boundStats.offense.poisonDamage.GetValue();
                 break;
+
             case StatType.LightningDamage:
-                value = playerStats.offense.lightningDamage.GetValue();
+                value = boundStats.offense.lightningDamage.GetValue();
                 break;
 
             // -------- Elemental resistances --------
             case StatType.IceResistance:
-                value = playerStats.GetElementalResistance(ElementType.Ice) * 100f;
-                break;
-            case StatType.FireResistance:
-                value = playerStats.GetElementalResistance(ElementType.Fire) * 100f;
-                break;
-            case StatType.PoisonResistance:
-                value = playerStats.GetElementalResistance(ElementType.Poison) * 100f;
-                break;
-            case StatType.LightningResistance:
-                value = playerStats.GetElementalResistance(ElementType.Lightning) * 100f;
+                value = boundStats.GetElementalResistance(ElementType.Ice) * 100f;
                 break;
 
-            // -------- Sexual Stats --------
+            case StatType.FireResistance:
+                value = boundStats.GetElementalResistance(ElementType.Fire) * 100f;
+                break;
+
+            case StatType.PoisonResistance:
+                value = boundStats.GetElementalResistance(ElementType.Poison) * 100f;
+                break;
+
+            case StatType.LightningResistance:
+                value = boundStats.GetElementalResistance(ElementType.Lightning) * 100f;
+                break;
+
+            // -------- Sexual Stats (player only unless companion supports them too) --------
             case StatType.MaxArousal:
-                value = playerStats.GetMaxArousel();
+                if (playerStats != null)
+                    value = playerStats.GetMaxArousel();
+                else
+                    displayText = "--";
                 break;
+
             case StatType.Stroke:
-                value = playerStats.sex.stroke.GetValue();
-                // also show resulting sexual damage
-                float sexDmg = playerStats.GetBaseSexDamage();
-                displayText = $"{value}  (Sex: {sexDmg})";
+                if (playerStats != null)
+                {
+                    value = playerStats.sex.stroke.GetValue();
+                    displayText = $"{value}  (Sex: {playerStats.GetBaseSexDamage()})";
+                }
+                else
+                {
+                    displayText = "--";
+                }
                 break;
+
             case StatType.Resilience:
-                value = playerStats.GetBaseResilience();
+                if (playerStats != null)
+                    value = playerStats.GetBaseResilience();
+                else
+                    displayText = "--";
                 break;
+
             case StatType.SexualDamage:
-                value = playerStats.GetBaseSexDamage();
+                if (playerStats != null)
+                    value = playerStats.GetBaseSexDamage();
+                else
+                    displayText = "--";
                 break;
+
             case StatType.SexualRestraint:
-                value = playerStats.sex.sexualRestraint.GetValue();
+                if (playerStats != null)
+                    value = playerStats.sex.sexualRestraint.GetValue();
+                else
+                    displayText = "--";
+                break;
+
+            // -------- Unsupported / combined --------
+            case StatType.ElementalDamage:
+                displayText = "--";
                 break;
         }
 
-        // If we didn't set a custom displayText above, use the normal format
         if (string.IsNullOrEmpty(displayText))
         {
             displayText = IsPercentageStat(statSlotType)
@@ -179,7 +240,6 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         statValue.text = displayText;
     }
-
 
     private bool IsPercentageStat(StatType type)
     {
@@ -194,10 +254,10 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             case StatType.LightningResistance:
             case StatType.Evasion:
                 return true;
+
             default:
                 return false;
         }
-
     }
 
     private string GetStatNameByType(StatType type)
@@ -237,16 +297,14 @@ public class UI_StatSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
     }
 
-    private float GetEquippedItemStatValue(StatType statType)
+    private float GetEquippedItemStatValue(StatType type)
     {
         if (ui == null || ui.hoveredItem == null)
         {
-            Debug.LogWarning("No hovered item to compare for stat: " + statType);
+            Debug.LogWarning("No hovered item to compare for stat: " + type);
             return 0f;
         }
 
-        return ui.hoveredItem.GetStatValue(statType);
+        return ui.hoveredItem.GetStatValue(type);
     }
-
-
 }

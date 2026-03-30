@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using Rewired;
+using TMPro;
 
 public class UI_EquipmentInventory : UI_Panel
 {
@@ -24,6 +25,11 @@ public class UI_EquipmentInventory : UI_Panel
     [SerializeField] private UI_PlayerStats playerStatsPanel;
     [SerializeField] private Button removeButton;
 
+    [Header("Character Header")]
+    [SerializeField] private Image characterPortraitImage;
+    [SerializeField] private TextMeshProUGUI characterNameText;
+    [SerializeField] private CompanionPortraitMap portraitMap;
+
     [Header("Audio")]
     [SerializeField] private AudioClip equipSound;
     [SerializeField] private AudioClip unequipSound;
@@ -32,6 +38,8 @@ public class UI_EquipmentInventory : UI_Panel
     [Header("Rewired Input")]
     [SerializeField] private int playerID = 0;
     [SerializeField] private string cancelAction = "UICancel";
+    [SerializeField] private string nextCharacterAction = "UIRight";
+    [SerializeField] private string previousCharacterAction = "UILeft";
 
     private Rewired.Player rPlayer;
     private readonly List<UI_EquipmentSlot> uiSlots = new List<UI_EquipmentSlot>();
@@ -39,6 +47,13 @@ public class UI_EquipmentInventory : UI_Panel
     private bool isOpen = false;
     public bool IsOpen => isOpen;
     public UI_EquipSlotParent EquippedSlotsPanel => equippedSlotsPanel;
+
+    private GameObject currentCharacter;
+    private Player currentPlayer;
+    private Companion currentCompanion;
+
+    private readonly List<GameObject> partyMembers = new List<GameObject>();
+    private int currentIndex = 0;
 
     private enum PanelState { None, EquippedPanel, ItemList }
     private PanelState currentState = PanelState.None;
@@ -53,7 +68,6 @@ public class UI_EquipmentInventory : UI_Panel
         if (equipmentInventory == null) equipmentInventory = FindFirstObjectByType<Inventory_Equipment>();
         if (playerInventory == null) playerInventory = FindFirstObjectByType<Inventory_Player>();
 
-        // cache existing UI_EquipmentSlot children (if laid out in editor)
         if (equipmentSlotPanel != null)
             uiSlots.AddRange(equipmentSlotPanel.GetComponentsInChildren<UI_EquipmentSlot>(true));
 
@@ -66,10 +80,32 @@ public class UI_EquipmentInventory : UI_Panel
         Close();
     }
 
+    private void Update()
+    {
+        if (!isOpen || rPlayer == null)
+            return;
+
+        if (rPlayer.GetButtonDown(nextCharacterAction))
+        {
+            ShowNextCharacter();
+            return;
+        }
+
+        if (rPlayer.GetButtonDown(previousCharacterAction))
+        {
+            ShowPreviousCharacter();
+            return;
+        }
+
+        if (rPlayer.GetButtonDown(cancelAction))
+        {
+            HandleCancel();
+        }
+    }
+
     private void OnEnable()
     {
         HookEvents();
-        // If opened via code while panel is inactive, ForceRefresh ensures lists match data
         ForceRefresh();
     }
 
@@ -108,26 +144,149 @@ public class UI_EquipmentInventory : UI_Panel
         currentState = PanelState.None;
     }
 
-    /// <summary>
-    /// Rebuild both equipped & unequipped lists. (Called by saver post-load)
-    /// </summary>
     public void RefreshPanels()
     {
         UpdateEquippedSlots();
         UpdateUnequippedItemList();
     }
 
-    /// <summary>
-    /// Force a rebuild even if panel isn’t open yet (safe to call post-load).
-    /// </summary>
     public void ForceRefresh()
     {
-        // Temporarily let UpdateUI run even if panel is closed.
         if (isOpen) UpdateUI();
         else
         {
             UpdateEquippedSlots();
             UpdateUnequippedItemList();
+        }
+    }
+
+    public void OpenForCharacter(GameObject character)
+    {
+        BuildPartyList(character);
+
+        int found = partyMembers.IndexOf(character);
+        currentIndex = found >= 0 ? found : 0;
+
+        ShowCurrentCharacter();
+        Open();
+    }
+
+    private void BuildPartyList(GameObject preferredCharacter = null)
+    {
+        partyMembers.Clear();
+
+        Player mainPlayer = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+        if (mainPlayer != null)
+            partyMembers.Add(mainPlayer.gameObject);
+
+        if (CompanionPartyManager.Instance != null)
+        {
+            foreach (string id in CompanionPartyManager.Instance.ActiveIds())
+            {
+                GameObject go = CompanionPartyManager.Instance.FindActiveInstance(id);
+                if (go != null && !partyMembers.Contains(go))
+                    partyMembers.Add(go);
+            }
+        }
+
+        currentIndex = 0;
+
+        if (preferredCharacter != null)
+        {
+            int found = partyMembers.IndexOf(preferredCharacter);
+            if (found >= 0)
+                currentIndex = found;
+        }
+    }
+
+    private void ShowCurrentCharacter()
+    {
+        if (partyMembers.Count == 0)
+            return;
+
+        currentIndex = Mathf.Clamp(currentIndex, 0, partyMembers.Count - 1);
+
+        currentCharacter = partyMembers[currentIndex];
+        currentPlayer = currentCharacter != null ? currentCharacter.GetComponent<Player>() : null;
+        currentCompanion = currentCharacter != null ? currentCharacter.GetComponent<Companion>() : null;
+
+        RefreshCharacterHeader();
+        UpdateUI();
+    }
+
+    public void ShowNextCharacter()
+    {
+        if (partyMembers.Count == 0) return;
+
+        currentIndex++;
+        if (currentIndex >= partyMembers.Count)
+            currentIndex = 0;
+
+        ShowCurrentCharacter();
+    }
+
+    public void ShowPreviousCharacter()
+    {
+        if (partyMembers.Count == 0) return;
+
+        currentIndex--;
+        if (currentIndex < 0)
+            currentIndex = partyMembers.Count - 1;
+
+        ShowCurrentCharacter();
+    }
+
+    public void OnNextCharacterButton()
+    {
+        ShowNextCharacter();
+    }
+
+    public void OnPreviousCharacterButton()
+    {
+        ShowPreviousCharacter();
+    }
+
+    private void RefreshCharacterHeader()
+    {
+        if (characterNameText != null)
+        {
+            if (currentPlayer != null)
+                characterNameText.text = currentPlayer.name;
+            else if (currentCompanion != null)
+                characterNameText.text = currentCompanion.name;
+            else
+                characterNameText.text = "";
+        }
+
+        if (characterPortraitImage != null)
+        {
+            Sprite portrait = null;
+
+            if (currentPlayer != null)
+            {
+                portrait = currentPlayer.Portrait;
+            }
+            else if (currentCompanion != null)
+            {
+                portrait = currentCompanion.Portrait;
+
+                if (portrait == null && portraitMap != null)
+                {
+                    var identity = currentCompanion.GetComponent<CompanionIdentity>();
+                    if (identity != null && !string.IsNullOrWhiteSpace(identity.id))
+                        portrait = portraitMap.Get(identity.id);
+                }
+
+                if (portrait == null)
+                {
+                    var sr = currentCompanion.GetComponentInChildren<SpriteRenderer>(true);
+                    if (sr != null)
+                        portrait = sr.sprite;
+                }
+            }
+
+            characterPortraitImage.sprite = portrait;
+            characterPortraitImage.enabled = (portrait != null);
         }
     }
 
@@ -151,7 +310,6 @@ public class UI_EquipmentInventory : UI_Panel
                 filteredItems.Add(item);
         }
 
-        // Ensure we have enough UI slots; create more if the panel uses a prefab pattern
         if (slotPrefab != null && uiSlots.Count < filteredItems.Count)
         {
             int toCreate = filteredItems.Count - uiSlots.Count;
@@ -248,7 +406,6 @@ public class UI_EquipmentInventory : UI_Panel
     {
         Debug.Log("[UI_EquipmentInventory] HandleCancel() called. Current state: " + currentState);
 
-        // ItemList -> EquippedPanel
         if (IsOnItemListPanel() || currentState == PanelState.ItemList)
         {
             Debug.Log("[UI_EquipmentInventory] Returning to Equipped Slot Panel");
@@ -256,16 +413,14 @@ public class UI_EquipmentInventory : UI_Panel
             return true;
         }
 
-        // EquippedPanel -> Close via UI manager (same pattern as Inventory)
         Debug.Log("[UI_EquipmentInventory] Request close via UI.Instance");
         if (UI.Instance != null)
             UI.Instance.CloseEquipment();
         else
-            Close(); // fallback
+            Close();
 
         return true;
     }
-
 
     public void GoToMainMenuPanel()
     {

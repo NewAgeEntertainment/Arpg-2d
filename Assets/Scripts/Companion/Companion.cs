@@ -57,6 +57,11 @@ public class Companion : Entity
 
     [HideInInspector] public Companion_DeadState deadState;
 
+    [Header("Status UI")]
+    public Sprite Portrait;
+    [TextArea(2, 5)] public string Bio;
+    public string companionClassName = "Companion";
+
     private Entity_Health _health;
 
     // ====================================================================

@@ -219,7 +219,8 @@ public class EquipmentSaver : Saver
         // 5) Refresh UIs
         equipmentInv.NotifyInventoryChanged();
         playerInv.NotifyInventoryChanged();
-        player?.ui?.StatusPanel?.UpdateStatus(player);
+        if (player?.ui?.StatusPanel != null && player.ui.StatusPanel.IsOpen)
+            player.ui.StatusPanel.RefreshCurrentCharacter();
     }
 
     private static List<SavedItemModifier> PackMods(ItemModifier[] mods)

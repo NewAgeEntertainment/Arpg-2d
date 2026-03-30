@@ -24,6 +24,8 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI manaText;
 
+    [SerializeField] private bool onlySwitchOpenStatusPanel = true;
+
     [Header("Highlight")]
     [SerializeField] private GameObject highlighter;
 
@@ -118,9 +120,37 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
 
     private void HandleClick()
     {
+        Debug.Log($"[ProfileButton] HandleClick on {gameObject.name}");
+
         if (TryUsePendingItem())
             return;
 
+        if (character == null || !character.gameObject.scene.IsValid())
+            character = linkedCharacter;
+
+        if (character == null || UI.Instance == null)
+        {
+            Debug.Log("[ProfileButton] Early return: no character or no UI.Instance");
+            return;
+        }
+
+        Debug.Log($"[ProfileButton] StatusMode={UI.Instance.IsStatusSelectionModeActive()}, EquipmentMode={UI.Instance.IsEquipmentSelectionModeActive()}");
+
+        if (UI.Instance.IsStatusSelectionModeActive())
+        {
+            Debug.Log($"[ProfileButton] Routing to SelectStatusCharacter: {character.name}");
+            UI.Instance.SelectStatusCharacter(character.gameObject);
+            return;
+        }
+
+        if (UI.Instance.IsEquipmentSelectionModeActive())
+        {
+            Debug.Log($"[ProfileButton] Routing to SelectEquipmentCharacter: {character.name}");
+            UI.Instance.SelectEquipmentCharacter(character.gameObject);
+            return;
+        }
+
+        Debug.Log("[ProfileButton] Falling back to onClickCallback");
         onClickCallback?.Invoke(character);
     }
 
@@ -159,6 +189,8 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         afterUse?.Invoke();
         return true;
     }
+
+
 
     private Inventory_Item FindSameItemInstance(Inventory_Player inv, Inventory_Item sample)
     {

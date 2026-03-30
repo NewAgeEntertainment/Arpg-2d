@@ -185,6 +185,8 @@ public class UI : MonoBehaviour
     private bool isStorageOpen = false;
     private bool isMerchantOpen = false;
     private bool isCraftOpen = false;
+    private bool isStatusSelectionMode = false;
+    private bool isEquipmentSelectionMode = false;
 
     // track event subscription so we don’t double-subscribe when scenes change
     private bool goldSubscribed = false;
@@ -193,7 +195,12 @@ public class UI : MonoBehaviour
 
 
 
-
+    public bool IsStatusSelectionModeActive() => isStatusSelectionMode;
+    public bool IsEquipmentSelectionModeActive()
+    {
+        Debug.Log($"[UI] IsEquipmentSelectionModeActive() -> {isEquipmentSelectionMode}");
+        return isEquipmentSelectionMode;
+    }
 
 
     // ======================= Title Screen / Return-to-Title settings =======================
@@ -439,6 +446,8 @@ public class UI : MonoBehaviour
         _skillRefreshCo = null;
     }
 
+    
+
     private void TryRefreshSkillSlotsOnce()
     {
         if (inGameUI == null) return;
@@ -638,26 +647,55 @@ public class UI : MonoBehaviour
 
     public void OpenEquipment()
     {
-        if (mainMenuPanel != null && mainMenuPanel.activeSelf)
-        {
-            OpenPanelFromMainMenu(() =>
-            {
-                isEquipmentOpen = true;
-                equipmentInventoryPanel?.gameObject.SetActive(true);
-                equipmentInventoryPanel?.Open();
-            });
-            return;
-        }
+        Debug.Log("[UI] OpenEquipment() CALLED - waiting for character selection");
 
-        SwitchPanelWithPageTurn(() =>
-        {
-            isEquipmentOpen = true;
-            equipmentInventoryPanel?.gameObject.SetActive(true);
-            equipmentInventoryPanel?.Open();
-        }, turnRight: true);
+        isEquipmentSelectionMode = true;
+        isStatusSelectionMode = false;
+        isEquipmentOpen = false;
+
+        Debug.Log($"[UI] After OpenEquipment -> isEquipmentSelectionMode={isEquipmentSelectionMode}");
+
+        if (equipmentInventoryPanel != null)
+            equipmentInventoryPanel.gameObject.SetActive(false);
     }
 
 
+
+
+    public void SelectEquipmentCharacter(GameObject character)
+    {
+        Debug.Log(
+            $"[UI] SelectEquipmentCharacter -> " +
+            $"character={(character != null ? character.name : "NULL")}, " +
+            $"isEquipmentSelectionMode={isEquipmentSelectionMode}"
+        );
+
+        if (character == null || equipmentInventoryPanel == null)
+            return;
+
+        if (!isEquipmentSelectionMode)
+        {
+            Debug.Log("[UI] Early return: equipment selection mode is not active.");
+            return;
+        }
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        OpenPanelWithBook(() =>
+        {
+            Debug.Log($"[UI] Opening equipment panel for {character.name}");
+
+            isEquipmentSelectionMode = false;
+            isEquipmentOpen = true;
+
+            equipmentInventoryPanel.gameObject.SetActive(true);
+            equipmentInventoryPanel.OpenForCharacter(character);
+        });
+    }
 
 
     public void CloseEquipment()
@@ -715,27 +753,14 @@ public class UI : MonoBehaviour
 
     public void OpenStatusPanel()
     {
-        // ✅ hide main menu FIRST (same frame)
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
+        Debug.Log("[UI] OpenStatusPanel() CALLED - waiting for character selection");
 
-        // keep UI root on + enter UI mode
-        EnsureUIRootIsActive();
+        isStatusSelectionMode = true;
+        isEquipmentSelectionMode = false;
+        isStatusPanelOpen = false;
 
-        // turn off other panels (but DON'T touch the book object)
-        CloseAllPanels();
-
-        // ✅ now play the book open, then show status
-        OpenPanelWithBook(() =>
-        {
-            isStatusPanelOpen = true;
-
-            if (statusPanel != null)
-            {
-                statusPanel.gameObject.SetActive(true);
-                statusPanel.UpdateStatus(FindObjectOfType<Player>());
-            }
-        });
+        if (statusPanel != null)
+            statusPanel.gameObject.SetActive(false);
     }
 
 
@@ -1178,9 +1203,14 @@ public class UI : MonoBehaviour
 
             case UIPanelKind.Status:
                 if (statusPanel == null) return false;
+
                 isStatusPanelOpen = true;
                 statusPanel.gameObject.SetActive(true);
-                statusPanel.UpdateStatus(FindObjectOfType<Player>());
+
+                Player player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+                if (player != null)
+                    statusPanel.OpenPanel(player);
+
                 return true;
 
 
@@ -1470,6 +1500,42 @@ public class UI : MonoBehaviour
 
 
     #endregion
+
+    public void SelectStatusCharacter(GameObject character)
+    {
+        Debug.Log(
+            $"[UI] SelectStatusCharacter -> " +
+            $"character={(character != null ? character.name : "NULL")}, " +
+            $"isStatusSelectionMode={isStatusSelectionMode}"
+        );
+
+        if (character == null || statusPanel == null)
+            return;
+
+        if (!isStatusSelectionMode)
+        {
+            Debug.Log("[UI] Early return: status selection mode is not active.");
+            return;
+        }
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        OpenPanelWithBook(() =>
+        {
+            Debug.Log($"[UI] Opening status panel for {character.name}");
+
+            isStatusSelectionMode = false;
+            isStatusPanelOpen = true;
+
+            statusPanel.gameObject.SetActive(true);
+            statusPanel.OpenPanel(character);
+        });
+    }
+
 
     #region Input Control
 
