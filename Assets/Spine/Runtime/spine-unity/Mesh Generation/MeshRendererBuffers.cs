@@ -27,9 +27,8 @@
  * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-// Optimization option: Allows faster BuildMeshWithArrays call and avoids calling SetTriangles at the cost of
-// checking for mesh differences (vertex counts, member-wise attachment list compare) every frame.
-#define SPINE_TRIANGLECHECK
+// Not for optimization. Do not disable.
+#define SPINE_TRIANGLECHECK // Avoid calling SetTriangles at the cost of checking for mesh differences (vertex counts, memberwise attachment list compare) every frame.
 //#define SPINE_DEBUG
 
 using System;
@@ -108,7 +107,7 @@ namespace Spine.Unity {
 			doubleBufferedMesh = null;
 		}
 
-		/// <summary>This is a Mesh that also stores the instructions SkeletonRenderer generated for it.</summary>
+		///<summary>This is a Mesh that also stores the instructions SkeletonRenderer generated for it.</summary>
 		public class SmartMesh : IDisposable {
 			public Mesh mesh = SpineMesh.NewSkeletonMesh();
 			public SkeletonRendererInstruction instructionUsed = new SkeletonRendererInstruction();

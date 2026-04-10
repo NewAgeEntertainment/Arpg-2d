@@ -83,8 +83,6 @@ namespace Spine.Unity.Editor {
 	}
 
 	public static class SpineBuildEnvUtility {
-		public const string SPINE_ALLOW_UNSAFE_CODE = "SPINE_ALLOW_UNSAFE";
-
 		static bool IsInvalidGroup (BuildTargetGroup group) {
 			int gi = (int)group;
 			return
@@ -101,18 +99,15 @@ namespace Spine.Unity.Editor {
 				if (IsInvalidGroup(group))
 					continue;
 
-				try {
-					string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
-					if (!defines.Contains(define)) {
-						wasDefineAdded = true;
-						if (defines.EndsWith(";", System.StringComparison.Ordinal))
-							defines += define;
-						else
-							defines += ";" + define;
+				string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+				if (!defines.Contains(define)) {
+					wasDefineAdded = true;
+					if (defines.EndsWith(";", System.StringComparison.Ordinal))
+						defines += define;
+					else
+						defines += ";" + define;
 
-						PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
-					}
-				} catch (System.Exception) {
+					PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
 				}
 			}
 			Debug.LogWarning("Please ignore errors \"PlayerSettings Validation: Requested build target group doesn't exist\" above");
@@ -132,18 +127,15 @@ namespace Spine.Unity.Editor {
 				if (IsInvalidGroup(group))
 					continue;
 
-				try {
-					string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
-					if (defines.Contains(define)) {
-						wasDefineRemoved = true;
-						if (defines.Contains(define + ";"))
-							defines = defines.Replace(define + ";", "");
-						else
-							defines = defines.Replace(define, "");
+				string defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+				if (defines.Contains(define)) {
+					wasDefineRemoved = true;
+					if (defines.Contains(define + ";"))
+						defines = defines.Replace(define + ";", "");
+					else
+						defines = defines.Replace(define, "");
 
-						PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
-					}
-				} catch (System.Exception) {
+					PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
 				}
 			}
 

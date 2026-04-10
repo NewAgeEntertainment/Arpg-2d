@@ -36,11 +36,6 @@ using UnityEngine;
 namespace Spine.Unity {
 	public abstract class OnDemandTextureLoader : ScriptableObject {
 		public AtlasAssetBase atlasAsset;
-		/// <summary>
-		/// Additional <see cref="SkeletonDataAsset"/> reference, currently only used to cover blend mode materials
-		/// which are not stored at <c>atlasAsset</c>.
-		/// </summary>
-		public SkeletonDataAsset skeletonDataAsset;
 
 		/// <param name="originalTextureName">Original texture name without extension.</param>
 		/// <returns>The placeholder texture's name for a given original target texture name.</returns>
@@ -94,7 +89,6 @@ namespace Spine.Unity {
 		public delegate void TextureLoadDelegate (OnDemandTextureLoader loader, Material material, int textureIndex);
 		protected event TextureLoadDelegate onTextureRequested;
 		protected event TextureLoadDelegate onTextureLoaded;
-		protected event TextureLoadDelegate onTextureLoadFailed;
 		protected event TextureLoadDelegate onTextureUnloaded;
 
 		public event TextureLoadDelegate TextureRequested {
@@ -104,10 +98,6 @@ namespace Spine.Unity {
 		public event TextureLoadDelegate TextureLoaded {
 			add { onTextureLoaded += value; }
 			remove { onTextureLoaded -= value; }
-		}
-		public event TextureLoadDelegate TextureLoadFailed {
-			add { onTextureLoadFailed += value; }
-			remove { onTextureLoadFailed -= value; }
 		}
 		public event TextureLoadDelegate TextureUnloaded {
 			add { onTextureUnloaded += value; }
@@ -121,10 +111,6 @@ namespace Spine.Unity {
 		protected void OnTextureLoaded (Material material, int textureIndex) {
 			if (onTextureLoaded != null)
 				onTextureLoaded(this, material, textureIndex);
-		}
-		protected void OnTextureLoadFailed (Material material, int textureIndex) {
-			if (onTextureLoadFailed != null)
-				onTextureLoadFailed(this, material, textureIndex);
 		}
 		protected void OnTextureUnloaded (Material material, int textureIndex) {
 			if (onTextureUnloaded != null)

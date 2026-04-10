@@ -27,39 +27,14 @@
  * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-//#define SPINE_ALLOW_UNSAFE // note: this define can be set via Edit - Preferences - Spine.
-
-#if UNITY_2021_2_OR_NEWER
-#define TEXT_ASSET_HAS_GET_DATA_BYTES
-#endif
-
-#if SPINE_ALLOW_UNSAFE && TEXT_ASSET_HAS_GET_DATA_BYTES
-#define UNSAFE_DIRECT_ACCESS_TEXT_ASSET_DATA
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.IO;
-#if UNSAFE_DIRECT_ACCESS_TEXT_ASSET_DATA
-using Unity.Collections;
-#endif
 using UnityEngine;
+
 using CompatibilityProblemInfo = Spine.Unity.SkeletonDataCompatibility.CompatibilityProblemInfo;
 
 namespace Spine.Unity {
-#if UNSAFE_DIRECT_ACCESS_TEXT_ASSET_DATA
-	public static class TextAssetExtensions {
-		public static Stream GetStreamUnsafe (this TextAsset textAsset) {
-			NativeArray<byte> dataNativeArray = textAsset.GetData<byte>();
-			return dataNativeArray.GetUnmanagedMemoryStream();
-		}
-
-		public static unsafe UnmanagedMemoryStream GetUnmanagedMemoryStream<T> (this NativeArray<T> nativeArray) where T : struct {
-			return new UnmanagedMemoryStream((byte*)global::Unity.Collections.LowLevel.Unsafe.
-				NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(nativeArray), nativeArray.Length);
-		}
-	}
-#endif
 
 	[CreateAssetMenu(fileName = "New SkeletonDataAsset", menuName = "Spine/SkeletonData Asset")]
 	public class SkeletonDataAsset : ScriptableObject {
@@ -110,8 +85,7 @@ namespace Spine.Unity {
 		}
 
 		/// <summary>
-		/// Creates a runtime SkeletonDataAsset.
-		/// If you require blend mode materials, call <see cref="SetupRuntimeBlendModeMaterials"/> afterwards.</summary>
+		/// Creates a runtime SkeletonDataAsset.</summary>
 		public static SkeletonDataAsset CreateRuntimeInstance (TextAsset skeletonDataFile, AtlasAssetBase[] atlasAssets, bool initialize, float scale = 0.01f) {
 			SkeletonDataAsset skeletonDataAsset = ScriptableObject.CreateInstance<SkeletonDataAsset>();
 			skeletonDataAsset.Clear();
@@ -123,19 +97,6 @@ namespace Spine.Unity {
 				skeletonDataAsset.GetSkeletonData(true);
 
 			return skeletonDataAsset;
-		}
-
-		/// <summary>If this SkeletonDataAsset has been created via <see cref="CreateRuntimeInstance"/>,
-		/// this method sets up blend mode materials for it.</summary>
-		public void SetupRuntimeBlendModeMaterials (bool applyAdditiveMaterial,
-			BlendModeMaterials.TemplateMaterials templateMaterials) {
-			blendModeMaterials.applyAdditiveMaterial = applyAdditiveMaterial;
-			blendModeMaterials.UpdateBlendmodeMaterialsRequiredState(GetSkeletonData(true));
-			bool anyMaterialsChanged = false;
-			BlendModeMaterials.CreateAndAssignMaterials(this, templateMaterials, ref anyMaterialsChanged);
-
-			Clear();
-			GetSkeletonData(true);
 		}
 		#endregion
 
@@ -213,15 +174,9 @@ namespace Spine.Unity {
 			SkeletonData loadedSkeletonData = null;
 
 			try {
-				if (hasBinaryExtension) {
-#if UNSAFE_DIRECT_ACCESS_TEXT_ASSET_DATA
-					using (Stream stream = skeletonJSON.GetStreamUnsafe()) {
-						loadedSkeletonData = SkeletonDataAsset.ReadSkeletonData(stream, attachmentLoader, skeletonDataScale);
-					}
-#else
+				if (hasBinaryExtension)
 					loadedSkeletonData = SkeletonDataAsset.ReadSkeletonData(skeletonJSON.bytes, attachmentLoader, skeletonDataScale);
-#endif
-				} else
+				else
 					loadedSkeletonData = SkeletonDataAsset.ReadSkeletonData(skeletonJSON.text, attachmentLoader, skeletonDataScale);
 			} catch (Exception ex) {
 				if (!quiet)
@@ -316,13 +271,6 @@ namespace Spine.Unity {
 				};
 				return binary.ReadSkeletonData(input);
 			}
-		}
-
-		internal static SkeletonData ReadSkeletonData (Stream assetStream, AttachmentLoader attachmentLoader, float scale) {
-			SkeletonBinary binary = new SkeletonBinary(attachmentLoader) {
-				Scale = scale
-			};
-			return binary.ReadSkeletonData(assetStream);
 		}
 
 		internal static SkeletonData ReadSkeletonData (string text, AttachmentLoader attachmentLoader, float scale) {

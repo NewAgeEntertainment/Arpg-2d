@@ -75,10 +75,6 @@ namespace Spine.Unity.Editor {
 		public static bool initialized;
 		private static List<string> texturesWithoutMetaFile = new List<string>();
 
-		public static void OnTextureImportedFirstTime (string texturePath) {
-			texturesWithoutMetaFile.Add(texturePath);
-		}
-
 		// Auto-import entry point for textures
 		void OnPreprocessTexture () {
 #if UNITY_2018_1_OR_NEWER
@@ -128,10 +124,10 @@ namespace Spine.Unity.Editor {
 				Mesh mesh = meshFilter.sharedMesh;
 				if (mesh == null) continue;
 
-				string meshName = string.Format("Skeleton Prefab Mesh [{0}]", renderer.name);
+				string meshName = string.Format("Skeleton Prefab Mesh \"{0}\"", renderer.name);
 				if (nameUsageCount.ContainsKey(meshName)) {
 					nameUsageCount[meshName]++;
-					meshName = string.Format("Skeleton Prefab Mesh [{0} ({1})]", renderer.name, nameUsageCount[meshName]);
+					meshName = string.Format("Skeleton Prefab Mesh \"{0} ({1})\"", renderer.name, nameUsageCount[meshName]);
 				} else {
 					nameUsageCount.Add(meshName, 0);
 				}
@@ -550,16 +546,6 @@ namespace Spine.Unity.Editor {
 		}
 	}
 
-	public class SpineAssetModificationProcessor : UnityEditor.AssetModificationProcessor {
-		static void OnWillCreateAsset (string assetName) {
-			// Note: This method seems to be called from the main thread,
-			// not from worker threads when Project Settings - Editor - Parallel Import is enabled.
-			int endIndex = assetName.LastIndexOf(".meta");
-			string assetPath = endIndex < 0 ? assetName : assetName.Substring(0, endIndex);
-			SpineEditorUtilities.OnTextureImportedFirstTime(assetPath);
-		}
-	}
-
 	public class TextureModificationWarningProcessor : UnityEditor.AssetModificationProcessor {
 		static string[] OnWillSaveAssets (string[] paths) {
 			if (SpineEditorUtilities.Preferences.textureImporterWarning) {
@@ -576,56 +562,6 @@ namespace Spine.Unity.Editor {
 				}
 			}
 			return paths;
-		}
-	}
-
-	public class AnimationWindowPreview {
-		static System.Type animationWindowType;
-		public static System.Type AnimationWindowType {
-			get {
-				if (animationWindowType == null)
-					animationWindowType = System.Type.GetType("UnityEditor.AnimationWindow,UnityEditor");
-				return animationWindowType;
-			}
-		}
-
-		public static UnityEngine.Object GetOpenAnimationWindow () {
-			UnityEngine.Object[] openAnimationWindows = Resources.FindObjectsOfTypeAll(AnimationWindowType);
-			return openAnimationWindows.Length == 0 ? null : openAnimationWindows[0];
-		}
-
-		public static AnimationClip GetAnimationClip (UnityEngine.Object animationWindow) {
-			if (animationWindow == null)
-				return null;
-
-			const BindingFlags bindingFlagsInstance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-			FieldInfo animEditorField = AnimationWindowType.GetField("m_AnimEditor", bindingFlagsInstance);
-
-			PropertyInfo selectionProperty = animEditorField.FieldType.GetProperty("selection", bindingFlagsInstance);
-			object animEditor = animEditorField.GetValue(animationWindow);
-			if (animEditor == null) return null;
-			object selection = selectionProperty.GetValue(animEditor, null);
-			if (selection == null) return null;
-
-			PropertyInfo animationClipProperty = selection.GetType().GetProperty("animationClip");
-			return animationClipProperty.GetValue(selection, null) as AnimationClip;
-		}
-
-		public static float GetAnimationTime (UnityEngine.Object animationWindow) {
-			if (animationWindow == null)
-				return 0.0f;
-
-			const BindingFlags bindingFlagsInstance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-			FieldInfo animEditorField = AnimationWindowType.GetField("m_AnimEditor", bindingFlagsInstance);
-			object animEditor = animEditorField.GetValue(animationWindow);
-
-			System.Type animEditorFieldType = animEditorField.FieldType;
-			PropertyInfo stateProperty = animEditorFieldType.GetProperty("state", bindingFlagsInstance);
-			System.Type animWindowStateType = stateProperty.PropertyType;
-			PropertyInfo timeProperty = animWindowStateType.GetProperty("currentTime", bindingFlagsInstance);
-
-			object state = stateProperty.GetValue(animEditor, null);
-			return (float)timeProperty.GetValue(state, null);
 		}
 	}
 }

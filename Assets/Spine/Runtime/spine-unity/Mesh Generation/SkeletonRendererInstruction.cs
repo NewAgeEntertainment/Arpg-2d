@@ -27,14 +27,9 @@
  * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-// Optimization option: Allows faster BuildMeshWithArrays call and avoids calling SetTriangles at the cost of
-// checking for mesh differences (vertex counts, member-wise attachment list compare) every frame.
-#define SPINE_TRIANGLECHECK
+// Not for optimization. Do not disable.
+#define SPINE_TRIANGLECHECK // Avoid calling SetTriangles at the cost of checking for mesh differences (vertex counts, memberwise attachment list compare) every frame.
 //#define SPINE_DEBUG
-
-// Important Note: When disabling this define, also disable the one in MeshGenerator.cs
-// For details, see MeshGenerator.cs.
-#define SLOT_ALPHA_DISABLES_ATTACHMENT
 
 using System;
 using System.Collections.Generic;
@@ -50,11 +45,6 @@ namespace Spine.Unity {
 		public bool hasActiveClipping;
 		public int rawVertexCount = -1;
 		public readonly ExposedList<Attachment> attachments = new ExposedList<Attachment>();
-#else
-		/// <summary>Returns constant true to avoid BuildMeshWithArrays in renderers.</summary>
-		public bool hasActiveClipping { get { return true; } }
-		/// <summary>Returns constant vertex count for early-return if-clauses in renderers.</summary>
-		public int rawVertexCount { get { return 1; } }
 #endif
 
 		public void Clear () {
@@ -66,11 +56,9 @@ namespace Spine.Unity {
 			this.submeshInstructions.Clear(false);
 		}
 
-#if SPINE_TRIANGLECHECK
 		public void Dispose () {
 			attachments.Clear(true);
 		}
-#endif
 
 		public void SetWithSubset (ExposedList<SubmeshInstruction> instructions, int startSubmesh, int endSubmesh) {
 #if SPINE_TRIANGLECHECK
@@ -107,14 +95,7 @@ namespace Spine.Unity {
 			Slot[] drawOrderItems = instructionsItems[0].skeleton.DrawOrder.Items;
 			for (int i = 0; i < attachmentCount; i++) {
 				Slot slot = drawOrderItems[startSlot + i];
-				if (!slot.Bone.Active
-#if SLOT_ALPHA_DISABLES_ATTACHMENT
-					|| slot.A == 0f
-#endif
-					) {
-					attachmentsItems[i] = null;
-					continue;
-				}
+				if (!slot.Bone.Active) continue;
 				attachmentsItems[i] = slot.Attachment;
 			}
 
