@@ -325,8 +325,7 @@ public class TitleMenuManager : MonoBehaviour
 
     private void WipeAllSaveSlotMetadata()
     {
-        // Adjust this count to match your actual number of save slots.
-        const int slotCount = 3;
+        int slotCount = 4; // match your real slot count
 
         for (int i = 0; i < slotCount; i++)
         {
@@ -335,6 +334,7 @@ public class TitleMenuManager : MonoBehaviour
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_playSeconds");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_time");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_exists");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_musicGroup");
         }
 
         PlayerPrefs.Save();

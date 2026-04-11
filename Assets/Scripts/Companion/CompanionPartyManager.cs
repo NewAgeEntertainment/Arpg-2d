@@ -97,7 +97,7 @@ public class CompanionPartyManager : MonoBehaviour
 
         foreach (var e in roster)
             if (e != null && e.startInParty)
-                Recruit(e.id, silent: true);
+                Recruit(e.id, silent: false);
     }
 
     private void OnEnable()
@@ -186,28 +186,95 @@ public class CompanionPartyManager : MonoBehaviour
             return null;
         }
 
-        // Already traveling?
+        // 0) Already traveling?
         if (_active.TryGetValue(id, out var existing) && existing)
         {
-            // Ensure it’s in the right state.
-            if (reactivateIfAlreadyInScene && !existing.activeSelf) existing.SetActive(true);
+            if (reactivateIfAlreadyInScene && !existing.activeSelf)
+                existing.SetActive(true);
+
             FlagInParty(existing, true);
 
             if (!silent && verboseLogs)
                 Debug.Log($"[PartyManager] Recruit '{id}' → already active @{existing.transform.position}");
 
-            // Do NOT raise OnRecruited for idempotent call.
             return existing;
         }
 
-        // 1) Prefer an in-scene instance (promote to DDOL)
-        var sceneInst = FindSceneInstanceById(id);
-        if (sceneInst != null)
-        {
-            var go = sceneInst;
-            if (reactivateIfAlreadyInScene && !go.activeSelf) go.SetActive(true);
+        // Has this companion already been recruited/persisted before?
+        bool hasPersistentState =
+            _originById.ContainsKey(id) ||
+            CompanionStatsSaver.PendingSnapshots.ContainsKey(id);
 
-            // REMEMBER ORIGIN before promoting
+        GameObject go = null;
+
+        // 1) First-time recruitment: prefer scene instance if one exists.
+        if (!hasPersistentState)
+        {
+            var sceneInst = FindSceneInstanceById(id);
+            if (sceneInst != null)
+            {
+                go = sceneInst;
+
+                if (reactivateIfAlreadyInScene && !go.activeSelf)
+                    go.SetActive(true);
+
+                // Remember where the scene version came from before promoting it.
+                RememberOrigin(id, go, wasPrefab: false);
+
+                PromoteToDDOL(go);
+                SetupCompanion(go);
+                if (forceFollowOnRecruit) ForceFollow(go);
+                FlagInParty(go, true);
+
+                _active[id] = go;
+
+                OnRecruited?.Invoke(id, go);
+                OnPartyChanged?.Invoke();
+
+                if (!silent && verboseLogs)
+                    Debug.Log($"[PartyManager] Recruit '{id}' (first-time scene instance)");
+
+                return go;
+            }
+        }
+
+        // 2) Persistent restore / later recruit: prefer prefab.
+        if (entry.prefab != null)
+        {
+            go = Instantiate(entry.prefab, partyRoot);
+            go.transform.position = GetSpawnPosition();
+
+            // Prefab-spawned persistent companion; do not try to bind future restores
+            // to scene copies.
+            RememberOrigin(id, go, wasPrefab: true);
+
+            SetupCompanion(go);
+            if (forceFollowOnRecruit) ForceFollow(go);
+            FlagInParty(go, true);
+
+            _active[id] = go;
+
+            OnRecruited?.Invoke(id, go);
+            OnPartyChanged?.Invoke();
+
+            if (!silent && verboseLogs)
+            {
+                string why = hasPersistentState ? "persistent prefab restore" : "prefab fallback";
+                Debug.Log($"[PartyManager] Recruit '{id}' ({why})");
+            }
+
+            return go;
+        }
+
+        // 3) Last resort: scene instance only if no prefab exists at all.
+        var fallbackSceneInst = FindSceneInstanceById(id);
+        if (fallbackSceneInst != null)
+        {
+            go = fallbackSceneInst;
+
+            if (reactivateIfAlreadyInScene && !go.activeSelf)
+                go.SetActive(true);
+
             RememberOrigin(id, go, wasPrefab: false);
 
             PromoteToDDOL(go);
@@ -221,36 +288,12 @@ public class CompanionPartyManager : MonoBehaviour
             OnPartyChanged?.Invoke();
 
             if (!silent && verboseLogs)
-                Debug.Log($"[PartyManager] Recruit '{id}' (promoted scene instance)");
+                Debug.Log($"[PartyManager] Recruit '{id}' (scene fallback, no prefab assigned)");
 
             return go;
         }
 
-        // 2) Prefab fallback
-        if (entry.prefab != null)
-        {
-            var go = Instantiate(entry.prefab, partyRoot);
-            go.transform.position = GetSpawnPosition();
-
-            // Mark as prefab-spawned (no origin to return)
-            RememberOrigin(id, go, wasPrefab: true);
-
-            SetupCompanion(go);
-            if (forceFollowOnRecruit) ForceFollow(go);
-            FlagInParty(go, true);
-
-            _active[id] = go;
-
-            OnRecruited?.Invoke(id, go);
-            OnPartyChanged?.Invoke();
-
-            if (!silent && verboseLogs)
-                Debug.Log($"[PartyManager] Recruit '{id}' (prefab fallback)");
-
-            return go;
-        }
-
-        Debug.LogWarning($"[PartyManager] Recruit '{id}' FAILED: no scene instance found here and no prefab assigned.");
+        Debug.LogWarning($"[PartyManager] Recruit '{id}' FAILED: no prefab assigned and no scene instance found.");
         return null;
     }
 
@@ -274,8 +317,9 @@ public class CompanionPartyManager : MonoBehaviour
         {
             if (origin.wasPrefabSpawn)
             {
-                if (destroy) Destroy(go);
-                else go.SetActive(false);
+                // Persistent companions spawned from prefab should be removed cleanly
+                // so future Recruit() creates a fresh persistent instance.
+                Destroy(go);
             }
             else
             {
@@ -284,8 +328,7 @@ public class CompanionPartyManager : MonoBehaviour
         }
         else
         {
-            if (destroy) Destroy(go);
-            else go.SetActive(false);
+            Destroy(go);
         }
 
         if (verboseLogs) Debug.Log($"[PartyManager] Dismissed '{id}'");
@@ -315,16 +358,30 @@ public class CompanionPartyManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(id)) return null;
 
-        // Look for a CompanionIdentity with matching id that is NOT already in the DDOL scene.
         var all = FindObjectsByType<CompanionIdentity>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < all.Length; i++)
         {
             var ci = all[i];
             if (ci == null || ci.id != id) continue;
+
             var go = ci.gameObject;
-            if (go.scene.name == "DontDestroyOnLoad") continue; // already promoted/travelling
+            if (go == null) continue;
+
+            // Never treat DDOL travelling companions as scene candidates.
+            if (go.scene.name == "DontDestroyOnLoad") continue;
+
+            // If this object is already one of our active party instances, skip it.
+            if (_active.TryGetValue(id, out var activeGo) && activeGo == go)
+                continue;
+
+            // If the scene copy is already marked as being in the party, skip it.
+            var comp = go.GetComponent<Companion>();
+            if (comp != null && comp.InParty)
+                continue;
+
             return go;
         }
+
         return null;
     }
 

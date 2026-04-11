@@ -317,24 +317,33 @@ public class Enemy_Health : Entity_Health, IDamageable
 
     // ========================= EXP distribution =========================
 
-    /// <summary>
-    /// Raised by base class when we die, including the last damage dealer Transform.
-    /// Here we grant EXP to Player (always) and the killer Companion (if any).
-    /// </summary>
     private void HandleDiedWithKiller(Transform killer)
     {
-        // 👉 call the reward hook (e.g., companion mana on kill)
+        // Keep killer-specific rewards.
         TryGrantRewardsToKiller(killer);
-
-        var comp = killer ? killer.GetComponentInParent<Companion>() : null;
 
         float exp = GetExpRewardSafe();
         if (exp <= 0f) return;
 
+        // Always reward the player.
         RewardPlayer(exp);
 
-        if (comp != null)
+        // Reward every active party companion, regardless of who landed the killing blow.
+        var pm = CompanionPartyManager.Instance;
+        if (pm == null) return;
+
+        foreach (var id in pm.ActiveIds())
+        {
+            if (string.IsNullOrEmpty(id)) continue;
+
+            var go = pm.FindActiveInstance(id);
+            if (go == null) continue;
+
+            var comp = go.GetComponent<Companion>();
+            if (comp == null) continue;
+
             RewardCompanion(comp, exp);
+        }
     }
 
 
@@ -372,12 +381,13 @@ public class Enemy_Health : Entity_Health, IDamageable
             }
         }
         catch { }
+
         return 0f;
     }
 
     private void RewardPlayer(float exp)
     {
-        // Your project has Player.GainEXP(float)
+        // Preferred: Player component exposes GainEXP(float)
         var player = FindAnyObjectByType<Player>();
         if (player != null)
         {
@@ -386,7 +396,7 @@ public class Enemy_Health : Entity_Health, IDamageable
             return;
         }
 
-        // Fallback: try Player_Stats (or similar) by reflection if needed
+        // Fallback: try Player_Stats by reflection
         var pStats = FindAnyObjectByType<Player_Stats>();
         if (!TryGrantExpViaReflection(pStats, exp) && debugLogs)
             Debug.LogWarning("[Enemy_Health] Could not find a way to give EXP to Player.");
@@ -394,17 +404,19 @@ public class Enemy_Health : Entity_Health, IDamageable
 
     private void RewardCompanion(Companion comp, float exp)
     {
-        // 1) Companion component might expose GainEXP
+        if (comp == null) return;
+
+        // 1) Try EXP directly on the Companion component
         if (TryGrantExpViaReflection(comp, exp))
         {
             if (debugLogs) Debug.Log($"[Enemy_Health] Gave {exp} EXP to companion '{comp.name}'.");
             return;
         }
 
-        // 2) Else try the companion's stats
+        // 2) Then try likely stats components
         Component stats =
-            (Component)comp.GetComponent("Player_Stats") ??
-            (Component)comp.GetComponent("Companion_Stats") ??
+            (Component)comp.GetComponent<Companion_Stats>() ??
+            (Component)comp.GetComponent<Player_Stats>() ??
             comp.GetComponent<Entity_Stats>();
 
         if (TryGrantExpViaReflection(stats, exp))
@@ -413,31 +425,37 @@ public class Enemy_Health : Entity_Health, IDamageable
             return;
         }
 
-        if (debugLogs) Debug.LogWarning($"[Enemy_Health] Could not grant EXP to companion '{comp.name}' (no GainEXP-like method).");
+        if (debugLogs)
+            Debug.LogWarning($"[Enemy_Health] Could not grant EXP to companion '{comp.name}' (no GainEXP/AddEXP-like method).");
     }
 
     /// <summary>
     /// Tries common EXP APIs by reflection:
-    /// - GainEXP(float), AddEXP(float), AddExperience(float), GainExperience(float)
-    /// - or, as a last resort, increments a CurrentEXP property/field.
+    /// - GainEXP(float)
+    /// - AddEXP(float)
+    /// - AddExperience(float)
+    /// - GainExperience(float)
+    /// - or as a last resort, increments a CurrentEXP property/field
     /// </summary>
     private static bool TryGrantExpViaReflection(object target, float exp)
     {
         if (target == null) return false;
 
-        // Try common method names first
         string[] methodNames = { "GainEXP", "AddEXP", "AddExperience", "GainExperience" };
         foreach (var m in methodNames)
         {
             var mi = target.GetType().GetMethod(m, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (mi != null)
             {
-                try { mi.Invoke(target, new object[] { exp }); return true; }
-                catch { /* try next */ }
+                try
+                {
+                    mi.Invoke(target, new object[] { exp });
+                    return true;
+                }
+                catch { }
             }
         }
 
-        // Fallback: bump a CurrentEXP field/property if present
         try
         {
             var pi = target.GetType().GetProperty("CurrentEXP", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

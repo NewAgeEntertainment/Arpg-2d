@@ -1,12 +1,18 @@
 using PixelCrushers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Attach to CompanionPartyManager. Persists a dictionary of companion snapshots
-/// keyed by CompanionIdentity.id, so companions retain their state even when
-/// dismissed or not currently spawned between scenes/saves.
+/// Attach to CompanionPartyManager. Persists:
+/// - companion snapshots
+/// - which companions were active in the party
+///
+/// On load:
+/// - restores all snapshots into PendingSnapshots
+/// - defers active party restoration until after scene load completes
 /// </summary>
 [RequireComponent(typeof(CompanionPartyManager))]
 public class CompanionPartySaver : Saver
@@ -15,20 +21,47 @@ public class CompanionPartySaver : Saver
     public class SavePayload
     {
         public List<CompanionStatsSaver.SaveData> entries = new();
+        public List<string> activePartyIds = new();
     }
 
     private CompanionPartyManager pm;
 
+    // Active party IDs we still need to restore after load/scene handoff.
+    private readonly HashSet<string> pendingActiveRestore = new();
+
+    private Coroutine restoreCoroutine;
+    private bool subscribedToSceneLoaded;
+
     private void Awake()
     {
         pm = GetComponent<CompanionPartyManager>();
-        // When a companion is recruited after load, push any pending snapshot into it
         CompanionPartyManager.OnRecruited += HandleRecruited;
+        SubscribeSceneLoaded();
     }
 
     private void OnDestroy()
     {
         CompanionPartyManager.OnRecruited -= HandleRecruited;
+        UnsubscribeSceneLoaded();
+    }
+
+    private void SubscribeSceneLoaded()
+    {
+        if (subscribedToSceneLoaded) return;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+        subscribedToSceneLoaded = true;
+    }
+
+    private void UnsubscribeSceneLoaded()
+    {
+        if (!subscribedToSceneLoaded) return;
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        subscribedToSceneLoaded = false;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        TryScheduleRestore();
     }
 
     private void HandleRecruited(string id, GameObject go)
@@ -38,41 +71,51 @@ public class CompanionPartySaver : Saver
         var saver = go.GetComponent<CompanionStatsSaver>();
         if (saver == null) return;
 
-        // If a snapshot was loaded before recruit, ApplyData already handled it in OnEnable.
-        // But in case this fired later, try one more time:
         if (CompanionStatsSaver.PendingSnapshots.TryGetValue(id, out var snap) && snap != null)
         {
             saver.ApplySnapshot(snap);
             CompanionStatsSaver.PendingSnapshots.Remove(id);
         }
+
+        pendingActiveRestore.Remove(id);
     }
 
     public override string RecordData()
     {
         var payload = new SavePayload();
 
-        // 1) Capture all active companions with their live snapshots
         if (pm != null)
         {
             foreach (var id in pm.ActiveIds())
             {
+                if (string.IsNullOrEmpty(id)) continue;
+
+                if (!payload.activePartyIds.Contains(id))
+                    payload.activePartyIds.Add(id);
+
                 var go = pm.FindActiveInstance(id);
-                if (!go) continue;
+                if (go == null) continue;
+
                 var saver = go.GetComponent<CompanionStatsSaver>();
                 if (saver == null) continue;
 
                 var snap = saver.BuildSnapshot();
-                if (!string.IsNullOrEmpty(snap.id))
-                    payload.entries.Add(snap);
+                if (snap != null && !string.IsNullOrEmpty(snap.id))
+                {
+                    bool already = payload.entries.Exists(e => e != null && e.id == snap.id);
+                    if (!already)
+                        payload.entries.Add(snap);
+                }
             }
         }
 
-        // 2) Include any pending snapshots we’re holding for dismissed/not-present companions
+        // Keep snapshots for dismissed/not-currently-spawned companions too.
         foreach (var kv in CompanionStatsSaver.PendingSnapshots)
         {
-            // Avoid duplicates (prefer the most recent live snapshot if present)
-            bool already = payload.entries.Exists(e => e.id == kv.Key);
-            if (!already && kv.Value != null)
+            if (string.IsNullOrEmpty(kv.Key) || kv.Value == null) continue;
+
+            bool already = payload.entries.Exists(e => e != null && e.id == kv.Key);
+            if (!already)
                 payload.entries.Add(kv.Value);
         }
 
@@ -82,29 +125,97 @@ public class CompanionPartySaver : Saver
     public override void ApplyData(string s)
     {
         var payload = SaveSystem.Deserialize<SavePayload>(s);
-        if (payload == null || payload.entries == null) return;
+        if (payload == null) return;
 
-        // Put all snapshots into the pending cache.
-        // Currently spawned companions will pull from cache in their OnEnable,
-        // and future recruits will be handled by HandleRecruited above.
-        foreach (var snap in payload.entries)
+        // Stop any previous restore attempt.
+        if (restoreCoroutine != null)
         {
-            if (snap == null || string.IsNullOrEmpty(snap.id)) continue;
+            StopCoroutine(restoreCoroutine);
+            restoreCoroutine = null;
+        }
 
-            // If companion is already spawned now, apply immediately if possible
-            var live = (pm != null) ? pm.FindActiveInstance(snap.id) : null;
-            if (live != null)
+        pendingActiveRestore.Clear();
+        CompanionStatsSaver.PendingSnapshots.Clear();
+
+        // 1) Restore all snapshots to pending cache first.
+        if (payload.entries != null)
+        {
+            foreach (var snap in payload.entries)
             {
-                var saver = live.GetComponent<CompanionStatsSaver>();
-                if (saver != null)
-                {
-                    saver.ApplySnapshot(snap);
-                    continue; // no need to cache
-                }
+                if (snap == null || string.IsNullOrEmpty(snap.id)) continue;
+                CompanionStatsSaver.PendingSnapshots[snap.id] = snap;
+            }
+        }
+
+        // 2) Remember which companions should be active.
+        if (payload.activePartyIds != null)
+        {
+            foreach (var id in payload.activePartyIds)
+            {
+                if (!string.IsNullOrEmpty(id))
+                    pendingActiveRestore.Add(id);
+            }
+        }
+
+        // 3) Defer actual re-recruit until after scene load settles.
+        TryScheduleRestore();
+    }
+
+    private void TryScheduleRestore()
+    {
+        if (!isActiveAndEnabled) return;
+        if (pendingActiveRestore.Count == 0) return;
+
+        if (restoreCoroutine != null)
+            StopCoroutine(restoreCoroutine);
+
+        restoreCoroutine = StartCoroutine(RestoreActivePartyDeferred());
+    }
+
+    private IEnumerator RestoreActivePartyDeferred()
+    {
+        // Let scene objects finish enabling/spawning.
+        yield return null;
+        yield return null;
+
+        if (pm == null)
+            pm = GetComponent<CompanionPartyManager>();
+
+        if (pm == null)
+        {
+            Debug.LogError("[CompanionPartySaver] Missing CompanionPartyManager during deferred restore.");
+            restoreCoroutine = null;
+            yield break;
+        }
+
+        var toRestore = new List<string>(pendingActiveRestore);
+
+        foreach (var id in toRestore)
+        {
+            if (string.IsNullOrEmpty(id)) continue;
+
+            GameObject live = pm.FindActiveInstance(id);
+            if (live == null)
+                live = pm.Recruit(id, silent: true);
+
+            if (live == null)
+            {
+                Debug.LogWarning($"[CompanionPartySaver] Deferred restore failed for '{id}'.");
+                continue;
             }
 
-            // Otherwise cache for later spawn
-            CompanionStatsSaver.PendingSnapshots[snap.id] = snap;
+            var saver = live.GetComponent<CompanionStatsSaver>();
+            if (saver != null &&
+                CompanionStatsSaver.PendingSnapshots.TryGetValue(id, out var snap) &&
+                snap != null)
+            {
+                saver.ApplySnapshot(snap);
+                CompanionStatsSaver.PendingSnapshots.Remove(id);
+            }
+
+            pendingActiveRestore.Remove(id);
         }
+
+        restoreCoroutine = null;
     }
 }

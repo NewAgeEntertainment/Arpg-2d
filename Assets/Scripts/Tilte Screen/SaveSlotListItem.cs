@@ -1,11 +1,9 @@
-// Assets/Scripts/Title/SaveSlotListItem.cs
 using UnityEngine;
 using UnityEngine.UI;
-using PixelCrushers;
 
 public class SaveSlotListItem : MonoBehaviour
 {
-    [SerializeField] private Text label;    // e.g. "Slot 3 — Scene: Town"
+    [SerializeField] private Text label;
     [SerializeField] private Button loadButton;
     [SerializeField] private Button deleteButton;
 
@@ -14,26 +12,41 @@ public class SaveSlotListItem : MonoBehaviour
     public void Bind(int slotNumber, System.Action<int> onLoad, System.Action<int> onDelete)
     {
         slot = slotNumber;
-        string sceneName = "?";
-        try
-        {
-            // We can peek the SavedGameData to show scene name:
-            var data = SaveSystem.storer.RetrieveSavedGameData(slot);
-            if (data != null && !string.IsNullOrEmpty(data.sceneName)) sceneName = data.sceneName;
-        }
-        catch { /* storer may be async-backed; Retrieve is sync here */ }
 
-        if (label != null) label.text = $"Slot {slot} — Scene: {sceneName}";
+        bool exists = PlayerPrefs.GetInt($"SaveSlot_{slot}_exists", 0) == 1;
+        string sceneDisplay = PlayerPrefs.GetString($"SaveSlot_{slot}_sceneDisplay", "Unknown");
+        string time = PlayerPrefs.GetString($"SaveSlot_{slot}_time", "-");
+        int playSeconds = PlayerPrefs.GetInt($"SaveSlot_{slot}_playSeconds", 0);
+
+        string playText = FormatPlayTime(playSeconds);
+
+        if (label != null)
+        {
+            label.text = exists
+                ? $"Slot {slot + 1} — {sceneDisplay}\nTime played: {playText}\nSaved: {time}"
+                : $"Slot {slot + 1} — Empty";
+        }
 
         if (loadButton != null)
         {
             loadButton.onClick.RemoveAllListeners();
             loadButton.onClick.AddListener(() => onLoad?.Invoke(slot));
+            loadButton.interactable = exists;
         }
+
         if (deleteButton != null)
         {
             deleteButton.onClick.RemoveAllListeners();
             deleteButton.onClick.AddListener(() => onDelete?.Invoke(slot));
+            deleteButton.interactable = exists;
         }
+    }
+
+    private string FormatPlayTime(int totalSeconds)
+    {
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+        return $"{hours:00}:{minutes:00}:{seconds:00}";
     }
 }
