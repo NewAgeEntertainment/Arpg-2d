@@ -15,16 +15,15 @@ MonoBehaviour:
   player:
   - audioName: player_attackHit
     clips:
-    - {fileID: 8300000, guid: 851180ac341a0a84bb65a9aa70cbebbd, type: 3}
-    maxVolume: 1
+    - {fileID: 8300000, guid: cf9a8b19930b57943804ad3d8c1da14d, type: 3}
+    maxVolume: 0.5
   - audioName: player_attackMiss
-    clips:
-    - {fileID: 8300000, guid: 85cc5216c69530348a6695a47dd628a5, type: 3}
+    clips: []
     maxVolume: 1
   - audioName: PlayerDash
     clips:
     - {fileID: 8300000, guid: 61b2f847f32d01345add5e66dd32b267, type: 3}
-    maxVolume: 1
+    maxVolume: 0.5
   - audioName: PlayerThrust
     clips:
     - {fileID: 8300000, guid: 61b2f847f32d01345add5e66dd32b267, type: 3}
@@ -33,7 +32,11 @@ MonoBehaviour:
   - audioName: Enemy_Hit
     clips:
     - {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
-    maxVolume: 1
+    maxVolume: 0.6
+  - audioName: Enemy_Death
+    clips:
+    - {fileID: 8300000, guid: 616cf7f5cffb52e4caa0df9070ee4067, type: 3}
+    maxVolume: 0.6
   sexytime:
   - audioName: SexStroke
     clips:
@@ -57,65 +60,77 @@ MonoBehaviour:
   chest:
   - audioName: ChestOpen
     clips:
-    - {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
-    maxVolume: 1
+    - {fileID: 8300000, guid: adc501eb223513c4eb3c4de3fea5c354, type: 3}
+    maxVolume: 0.7
   - audioName: GoldPickup
     clips:
-    - {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+    - {fileID: 8300000, guid: c698eed0a416da74baf0d7a7f51591c3, type: 3}
     maxVolume: 1
+  items_Audio:
   - audioName: ItemPickup
     clips:
-    - {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+    - {fileID: 8300000, guid: 707070abbd89ec5469d7278045f45f90, type: 3}
     maxVolume: 1
-  Consumable_Use:
   - audioName: Consumable_Use
     clips:
-    - {fileID: 8300000, guid: cee668c904da56b44834e554796fd83a, type: 3}
+    - {fileID: 8300000, guid: 46dc02b9b74f9424988d7d8c1e80c2af, type: 3}
+    maxVolume: 1
+  - audioName: Equipped
+    clips:
+    - {fileID: 8300000, guid: a19af83d66b18a440a4bf61340cc63f1, type: 3}
+    maxVolume: 1
+  - audioName: Unequipped
+    clips:
+    - {fileID: 8300000, guid: 707070abbd89ec5469d7278045f45f90, type: 3}
     maxVolume: 1
   uiAudio:
   - audioName: UIButtonConfirm
     clips:
-    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
-    maxVolume: 1
+    - {fileID: 8300000, guid: dca3084cb66e8824bab682c584bec504, type: 3}
+    maxVolume: 0.7
   - audioName: UIButtonCancel
     clips:
-    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
-    maxVolume: 0.42
+    - {fileID: 8300000, guid: d4007067d30a702478f8de23ab74795f, type: 3}
+    maxVolume: 0.7
   - audioName: UIOpenPanel
     clips:
-    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    - {fileID: 8300000, guid: 2cc1d6080b628b3418127ed17293000e, type: 3}
     maxVolume: 1
   - audioName: UIClosePanel
     clips:
-    - {fileID: 8300000, guid: dc6614beca09347ec9b258f12d154bdd, type: 3}
+    - {fileID: 8300000, guid: 53736c86bd0c24c49855d596bc96cbaa, type: 3}
     maxVolume: 1
   - audioName: UIButtonMove
     clips:
-    - {fileID: 8300000, guid: 19f89c6e740e7447f9e12a8310d3e973, type: 3}
+    - {fileID: 8300000, guid: 795c4ea2ea1ffc54982c652644a64520, type: 3}
     maxVolume: 1
   - audioName: DoorOpen
     clips:
     - {fileID: 8300000, guid: 72127805eb2bc4e7fbf2e02eca266cfa, type: 3}
-    maxVolume: 1
+    maxVolume: 0.7
   - audioName: BookClose
     clips:
-    - {fileID: 8300000, guid: 19f89c6e740e7447f9e12a8310d3e973, type: 3}
+    - {fileID: 8300000, guid: 53736c86bd0c24c49855d596bc96cbaa, type: 3}
     maxVolume: 1
   - audioName: BookPageTurn
     clips:
-    - {fileID: 8300000, guid: 19f89c6e740e7447f9e12a8310d3e973, type: 3}
+    - {fileID: 8300000, guid: 5bfc25e9d8aec2c4fbdddf465226f12b, type: 3}
     maxVolume: 1
   - audioName: BookPageTurn
     clips:
-    - {fileID: 8300000, guid: 19f89c6e740e7447f9e12a8310d3e973, type: 3}
+    - {fileID: 8300000, guid: 5bfc25e9d8aec2c4fbdddf465226f12b, type: 3}
     maxVolume: 1
   mainMenuMusic:
   - audioName: MainMenuMusic
     clips:
-    - {fileID: 8300000, guid: d2d51f061b7a4904b83eabb40db09308, type: 3}
-    maxVolume: 1
+    - {fileID: 8300000, guid: 875ad4a2055d4c946b6fef58ccd87e34, type: 3}
+    maxVolume: 0.2
   levelMusic:
-  - audioName: playlist_levels
+  - audioName: Forest
     clips:
-    - {fileID: 8300000, guid: 50410ad3e8416d947a9b3bc18aedc67a, type: 3}
-    maxVolume: 1
+    - {fileID: 8300000, guid: 2d533dc1e301d9847b7b97bded49d04b, type: 3}
+    maxVolume: 0.2
+  - audioName: Forest Battle Area
+    clips:
+    - {fileID: 8300000, guid: 51fc5b2a1e9dca74fa66fcea4419b189, type: 3}
+    maxVolume: 0.2

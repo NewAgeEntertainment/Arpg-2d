@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Rewired;
 
 public class Player_SkillManager : MonoBehaviour
 {
@@ -19,6 +20,24 @@ public class Player_SkillManager : MonoBehaviour
     [Tooltip("If set, this explicit reference will be used instead of auto-finding/creating.")]
     [SerializeField] private SexSkill_DeepBreath deepBreathOverride;
 
+    [Header("Slot Input")]
+    [SerializeField] private int rewiredPlayerId = 0;
+    [SerializeField] private bool useRewiredSlotInput = true;
+    [SerializeField] private bool blockWhenGameplayInputDisabled = true;
+    public int RewiredPlayerId => rewiredPlayerId;
+
+    [Header("Keyboard Fallback Per Slot")]
+    [SerializeField] private KeyCode slotAKey = KeyCode.Alpha1;
+    [SerializeField] private KeyCode slotBKey = KeyCode.Alpha2;
+    [SerializeField] private KeyCode slotCKey = KeyCode.Alpha3;
+    [SerializeField] private KeyCode slotDKey = KeyCode.Alpha4;
+
+    [Header("Rewired Action Per Slot")]
+    [SerializeField] private string slotAAction = "SkillSlotA";
+    [SerializeField] private string slotBAction = "SkillSlotB";
+    [SerializeField] private string slotCAction = "SkillSlotC";
+    [SerializeField] private string slotDAction = "SkillSlotD";
+
     [Header("Debug / Safety")]
     [Tooltip("Create 'Skill - Deep Breath' under the Player at runtime if missing.")]
     [SerializeField] private bool createDeepBreathIfMissingAtRuntime = true;
@@ -31,6 +50,9 @@ public class Player_SkillManager : MonoBehaviour
     private bool _loggedDeepBreathInitOnce = false;
     public Skill_DataSO DeepBreathData => deepBreathData;
 
+    private Rewired.Player rPlayer;
+    private Player player;
+
     private void Awake()
     {
         dash = SafeFind(dash);
@@ -39,8 +61,12 @@ public class Player_SkillManager : MonoBehaviour
         swordSpin = SafeFind(swordSpin);
         deepBreath = ResolveDeepBreath();
 
+        player = GetComponent<Player>();
+
         if (stats == null)
             stats = GetComponentInParent<Player_Stats>();
+
+        TryCacheRewired();
 
         if (verboseLogs)
         {
@@ -57,7 +83,10 @@ public class Player_SkillManager : MonoBehaviour
         InitializeDeepBreathFromData();
     }
 
-    // ---------- Public API ----------
+    private void Update()
+    {
+        TryHandleAssignedSlotInput();
+    }
 
     public Skill_Base GetSkillByType(SkillType skillType)
     {
@@ -91,7 +120,6 @@ public class Player_SkillManager : MonoBehaviour
         return Mathf.Floor((basePower + statValue * scalingMultiplier) * levelBonus);
     }
 
-    /// Ensures the Deep Breath component exists & is unlocked (if allowed).
     public bool EnsureDeepBreathReady(bool allowAutoUnlockIfDataMissing = false)
     {
         deepBreath = ResolveDeepBreath();
@@ -138,11 +166,105 @@ public class Player_SkillManager : MonoBehaviour
         swordSpin = SafeFind(swordSpin);
         deepBreath = ResolveDeepBreath();
 
+        player = GetComponent<Player>();
+
         if (stats == null)
             stats = GetComponentInParent<Player_Stats>();
+
+        TryCacheRewired();
     }
 
-    // ---------- Private helpers ----------
+    private void TryHandleAssignedSlotInput()
+    {
+        if (blockWhenGameplayInputDisabled && player != null && !player.InputEnabled)
+            return;
+
+        TryUseAssignedSlot(UISkillSlotId.SlotA, slotAKey, slotAAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotB, slotBKey, slotBAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotC, slotCKey, slotCAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotD, slotDKey, slotDAction);
+    }
+
+    private void TryUseAssignedSlot(UISkillSlotId slotId, KeyCode keyboardKey, string rewiredActionName)
+    {
+        bool pressed = false;
+
+        if (keyboardKey != KeyCode.None && Input.GetKeyDown(keyboardKey))
+            pressed = true;
+
+        if (!pressed && useRewiredSlotInput && !string.IsNullOrWhiteSpace(rewiredActionName))
+        {
+            if (rPlayer == null)
+                TryCacheRewired();
+
+            if (rPlayer != null && rPlayer.GetButtonDown(rewiredActionName))
+                pressed = true;
+        }
+
+        if (!pressed)
+            return;
+
+        UI_SkillSlot uiSlot = GetUISkillSlotById(slotId);
+        if (uiSlot == null || !uiSlot.HasSkill || uiSlot.Data == null)
+            return;
+
+        Skill_Base runtimeSkill = GetSkillByType(uiSlot.Data.skillType);
+        if (runtimeSkill == null)
+            return;
+
+        switch (uiSlot.Data.skillType)
+        {
+            case SkillType.Thrust:
+                if (thrust != null && thrust.CanUseSkillCheck(out _))
+                    player.stateMachine.ChangeState(player.thrustState);
+                break;
+
+            default:
+                runtimeSkill.TryUseSkill();
+                break;
+        }
+
+        runtimeSkill.TryUseSkill();
+    }
+
+    private UI_SkillSlot GetUISkillSlotById(UISkillSlotId slotId)
+    {
+        if (player == null || player.ui == null || player.ui.inGameUI == null)
+            return null;
+
+        var slots = player.ui.inGameUI.GetComponentsInChildren<UI_SkillSlot>(true);
+        foreach (var slot in slots)
+        {
+            if (slot != null && slot.slotId == slotId)
+                return slot;
+        }
+
+        return null;
+    }
+
+    private void TryCacheRewired()
+    {
+        try
+        {
+            rPlayer = ReInput.players.GetPlayer(rewiredPlayerId);
+        }
+        catch
+        {
+            rPlayer = null;
+        }
+    }
+
+    public string GetRewiredActionNameForSlot(UISkillSlotId slotId)
+    {
+        switch (slotId)
+        {
+            case UISkillSlotId.SlotA: return slotAAction;
+            case UISkillSlotId.SlotB: return slotBAction;
+            case UISkillSlotId.SlotC: return slotCAction;
+            case UISkillSlotId.SlotD: return slotDAction;
+            default: return string.Empty;
+        }
+    }
 
     private T SafeFind<T>(T existing) where T : Component
     {
@@ -156,19 +278,15 @@ public class Player_SkillManager : MonoBehaviour
     {
         if (deepBreathOverride != null) return deepBreathOverride;
 
-        // 1) Prefer a child of the Player
         var d = GetComponentInChildren<SexSkill_DeepBreath>(true);
         if (d != null) return d;
 
-        // 2) Parent (rare)
         d = GetComponentInParent<SexSkill_DeepBreath>(true);
         if (d != null) return d;
 
-        // 3) Global fallback
         d = FindFirstObjectByType<SexSkill_DeepBreath>(FindObjectsInactive.Include);
         if (d != null) return d;
 
-        // 4) Create at runtime if allowed
         if (createDeepBreathIfMissingAtRuntime)
         {
             var go = new GameObject("Skill - Deep Breath");

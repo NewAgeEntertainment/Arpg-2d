@@ -32,7 +32,6 @@ public class UI_EquipmentInventory : UI_Panel
 
     [Header("Audio")]
     [SerializeField] private AudioClip equipSound;
-    [SerializeField] private AudioClip unequipSound;
     [SerializeField] private AudioSource audioSource;
 
     [Header("Rewired Input")]
@@ -60,6 +59,7 @@ public class UI_EquipmentInventory : UI_Panel
     private enum PanelState { None, EquippedPanel, ItemList }
     private PanelState currentState = PanelState.None;
 
+    private EquipmentSlotType? currentTargetSlot = null;
     private ItemType? currentFilter = null;
     private bool subscribed = false;
 
@@ -393,55 +393,52 @@ public class UI_EquipmentInventory : UI_Panel
         equippedSlotsPanel.UpdateEquipmentSlots(activeEquipList);
     }
 
-    public void ShowEquipmentInventoryPanel(ItemType filterType)
+    public void ShowEquipmentInventoryPanel(EquipmentSlotType targetSlot, ItemType filterType)
     {
+        currentTargetSlot = targetSlot;
         currentFilter = filterType;
+
         equippedSlotsPanel?.gameObject.SetActive(false);
         equipmentSlotPanel?.gameObject.SetActive(true);
         removeButton?.gameObject.SetActive(true);
+
         currentState = PanelState.ItemList;
         UpdateUI();
     }
 
     public void RemoveCurrentlyEquipped()
     {
-        if (currentFilter == null)
+        if (currentTargetSlot == null)
             return;
 
         if (currentEquipmentProfile != null)
         {
-            currentEquipmentProfile.UnequipItemByType(currentFilter.Value);
-        }
-        else if (playerInventory != null)
-        {
-            playerInventory.UnequipItemByType(currentFilter.Value);
+            currentEquipmentProfile.UnequipItemBySlot(currentTargetSlot.Value);
         }
 
-        PlaySound(unequipSound);
         ShowEquippedPanel();
         UpdateUI();
     }
 
     public void SwapEquippedItem(Inventory_Item newItem)
     {
-        if (newItem == null)
+        if (newItem == null || currentTargetSlot == null)
             return;
 
         if (currentEquipmentProfile != null)
         {
-            currentEquipmentProfile.TryEquipFromEquipmentInventory(newItem);
+            currentEquipmentProfile.TryEquipFromEquipmentInventory(newItem, currentTargetSlot.Value);
         }
         else if (playerInventory != null)
         {
             playerInventory.TryEquipFromEquipmentInventory(newItem);
         }
 
-        PlaySound(equipSound);
         ShowEquippedPanel();
         UpdateUI();
     }
 
-  
+
 
     private void ShowEquippedPanel()
     {

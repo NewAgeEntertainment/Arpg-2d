@@ -750,13 +750,8 @@ public class UI_InGame : MonoBehaviour
         foreach (var s in skillSlots)
         {
             if (s == null) continue;
-            if (!s.HasSkill)
-            {
-                s.RefreshText(sm);
-                s.UpdateAffordability(mana);
-                continue;
-            }
 
+            s.RefreshBindingLabel(sm);
             s.RefreshText(sm);
             s.UpdateAffordability(mana);
         }
@@ -777,6 +772,19 @@ public class UI_InGame : MonoBehaviour
         UpdateManaBar();
         RefreshAllSkillCostsAndAfford();
     }
+
+    public void RefreshAllSkillSlotLabels()
+    {
+        var sm = player != null ? player.skillManager : FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+        if (sm == null) return;
+
+        foreach (var s in skillSlots)
+        {
+            if (s != null)
+                s.RefreshVisuals(sm);
+        }
+    }
+
 
     public UI_SkillSlot GetSkillSlot(SkillType type)
     {

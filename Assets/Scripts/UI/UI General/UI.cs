@@ -973,13 +973,25 @@ public class UI : MonoBehaviour
 
 
 
-    public void OpenCraft()
+    public void OpenCraft(Inventory_Storage storage)
     {
         isCraftOpen = true;
         EnsureUIRootIsActive();
         CloseAllPanels();
 
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
+        // Craft does NOT use the book/menu shell.
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (outsideMenuPanel != null)
+            outsideMenuPanel.SetActive(false);
+
+        if (insideMenuPanel != null)
+            insideMenuPanel.SetActive(false);
+
+        if (bookUI != null)
+            bookUI.gameObject.SetActive(false);
+
         if (storageUI != null)
         {
             storageUI.gameObject.SetActive(false);
@@ -989,21 +1001,28 @@ public class UI : MonoBehaviour
         if (craftUI != null)
         {
             craftUI.gameObject.SetActive(true);
+            craftUI.SetupCraftUI(storage);
             Debug.Log("[UI] Craft UI opened");
         }
+
+        EnterUIMode();
+    }
+
+    public void OnCraftPanelClosed()
+    {
+        isCraftOpen = false;
+        CheckStopPlayerControls();
     }
 
     public void CloseCraft()
     {
-        isCraftOpen = false;
-
         if (craftUI != null)
         {
             craftUI.gameObject.SetActive(false);
             Debug.Log("[UI] Craft UI closed");
         }
 
-        CheckStopPlayerControls();
+        OnCraftPanelClosed();
     }
 
     // UI.cs
@@ -1019,6 +1038,13 @@ public class UI : MonoBehaviour
         EnsureUIRootIsActive();
         CloseAllPanels();
 
+        // Hide menu shell / main menu explicitly
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (bookUI != null)
+            bookUI.gameObject.SetActive(false);
+
         if (MerchantUI != null)
         {
             MerchantUI.gameObject.SetActive(true);
@@ -1026,8 +1052,7 @@ public class UI : MonoBehaviour
             isMerchantOpen = true;
         }
 
-        // 🔁 Switch Rewired maps to UI and (optionally) pause
-        EnterUIMode(); // disables "Gameplay" map, enables "UI", sets Time.timeScale = 0
+        EnterUIMode();
 
         Debug.Log("[UI] Merchant UI opened");
     }

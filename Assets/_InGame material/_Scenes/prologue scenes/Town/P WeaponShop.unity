@@ -842,7 +842,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -1115,7 +1115,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -1649,7 +1649,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -1398796866, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2256,7 +2256,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 193418012, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2461,9 +2461,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 298374140}
-  - component: {fileID: 298374139}
   - component: {fileID: 298374138}
   - component: {fileID: 298374137}
+  - component: {fileID: 298374143}
+  - component: {fileID: 298374142}
+  - component: {fileID: 298374141}
+  - component: {fileID: 298374144}
   m_Layer: 10
   m_Name: Bartender 1
   m_TagString: Untagged
@@ -2534,24 +2537,6 @@ MonoBehaviour:
   merchantType: 2
   shopData: {fileID: 11400000, guid: 369c2085f99c1614e9186361fa8c045f, type: 2}
   minItemsAmount: 12
---- !u!114 &298374139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 298374136}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07fb8d66ca1cbe54d95973ab0ad48724, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  npc: {fileID: 298374140}
-  interactToolTip: {fileID: 1396294463}
-  floatSpeed: 8
-  floatRange: 0.1
-  playerID: 0
-  refillShopAction: MerchantRefill
 --- !u!4 &298374140
 Transform:
   m_ObjectHideFlags: 0
@@ -2569,6 +2554,168 @@ Transform:
   - {fileID: 1396294464}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &298374141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298374136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 274b80ab5b659c646ba9338870d14625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_overrideName: 
+  m_overrideUseMessage: 
+  maxUseDistance: 5
+  events:
+    onSelect:
+      m_PersistentCalls:
+        m_Calls: []
+    onDeselect:
+      m_PersistentCalls:
+        m_Calls: []
+    onUse:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &298374142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298374136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c593457cd8105e148906690e1707c592, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trigger: 32
+  delayOneFrame: 0
+  condition:
+    luaConditions: []
+    questConditions: []
+    acceptedTags: []
+    acceptedGameObjects: []
+    luaWizardIndex: -1
+    lastEvaluationValue: 0
+  setQuestState: 1
+  questName: 
+  questState: 0
+  setQuestEntryState: 0
+  questEntryNumber: 1
+  questEntryState: 0
+  setAnotherQuestEntryState: 0
+  anotherQuestEntryNumber: 1
+  anotherQuestEntryState: 0
+  luaCode: 
+  sequence: 
+  sequenceSpeaker: {fileID: 0}
+  sequenceListener: {fileID: 0}
+  waitOneFrameOnStartOrEnable: 1
+  alertMessage: 
+  textTable: {fileID: 0}
+  alertDuration: 0
+  sendMessages: []
+  barkSource: 0
+  barkConversation: 
+  barkEntryID: -1
+  barkEntryTitle: 
+  barkText: 
+  barkTextSequence: 
+  barker: {fileID: 0}
+  barkTarget: {fileID: 0}
+  barkOrder: 0
+  allowBarksDuringConversations: 0
+  skipBarkIfNoValidEntries: 0
+  cacheBarkLines: 0
+  conversation: Craft
+  conversationConversant: {fileID: 298374140}
+  conversationActor: {fileID: 0}
+  startConversationEntryID: -1
+  startConversationEntryTitle: 
+  overrideDialogueUI: {fileID: 0}
+  exclusive: 0
+  replace: 0
+  queue: 0
+  skipIfNoValidEntries: 0
+  preventRestartOnSameFrameEnded: 0
+  stopConversationOnTriggerExit: 0
+  marginToAllowTriggerExit: 0.2
+  stopConversationIfTooFar: 0
+  maxConversationDistance: 5
+  monitorConversationDistanceFrequency: 1
+  showCursorDuringConversation: 0
+  pauseGameDuringConversation: 0
+  setActiveActions: []
+  setEnabledActions: []
+  setAnimatorStateActions: []
+  onExecute:
+    m_PersistentCalls:
+      m_Calls: []
+  useConversationTitlePicker: 1
+  useBarkTitlePicker: 1
+  useQuestNamePicker: 1
+  selectedDatabase: {fileID: 11400000, guid: ac20ad03561167542bed229f27d42e8d, type: 2}
+--- !u!114 &298374143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298374136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c111bbac2dc76a46919670c03f00958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onSelect:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeselect:
+    m_PersistentCalls:
+      m_Calls: []
+  onUse:
+    m_PersistentCalls:
+      m_Calls: []
+  playerTag: Player
+  extraAllowedTags: []
+  tooltipRoot: {fileID: 1396294463}
+  messageText: {fileID: 0}
+  fallbackMessage: Press Interact
+  format: '{msg}'
+  worldOffset: {x: 0, y: 1.1, z: 0}
+  billboardToCamera: 1
+  autoRepositionEachFrame: 1
+  useUsableIntegration: 1
+  callSelectOnEnter: 1
+  callDeselectOnExit: 1
+  callOnUse: 1
+  handleInput: 1
+  fallbackKey: 101
+  useRewiredIfAvailable: 1
+  rewiredAction: Interact
+  rewiredPlayerId: 0
+  directUseTarget: {fileID: 0}
+  logTextChanges: 0
+  verboseLogs: 0
+--- !u!114 &298374144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298374136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7397deb398a0f0f46af1625e0121f21d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  npc: {fileID: 298374140}
+  interactToolTip: {fileID: 0}
+  floatSpeed: 8
+  floatRange: 0.1
 --- !u!1 &307337003
 GameObject:
   m_ObjectHideFlags: 0
@@ -5169,7 +5316,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 662506596, guid: d4473f1ce4f076649aa03caceeb61640, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -5380,7 +5527,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 176539489, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -8693,7 +8840,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -9173,7 +9320,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 942303438, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -9472,7 +9619,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -1472706765, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -9912,7 +10059,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -10082,7 +10229,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -5346903199351845522, guid: ea9b7bfb66816924d9e41da69cc58ad6, type: 3}
   m_Color: {r: 1, g: 0.95660377, b: 0.95660377, a: 1}
@@ -14827,6 +14974,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &705810174
 GameObject:
   m_ObjectHideFlags: 0
@@ -15628,7 +15777,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -17054,7 +17203,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 1314921023, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -18005,7 +18154,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -18488,7 +18637,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -18604,7 +18753,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 1314921023, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -19523,7 +19672,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -19607,7 +19756,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -5346903199351845522, guid: ea9b7bfb66816924d9e41da69cc58ad6, type: 3}
   m_Color: {r: 1, g: 0.95660377, b: 0.95660377, a: 1}
@@ -19691,7 +19840,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 0.49411765}
@@ -19984,6 +20133,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &1455856582
 GameObject:
   m_ObjectHideFlags: 0
@@ -22888,7 +23039,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1600805736
@@ -23125,7 +23276,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: -5205662494574892940, guid: 29462d75b30723e49bbe389a899f90cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -24665,6 +24816,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &1832530506 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2117421778684534212, guid: 3d30f70457a6d0043adb4d6e12d8bc15, type: 3}
@@ -24992,7 +25145,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 662506596, guid: d4473f1ce4f076649aa03caceeb61640, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -25170,11 +25323,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dacf78c01fc21984ba676a5d0ceb4d10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  singleVCam: {fileID: 500020735}
-  miniVCam: {fileID: 0}
-  fullscreenVCam: {fileID: 0}
+  minimapVCam: {fileID: 0}
   orthoSizeMinimap: 8
-  orthoSizeFullscreen: 35
   autoBindPlayerLocator: 1
   followOverride: {fileID: 0}
   retryInterval: 0.25
@@ -25826,7 +25976,7 @@ TilemapRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1258614499
-  m_SortingLayer: 8
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -27738,6 +27888,8 @@ MonoBehaviour:
   rewiredPlayerId: 0
   cancelAction: UICancel
   routeCancelToUIHandleBack: 1
+  playMoveSound: 1
+  moveSoundName: UIButtonMove
 --- !u!1 &1958526204
 GameObject:
   m_ObjectHideFlags: 0
@@ -28334,7 +28486,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
-  m_SortingLayer: 7
+  m_SortingLayer: 4
   m_SortingOrder: -1
   m_Sprite: {fileID: 1314921023, guid: 4b053b99bd8c07945b1b2cde4cdb37f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -29909,7 +30061,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 1
 --- !u!1 &2135938344

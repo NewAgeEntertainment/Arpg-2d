@@ -55,6 +55,11 @@ public class Enemy_Health : Entity_Health, IDamageable
     [Tooltip("If something forces Stun during an attack, immediately leave Stunned and return to Battle.")]
     [SerializeField] private bool ignoreStunDuringAttack = true;
 
+    [Header("Audio")]
+    [SerializeField] private string deathSfxName = "Enemy_Death";
+    [SerializeField] private AudioSource deathAudioSource;
+    [SerializeField] private float deathSfxHearingDistance = 10f;
+
     // ----- caches -----
     private Enemy enemy;         // to peek at states
     private Animator anim;
@@ -78,6 +83,19 @@ public class Enemy_Health : Entity_Health, IDamageable
             _fiIsKnocked = typeof(Entity).GetField("isKnocked", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
         if (_fiKnockbackCo == null)
             _fiKnockbackCo = typeof(Entity).GetField("knockbakCo", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+
+        if (deathAudioSource == null)
+        {
+            deathAudioSource = GetComponent<AudioSource>();
+            if (deathAudioSource == null)
+                deathAudioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        deathAudioSource.playOnAwake = false;
+        deathAudioSource.loop = false;
+        deathAudioSource.spatialBlend = 1f;
+        deathAudioSource.rolloffMode = AudioRolloffMode.Linear;
+        deathAudioSource.maxDistance = deathSfxHearingDistance;
 
 #if REWIRED
         TryCacheRewired();
@@ -156,6 +174,13 @@ public class Enemy_Health : Entity_Health, IDamageable
         if (_despawnStarted) return;
         _despawnStarted = true;
 
+        if (AudioManager.instance != null &&
+            !string.IsNullOrWhiteSpace(deathSfxName) &&
+            deathAudioSource != null)
+        {
+            AudioManager.instance.PlaySFX(deathSfxName, deathAudioSource, deathSfxHearingDistance);
+        }
+
         if (rb2d) { rb2d.velocity = Vector2.zero; rb2d.simulated = false; }
         if (cols != null) foreach (var c in cols) if (c) c.enabled = false;
 
@@ -171,6 +196,24 @@ public class Enemy_Health : Entity_Health, IDamageable
         else if (debugLogs) Debug.LogWarning($"[{name}] No Animator found; using hard timeout.");
 
         StartCoroutine(DespawnAfterDeathAnim());
+    }
+
+    private float GetDeathClipLength()
+    {
+        if (AudioManager.instance == null || string.IsNullOrWhiteSpace(deathSfxName))
+            return 0f;
+
+        var field = typeof(AudioManager).GetField("audioDB", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (field == null) return 0f;
+
+        var db = field.GetValue(AudioManager.instance) as AudioDatabaseSO;
+        if (db == null) return 0f;
+
+        var data = db.Get(deathSfxName);
+        if (data == null || data.clips == null || data.clips.Count == 0 || data.clips[0] == null)
+            return 0f;
+
+        return data.clips[0].length;
     }
 
     private void HandleRevived()
@@ -233,8 +276,10 @@ public class Enemy_Health : Entity_Health, IDamageable
             yield return new WaitForSecondsRealtime(fallbackTimeout);
         }
 
-        if (extraDespawnDelay > 0f)
-            yield return new WaitForSecondsRealtime(extraDespawnDelay);
+        float deathClipLen = GetDeathClipLength();
+        float finalDelay = Mathf.Max(extraDespawnDelay, deathClipLen);
+        if (finalDelay > 0f)
+            yield return new WaitForSecondsRealtime(finalDelay);
 
         if (usePooling)
         {

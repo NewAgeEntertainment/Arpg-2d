@@ -13,37 +13,50 @@ public class Object_Blacksmith : Object_NPC, IInteractable
 
     public void Interact()
     {
-        storage.SetInventory(player.GetComponent<Inventory_Player>());
-        ui.CraftUI.SetupCraftUI(storage);
-
-        ui.OpenCraft();
-        ui.StopPlayerControls(true); // ✅ Freeze player input
+        // Do not open crafting directly here.
+        // Let Dialogue System call DS_OpenCraft().
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
         base.OnTriggerEnter2D(collision);
-        inventory = player.GetComponent<Inventory_Player>();
-        storage.SetInventory(inventory);
+
+        if (player != null)
+            inventory = player.GetComponent<Inventory_Player>();
+
+        if (storage != null && inventory != null)
+            storage.SetInventory(inventory);
     }
 
     protected override void OnTriggerExit2D(Collider2D collision)
     {
         base.OnTriggerExit2D(collision);
         ui.SwitchOffAllToolTips();
-        ui.CloseCraft();
-        ui.StopPlayerControls(false); // ✅ Resume player input
+
+        // Optional:
+        // if you want crafting to auto-close when leaving range, uncomment:
+        // if (ui != null) ui.CloseCraft();
     }
 
-    public bool HandleCancel()
+    public void DS_OpenCraft()
     {
-        var ui = FindObjectOfType<UI>();
-        if (ui != null && ui.CraftUI == this)
-        {
-            ui.CloseCraft();
-            return true;
-        }
-        return false;
-    }
+        if (inventory == null)
+            inventory = FindFirstObjectByType<Inventory_Player>(FindObjectsInactive.Include);
 
+        if (storage == null)
+            storage = GetComponent<Inventory_Storage>();
+
+        if (ui == null)
+            ui = UI.Instance ?? FindFirstObjectByType<UI>(FindObjectsInactive.Include);
+
+        if (storage != null && inventory != null && ui != null)
+        {
+            storage.SetInventory(inventory);
+            ui.OpenCraft(storage);
+        }
+        else
+        {
+            Debug.LogWarning("[Object_Blacksmith] DS_OpenCraft: missing refs (storage/inventory/ui).");
+        }
+    }
 }

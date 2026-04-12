@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Rewired;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -20,6 +21,10 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [SerializeField] private GameObject conflictSlot;      // quick pulse when blocked
     [SerializeField] private TextMeshProUGUI mpCostText;   // shows MP cost
     [SerializeField] private CanvasGroup affordOverlay;     // fades when unaffordable (alpha to 1)
+
+    [Header("Binding Label")]
+    [SerializeField] private bool useRewiredBindingLabel = true;
+    [SerializeField] private string fallbackLabel = "";
 
     // Visual core
     private UI ui;
@@ -58,6 +63,12 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         gameObject.name = $"UI_SkillSlot - {slotId}";
         if (inputKeyText != null) inputKeyText.text = inputKeyName;
+    }
+
+    private void OnEnable()
+    {
+        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+        RefreshVisuals(mgr);
     }
 
     // ------------ Public API ------------
@@ -153,7 +164,59 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (cooldownImage != null) cooldownImage.fillAmount = 0f;
     }
 
+    public void RefreshBindingLabel(Player_SkillManager manager)
+    {
+        if (inputKeyText == null)
+            return;
 
+        // default/fallback
+        string label = !string.IsNullOrWhiteSpace(fallbackLabel) ? fallbackLabel : inputKeyName;
+
+        if (!useRewiredBindingLabel || manager == null)
+        {
+            inputKeyText.text = label;
+            return;
+        }
+
+        string actionName = manager.GetRewiredActionNameForSlot(slotId);
+        if (string.IsNullOrWhiteSpace(actionName))
+        {
+            inputKeyText.text = label;
+            return;
+        }
+
+        try
+        {
+            var rewiredPlayer = ReInput.players.GetPlayer(manager.RewiredPlayerId);
+            if (rewiredPlayer == null)
+            {
+                inputKeyText.text = label;
+                return;
+            }
+
+            bool skipDisabledMaps = true;
+            var aem = rewiredPlayer.controllers.maps.GetFirstElementMapWithAction(actionName, skipDisabledMaps);
+
+            if (aem != null && !string.IsNullOrWhiteSpace(aem.elementIdentifierName))
+                label = aem.elementIdentifierName;
+        }
+        catch
+        {
+            // keep fallback
+        }
+
+        inputKeyText.text = label;
+        inputKeyName = label;
+    }
+
+    public void RefreshVisuals(Player_SkillManager manager)
+    {
+        RefreshBindingLabel(manager);
+        RefreshText(manager);
+
+        var manaRef = FindFirstObjectByType<Entity_Mana>(FindObjectsInactive.Include);
+        UpdateAffordability(manaRef);
+    }
 
 
     /// <summary>
@@ -254,14 +317,6 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         conflictSlot.SetActive(false);
     }
 
-    private void OnEnable()
-    {
-        // Re-fetch the new scene's manager & mana so the cost/afford overlay are correct.
-        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
-        RefreshText(mgr);
-
-        var manaRef = FindFirstObjectByType<Entity_Mana>(FindObjectsInactive.Include);
-        UpdateAffordability(manaRef);
-    }
+    
 
 }

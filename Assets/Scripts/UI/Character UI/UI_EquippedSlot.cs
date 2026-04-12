@@ -13,7 +13,8 @@ public class UI_EquippedSlot : UI_ItemSlot,
     // ✅ NEW: keyboard/controller focus + submit
     ISelectHandler, IDeselectHandler, ISubmitHandler, IUpdateSelectedHandler
 {
-    public ItemType slotType;
+    public EquipmentSlotType equipmentSlotType;
+    public ItemType acceptedItemType;
 
     [Header("Equipment Tooltip")]
     [SerializeField] private UI_EquipmentToolTip equipmentToolTip;
@@ -44,14 +45,22 @@ public class UI_EquippedSlot : UI_ItemSlot,
 
     private void OnValidate()
     {
-        gameObject.name = "UI_EquippedSlot - " + slotType.ToString();
+        gameObject.name = "UI_EquippedSlot - " + equipmentSlotType.ToString();
 
 #if UNITY_EDITOR
         if (!Application.isPlaying && slotTypeLabel != null)
         {
-            slotTypeLabel.text = slotType.ToString();
+            slotTypeLabel.text = equipmentSlotType.ToString();
         }
 #endif
+    }
+
+    private void UpdateSlotTypeLabel()
+    {
+        if (slotTypeLabel != null)
+        {
+            slotTypeLabel.text = equipmentSlotType.ToString();
+        }
     }
 
     private void Start()
@@ -119,13 +128,7 @@ public class UI_EquippedSlot : UI_ItemSlot,
         catch { rPlayer = null; }
     }
 
-    private void UpdateSlotTypeLabel()
-    {
-        if (slotTypeLabel != null)
-        {
-            slotTypeLabel.text = slotType.ToString();
-        }
-    }
+  
 
     public override void UpdateSlot(Inventory_Item item)
     {
@@ -290,7 +293,7 @@ public class UI_EquippedSlot : UI_ItemSlot,
         var equipmentUI = FindObjectOfType<UI_EquipmentInventory>();
         if (equipmentUI != null)
         {
-            equipmentUI.ShowEquipmentInventoryPanel(slotType);
+            equipmentUI.ShowEquipmentInventoryPanel(equipmentSlotType, acceptedItemType);
         }
     }
 }

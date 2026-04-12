@@ -33,22 +33,27 @@ public class CharacterEquipmentProfile : MonoBehaviour
         if (equipList == null)
             equipList = new List<Inventory_Equipped>();
 
-        EnsureSlot(ItemType.Weapon);
-        EnsureSlot(ItemType.Armor);
-        EnsureSlot(ItemType.trinket);
+        EnsureSlot(EquipmentSlotType.Weapon, ItemType.Weapon);
+        EnsureSlot(EquipmentSlotType.Armor, ItemType.Armor);
+        EnsureSlot(EquipmentSlotType.Trinket1, ItemType.trinket);
+        EnsureSlot(EquipmentSlotType.Trinket2, ItemType.trinket);
     }
 
-    private void EnsureSlot(ItemType type)
+    private void EnsureSlot(EquipmentSlotType slotType, ItemType acceptedType)
     {
         foreach (var slot in equipList)
         {
-            if (slot != null && slot.slotType == type)
+            if (slot != null && slot.slotType == slotType)
+            {
+                slot.acceptedItemType = acceptedType;
                 return;
+            }
         }
 
         equipList.Add(new Inventory_Equipped
         {
-            slotType = type,
+            slotType = slotType,
+            acceptedItemType = acceptedType,
             equipedItem = null
         });
     }
@@ -76,11 +81,22 @@ public class CharacterEquipmentProfile : MonoBehaviour
         EnsureDefaultSlots();
     }
 
+    public Inventory_Item GetEquippedItemBySlot(EquipmentSlotType slotType)
+    {
+        foreach (var eq in equipList)
+        {
+            if (eq != null && eq.slotType == slotType && eq.HasItem())
+                return eq.equipedItem;
+        }
+
+        return null;
+    }
+
     public Inventory_Item GetEquippedItemByType(ItemType type)
     {
         foreach (var eq in equipList)
         {
-            if (eq != null && eq.slotType == type && eq.HasItem())
+            if (eq != null && eq.acceptedItemType == type && eq.HasItem())
                 return eq.equipedItem;
         }
 
@@ -89,17 +105,12 @@ public class CharacterEquipmentProfile : MonoBehaviour
 
     public void TryEquipFromEquipmentInventory(Inventory_Item item)
     {
-        if (item == null || item.itemData == null || equipmentInventory == null || stats == null)
+        if (item == null || item.itemData == null)
             return;
 
-        Inventory_Item inventoryItem = equipmentInventory.FindItem(item.itemData);
-        if (inventoryItem == null)
-        {
-            Debug.LogWarning($"[CharacterEquipmentProfile] Item not found in shared equipment inventory: {item.itemData.itemName}");
-            return;
-        }
-
-        var matchingSlots = equipList.FindAll(slot => slot.slotType == item.itemData.itemType);
+        // Fallback behavior:
+        // find first empty matching slot, otherwise first matching slot
+        var matchingSlots = equipList.FindAll(slot => slot != null && slot.acceptedItemType == item.itemData.itemType);
         if (matchingSlots == null || matchingSlots.Count == 0)
         {
             Debug.LogWarning($"[CharacterEquipmentProfile] No slot found for type {item.itemData.itemType}");
@@ -110,20 +121,51 @@ public class CharacterEquipmentProfile : MonoBehaviour
         {
             if (!slot.HasItem())
             {
-                EquipItem(inventoryItem, slot);
-                equipmentInventory.RemoveOneItem(inventoryItem);
-                NotifyChanged();
+                TryEquipFromEquipmentInventory(item, slot.slotType);
                 return;
             }
         }
 
-        var slotToReplace = matchingSlots[0];
-        var oldItem = slotToReplace.equipedItem;
+        TryEquipFromEquipmentInventory(item, matchingSlots[0].slotType);
+    }
 
-        UnequipItem(oldItem, true);
-        EquipItem(inventoryItem, slotToReplace);
+    public void TryEquipFromEquipmentInventory(Inventory_Item item, EquipmentSlotType targetSlotType)
+    {
+        if (item == null || item.itemData == null || equipmentInventory == null || stats == null)
+            return;
+
+        var targetSlot = equipList.Find(slot => slot != null && slot.slotType == targetSlotType);
+        if (targetSlot == null)
+        {
+            Debug.LogWarning($"[CharacterEquipmentProfile] No target slot found for {targetSlotType}");
+            return;
+        }
+
+        if (targetSlot.acceptedItemType != item.itemData.itemType)
+        {
+            Debug.LogWarning($"[CharacterEquipmentProfile] Item {item.itemData.itemName} cannot go into slot {targetSlotType}");
+            return;
+        }
+
+        Inventory_Item inventoryItem = equipmentInventory.FindItem(item.itemData);
+        if (inventoryItem == null)
+        {
+            Debug.LogWarning($"[CharacterEquipmentProfile] Item not found in shared equipment inventory: {item.itemData.itemName}");
+            return;
+        }
+
+        if (targetSlot.HasItem())
+        {
+            var oldItem = targetSlot.equipedItem;
+            UnequipItem(oldItem, true);
+        }
+
+        EquipItem(inventoryItem, targetSlot);
         equipmentInventory.RemoveOneItem(inventoryItem);
         NotifyChanged();
+
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlayGlobalSFX("Equipped");
     }
 
     private void EquipItem(Inventory_Item itemToEquip, Inventory_Equipped slot)
@@ -144,7 +186,7 @@ public class CharacterEquipmentProfile : MonoBehaviour
         if (itemToUnequip == null || equipmentInventory == null || stats == null)
             return;
 
-        var slot = equipList.Find(s => s.equipedItem == itemToUnequip);
+        var slot = equipList.Find(s => s != null && s.equipedItem == itemToUnequip);
         if (slot != null)
             slot.equipedItem = null;
 
@@ -153,11 +195,21 @@ public class CharacterEquipmentProfile : MonoBehaviour
 
         equipmentInventory.AddItem(itemToUnequip);
         NotifyChanged();
+
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlayGlobalSFX("Unequipped");
     }
 
-    public void UnequipItemByType(ItemType slotType)
+    public void UnequipItemBySlot(EquipmentSlotType slotType)
     {
-        var slot = equipList.Find(s => s.slotType == slotType && s.HasItem());
+        var slot = equipList.Find(s => s != null && s.slotType == slotType && s.HasItem());
+        if (slot != null)
+            UnequipItem(slot.equipedItem);
+    }
+
+    public void UnequipItemByType(ItemType itemType)
+    {
+        var slot = equipList.Find(s => s != null && s.acceptedItemType == itemType && s.HasItem());
         if (slot != null)
             UnequipItem(slot.equipedItem);
     }
@@ -177,10 +229,13 @@ public class CharacterEquipmentProfile : MonoBehaviour
             return;
         }
 
-        // Remove old item bonuses/effects and put it back into the shared bag
-        UnequipItem(oldEquippedItem, true);
+        if (equippedSlot.acceptedItemType != newInventoryItem.itemData.itemType)
+        {
+            Debug.LogWarning("[CharacterEquipmentProfile] New item does not match slot type.");
+            return;
+        }
 
-        // Equip the new item into the same slot
+        UnequipItem(oldEquippedItem, true);
         EquipItem(newInventoryItem, equippedSlot);
 
         if (equipmentInventory != null)

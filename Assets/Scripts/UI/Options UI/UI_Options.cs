@@ -447,6 +447,11 @@ public class UI_Options : MonoBehaviour
 
     private void OnMapperClosed()
     {
+        if (UI.Instance != null && UI.Instance.inGameUI != null)
+        {
+            UI.Instance.inGameUI.RefreshAllSkillSlotLabels();
+        }
+
         if (IsTitleScreenContext())
         {
             ReturnToTitleMainAndCloseSelf();

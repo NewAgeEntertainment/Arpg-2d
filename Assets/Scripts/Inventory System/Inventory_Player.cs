@@ -255,16 +255,16 @@ public class Inventory_Player : Inventory_Base
 
         // EQUIPMENT → equipment inventory
         if ((itemToAdd.itemData.itemType == ItemType.Weapon ||
-             itemToAdd.itemData.itemType == ItemType.Armor ||
-             itemToAdd.itemData.itemType == ItemType.trinket) &&
-            equipmentInventory != null && equipmentInventory.CanAddItem(itemToAdd))
+        itemToAdd.itemData.itemType == ItemType.Armor ||
+         itemToAdd.itemData.itemType == ItemType.trinket) &&
+        equipmentInventory != null && equipmentInventory.CanAddItem(itemToAdd))
         {
             var addedToEquip = equipmentInventory.AddItem(itemToAdd);
             if (addedToEquip)
             {
                 NotifyInventoryChanged();
                 var ui = FindFirstObjectByType<UI_InGame>();
-                if (ui != null) ui.ShowItemPickup(itemToAdd.itemData.itemIcon, itemToAdd.itemData.itemName, 1); // <-- ADD THIS
+                if (ui != null) ui.ShowItemPickup(itemToAdd.itemData.itemIcon, itemToAdd.itemData.itemName, 1);
             }
             return addedToEquip;
         }

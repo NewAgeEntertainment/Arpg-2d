@@ -11,7 +11,7 @@ public enum SkillCategory
 public class Skill_DataSO : ScriptableObject
 {
     [Header("Identity")]
-    public string id; // ← set a unique, stable string (e.g., "fireball_t1")
+    public string id;
 
     [Header("Skill Description")]
     public string displayName;
@@ -27,8 +27,14 @@ public class Skill_DataSO : ScriptableObject
 
     [Header("Upgrade & Scaling")]
     public UpgradeData upgradeData;
-}
 
+    [Header("Optional Direct Key Use")]
+    public bool allowDirectKeyUse = false;
+    public KeyCode directKey = KeyCode.None;
+
+    [Tooltip("Optional Rewired action name. If set, this is checked in addition to directKey.")]
+    public string rewiredActionName = "";
+}
 
 [Serializable]
 public class UpgradeData
@@ -47,7 +53,7 @@ public class UpgradeData
 public class DamageScaleData
 {
     [Header("Damage")]
-    public float physical = 1;     // ✅ correct spelling
+    public float physical = 1;
     public float elemental = 1;
 
     [Header("General Scaling")]
@@ -57,7 +63,7 @@ public class DamageScaleData
 
     [Header("Chill")]
     public float chillDuration = 3;
-    public float chillSlowMultiplier = 0.2f; // ✅ Fix typo here
+    public float chillSlowMultiplier = 0.2f;
 
     [Header("Burn")]
     public float burnDuration = 3f;
@@ -72,4 +78,3 @@ public class DamageScaleData
     public float shockDamageScale = 1f;
     public float shockCharge = 0.4f;
 }
-

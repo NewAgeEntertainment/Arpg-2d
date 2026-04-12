@@ -10,3 +10,4 @@ public enum ItemType
     Gold,
     Consumable // Potions, buffs, scrolls, etc.
 }
+

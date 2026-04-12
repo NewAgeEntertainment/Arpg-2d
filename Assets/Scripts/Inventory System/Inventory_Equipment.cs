@@ -10,7 +10,6 @@ public class Inventory_Equipment : Inventory_Base
         ItemType.trinket
     };
 
-    // ✅ Remove hard limit logic
     public override bool AddItem(Inventory_Item item)
     {
         if (item == null || item.itemData == null)
@@ -30,17 +29,13 @@ public class Inventory_Equipment : Inventory_Base
         return true;
     }
 
-
     private bool IsEquipment(Inventory_Item item)
     {
         return item != null && allowedEquipmentTypes.Contains(item.itemData.itemType);
     }
 
-
-
-    // Optional helper method
     public List<Inventory_Item> GetAllEquippedItems()
     {
-            return new List<Inventory_Item>(itemList);
+        return new List<Inventory_Item>(itemList);
     }
 }

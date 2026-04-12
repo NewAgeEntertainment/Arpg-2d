@@ -37,6 +37,7 @@ public class Enemy : Entity
     [HideInInspector] public float lastTimeAttacked;
     public float battleMoveSpeed = 3f;
 
+
     // --- Attack Lunge (simple, constant) ---
     [Header("Attack Lunge")]
     [Tooltip("How fast the enemy lunges at the start of an attack.")]

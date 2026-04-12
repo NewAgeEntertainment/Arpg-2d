@@ -32,11 +32,11 @@ public class Object_Merchant : Object_NPC, IInteractable
         // DO NOT handle UICancel here. Let UI.cs call merchantUI.HandleCancel().
     }
 
-    public void Interact()
-    {
-        // Open via the UI manager, which internally calls SetUpMerchantUI
-        ui.OpenMerchant(merchant, inventory);
-    }
+    //public void Interact()
+    //{
+    //    // Open via the UI manager, which internally calls SetUpMerchantUI
+    //    ui.OpenMerchant(merchant, inventory);
+    //}
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
