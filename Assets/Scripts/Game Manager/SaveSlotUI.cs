@@ -174,10 +174,21 @@ public class SaveSlotUI : MonoBehaviour
 
     private static bool HasData(int slot)
     {
-        // Prefer SaveSystem provider:
-        try { return SaveSystem.HasSavedGameInSlot(slot); }
-        catch { /* fallback */ }
-        return PlayerPrefs.GetInt(KeyExists(slot), 0) == 1;
+        bool hasSaveFile = false;
+
+        try
+        {
+            hasSaveFile = SaveSystem.HasSavedGameInSlot(slot);
+        }
+        catch
+        {
+            hasSaveFile = false;
+        }
+
+        bool hasMetadata = PlayerPrefs.GetInt(KeyExists(slot), 0) == 1;
+
+        // For this UI, only treat the slot as valid if BOTH exist.
+        return hasSaveFile && hasMetadata;
     }
 
     // keep old HH:MM (in case other UI uses it)

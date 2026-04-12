@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
@@ -39,6 +40,11 @@ public class AudioManager : MonoBehaviour
 
     private Coroutine bgmRoutine;
 
+    // Exact restore state:
+    private string currentClipName;
+    private float currentClipTime;
+    private bool restorePendingAfterSceneLoad;
+
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -63,16 +69,39 @@ public class AudioManager : MonoBehaviour
             Debug.LogWarning("[AudioManager] AudioMixer is not assigned.");
 
         RefreshAudioSetup();
+
+        if (bgmSource != null)
+            bgmSource.ignoreListenerPause = true;
+
+        if (globalSfxSource != null)
+            globalSfxSource.ignoreListenerPause = true;
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
     private void Start()
     {
-        // Safety pass in case mixer groups or other refs initialize later.
         RefreshAudioSetup();
     }
 
     private void Update()
     {
+        if (bgmSource != null && bgmSource.isPlaying)
+        {
+            currentClipTime = bgmSource.time;
+
+            if (bgmSource.clip != null)
+                currentClipName = bgmSource.clip.name;
+        }
+
         if (!bgmShouldPlay)
             return;
 
@@ -81,7 +110,33 @@ public class AudioManager : MonoBehaviour
 
         if (!bgmSource.isPlaying && !string.IsNullOrEmpty(currentBgmGroupName) && bgmRoutine == null)
         {
-            NextBGM(currentBgmGroupName);
+            RestoreCurrentBGMExact();
+        }
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshAudioSetup();
+
+        if (bgmSource != null)
+            bgmSource.ignoreListenerPause = true;
+
+        if (globalSfxSource != null)
+            globalSfxSource.ignoreListenerPause = true;
+
+        if (restorePendingAfterSceneLoad)
+        {
+            restorePendingAfterSceneLoad = false;
+            RestoreCurrentBGMExact();
+            return;
+        }
+
+        if (bgmShouldPlay && !string.IsNullOrEmpty(currentBgmGroupName))
+        {
+            if (bgmSource != null && !bgmSource.isPlaying && bgmRoutine == null)
+            {
+                RestoreCurrentBGMExact();
+            }
         }
     }
 
@@ -182,10 +237,14 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        bgmShouldPlay = true;
-
-        if (musicGroup == currentBgmGroupName && bgmSource.isPlaying)
+        if (musicGroup == currentBgmGroupName && bgmShouldPlay && bgmSource.isPlaying)
             return;
+
+        bgmShouldPlay = true;
+        currentBgmGroupName = musicGroup;
+        currentClipName = null;
+        currentClipTime = 0f;
+        restorePendingAfterSceneLoad = false;
 
         NextBGM(musicGroup);
     }
@@ -215,6 +274,9 @@ public class AudioManager : MonoBehaviour
     {
         bgmShouldPlay = false;
         currentBgmGroupName = null;
+        currentClipName = null;
+        currentClipTime = 0f;
+        restorePendingAfterSceneLoad = false;
 
         if (bgmSource == null)
             return;
@@ -227,8 +289,12 @@ public class AudioManager : MonoBehaviour
     {
         yield return FadeVolumeCo(bgmSource, 0f, bgmFadeDuration);
 
-        bgmSource.Stop();
-        bgmSource.clip = null;
+        if (bgmSource != null)
+        {
+            bgmSource.Stop();
+            bgmSource.clip = null;
+        }
+
         bgmRoutine = null;
     }
 
@@ -275,13 +341,111 @@ public class AudioManager : MonoBehaviour
         }
 
         lastMusicPlayed = nextMusic;
+        currentClipName = nextMusic.name;
+        currentClipTime = 0f;
+
         bgmSource.clip = nextMusic;
         bgmSource.volume = 0f;
+        bgmSource.time = 0f;
         bgmSource.Play();
 
         yield return FadeVolumeCo(bgmSource, data.maxVolume, bgmFadeDuration);
 
         bgmRoutine = null;
+    }
+
+    private void RestoreCurrentBGMExact()
+    {
+        if (!bgmShouldPlay)
+            return;
+
+        if (audioDB == null || bgmSource == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(currentBgmGroupName))
+            return;
+
+        AudioClipData data = audioDB.Get(currentBgmGroupName);
+        if (data == null || data.clips == null || data.clips.Count == 0)
+        {
+            Debug.LogWarning("[AudioManager] Cannot restore BGM. Missing group: " + currentBgmGroupName);
+            return;
+        }
+
+        AudioClip clipToRestore = FindClipByName(data, currentClipName);
+
+        if (clipToRestore == null)
+        {
+            NextBGM(currentBgmGroupName);
+            return;
+        }
+
+        StopBgmRoutine();
+        bgmRoutine = StartCoroutine(RestoreMusicCo(data, clipToRestore, currentClipTime));
+    }
+
+    private IEnumerator RestoreMusicCo(AudioClipData data, AudioClip clipToRestore, float timeSeconds)
+    {
+        if (bgmSource == null || clipToRestore == null)
+        {
+            bgmRoutine = null;
+            yield break;
+        }
+
+        if (bgmSource.isPlaying)
+        {
+            yield return FadeVolumeCo(bgmSource, 0f, bgmFadeDuration);
+            bgmSource.Stop();
+        }
+
+        if (!bgmShouldPlay)
+        {
+            bgmRoutine = null;
+            yield break;
+        }
+
+        bgmSource.clip = clipToRestore;
+        bgmSource.volume = 0f;
+
+        float safeTime = Mathf.Clamp(timeSeconds, 0f, Mathf.Max(0f, clipToRestore.length - 0.05f));
+        bgmSource.time = safeTime;
+        bgmSource.Play();
+
+        lastMusicPlayed = clipToRestore;
+        currentClipName = clipToRestore.name;
+        currentClipTime = safeTime;
+
+        yield return FadeVolumeCo(bgmSource, data.maxVolume, bgmFadeDuration);
+
+        bgmRoutine = null;
+    }
+
+    private AudioClip FindClipByName(AudioClipData data, string clipName)
+    {
+        if (data == null || data.clips == null || string.IsNullOrWhiteSpace(clipName))
+            return null;
+
+        for (int i = 0; i < data.clips.Count; i++)
+        {
+            var clip = data.clips[i];
+            if (clip != null && clip.name == clipName)
+                return clip;
+        }
+
+        return null;
+    }
+
+    public void MarkBgmForRestoreAfterLoad()
+    {
+        if (bgmSource != null && bgmSource.isPlaying)
+        {
+            currentClipTime = bgmSource.time;
+
+            if (bgmSource.clip != null)
+                currentClipName = bgmSource.clip.name;
+        }
+
+        restorePendingAfterSceneLoad = bgmShouldPlay && !string.IsNullOrEmpty(currentBgmGroupName);
     }
 
     private IEnumerator FadeVolumeCo(AudioSource source, float targetVolume, float duration)

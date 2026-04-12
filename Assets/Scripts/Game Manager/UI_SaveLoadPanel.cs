@@ -179,8 +179,17 @@ public class UI_SaveLoadPanel : MonoBehaviour
             // Prevent bounce-back to GameOver after a successful load.
             Context = OpenContext.None;
 
-            try { SaveSystem.LoadFromSlot(slotIndex); }
-            catch (Exception e) { Debug.LogError($"[UI_SaveLoadPanel] Load failed: {e}"); }
+            try
+            {
+                if (AudioManager.instance != null)
+                    AudioManager.instance.MarkBgmForRestoreAfterLoad();
+
+                SaveSystem.LoadFromSlot(slotIndex);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[UI_SaveLoadPanel] Load failed: {e}");
+            }
 
             ClosePanel(); // optional; scene load will hide this anyway
         }

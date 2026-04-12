@@ -298,11 +298,7 @@ public class TitleMenuManager : MonoBehaviour
         isTransitioning = true;
         SetMenuInteractable(false);
 
-        if (wipeAllSlotsOnNewGame)
-        {
-            WipeAllSaveSlotMetadata();
-        }
-
+        // Do NOT wipe save slot metadata here.
         SaveSystem.ResetGameState();
         PlayerPrefs.DeleteKey(SaveSystem.LastSavedGameSlotPlayerPrefsKey);
         PlayerPrefs.Save();
@@ -325,16 +321,28 @@ public class TitleMenuManager : MonoBehaviour
 
     private void WipeAllSaveSlotMetadata()
     {
-        int slotCount = 4; // match your real slot count
+        const int slotCount = 4; // match your real slot count
 
         for (int i = 0; i < slotCount; i++)
         {
+            // Delete actual PixelCrushers save data in this slot.
+            try
+            {
+                SaveSystem.DeleteSavedGameInSlot(i);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[TitleMenuManager] Failed to delete save slot {i}: {ex.Message}");
+            }
+
+            // Delete your custom metadata.
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_scene");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_sceneDisplay");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_playSeconds");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_time");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_exists");
             PlayerPrefs.DeleteKey($"SaveSlot_{i}_musicGroup");
+            PlayerPrefs.DeleteKey($"SaveSlot_{i}_portrait");
         }
 
         PlayerPrefs.Save();

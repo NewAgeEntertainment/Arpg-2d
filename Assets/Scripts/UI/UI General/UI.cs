@@ -655,6 +655,8 @@ public class UI : MonoBehaviour
 
         Debug.Log($"[UI] After OpenEquipment -> isEquipmentSelectionMode={isEquipmentSelectionMode}");
 
+        StartCharacterSelectionBlink();
+
         if (equipmentInventoryPanel != null)
             equipmentInventoryPanel.gameObject.SetActive(false);
     }
@@ -678,6 +680,8 @@ public class UI : MonoBehaviour
             Debug.Log("[UI] Early return: equipment selection mode is not active.");
             return;
         }
+
+        StopCharacterSelectionBlink();
 
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(false);
@@ -759,8 +763,47 @@ public class UI : MonoBehaviour
         isEquipmentSelectionMode = false;
         isStatusPanelOpen = false;
 
+        StartCharacterSelectionBlink();
+
         if (statusPanel != null)
             statusPanel.gameObject.SetActive(false);
+    }
+
+    public void SelectStatusCharacter(GameObject character)
+    {
+        Debug.Log(
+            $"[UI] SelectStatusCharacter -> " +
+            $"character={(character != null ? character.name : "NULL")}, " +
+            $"isStatusSelectionMode={isStatusSelectionMode}"
+        );
+
+        if (character == null || statusPanel == null)
+            return;
+
+        if (!isStatusSelectionMode)
+        {
+            Debug.Log("[UI] Early return: status selection mode is not active.");
+            return;
+        }
+
+        StopCharacterSelectionBlink();
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        EnsureUIRootIsActive();
+        CloseAllPanels();
+
+        OpenPanelWithBook(() =>
+        {
+            Debug.Log($"[UI] Opening status panel for {character.name}");
+
+            isStatusSelectionMode = false;
+            isStatusPanelOpen = true;
+
+            statusPanel.gameObject.SetActive(true);
+            statusPanel.OpenPanel(character);
+        });
     }
 
 
@@ -1501,40 +1544,7 @@ public class UI : MonoBehaviour
 
     #endregion
 
-    public void SelectStatusCharacter(GameObject character)
-    {
-        Debug.Log(
-            $"[UI] SelectStatusCharacter -> " +
-            $"character={(character != null ? character.name : "NULL")}, " +
-            $"isStatusSelectionMode={isStatusSelectionMode}"
-        );
-
-        if (character == null || statusPanel == null)
-            return;
-
-        if (!isStatusSelectionMode)
-        {
-            Debug.Log("[UI] Early return: status selection mode is not active.");
-            return;
-        }
-
-        if (mainMenuPanel != null)
-            mainMenuPanel.SetActive(false);
-
-        EnsureUIRootIsActive();
-        CloseAllPanels();
-
-        OpenPanelWithBook(() =>
-        {
-            Debug.Log($"[UI] Opening status panel for {character.name}");
-
-            isStatusSelectionMode = false;
-            isStatusPanelOpen = true;
-
-            statusPanel.gameObject.SetActive(true);
-            statusPanel.OpenPanel(character);
-        });
-    }
+    
 
 
     #region Input Control
@@ -1575,6 +1585,8 @@ public class UI : MonoBehaviour
 
     public void CloseAllPanels()
     {
+        StopCharacterSelectionBlink();
+
         SwitchOffAllToolTips();  // 👈 hide all tips first
 
         inventoryUI?.gameObject.SetActive(false);
@@ -1773,19 +1785,7 @@ public class UI : MonoBehaviour
         StartCoroutine(ReturnToTitle_Co(saveSuspend: false));
     }
 
-    public void ReturnToTitle_Ys()
-    {
-        ShowConfirm("Return to Title?\nUnsaved progress will be lost.",
-            onYes: () => StartCoroutine(ReturnToTitle_Co(saveSuspend: false)),
-            onNo: null);
-    }
-
-    public void ReturnToTitle_WithSuspend()
-    {
-        ShowConfirm("Suspend and return to Title?",
-            onYes: () => StartCoroutine(ReturnToTitle_Co(saveSuspend: true)),
-            onNo: null);
-    }
+   
 
     public static bool TryLoadSuspendAndClear()
     {
@@ -2476,7 +2476,25 @@ public class UI : MonoBehaviour
     }
 
 
+    private void StartCharacterSelectionBlink()
+    {
+        var buttons = FindObjectsByType<UI_CharacterProfileButton>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var b in buttons)
+        {
+            if (b != null && b.gameObject.activeInHierarchy)
+                b.StartBlinking();
+        }
+    }
 
+    private void StopCharacterSelectionBlink()
+    {
+        var buttons = FindObjectsByType<UI_CharacterProfileButton>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var b in buttons)
+        {
+            if (b != null)
+                b.StopBlinking();
+        }
+    }
 
     private int FindCurrentPanelIndex()
     {

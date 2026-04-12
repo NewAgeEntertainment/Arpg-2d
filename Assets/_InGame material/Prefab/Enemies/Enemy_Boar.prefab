@@ -2371,6 +2371,7 @@ GameObject:
   - component: {fileID: 6857804871308083408}
   - component: {fileID: 303316303309266244}
   - component: {fileID: 3032067255554467395}
+  - component: {fileID: 2415959959931108091}
   m_Layer: 8
   m_Name: Enemy_Boar
   m_TagString: Enemy
@@ -2824,6 +2825,25 @@ MonoBehaviour:
   deathParameter: Boar
   useGONameIfParameterEmpty: 1
   messageTarget: {fileID: 0}
+--- !u!114 &2415959959931108091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4894418689625105346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03526e258566dc247a4eb8525aeeb667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_key: Death
+  m_appendSaverTypeToKey: 0
+  m_saveAcrossSceneChanges: 1
+  m_restoreStateOnStart: 0
+  m_mode: 1
+  m_destroyMode: 0
+  m_destroyedVersionPrefab: {fileID: 0}
 --- !u!1 &5199220206678693552
 GameObject:
   m_ObjectHideFlags: 0

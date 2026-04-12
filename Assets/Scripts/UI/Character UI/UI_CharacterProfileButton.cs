@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using System;
+using System.Collections;
 
 public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -29,6 +30,9 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     [Header("Highlight")]
     [SerializeField] private GameObject highlighter;
 
+    [Header("Blink")]
+    [SerializeField] private float blinkInterval = 0.45f;
+
     private Component character;
     private Entity_Health playerHealth;
     private Entity_Mana playerMana;
@@ -40,13 +44,19 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
     private Inventory_Player inventory;
     private Action afterUse;
 
+    private Coroutine blinkCo;
+    private bool isBlinking;
+    private bool isHovered;
+
     private void OnDisable()
     {
+        StopBlinking();
         UnsubscribeVitals();
     }
 
     private void OnDestroy()
     {
+        StopBlinking();
         UnsubscribeVitals();
 
         if (button != null)
@@ -190,8 +200,6 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
         return true;
     }
 
-
-
     private Inventory_Item FindSameItemInstance(Inventory_Player inv, Inventory_Item sample)
     {
         foreach (var it in inv.itemList)
@@ -312,22 +320,72 @@ public class UI_CharacterProfileButton : MonoBehaviour, IPointerEnterHandler, IP
 
     public void HighlightOff()
     {
+        if (isBlinking || isHovered) return;
+        highlighter?.SetActive(false);
+    }
+
+    public void StartBlinking()
+    {
+        if (highlighter == null || isBlinking) return;
+
+        isBlinking = true;
+        if (blinkCo != null) StopCoroutine(blinkCo);
+        blinkCo = StartCoroutine(BlinkCo());
+    }
+
+    public void StopBlinking()
+    {
+        isBlinking = false;
+
+        if (blinkCo != null)
+        {
+            StopCoroutine(blinkCo);
+            blinkCo = null;
+        }
+
+        if (isHovered) HighlightOn();
+        else HighlightOffImmediate();
+    }
+
+    private IEnumerator BlinkCo()
+    {
+        bool visible = true;
+        highlighter.SetActive(true);
+
+        while (isBlinking)
+        {
+            highlighter.SetActive(visible);
+            visible = !visible;
+            yield return new WaitForSecondsRealtime(blinkInterval);
+        }
+
+        blinkCo = null;
+    }
+
+    private void HighlightOffImmediate()
+    {
         highlighter?.SetActive(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        isHovered = true;
         HighlightOn();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        HighlightOff();
+        isHovered = false;
+
+        if (isBlinking)
+            return;
+
+        HighlightOffImmediate();
     }
 
     public void SetSelected(bool selected)
     {
         if (selected) HighlightOn();
-        else HighlightOff();
+        else HighlightOffImmediate();
     }
 }
