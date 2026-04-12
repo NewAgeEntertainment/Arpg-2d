@@ -975,11 +975,10 @@ public class UI : MonoBehaviour
 
     public void OpenCraft(Inventory_Storage storage)
     {
-        isCraftOpen = true;
         EnsureUIRootIsActive();
         CloseAllPanels();
 
-        // Craft does NOT use the book/menu shell.
+        // Craft does NOT use the book / menu shell.
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(false);
 
@@ -1005,6 +1004,7 @@ public class UI : MonoBehaviour
             Debug.Log("[UI] Craft UI opened");
         }
 
+        isCraftOpen = true;
         EnterUIMode();
     }
 
@@ -1022,7 +1022,24 @@ public class UI : MonoBehaviour
             Debug.Log("[UI] Craft UI closed");
         }
 
-        OnCraftPanelClosed();
+        isCraftOpen = false;
+
+        if (mainMenuPanel != null)
+            mainMenuPanel.SetActive(false);
+
+        if (outsideMenuPanel != null)
+            outsideMenuPanel.SetActive(false);
+
+        if (insideMenuPanel != null)
+            insideMenuPanel.SetActive(false);
+
+        if (bookUI != null)
+            bookUI.gameObject.SetActive(false);
+
+        CheckStopPlayerControls();
+
+        if (!IsAnySubPanelOpen())
+            uiRoot?.SetActive(false);
     }
 
     // UI.cs
@@ -1650,9 +1667,9 @@ public class UI : MonoBehaviour
         ResetStates();
         StopMenuPoll();
 
-        // ✅ IMPORTANT: book should NOT be closed here
-        if (bookUI != null)
-            bookUI.gameObject.SetActive(true);
+        //// ✅ IMPORTANT: book should NOT be closed here
+        //if (bookUI != null)
+        //    bookUI.gameObject.SetActive(true);
     }
 
 
@@ -1783,7 +1800,7 @@ public class UI : MonoBehaviour
         }
 
         // ⓭ Failsafe
-        if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen())
+        if (Mathf.Approximately(Time.timeScale, 0f) && !IsAnySubPanelOpen() && !isCraftOpen && !isMerchantOpen)
         {
             OpenMainMenuDirect();
             return;
