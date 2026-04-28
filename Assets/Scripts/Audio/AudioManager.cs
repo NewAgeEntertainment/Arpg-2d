@@ -28,6 +28,15 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private string bgmPrefsKey = "Options_BGMVolume";
     [SerializeField] private string sfxPrefsKey = "Options_SFXVolume";
 
+    [Header("Temporary BGM")]
+    [SerializeField] private bool debugTemporaryBgm;
+
+    private bool temporaryBgmActive;
+    private string previousBgmGroupName;
+    private string previousClipName;
+    private float previousClipTime;
+    private bool previousBgmShouldPlay;
+
     private const float MinLinearVolume = 0.0001f;
     private const float MinMixerDb = -80f;
     private const float MaxMixerDb = 0f;
@@ -562,6 +571,182 @@ public class AudioManager : MonoBehaviour
 
         globalSfxSource.pitch = Random.Range(0.95f, 1.1f);
         globalSfxSource.PlayOneShot(clip, data.maxVolume);
+    }
+
+    public void StartTemporaryBGM(string musicGroup)
+    {
+        if (string.IsNullOrWhiteSpace(musicGroup))
+        {
+            Debug.LogWarning("[AudioManager] StartTemporaryBGM called with an empty group name.");
+            return;
+        }
+
+        if (audioDB == null || bgmSource == null)
+        {
+            Debug.LogWarning("[AudioManager] Cannot start temporary BGM. Missing AudioDatabaseSO or BGM AudioSource.");
+            return;
+        }
+
+        // If this same temporary music is already active, do nothing.
+        if (temporaryBgmActive && currentBgmGroupName == musicGroup && bgmShouldPlay)
+            return;
+
+        // Only save the previous BGM the first time a temporary BGM starts.
+        if (!temporaryBgmActive)
+        {
+            previousBgmGroupName = currentBgmGroupName;
+            previousClipName = currentClipName;
+            previousClipTime = currentClipTime;
+            previousBgmShouldPlay = bgmShouldPlay;
+
+            if (bgmSource.isPlaying)
+            {
+                previousClipTime = bgmSource.time;
+
+                if (bgmSource.clip != null)
+                    previousClipName = bgmSource.clip.name;
+            }
+        }
+
+        temporaryBgmActive = true;
+
+        if (debugTemporaryBgm)
+            Debug.Log($"[AudioManager] Starting temporary BGM '{musicGroup}'. Previous BGM was '{previousBgmGroupName}'.");
+
+        StartBGM(musicGroup);
+    }
+
+    public void StopTemporaryBGMAndRestorePrevious()
+    {
+        if (debugTemporaryBgm)
+        {
+            Debug.Log($"[AudioManager] StopTemporaryBGMAndRestorePrevious called. " +
+                      $"temporaryBgmActive={temporaryBgmActive}, " +
+                      $"previousBgmGroupName={previousBgmGroupName}, " +
+                      $"previousBgmShouldPlay={previousBgmShouldPlay}, " +
+                      $"currentBgmGroupName={currentBgmGroupName}");
+        }
+
+        temporaryBgmActive = false;
+
+        if (previousBgmShouldPlay && !string.IsNullOrWhiteSpace(previousBgmGroupName))
+        {
+            bgmShouldPlay = true;
+            currentBgmGroupName = previousBgmGroupName;
+            currentClipName = previousClipName;
+            currentClipTime = previousClipTime;
+            restorePendingAfterSceneLoad = false;
+
+            RestoreCurrentBGMExact();
+        }
+        else
+        {
+            StopBGM();
+        }
+
+        previousBgmGroupName = null;
+        previousClipName = null;
+        previousClipTime = 0f;
+        previousBgmShouldPlay = false;
+    }
+
+    public void ForceStartBGM(string musicGroup)
+    {
+        if (string.IsNullOrWhiteSpace(musicGroup))
+        {
+            Debug.LogWarning("[AudioManager] ForceStartBGM called with an empty group name.");
+            ForceStopBGMImmediate();
+            return;
+        }
+
+        if (audioDB == null || bgmSource == null)
+        {
+            Debug.LogWarning("[AudioManager] Cannot force BGM. Missing AudioDatabaseSO or BGM AudioSource.");
+            return;
+        }
+
+        StopBgmRoutine();
+
+        temporaryBgmActive = false;
+        previousBgmGroupName = null;
+        previousClipName = null;
+        previousClipTime = 0f;
+        previousBgmShouldPlay = false;
+        restorePendingAfterSceneLoad = false;
+
+        // IMPORTANT:
+        // Stop the current mini-game music immediately before checking the next group.
+        bgmSource.Stop();
+        bgmSource.clip = null;
+        bgmSource.time = 0f;
+        bgmSource.volume = 0f;
+
+        AudioClipData data = audioDB.Get(musicGroup);
+
+        if (data == null || data.clips == null || data.clips.Count == 0)
+        {
+            Debug.LogWarning("[AudioManager] ForceStartBGM failed. No audio found for group: " + musicGroup);
+
+            bgmShouldPlay = false;
+            currentBgmGroupName = null;
+            currentClipName = null;
+            currentClipTime = 0f;
+            return;
+        }
+
+        AudioClip nextMusic = data.GetRandomClip();
+
+        if (nextMusic == null)
+        {
+            Debug.LogWarning("[AudioManager] ForceStartBGM failed. Random clip returned null for group: " + musicGroup);
+
+            bgmShouldPlay = false;
+            currentBgmGroupName = null;
+            currentClipName = null;
+            currentClipTime = 0f;
+            return;
+        }
+
+        bgmShouldPlay = true;
+        currentBgmGroupName = musicGroup;
+        currentClipName = nextMusic.name;
+        currentClipTime = 0f;
+        lastMusicPlayed = nextMusic;
+
+        bgmSource.clip = nextMusic;
+        bgmSource.time = 0f;
+        bgmSource.volume = data.maxVolume;
+        bgmSource.loop = true;
+        bgmSource.Play();
+
+        Debug.Log($"[AudioManager] ForceStartBGM success. Now playing group='{musicGroup}', clip='{nextMusic.name}'");
+    }
+
+    public void ForceStopBGMImmediate()
+    {
+        StopBgmRoutine();
+
+        temporaryBgmActive = false;
+        previousBgmGroupName = null;
+        previousClipName = null;
+        previousClipTime = 0f;
+        previousBgmShouldPlay = false;
+
+        bgmShouldPlay = false;
+        currentBgmGroupName = null;
+        currentClipName = null;
+        currentClipTime = 0f;
+        restorePendingAfterSceneLoad = false;
+
+        if (bgmSource != null)
+        {
+            bgmSource.Stop();
+            bgmSource.clip = null;
+            bgmSource.time = 0f;
+            bgmSource.volume = 0f;
+        }
+
+        Debug.Log("[AudioManager] ForceStopBGMImmediate.");
     }
 
     private void ApplyMixerGroups()

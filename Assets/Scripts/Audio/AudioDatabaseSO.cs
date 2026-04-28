@@ -10,6 +10,7 @@ public class AudioDatabaseSO : ScriptableObject
     public List<AudioClipData> chest;
     public List<AudioClipData> items_Audio;
     public List<AudioClipData> uiAudio;
+    public List<AudioClipData> miniGameMusic;
 
     [Header("Music Lists")]
     public List<AudioClipData> mainMenuMusic;
@@ -34,6 +35,7 @@ public class AudioDatabaseSO : ScriptableObject
         AddToCollection(uiAudio);
         AddToCollection(mainMenuMusic);
         AddToCollection(levelMusic);
+        AddToCollection(miniGameMusic);
     }
 
     public AudioClipData Get(string groupName)

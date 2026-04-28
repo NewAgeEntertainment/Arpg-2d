@@ -32,12 +32,21 @@ public class SexyTimeLogic : MonoBehaviour
     [SerializeField] private float strokeMultiplier = 1f;
     [SerializeField] private float playerBarValueDeplete = 10f;
 
+    [Header("Mini-Game Music")]
+    [SerializeField] private MiniGameMusicPlayer miniGameMusicPlayer;
+
     [Header("SexyTime Audio")]
-    [SerializeField] private string strokeSfx = "SexStroke";
+    [SerializeField] private string strokeBodySfx = "SexStrokeBody";
+    [SerializeField] private string strokeVoiceSfx = "SexStrokeVoice";
+    [SerializeField, Range(0f, 1f)] private float strokeVoiceChanceAtLowPink = 0.10f;
+    [SerializeField, Range(0f, 1f)] private float strokeVoiceChanceAtHighPink = 0.85f;
+    [SerializeField] private AnimationCurve strokeVoiceChanceCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private bool debugStrokeVoiceChance = false;
     [SerializeField] private string climaxSfx = "SexClimax";
     [SerializeField] private string npcAttackSfx = "SexNpcAttack";
     [SerializeField] private string critStrokeSfx = "SexCritStroke";
     [SerializeField] private string deepBreathSfx = "SexDeepBreath";
+   
 
     [Header("Dialogue Triggers (bar thresholds)")]
     [SerializeField] private DialogueTypewriter typewriter;
@@ -188,6 +197,9 @@ public class SexyTimeLogic : MonoBehaviour
         stateMachine = GetComponent<SexyTimeStateMachine>();
         anim = GetComponent<Animator>();
 
+        if (miniGameMusicPlayer == null)
+            miniGameMusicPlayer = GetComponent<MiniGameMusicPlayer>();
+
         if (inputRouter == null)
             inputRouter = GetComponent<SexyTimeInputRouter>();
         if (inputRouter != null)
@@ -248,7 +260,35 @@ public class SexyTimeLogic : MonoBehaviour
             stateMachine.Stroke();
     }
 
-    public void PlayStrokeSfx() => PlaySexySfx(strokeSfx);
+    public void PlayStrokeSfx()
+    {
+        PlaySexySfx(strokeBodySfx);
+
+        if (string.IsNullOrWhiteSpace(strokeVoiceSfx))
+            return;
+
+        float chance = GetStrokeVoiceChanceFromPinkBar();
+
+        if (debugStrokeVoiceChance && UI != null)
+            Debug.Log($"[SexyTime Audio] Pink voice chance = {chance:P0} | Pink={UI.PartnerBarValue:F1}/{UI.PartnerBarMax:F1}");
+
+        if (Random.value <= chance)
+            PlaySexySfx(strokeVoiceSfx);
+    }
+
+    private float GetStrokeVoiceChanceFromPinkBar()
+    {
+        if (UI == null || UI.PartnerBarMax <= 0f)
+            return strokeVoiceChanceAtLowPink;
+
+        float pink01 = Mathf.Clamp01(UI.PartnerBarValue / UI.PartnerBarMax);
+
+        // Lets you shape the chance in the Inspector.
+        // Example: slow increase early, faster increase near climax.
+        float curvedPink = strokeVoiceChanceCurve.Evaluate(pink01);
+
+        return Mathf.Lerp(strokeVoiceChanceAtLowPink, strokeVoiceChanceAtHighPink, curvedPink);
+    }
     public void PlayNpcAttackSfx() => PlaySexySfx(npcAttackSfx);
     public void PlayCritStrokeSfx() => PlaySexySfx(critStrokeSfx);
     public void PlayDeepBreathSfx() => PlaySexySfx(deepBreathSfx);
@@ -270,6 +310,12 @@ public class SexyTimeLogic : MonoBehaviour
 
     public void StartSexyTime()
     {
+        if (isSexyTimeGoingOn)
+        {
+            Debug.Log("[SexyTime] StartSexyTime ignored because sexy time is already active.");
+            return;
+        }
+
         if (ui == null)
         {
             ui = FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
@@ -305,6 +351,10 @@ public class SexyTimeLogic : MonoBehaviour
 
         isSexyTimeGoingOn = true;
         gameObject.SetActive(true);
+
+        miniGameMusicPlayer?.StartMiniGameMusic();
+
+        
 
         float playerMax = playerStats != null ? playerStats.sex.maxArousal.GetValue() : 100f;
         float partnerMax = partnerStats != null ? partnerStats.sex.maxArousal.GetValue() : 100f;
@@ -380,6 +430,10 @@ public class SexyTimeLogic : MonoBehaviour
     {
         GrantSexExpIfNeeded();
         GrantAffectionIfNeeded();
+
+        miniGameMusicPlayer?.StopMiniGameMusic();
+
+       
 
         if (_mapsSwapped && inputRouter != null)
         {
