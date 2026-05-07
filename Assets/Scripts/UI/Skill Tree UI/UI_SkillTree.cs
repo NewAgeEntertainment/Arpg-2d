@@ -4,6 +4,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum SkillTreePanelType
+{
+    Combat,
+    Sex
+}
+
 public class UI_SkillTree : UI_Panel
 {
     [Header("Point Pools")]
@@ -14,7 +20,24 @@ public class UI_SkillTree : UI_Panel
     [SerializeField] private TextMeshProUGUI skillPointsText;
     [SerializeField] private TextMeshProUGUI sexSkillPointsText;
 
-    [Header("Graph Roots (connection updaters)")]
+    [Header("Skill Tree Panels")]
+    [SerializeField] private GameObject combatSkillPanel;
+    [SerializeField] private GameObject sexSkillPanel;
+
+    [SerializeField] private Button combatTabButton;
+    [SerializeField] private Button sexTabButton;
+
+    [SerializeField] private SkillTreePanelType startingPanel = SkillTreePanelType.Combat;
+    private SkillTreePanelType currentPanel;
+
+    [Header("Graph Roots - Combat")]
+    [SerializeField] private UI_TreeConnectHandler[] combatParentNodes;
+
+    [Header("Graph Roots - Sex")]
+    [SerializeField] private UI_TreeConnectHandler[] sexParentNodes;
+
+    [Header("Graph Roots - Legacy / Optional")]
+    [Tooltip("Optional old connection roots. You can leave this empty if using Combat/Sex roots above.")]
     [SerializeField] private UI_TreeConnectHandler[] parentNodes;
 
     public Player_SkillManager skillManager { get; private set; }
@@ -25,9 +48,12 @@ public class UI_SkillTree : UI_Panel
     [SerializeField] private Button yesButton;
     [SerializeField] private Button noButton;
 
+    [SerializeField] private RectTransform fixedTooltipAnchor;
+    [SerializeField] private bool useFixedPosition = true;
+
     private UI_TreeNode pendingSkillNode;
 
-    // ===== Assign-to-slot popup ===== (kept for back-compat, not used in pick mode)
+    // ===== Assign-to-slot popup =====
     [Header("Assign To Slot Popup (legacy)")]
     [SerializeField] private GameObject assignPopup;
     [SerializeField] private TextMeshProUGUI assignTitleText;
@@ -36,9 +62,10 @@ public class UI_SkillTree : UI_Panel
     [SerializeField] private Button assignSlotCButton;
     [SerializeField] private Button assignSlotDButton;
     [SerializeField] private Button assignCancelButton;
+
     private UI_TreeNode _pendingAssignNode;
 
-    // ===== NEW: Click-to-assign pick mode =====
+    // ===== Click-to-assign pick mode =====
     private static UI_SkillTree _pickOwner;
     private static UI_TreeNode _pickNode;
     private static Skill_DataSO _pickSkill;
@@ -49,7 +76,8 @@ public class UI_SkillTree : UI_Panel
     [Header("Assign Pick Visuals")]
     [SerializeField] private Color nodePickColor = new Color(1f, 0.9f, 0.4f, 1f);
 
-    #region State Type (matches GameDataSaver.SkillTreeState)
+    #region State Type
+
     [System.Serializable]
     public class SkillTreeState
     {
@@ -58,13 +86,21 @@ public class UI_SkillTree : UI_Panel
         public int combatSkillPoints;
         public int sexSkillPoints;
     }
+
     #endregion
 
-    #region Pending State (used when saver applies before tree exists)
+    #region Pending State
+
     private static SkillTreeState _pendingState;
+
     public static void SetPendingState(SkillTreeState s)
     {
-        if (s == null) { _pendingState = null; return; }
+        if (s == null)
+        {
+            _pendingState = null;
+            return;
+        }
+
         _pendingState = new SkillTreeState
         {
             unlockedSkillNames = new List<string>(s.unlockedSkillNames ?? new List<string>()),
@@ -73,6 +109,7 @@ public class UI_SkillTree : UI_Panel
             sexSkillPoints = s.sexSkillPoints
         };
     }
+
     #endregion
 
     private void Awake()
@@ -82,9 +119,13 @@ public class UI_SkillTree : UI_Panel
 
     private void Start()
     {
-        UnlockDefaultSkills();     // default nodes
+        UnlockDefaultSkills();
+
+        ShowPanel(startingPanel);
+
         UpdateAllConnections();
         UpdateSkillPointsUI();
+        UpdateSexSkillPointsUI();
 
         if (_pendingState != null)
             StartCoroutine(ApplyPendingAfterFrame());
@@ -93,8 +134,10 @@ public class UI_SkillTree : UI_Panel
     private IEnumerator ApplyPendingAfterFrame()
     {
         yield return null;
+
         ApplySaveState(_pendingState);
         UpdateAllConnections();
+
         _pendingState = null;
     }
 
@@ -102,12 +145,12 @@ public class UI_SkillTree : UI_Panel
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // If we're in the click-to-assign flow, exit THAT first and do NOT fall through
             var ui = UI.Instance;
+
             if (ui != null && ui.IsAssignPreviewActive)
             {
                 ui.RequestExitAssignPreview();
-                return; // <- prevents HandleCancel() from sending you to main menu
+                return;
             }
 
             HandleCancel();
@@ -116,6 +159,48 @@ public class UI_SkillTree : UI_Panel
 
     public bool IsOpen => gameObject.activeInHierarchy;
 
+    #region Panel Switching
+
+    public void ShowPanel(SkillTreePanelType panelType)
+    {
+        currentPanel = panelType;
+
+        bool showCombat = panelType == SkillTreePanelType.Combat;
+        bool showSex = panelType == SkillTreePanelType.Sex;
+
+        if (combatSkillPanel != null)
+            combatSkillPanel.SetActive(showCombat);
+
+        if (sexSkillPanel != null)
+            sexSkillPanel.SetActive(showSex);
+
+        if (combatTabButton != null)
+            combatTabButton.interactable = !showCombat;
+
+        if (sexTabButton != null)
+            sexTabButton.interactable = !showSex;
+
+        UpdateSkillPointsUI();
+        UpdateSexSkillPointsUI();
+        UpdateAllConnections();
+    }
+
+    public void ShowCombatSkillPanel()
+    {
+        ShowPanel(SkillTreePanelType.Combat);
+    }
+
+    public void ShowSexSkillPanel()
+    {
+        ShowPanel(SkillTreePanelType.Sex);
+    }
+
+    public SkillTreePanelType GetCurrentPanel()
+    {
+        return currentPanel;
+    }
+
+    #endregion
 
     #region Public API used by Saver/UI
 
@@ -163,12 +248,25 @@ public class UI_SkillTree : UI_Panel
 
     public void UpdateAllConnections()
     {
-        if (parentNodes == null) return;
-        foreach (var n in parentNodes)
-            n?.UpdateAllConnections();
+        if (combatParentNodes != null)
+        {
+            foreach (var n in combatParentNodes)
+                n?.UpdateAllConnections();
+        }
+
+        if (sexParentNodes != null)
+        {
+            foreach (var n in sexParentNodes)
+                n?.UpdateAllConnections();
+        }
+
+        if (parentNodes != null)
+        {
+            foreach (var n in parentNodes)
+                n?.UpdateAllConnections();
+        }
     }
 
-    /// <summary>Create a serializable snapshot of the tree for saving.</summary>
     public SkillTreeState CreateSaveState()
     {
         var state = new SkillTreeState
@@ -178,22 +276,27 @@ public class UI_SkillTree : UI_Panel
         };
 
         var nodes = GetComponentsInChildren<UI_TreeNode>(true) ?? new UI_TreeNode[0];
+
         foreach (var n in nodes)
         {
-            if (n == null || n.skillData == null) continue;
-            var name = n.skillData.name;
+            if (n == null || n.skillData == null)
+                continue;
 
-            if (n.isUnlocked) state.unlockedSkillNames.Add(name);
-            else if (n.isLocked) state.lockedSkillNames.Add(name);
+            string skillName = n.skillData.name;
+
+            if (n.isUnlocked)
+                state.unlockedSkillNames.Add(skillName);
+            else if (n.isLocked)
+                state.lockedSkillNames.Add(skillName);
         }
 
         return state;
     }
 
-    /// <summary>Apply saved state (unlocked/locked nodes + point pools).</summary>
     public void ApplySaveState(SkillTreeState state)
     {
-        if (state == null) return;
+        if (state == null)
+            return;
 
         if (skillManager == null)
             skillManager = FindAnyObjectByType<Player_SkillManager>();
@@ -201,45 +304,52 @@ public class UI_SkillTree : UI_Panel
         var nodes = GetComponentsInChildren<UI_TreeNode>(true) ?? new UI_TreeNode[0];
 
         var byName = new Dictionary<string, UI_TreeNode>();
+
         foreach (var n in nodes)
         {
-            if (n == null || n.skillData == null) continue;
-            var name = n.skillData.name;
-            if (!byName.ContainsKey(name)) byName.Add(name, n);
+            if (n == null || n.skillData == null)
+                continue;
+
+            string skillName = n.skillData.name;
+
+            if (!byName.ContainsKey(skillName))
+                byName.Add(skillName, n);
         }
 
-        // Baseline visuals/flags
         foreach (var n in nodes)
         {
-            if (n == null) continue;
+            if (n == null)
+                continue;
+
             n.isUnlocked = false;
             n.isLocked = false;
             n.SetLockedVisualOnly();
         }
 
-        // Unlocked first (triggers SetSkillUpgrade)
         if (state.unlockedSkillNames != null)
         {
-            foreach (var name in state.unlockedSkillNames)
+            foreach (string skillName in state.unlockedSkillNames)
             {
-                if (string.IsNullOrEmpty(name)) continue;
-                if (byName.TryGetValue(name, out var node) && node != null)
+                if (string.IsNullOrEmpty(skillName))
+                    continue;
+
+                if (byName.TryGetValue(skillName, out var node) && node != null)
                     node.ForceUnlock();
             }
         }
 
-        // Explicit locks next
         if (state.lockedSkillNames != null)
         {
-            foreach (var name in state.lockedSkillNames)
+            foreach (string skillName in state.lockedSkillNames)
             {
-                if (string.IsNullOrEmpty(name)) continue;
-                if (byName.TryGetValue(name, out var node) && node != null && !node.isUnlocked)
+                if (string.IsNullOrEmpty(skillName))
+                    continue;
+
+                if (byName.TryGetValue(skillName, out var node) && node != null && !node.isUnlocked)
                     node.ForceLock();
             }
         }
 
-        // Points
         SetCombatSkillPoints(state.combatSkillPoints);
         SetSexSkillPoints(state.sexSkillPoints);
 
@@ -253,6 +363,7 @@ public class UI_SkillTree : UI_Panel
     public void UnlockDefaultSkills()
     {
         var allTreeNodes = GetComponentsInChildren<UI_TreeNode>(true);
+
         foreach (var node in allTreeNodes)
             node?.UnlockDefaultSkills();
 
@@ -264,6 +375,7 @@ public class UI_SkillTree : UI_Panel
     public void RefundAllSkills()
     {
         var skillNodes = GetComponentsInChildren<UI_TreeNode>(true);
+
         foreach (var node in skillNodes)
             node?.Refund();
 
@@ -272,15 +384,37 @@ public class UI_SkillTree : UI_Panel
 
     #endregion
 
-    #region Confirmation Popup Flow (Unlock)
+    #region Confirmation Popup Flow
 
     public void ShowSkillUnlockConfirmation(UI_TreeNode node)
     {
-        if (node == null || node.skillData == null) return;
-        if (confirmationPopup == null || confirmationText == null) return;
+        if (node == null || node.skillData == null)
+            return;
+
+        if (confirmationPopup == null || confirmationText == null)
+            return;
 
         pendingSkillNode = node;
-        confirmationText.text = $"Unlock <b>{node.skillData.displayName}</b>?";
+
+        Skill_DataSO skillData = node.skillData;
+
+        Player player = FindFirstObjectByType<Player>();
+        Player_Stats stats = player != null ? player.stats : null;
+
+        string levelText = "";
+
+        if (stats != null && stats.CurrentLevel < skillData.requiredLevel)
+        {
+            levelText =
+                $"\n<color=#ff7070>Requires Level {skillData.requiredLevel}</color>" +
+                $"\n<color=#ff7070>Your Level: {stats.CurrentLevel}</color>";
+        }
+
+        confirmationText.text =
+            $"Unlock <b>{skillData.displayName}</b>?" +
+            $"\nCost: {skillData.cost}" +
+            levelText;
+
         confirmationPopup.SetActive(true);
 
         yesButton.onClick.RemoveAllListeners();
@@ -294,8 +428,31 @@ public class UI_SkillTree : UI_Panel
     {
         if (pendingSkillNode != null && pendingSkillNode.skillData != null)
         {
-            var cost = pendingSkillNode.skillData.cost;
-            var cat = pendingSkillNode.skillData.category;
+            Skill_DataSO skillData = pendingSkillNode.skillData;
+
+            Player player = FindFirstObjectByType<Player>();
+            Player_Stats stats = player != null ? player.stats : null;
+
+            if (stats == null)
+            {
+                Debug.LogWarning("[SkillTree] Cannot unlock skill. Player_Stats not found.");
+                CloseConfirmationPopup();
+                return;
+            }
+
+            if (stats.CurrentLevel < skillData.requiredLevel)
+            {
+                Debug.Log(
+                    $"[SkillTree] Cannot unlock {skillData.displayName}. " +
+                    $"Requires Level {skillData.requiredLevel}. Current Level: {stats.CurrentLevel}."
+                );
+
+                CloseConfirmationPopup();
+                return;
+            }
+
+            int cost = skillData.cost;
+            SkillCategory cat = skillData.category;
 
             if (cat == SkillCategory.Combat)
             {
@@ -304,6 +461,10 @@ public class UI_SkillTree : UI_Panel
                     RemoveSkillPoints(cost);
                     pendingSkillNode.ForceUnlock();
                 }
+                else
+                {
+                    Debug.Log($"[SkillTree] Not enough combat skill points to unlock {skillData.displayName}.");
+                }
             }
             else
             {
@@ -311,6 +472,10 @@ public class UI_SkillTree : UI_Panel
                 {
                     RemoveSexSkillPoints(cost);
                     pendingSkillNode.ForceUnlock();
+                }
+                else
+                {
+                    Debug.Log($"[SkillTree] Not enough sex skill points to unlock {skillData.displayName}.");
                 }
             }
 
@@ -330,38 +495,38 @@ public class UI_SkillTree : UI_Panel
 
     #endregion
 
-    #region Assign-to-Slot CLICK MODE (Right click)
+    #region Assign-to-Slot CLICK MODE
 
-    /// <summary>Compatibility alias; we now start pick mode instead of legacy popup.</summary>
-    public void ShowAssignToSlot(UI_TreeNode node) => ShowAssignToSlotOptions(node);
+    public void ShowAssignToSlot(UI_TreeNode node)
+    {
+        ShowAssignToSlotOptions(node);
+    }
 
-    /// <summary>Begin pick mode: highlight node, show relevant hotbar, wait for slot click.</summary>
     public void ShowAssignToSlotOptions(UI_TreeNode node)
     {
-        if (node == null || node.skillData == null) return;
-        if (!node.isUnlocked) return;
+        if (node == null || node.skillData == null)
+            return;
 
-        // End any existing pick first
+        if (!node.isUnlocked)
+            return;
+
         EndPickMode(false);
 
         _pickOwner = this;
         _pickNode = node;
         _pickSkill = node.skillData;
 
-        // Visual highlight on node
         _pickNode.SetAssignHighlight(true);
 
-        // Show the relevant hotbar for visual placement
         var ui = FindFirstObjectByType<UI>();
         ui?.ShowHotbarAssignPreview(_pickSkill.category);
     }
 
-    /// <summary>Called by UI_SkillSlot when a slot is clicked.</summary>
     public static bool TryCompleteSlotPick(UI_SkillSlot clickedSlot)
     {
-        if (!IsPicking || clickedSlot == null) return false;
+        if (!IsPicking || clickedSlot == null)
+            return false;
 
-        // Wrong bar type? refuse but stay in pick mode
         if (!clickedSlot.Accepts(_pickSkill))
         {
             clickedSlot.PulseConflict(0.2f);
@@ -369,7 +534,9 @@ public class UI_SkillTree : UI_Panel
         }
 
         var ui = Object.FindFirstObjectByType<UI>();
-        if (ui == null) return false;
+
+        if (ui == null)
+            return false;
 
         bool success = false;
 
@@ -382,31 +549,28 @@ public class UI_SkillTree : UI_Panel
         {
             var sexUI = Object.FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
             var hotbar = sexUI != null ? sexUI.Hotbar : null;
+
             if (hotbar != null)
             {
                 int idx = hotbar.IndexOf(clickedSlot);
-                if (idx >= 0) success = hotbar.TryAssignToIndex(idx, _pickSkill);
+
+                if (idx >= 0)
+                    success = hotbar.TryAssignToIndex(idx, _pickSkill);
             }
         }
 
         if (success)
         {
-            // ✅ Stay in pick mode. Do NOT close the preview here.
-            // Clear the pending skill so further clicks do nothing until the player exits or re-selects.
             _pickSkill = null;
-
-            // (Optional) keep the highlight to show which node was assigned.
-            // If you prefer to remove highlight after assignment, uncomment:
-            // _pickNode?.SetAssignHighlight(false);
         }
         else
         {
             clickedSlot.PulseConflict(0.2f);
         }
+
         return success;
     }
 
-    // Public wrapper (UI can call this to exit on Esc)
     public static void CancelPickModeFromUI()
     {
         EndPickMode(false);
@@ -416,16 +580,13 @@ public class UI_SkillTree : UI_Panel
     {
         if (!IsPicking && _pickNode == null && _pickOwner == null)
         {
-            // also handle the case where _pickSkill was cleared after assignment
             var uiA = Object.FindFirstObjectByType<UI>();
             uiA?.HideHotbarAssignPreview();
             return;
         }
 
-        // Clear node highlight
         _pickNode?.SetAssignHighlight(false);
 
-        // Hide preview hotbar
         var ui = Object.FindFirstObjectByType<UI>();
         ui?.HideHotbarAssignPreview();
 
@@ -434,11 +595,13 @@ public class UI_SkillTree : UI_Panel
         _pickSkill = null;
     }
 
-    private void CloseAssignPopup() // legacy path – also end pick mode if it was active
+    private void CloseAssignPopup()
     {
         var ui = FindFirstObjectByType<UI>();
         ui?.HideHotbarAssignPreview();
+
         _pendingAssignNode = null;
+
         EndPickMode(false);
     }
 
@@ -464,36 +627,31 @@ public class UI_SkillTree : UI_Panel
 
     public override bool HandleCancel()
     {
-        // If we are in pick mode, cancel that first
         if (IsPicking || _pickNode != null || _pickOwner != null)
         {
             EndPickMode(false);
             return true;
         }
 
-        // Close assign (legacy) popup first if open
         if (assignPopup != null && assignPopup.activeSelf)
         {
             CloseAssignPopup();
             return true;
         }
 
-        // Then close unlock confirmation if open
         if (confirmationPopup != null && confirmationPopup.activeSelf)
         {
             CloseConfirmationPopup();
             return true;
         }
 
-        // ✅ Close via UI manager (same pattern as Inventory/Equipment)
         if (UI.Instance != null)
             UI.Instance.CloseSkillTree();
         else
-            gameObject.SetActive(false); // fallback
+            gameObject.SetActive(false);
 
         return true;
     }
-
 
     #endregion
 }

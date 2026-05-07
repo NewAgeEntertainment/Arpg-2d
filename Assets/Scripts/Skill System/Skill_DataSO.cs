@@ -22,6 +22,10 @@ public class Skill_DataSO : ScriptableObject
     [Header("Unlock & Upgrade")]
     public int cost;
     public bool unlockedByDefault;
+
+    [Tooltip("Player level required to unlock this skill.")]
+    public int requiredLevel = 1;
+
     public SkillType skillType;
     public SkillCategory category;
 
@@ -34,6 +38,15 @@ public class Skill_DataSO : ScriptableObject
 
     [Tooltip("Optional Rewired action name. If set, this is checked in addition to directKey.")]
     public string rewiredActionName = "";
+
+
+    public bool MeetsLevelRequirement(Player_Stats stats)
+    {
+        if (stats == null)
+            return false;
+
+        return stats.CurrentLevel >= requiredLevel;
+    }
 }
 
 [Serializable]

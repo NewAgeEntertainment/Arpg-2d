@@ -57,7 +57,20 @@ public class Skill_Sword : Skill_Base
         
     }
 
-    
+    private Vector2 GetPlayerFacingDirection()
+    {
+        // Good for left/right 2D games using localScale flipping.
+        if (player != null)
+        {
+            float facingX = player.transform.localScale.x;
+
+            if (Mathf.Abs(facingX) > 0.01f)
+                return facingX > 0 ? Vector2.right : Vector2.left;
+        }
+
+        // Fallback
+        return transform.right;
+    }
 
     private void HandleSwordMulticast()
     {
@@ -102,29 +115,36 @@ public class Skill_Sword : Skill_Base
 
     public void CreateSword()
     {
-        
-
         GameObject sword = Instantiate(spinSwordPrefab, transform.position, Quaternion.identity);
+
         currentSword = sword.GetComponent<SkillObject_Sword>();
         currentSword.SetupSword(this);
 
-        
-
-
-
+        Vector2 launchDirection = GetFacingDirection();
+        currentSword.LaunchForward(launchDirection, swordSpeed);
     }
 
+    private Vector2 GetFacingDirection()
+    {
+        // If your player flips using localScale.x
+        if (player.transform.localScale.x < 0)
+            return Vector2.left;
+
+        return Vector2.right;
+    }
 
     public void CreateRawSword()
     {
-        bool canMove = Unlocked(SkillUpgradeType.Sword_MoveToEnemy) || Unlocked(SkillUpgradeType.Sword_Multicast);
-
-
         GameObject sword = Instantiate(spinSwordPrefab, transform.position, Quaternion.identity);
-        sword.GetComponent<SkillObject_Sword>().SetupSword(this, canMove, swordSpeed);
+
+        SkillObject_Sword swordObject = sword.GetComponent<SkillObject_Sword>();
+        swordObject.SetupSword(this);
+
+        Vector2 launchDirection = GetFacingDirection();
+        swordObject.LaunchForward(launchDirection, swordSpeed);
     }
 
-    
+
 
     private void ForceCooldown()
     {

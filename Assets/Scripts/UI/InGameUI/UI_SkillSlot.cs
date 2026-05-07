@@ -127,8 +127,14 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public bool Accepts(Skill_DataSO data)
     {
         if (data == null) return false;
+
+        // Do not allow Dash to appear in in-game skill slots
+        if (data.skillType == SkillType.Dash)
+            return false;
+
         if (slotCategory == UISkillCategory.Combat && data.category != SkillCategory.Combat) return false;
         if (slotCategory == UISkillCategory.Sex && data.category != SkillCategory.Sex) return false;
+
         return true;
     }
 

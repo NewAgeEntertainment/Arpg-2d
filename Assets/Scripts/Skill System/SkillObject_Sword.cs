@@ -1,50 +1,48 @@
-
 using UnityEngine;
 
 public class SkillObject_Sword : SkillObject_Base
 {
-    protected Skill_Sword swordmanager;
     private Transform target;
     private float speed;
+
     public Transform playerTransform { get; private set; }
+
     private Skill_Sword swordManager;
 
     private int maxDistance;
     private float attacksPerSecond;
     private float attackTimer;
 
-    protected bool shouldComeback;
-    protected float comebackSpeed = 20;
-    protected float maxAllowedDistance = 25;
+    private bool isLaunchedForward;
+    private Vector2 launchDirection;
 
     protected virtual void Update()
     {
-        //transform.right = rb.linearVelocity;
-        //HandleComeback();
-
-        if (target == null)
+        if (playerTransform == null)
             return;
 
-        transform.position = Vector2.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+        if (target != null)
+        {
+            transform.position = Vector2.MoveTowards(
+                transform.position,
+                target.position,
+                speed * Time.deltaTime
+            );
+        }
+        else if (isLaunchedForward)
+        {
+            transform.position += (Vector3)(launchDirection * speed * Time.deltaTime);
+        }
 
         HandleAttack();
         HandleStopping();
-        HandleComeback();
-    }
-
-
-
-
-    public void MoveTowardsClosestTarget(float speed)
-    {
-        target = FindClosestTarget();
-        this.speed = speed;
     }
 
     public void SetupSword(Skill_Sword swordManager)
     {
         this.swordManager = swordManager;
 
+        playerTransform = swordManager.player.transform;
         playerStats = swordManager.player.stats;
         damageScaleData = swordManager.damageScaleData;
 
@@ -52,67 +50,43 @@ public class SkillObject_Sword : SkillObject_Base
 
         maxDistance = swordManager.maxDistance;
         attacksPerSecond = swordManager.attacksPerSecond;
-
-        Invoke(nameof(GetSwordBackToPlayer), swordManager.maxSpinDuration);
-        
-
     }
 
-    public void SetupSword(Skill_Sword swordManager, bool canMove, float swordSpeed)
+    public void LaunchForward(Vector2 direction, float launchSpeed)
     {
-        this.swordManager = swordManager;
-        playerStats = swordManager.player.stats;
-        damageScaleData = swordManager.damageScaleData;
-        
-        anim?.SetTrigger("spin");
+        target = null;
 
-        maxDistance = swordManager.maxDistance;
-        attacksPerSecond = swordManager.attacksPerSecond;
+        isLaunchedForward = true;
+        launchDirection = direction.normalized;
+        speed = launchSpeed;
 
-        Invoke(nameof(GetSwordBackToPlayer), swordManager.maxSpinDuration);
+        if (launchDirection.sqrMagnitude < 0.01f)
+            launchDirection = Vector2.right;
 
-
-
-       
+        transform.right = launchDirection;
     }
 
-
-    public void GetSwordBackToPlayer() => shouldComeback = true;
-
-    protected void HandleComeback()
+    public void MoveTowardsClosestTarget(float speed)
     {
-        float distance = Vector2.Distance(transform.position, playerTransform.position);
+        target = FindClosestTarget();
+        this.speed = speed;
 
-        if (distance > maxAllowedDistance)
-            GetSwordBackToPlayer();
-
-        if (shouldComeback == false)
-            return;
-
-        transform.position = Vector2.MoveTowards(transform.position, playerTransform.position, comebackSpeed * Time.deltaTime);
-
-        if (distance < .5f)
-            Destroy(gameObject);
+        isLaunchedForward = false;
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
-        StopSword(collision);
         DamageEnemiesInRadius(transform, 1);
-    }
-
-    protected void StopSword(Collider2D collision)
-    {
-        rb.simulated = false;
-        transform.parent = collision.transform;
     }
 
     private void HandleStopping()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        if (distanceToPlayer > maxDistance && rb.simulated == true)
-            rb.simulated = false;
+        if (distanceToPlayer >= maxDistance)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void HandleAttack()
@@ -125,6 +99,4 @@ public class SkillObject_Sword : SkillObject_Base
             attackTimer = 1 / attacksPerSecond;
         }
     }
-
-    
 }

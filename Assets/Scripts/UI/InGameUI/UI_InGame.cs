@@ -616,6 +616,9 @@ public class UI_InGame : MonoBehaviour
         if (data == null) return;
         if (data.category != SkillCategory.Combat) return;
 
+        // Dash should unlock normally, but not appear in the in-game skill slots
+        if (data.skillType == SkillType.Dash) return;
+
         if (FindSlotByType(type) != null) return;
 
         if (preferDefaults && defaultAssignments != null)
@@ -664,6 +667,9 @@ public class UI_InGame : MonoBehaviour
     {
         if (data == null || data.category != SkillCategory.Combat) return;
 
+        // Do not show Dash on the in-game skill hotbar
+        if (data.skillType == SkillType.Dash) return;
+
         var dupe = FindSlotByType(data.skillType);
         if (dupe != null && dupe.slotId != id)
             dupe.ClearSlot();
@@ -698,6 +704,9 @@ public class UI_InGame : MonoBehaviour
         {
             if (def.skill == null || def.skill.category != SkillCategory.Combat) continue;
 
+            // Skip Dash default assignment
+            if (def.skill.skillType == SkillType.Dash) continue;
+
             var runtime = player.skillManager.GetSkillByType(def.skill.skillType);
             if (runtime == null || !runtime.IsUnlocked()) continue;
 
@@ -722,6 +731,9 @@ public class UI_InGame : MonoBehaviour
         {
             if (n == null || !n.isUnlocked || n.skillData == null) continue;
             if (n.skillData.category != SkillCategory.Combat) continue;
+
+            // Do not auto-fill Dash into combat hotbar
+            if (n.skillData.skillType == SkillType.Dash) continue;
 
             if (FindSlotByType(n.skillData.skillType) != null) continue;
 

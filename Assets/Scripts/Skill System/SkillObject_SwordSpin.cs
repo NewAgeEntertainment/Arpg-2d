@@ -15,14 +15,14 @@ public class SkillObject_SwordSpin : SkillObject_Sword
         maxDistance = swordManager.maxDistance;
         attacksPerSecond = swordManager.attacksPerSecond;
 
-        Invoke(nameof(GetSwordBackToPlayer), swordManager.maxSpinDuration);
+        
     }
 
     protected override void Update()
     {
         HandleAttack();
         HandleStopping();
-        HandleComeback();
+        
     }
 
     private void HandleStopping()

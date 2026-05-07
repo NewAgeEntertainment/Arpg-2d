@@ -473,24 +473,28 @@ MonoBehaviour:
   storageRef: {fileID: 0}
   equipList:
   - slotType: 1
+    acceptedItemType: 0
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
       instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 2
+    acceptedItemType: 0
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
       instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 3
+    acceptedItemType: 0
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
       instanceModifiers: []
       itemEffect: {fileID: 0}
   - slotType: 3
+    acceptedItemType: 0
     equipedItem:
       itemData: {fileID: 0}
       stackSize: 0
@@ -686,8 +690,8 @@ MonoBehaviour:
   Bio: sdhfjhaljfhsjldfksajhfjkasdhfjshfkjsahdfkjshdfkjahsdfkjhsdjfhksdjfhkjdshfkjhsdlkj;sdflkjdf;kgjlk;
   moveSpeed: 7
   jumpForce: 0
-  dashDuration: 0.2
-  dashSpeed: 10
+  dashDuration: 0.22
+  dashSpeed: 20
   ThrustDuration: 1
   ThrustSpeed: 5
   thrustTargetCheck: {fileID: 0}
@@ -748,7 +752,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deepBreathData: {fileID: 11400000, guid: e41840111e853d443aa7171e2534874a, type: 2}
   stats: {fileID: 875733981393590875}
+  levelUnlockSkills: []
+  checkLevelUnlocksOnStart: 1
+  verboseLevelUnlockLogs: 1
   deepBreathOverride: {fileID: 3156779666245849974}
+  rewiredPlayerId: 0
+  useRewiredSlotInput: 1
+  blockWhenGameplayInputDisabled: 1
+  slotAKey: 99
+  slotBKey: 118
+  slotCKey: 98
+  slotDKey: 110
+  slotAAction: 
+  slotBAction: 
+  slotCAction: 
+  slotDAction: 
   createDeepBreathIfMissingAtRuntime: 1
   autoUnlockDeepBreathIfDataMissing: 1
   verboseLogs: 1
@@ -844,7 +862,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.45881164, y: -0.025252104}
+  m_Offset: {x: 0.48695707, y: 0.13155901}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -855,7 +873,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.46342587, y: 0.49156475}
+  m_Size: {x: 0.51971674, y: 0.45135665}
   m_EdgeRadius: 0
 --- !u!114 &7274584616826402989
 MonoBehaviour:
@@ -1242,7 +1260,7 @@ MonoBehaviour:
   upgradeType: 0
   cooldown: 3
   manaCost: 0
-  unlockedByDefault: 1
+  unlockedByDefault: 0
 --- !u!114 &7563797542631961709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1298,15 +1316,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skillType: 4
-  upgradeType: 11
+  upgradeType: 12
   cooldown: 0
   manaCost: 0
   unlockedByDefault: 0
   spinSwordPrefab: {fileID: 875279385106085006, guid: 43769973bbf735a4db85f9e28f18c0c9, type: 3}
-  maxDistance: 5
+  maxDistance: 12
   attacksPerSecond: 6
-  maxSpinDuration: 3
-  swordSpeed: 7
+  maxSpinDuration: 3.16
+  swordSpeed: 7.06
   maxCharges: 3
   currentCharges: 0
   isRecharging: 0
@@ -1355,7 +1373,7 @@ Transform:
   m_GameObject: {fileID: 4160842013960847396}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.473, y: 0.317, z: 0}
+  m_LocalPosition: {x: 0.491, y: 0.487, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1641,8 +1659,8 @@ Transform:
   m_GameObject: {fileID: 5320716971898786402}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.46, y: -0.2264, z: 0}
-  m_LocalScale: {x: 1.4, y: 1.4, z: 1}
+  m_LocalPosition: {x: 0.493, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5852501936329725365}
@@ -1688,7 +1706,7 @@ SpriteRenderer:
   m_SortingLayerID: 1831899741
   m_SortingLayer: 4
   m_SortingOrder: 0
-  m_Sprite: {fileID: -576060490, guid: 4a22c8c98fa544347b1efa2cb7949657, type: 3}
+  m_Sprite: {fileID: 405032893, guid: 456573fb778d6194fa2ed0db97db5ff3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

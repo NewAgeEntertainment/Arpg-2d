@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class UI_TreeNode : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler,
@@ -22,6 +23,7 @@ public class UI_TreeNode : MonoBehaviour,
     [SerializeField] private string skillName;
     [SerializeField] private Image skillIcon;
     [SerializeField] private int skillCost;
+    [SerializeField] private TextMeshProUGUI requiredLevelText;
 
     [Header("Colors")]
     [SerializeField] private string lockedColorHex = "#9F9797";
@@ -46,6 +48,9 @@ public class UI_TreeNode : MonoBehaviour,
 
     private void Start()
     {
+        EnsureWired();
+        RefreshRequiredLevelText();
+
         // Start with locked visuals if not unlocked yet
         if (isUnlocked == false)
             UpdateIconColor(LockedColor());
@@ -129,6 +134,28 @@ public class UI_TreeNode : MonoBehaviour,
         }
 
         return true;
+    }
+
+    private void RefreshRequiredLevelText()
+    {
+        if (requiredLevelText == null)
+            return;
+
+        if (skillData == null)
+        {
+            requiredLevelText.text = "";
+            return;
+        }
+
+        int requiredLevel = Mathf.Max(1, skillData.requiredLevel);
+
+        if (requiredLevel <= 1)
+        {
+            requiredLevelText.text = "";
+            return;
+        }
+
+        requiredLevelText.text = requiredLevel.ToString();
     }
 
     private void LockConflictNodes()
@@ -268,7 +295,7 @@ public class UI_TreeNode : MonoBehaviour,
 
         if (ui != null && ui.skillToolTip != null)
         {
-            ui.skillToolTip.ShowToolTip(false, rect);
+            ui.skillToolTip.ShowToolTip(false, null);
             ui.skillToolTip.StopLockedSkillEffect();
         }
 
@@ -313,9 +340,26 @@ public class UI_TreeNode : MonoBehaviour,
         if (skillData != null)
         {
             skillName = skillData.displayName;
-            if (skillIcon != null) skillIcon.sprite = skillData.icon;
+
+            if (skillIcon != null)
+                skillIcon.sprite = skillData.icon;
+
             skillCost = skillData.cost;
+
+            RefreshRequiredLevelText();
+
             gameObject.name = "UI_TreeNode - " + skillData.displayName;
+        }
+        else
+        {
+            skillName = "";
+            skillCost = 0;
+
+            if (skillIcon != null)
+                skillIcon.sprite = null;
+
+            if (requiredLevelText != null)
+                requiredLevelText.text = "";
         }
     }
 }

@@ -27,7 +27,13 @@ public class Player_DashState : PlayerState
 
         base.Enter();
 
+        // -------------------------------------------------------
+        // DASH DIRECTION
+        // -------------------------------------------------------
+        // Use current movement input first.
+        // This allows: attack -> hold direction -> dash immediately that way.
         Vector2 rawInput = Vector2.zero;
+
         if (rPlayer != null && ReInput.isReady)
         {
             float x = rPlayer.GetAxisRaw("Horizontal");
@@ -39,32 +45,20 @@ public class Player_DashState : PlayerState
             ? player.lastMoveDirection.normalized
             : Vector2.down;
 
-        Vector2 dash;
-        const float inputDeadzoneSq = 0.1f * 0.1f;
-
-        if (rawInput.sqrMagnitude > inputDeadzoneSq)
-        {
-            Vector2 inDir = rawInput.normalized;
-            float dot = Vector2.Dot(inDir, face);
-
-            if (dot < -0.5f)
-                dash = -face;
-            else
-                dash = inDir;
-        }
+        if (rawInput.sqrMagnitude > 0.01f)
+            dashDir = rawInput.normalized;
         else
-        {
-            dash = face;
-        }
+            dashDir = face;
 
-        if (dash.sqrMagnitude < 0.0001f)
-            dash = Vector2.down;
-
-        dashDir = dash.normalized;
+        if (dashDir.sqrMagnitude < 0.0001f)
+            dashDir = Vector2.down;
 
         player.lastMoveDirection = dashDir;
         player.currentDir = dashDir;
 
+        // -------------------------------------------------------
+        // DASH SKILL CHECK
+        // -------------------------------------------------------
         if (skillManager == null || skillManager.dash == null)
         {
             Debug.LogWarning("[Dash] No dash skill found on Player_SkillManager.");
@@ -85,22 +79,20 @@ public class Player_DashState : PlayerState
             return;
         }
 
+        // -------------------------------------------------------
+        // DASH START
+        // -------------------------------------------------------
         float duration = player.dashDuration;
+
         (player.health as Player_Health)?.GrantInvulnerabilityFor("Dash", duration + 0.05f);
 
         skillManager.dash.OnStartEffect();
 
-        // 🔊 Play dash sound here
         PlayDashSfx();
 
         stateTimer = duration;
 
-        if (anim != null)
-        {
-            Vector2 n = dashDir.sqrMagnitude > 0.0001f ? dashDir.normalized : face;
-            anim.SetFloat("xInput", Mathf.Round(n.x));
-            anim.SetFloat("yInput", Mathf.Round(n.y));
-        }
+        UpdateDashAnimFacing();
     }
 
     public override void Update()
@@ -108,24 +100,23 @@ public class Player_DashState : PlayerState
         if (IsPlayerDead())
         {
             (player.health as Player_Health)?.RemoveInvulnerability("Dash");
+
             if (skillManager != null && skillManager.dash != null)
                 skillManager.dash.OnEndEffect();
 
             player.SetVelocity(0f, 0f);
+            stateMachine.ChangeState(player.idleState);
             return;
         }
 
         stateTimer -= Time.deltaTime;
-        UpdateAnimationParameters();
 
-        player.SetVelocity(player.dashSpeed * dashDir.x, player.dashSpeed * dashDir.y);
+        player.SetVelocity(
+            player.dashSpeed * dashDir.x,
+            player.dashSpeed * dashDir.y
+        );
 
-        if (anim != null)
-        {
-            Vector2 n = dashDir.sqrMagnitude > 0.0001f ? dashDir.normalized : player.lastMoveDirection;
-            anim.SetFloat("xInput", Mathf.Round(n.x));
-            anim.SetFloat("yInput", Mathf.Round(n.y));
-        }
+        UpdateDashAnimFacing();
 
         if (stateTimer <= 0f)
             stateMachine.ChangeState(player.idleState);
@@ -136,6 +127,7 @@ public class Player_DashState : PlayerState
         base.Exit();
 
         (player.health as Player_Health)?.RemoveInvulnerability("Dash");
+
         if (skillManager != null && skillManager.dash != null)
             skillManager.dash.OnEndEffect();
 
@@ -152,9 +144,16 @@ public class Player_DashState : PlayerState
 
     private void UpdateDashAnimFacing()
     {
-        if (anim == null) return;
+        if (anim == null)
+            return;
 
-        Vector2 n = dashDir.sqrMagnitude > 0.0001f ? dashDir.normalized : player.lastMoveDirection;
+        Vector2 n = dashDir.sqrMagnitude > 0.0001f
+            ? dashDir.normalized
+            : player.lastMoveDirection;
+
+        if (n.sqrMagnitude < 0.0001f)
+            n = Vector2.down;
+
         anim.SetFloat("xInput", Mathf.Round(n.x));
         anim.SetFloat("yInput", Mathf.Round(n.y));
     }

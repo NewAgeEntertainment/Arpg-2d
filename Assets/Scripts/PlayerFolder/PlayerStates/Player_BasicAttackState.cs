@@ -22,6 +22,7 @@ public class Player_BasicAttackState : PlayerState
 
     // ---- Input (Rewired) ----
     private const string AttackActionName = "Attack";
+    private const string DashActionName = "Dash";
 
     // ---- Lunge tuning ----
     private const float lungeDuration = 0.10f;
@@ -140,11 +141,15 @@ public class Player_BasicAttackState : PlayerState
     {
         base.Update();
 
+        // Let player cancel attack into dash immediately.
+        if (TryDashCancel())
+            return;
+
         HandleAttackVelocity();
 
         if (rPlayer != null && ReInput.isReady)
         {
-            // NEW: while holding SkillModifier, do not allow basic attack chaining/queueing
+            // While holding SkillModifier, do not allow basic attack chaining/queueing
             if (rPlayer.GetButton(SkillModifierActionName))
                 return;
 
@@ -153,9 +158,26 @@ public class Player_BasicAttackState : PlayerState
                 TryQueueNextAttack();
         }
 
-
         if (triggerCalled)
             HandleStateExit();
+    }
+
+    private bool TryDashCancel()
+    {
+        if (rPlayer == null || !ReInput.isReady)
+            return false;
+
+        if (!rPlayer.GetButtonDown(DashActionName))
+            return false;
+
+        if (player == null || player.skillManager == null || player.skillManager.dash == null)
+            return false;
+
+        if (!player.skillManager.dash.CanUseSkillCheck(out _))
+            return false;
+
+        stateMachine.ChangeState(player.dashState);
+        return true;
     }
 
     public override void Exit()

@@ -16,6 +16,14 @@ public class Player_SkillManager : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private Player_Stats stats;
 
+    [Header("Level Unlock Skills")]
+    [SerializeField] private Skill_DataSO[] levelUnlockSkills;
+
+    [Tooltip("If true, checks current level on Start and unlocks anything already earned.")]
+    [SerializeField] private bool checkLevelUnlocksOnStart = true;
+
+    [SerializeField] private bool verboseLevelUnlockLogs = true;
+
     [Header("Overrides (optional)")]
     [Tooltip("If set, this explicit reference will be used instead of auto-finding/creating.")]
     [SerializeField] private SexSkill_DeepBreath deepBreathOverride;
@@ -81,6 +89,11 @@ public class Player_SkillManager : MonoBehaviour
     private void Start()
     {
         InitializeDeepBreathFromData();
+
+        SubscribeToLevelEvents();
+
+        if (checkLevelUnlocksOnStart)
+            CheckLevelBasedSkillUnlocks();
     }
 
     private void Update()
@@ -101,6 +114,11 @@ public class Player_SkillManager : MonoBehaviour
                 Debug.LogError($"[SkillManager] Unknown skill type: {skillType}");
                 return null;
         }
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeFromLevelEvents();
     }
 
     public float CalculateSkillDamage(Skill_DataSO skillData)
@@ -157,6 +175,78 @@ public class Player_SkillManager : MonoBehaviour
 
         return false;
     }
+
+    private void SubscribeToLevelEvents()
+    {
+        if (stats == null)
+            stats = GetComponentInParent<Player_Stats>();
+
+        if (stats == null)
+            return;
+
+        stats.OnLevelChanged -= OnPlayerLevelChanged;
+        stats.OnLevelChanged += OnPlayerLevelChanged;
+    }
+
+    private void UnsubscribeFromLevelEvents()
+    {
+        if (stats != null)
+            stats.OnLevelChanged -= OnPlayerLevelChanged;
+    }
+
+    private void OnPlayerLevelChanged(int newLevel)
+    {
+        CheckLevelBasedSkillUnlocks();
+    }
+
+    private void CheckLevelBasedSkillUnlocks()
+    {
+        if (stats == null)
+            stats = GetComponentInParent<Player_Stats>();
+
+        if (stats == null)
+            return;
+
+        if (levelUnlockSkills == null || levelUnlockSkills.Length == 0)
+            return;
+
+        int currentLevel = stats.CurrentLevel;
+
+        foreach (Skill_DataSO skillData in levelUnlockSkills)
+        {
+            TryUnlockSkillByLevel(skillData, currentLevel);
+        }
+    }
+
+    private void TryUnlockSkillByLevel(Skill_DataSO skillData, int currentLevel)
+    {
+        if (skillData == null)
+            return;
+
+        if (skillData.unlockedByDefault)
+            return;
+
+        if (currentLevel < skillData.requiredLevel)
+            return;
+
+        Skill_Base runtimeSkill = GetSkillByType(skillData.skillType);
+
+        if (runtimeSkill == null)
+        {
+            Debug.LogWarning($"[SkillManager] Cannot unlock {skillData.displayName}. Runtime skill missing for type: {skillData.skillType}");
+            return;
+        }
+
+        if (runtimeSkill.IsUnlocked())
+            return;
+
+        runtimeSkill.SetSkillUpgrade(skillData);
+
+        if (verboseLevelUnlockLogs)
+            Debug.Log($"[SkillManager] Unlocked {skillData.displayName} at level {currentLevel}.");
+    }
+
+
 
     public void EnsureInitialized()
     {
