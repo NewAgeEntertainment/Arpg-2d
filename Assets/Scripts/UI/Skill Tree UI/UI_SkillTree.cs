@@ -426,9 +426,13 @@ public class UI_SkillTree : UI_Panel
 
     private void ConfirmSkillUnlock()
     {
+        Debug.Log("[SkillTree] ConfirmSkillUnlock was clicked.");
+
         if (pendingSkillNode != null && pendingSkillNode.skillData != null)
         {
             Skill_DataSO skillData = pendingSkillNode.skillData;
+
+            Debug.Log($"[SkillTree] Trying to unlock: {skillData.displayName}, SkillType: {skillData.skillType}, UpgradeType: {skillData.upgradeData.upgradeType}");
 
             Player player = FindFirstObjectByType<Player>();
             Player_Stats stats = player != null ? player.stats : null;
@@ -458,6 +462,8 @@ public class UI_SkillTree : UI_Panel
             {
                 if (EnoughSkillPoints(cost))
                 {
+                    Debug.Log($"[SkillTree] Enough points. Unlocking {skillData.displayName}.");
+
                     RemoveSkillPoints(cost);
                     pendingSkillNode.ForceUnlock();
                 }
@@ -470,6 +476,8 @@ public class UI_SkillTree : UI_Panel
             {
                 if (EnoughSexSkillPoints(cost))
                 {
+                    Debug.Log($"[SkillTree] Enough sex points. Unlocking {skillData.displayName}.");
+
                     RemoveSexSkillPoints(cost);
                     pendingSkillNode.ForceUnlock();
                 }
@@ -480,6 +488,10 @@ public class UI_SkillTree : UI_Panel
             }
 
             UpdateAllConnections();
+        }
+        else
+        {
+            Debug.LogWarning("[SkillTree] pendingSkillNode or skillData is null.");
         }
 
         CloseConfirmationPopup();

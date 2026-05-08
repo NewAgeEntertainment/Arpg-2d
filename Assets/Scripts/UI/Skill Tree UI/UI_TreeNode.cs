@@ -70,12 +70,7 @@ public class UI_TreeNode : MonoBehaviour,
             UpdateIconColor(Color.white);
             connectHandler?.UnlockConnectionImage(true);
 
-            // Apply the skill’s upgrade to gameplay/UI
-            if (skillTree != null && skillTree.skillManager != null)
-            {
-                var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
-                if (skill != null) skill.SetSkillUpgrade(skillData);
-            }
+            ApplySkillUpgradeToRuntime();
         }
     }
 
@@ -237,8 +232,23 @@ public class UI_TreeNode : MonoBehaviour,
     {
         EnsureWired();
 
-        if (skillData == null) return;
-        if (isUnlocked) return;
+        Debug.Log($"[TreeNode] ForceUnlock called on {name}");
+
+        if (skillData == null)
+        {
+            Debug.LogWarning("[TreeNode] skillData is null.");
+            return;
+        }
+
+        Debug.Log($"[TreeNode] SkillData: {skillData.displayName}, SkillType: {skillData.skillType}, UpgradeType: {skillData.upgradeData.upgradeType}");
+
+        ApplySkillUpgradeToRuntime();
+
+        if (isUnlocked)
+        {
+            Debug.Log($"[TreeNode] {skillData.displayName} was already visually unlocked.");
+            return;
+        }
 
         isUnlocked = true;
         isLocked = false;
@@ -248,14 +258,59 @@ public class UI_TreeNode : MonoBehaviour,
 
         LockConflictNodes();
 
-        if (skillTree != null && skillTree.skillManager != null)
+        Debug.Log($"[TreeNode] {skillData.displayName} visual unlock complete.");
+    }
+
+    private void ApplySkillUpgradeToRuntime()
+    {
+        Debug.Log($"[TreeNode] ApplySkillUpgradeToRuntime started for {skillData?.displayName}");
+
+        if (skillData == null)
         {
-            var skill = skillTree.skillManager.GetSkillByType(skillData.skillType);
-            if (skill != null)
-            {
-                skill.SetSkillUpgrade(skillData);
-            }
+            Debug.LogWarning("[TreeNode] Cannot apply upgrade. skillData is null.");
+            return;
         }
+
+        if (skillData.upgradeData == null)
+        {
+            Debug.LogWarning($"[TreeNode] Cannot apply {skillData.displayName}. upgradeData is null.");
+            return;
+        }
+
+        Player player = FindFirstObjectByType<Player>();
+
+        if (player == null)
+        {
+            Debug.LogWarning($"[TreeNode] Cannot apply {skillData.displayName}. Player not found.");
+            return;
+        }
+
+        Player_SkillManager manager = player.skillManager;
+
+        if (manager == null)
+        {
+            manager = FindFirstObjectByType<Player_SkillManager>();
+        }
+
+        if (manager == null)
+        {
+            Debug.LogWarning($"[TreeNode] Cannot apply {skillData.displayName}. Player_SkillManager not found.");
+            return;
+        }
+
+        Skill_Base runtimeSkill = manager.GetSkillByType(skillData.skillType);
+
+        if (runtimeSkill == null)
+        {
+            Debug.LogWarning($"[TreeNode] Cannot apply {skillData.displayName}. Runtime skill missing for {skillData.skillType}.");
+            return;
+        }
+
+        Debug.Log($"[TreeNode] Runtime skill found: {runtimeSkill.name}. Applying upgrade type: {skillData.upgradeData.upgradeType}");
+
+        runtimeSkill.SetSkillUpgrade(skillData);
+
+        Debug.Log($"[TreeNode] Applied runtime upgrade: {skillData.displayName} / {skillData.upgradeData.upgradeType}");
     }
 
     public void ForceLock()

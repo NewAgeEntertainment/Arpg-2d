@@ -205,6 +205,8 @@ public class Player_BasicAttackState : PlayerState
 
     private void HandleStateExit()
     {
+        TryFireAirPunch();
+
         bool canChain = comboIndex < comboLimit;
 
         if (canChain && comboAttackQueued)
@@ -217,6 +219,22 @@ public class Player_BasicAttackState : PlayerState
         {
             stateMachine.ChangeState(player.idleState);
         }
+    }
+
+    private void TryFireAirPunch()
+    {
+        if (player == null)
+            return;
+
+        if (player.skillManager == null)
+            return;
+
+        Skill_AirPunch airPunch = player.skillManager.airPunch;
+
+        if (airPunch == null)
+            return;
+
+        airPunch.TryCreateProjectile(lastAttackDir);
     }
 
     private void HandleAttackVelocity()

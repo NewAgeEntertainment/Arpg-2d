@@ -28,6 +28,11 @@ public class SkillObject_Sword : SkillObject_Base
                 target.position,
                 speed * Time.deltaTime
             );
+
+            Vector2 directionToEnemy = target.position - transform.position;
+
+            if (directionToEnemy.sqrMagnitude > 0.01f)
+                transform.right = directionToEnemy.normalized;
         }
         else if (isLaunchedForward)
         {
@@ -61,17 +66,49 @@ public class SkillObject_Sword : SkillObject_Base
         speed = launchSpeed;
 
         if (launchDirection.sqrMagnitude < 0.01f)
-            launchDirection = Vector2.right;
+            launchDirection = Vector2.down;
 
         transform.right = launchDirection;
     }
 
-    public void MoveTowardsClosestTarget(float speed)
+    public void LaunchToClosestEnemy(float launchSpeed)
     {
         target = FindClosestTarget();
-        this.speed = speed;
+        speed = launchSpeed;
 
         isLaunchedForward = false;
+
+        if (target == null)
+        {
+            Debug.Log("[Sword] No enemy found. Launching forward instead.");
+            LaunchForward(GetPlayerFacingDirection(), launchSpeed);
+            return;
+        }
+
+        Debug.Log("[Sword] Launching toward enemy: " + target.name);
+
+        Vector2 directionToEnemy = target.position - transform.position;
+
+        if (directionToEnemy.sqrMagnitude > 0.01f)
+            transform.right = directionToEnemy.normalized;
+    }
+
+    public void MoveTowardsClosestTarget(float speed)
+    {
+        LaunchToClosestEnemy(speed);
+    }
+
+    private Vector2 GetPlayerFacingDirection()
+    {
+        if (playerTransform == null)
+            return Vector2.down;
+
+        Player player = playerTransform.GetComponent<Player>();
+
+        if (player == null || player.lastMoveDirection.sqrMagnitude < 0.01f)
+            return Vector2.down;
+
+        return player.lastMoveDirection.normalized;
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
@@ -96,7 +133,7 @@ public class SkillObject_Sword : SkillObject_Base
         if (attackTimer < 0)
         {
             DamageEnemiesInRadius(transform, 1);
-            attackTimer = 1 / attacksPerSecond;
+            attackTimer = 1f / attacksPerSecond;
         }
     }
 }

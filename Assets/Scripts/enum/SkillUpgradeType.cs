@@ -28,5 +28,9 @@ public enum SkillUpgradeType
     Sword_Multicast, // create a time shard that casts 3 shards
     SwordThrow_Bounce, // Bounce sword will bounce between enemies
 
+    AirPunch,
+
+    RapidStroke,
+
     DeepBreath, // Deep Breath skill to heal the player
 }

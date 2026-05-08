@@ -6,8 +6,11 @@ public class Player_SkillManager : MonoBehaviour
     public Skill_Dash dash { get; private set; }
     public Skill_Thrust thrust { get; private set; }
     public SexSkill_DeepBreath deepBreath { get; private set; }
+    public SexSkill_RapidStroke rapidStroke { get; private set; }
     public Skill_Shard shard { get; private set; }
     public Skill_Sword swordSpin { get; private set; }
+
+    public Skill_AirPunch airPunch { get; private set; }
 
     [Header("Skill Data References")]
     [Tooltip("Skill_DataSO for Deep Breath (upgradeType must be DeepBreath).")]
@@ -68,6 +71,8 @@ public class Player_SkillManager : MonoBehaviour
         shard = SafeFind(shard);
         swordSpin = SafeFind(swordSpin);
         deepBreath = ResolveDeepBreath();
+        rapidStroke = SafeFind(rapidStroke);
+        airPunch = SafeFind(airPunch);
 
         player = GetComponent<Player>();
 
@@ -110,6 +115,8 @@ public class Player_SkillManager : MonoBehaviour
             case SkillType.TimeShard: return shard;
             case SkillType.SwordSpin: return swordSpin;
             case SkillType.DeepBreath: return deepBreath;
+            case SkillType.RapidStroke: return rapidStroke;
+            case SkillType.AirPunch: return airPunch;
             default:
                 Debug.LogError($"[SkillManager] Unknown skill type: {skillType}");
                 return null;
@@ -223,6 +230,12 @@ public class Player_SkillManager : MonoBehaviour
         if (skillData == null)
             return;
 
+        if (skillData.upgradeData == null)
+        {
+            Debug.LogWarning($"[SkillManager] {skillData.name} has no upgradeData.");
+            return;
+        }
+
         if (skillData.unlockedByDefault)
             return;
 
@@ -237,16 +250,55 @@ public class Player_SkillManager : MonoBehaviour
             return;
         }
 
-        if (runtimeSkill.IsUnlocked())
+        SkillUpgradeType newUpgradeType = skillData.upgradeData.upgradeType;
+
+        // Only skip if this exact upgrade is already active.
+        // Do NOT skip just because the skill already has SwordSpin.
+        if (runtimeSkill.Unlocked(newUpgradeType))
             return;
 
         runtimeSkill.SetSkillUpgrade(skillData);
 
         if (verboseLevelUnlockLogs)
-            Debug.Log($"[SkillManager] Unlocked {skillData.displayName} at level {currentLevel}.");
+            Debug.Log($"[SkillManager] Applied upgrade {newUpgradeType} from {skillData.displayName} at level {currentLevel}.");
     }
 
+    public bool ApplySkillUpgrade(Skill_DataSO skillData)
+    {
+        if (skillData == null)
+        {
+            Debug.LogWarning("[SkillManager] ApplySkillUpgrade failed: skillData is null.");
+            return false;
+        }
 
+        if (skillData.upgradeData == null)
+        {
+            Debug.LogWarning($"[SkillManager] ApplySkillUpgrade failed: {skillData.name} has no upgradeData.");
+            return false;
+        }
+
+        Skill_Base runtimeSkill = GetSkillByType(skillData.skillType);
+
+        if (runtimeSkill == null)
+        {
+            Debug.LogWarning($"[SkillManager] No runtime skill found for {skillData.skillType}.");
+            return false;
+        }
+
+        SkillUpgradeType newUpgradeType = skillData.upgradeData.upgradeType;
+
+        if (runtimeSkill.Unlocked(newUpgradeType))
+        {
+            Debug.Log($"[SkillManager] {newUpgradeType} is already applied.");
+            return true;
+        }
+
+        runtimeSkill.SetSkillUpgrade(skillData);
+
+        Debug.Log($"[SkillManager] Applied skill upgrade: {skillData.displayName} / {newUpgradeType}");
+
+        return true;
+    }
 
     public void EnsureInitialized()
     {
@@ -255,6 +307,8 @@ public class Player_SkillManager : MonoBehaviour
         shard = SafeFind(shard);
         swordSpin = SafeFind(swordSpin);
         deepBreath = ResolveDeepBreath();
+        rapidStroke = SafeFind(rapidStroke);
+        airPunch = SafeFind(airPunch);
 
         player = GetComponent<Player>();
 

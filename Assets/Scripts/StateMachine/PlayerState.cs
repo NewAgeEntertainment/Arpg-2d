@@ -59,9 +59,19 @@ public abstract class PlayerState : EntityState
         moveInput = new Vector2(x, y);
         player.moveInput = moveInput; // mirror for other systems/states
 
-        // Keep facing fresh when there is meaningful input
+        // Keep facing fresh when there is meaningful input.
+        // Locks facing to only up, down, left, or right.
         if (moveInput.sqrMagnitude > 0.0001f)
-            player.lastMoveDirection = moveInput.normalized;
+        {
+            if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+            {
+                player.lastMoveDirection = moveInput.x > 0 ? Vector2.right : Vector2.left;
+            }
+            else
+            {
+                player.lastMoveDirection = moveInput.y > 0 ? Vector2.up : Vector2.down;
+            }
+        }
 
         // ----- Standalone Dash (no modifier) -----
         if (rPlayer.GetButtonDown(DashAction))

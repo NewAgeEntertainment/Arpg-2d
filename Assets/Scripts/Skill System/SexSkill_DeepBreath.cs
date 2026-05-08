@@ -8,13 +8,15 @@ public class SexSkill_DeepBreath : Skill_Base
     protected override void Awake()
     {
         base.Awake();
+
         if (sexyTimeLogic == null)
             sexyTimeLogic = FindFirstObjectByType<SexyTimeLogic>(FindObjectsInactive.Include);
     }
 
     private bool ResolveSexyTimeLogic()
     {
-        if (sexyTimeLogic != null) return true;
+        if (sexyTimeLogic != null)
+            return true;
 
         if (SexyTimeLogic.Current != null)
         {
@@ -28,27 +30,57 @@ public class SexSkill_DeepBreath : Skill_Base
 
     public override void TryUseSkill()
     {
-        // ❌ Do NOT call CanUseSkill() here — it causes a startup delay tied to scene time.
-        if (!Unlocked(SkillUpgradeType.DeepBreath)) return;
+        if (!ResolveSexyTimeLogic())
+        {
+            Debug.LogWarning("[DeepBreath] Blocked: SexyTimeLogic not found.");
+            return;
+        }
 
-        if (!ResolveSexyTimeLogic()) return;
-        if (!SexyTimeLogic.isSexyTimeGoingOn) return;
+        if (!SexyTimeLogic.isSexyTimeGoingOn)
+        {
+            Debug.Log("[DeepBreath] Blocked: SexyTime is not active.");
+            return;
+        }
 
-        // Mini-game–scoped cooldown only
-        if (Time.time < sexyTimeLogic.deepBreatheTimestamp) return;
+        if (!unlocked && !Unlocked(SkillUpgradeType.DeepBreath))
+        {
+            Debug.Log("[DeepBreath] Blocked: skill is locked.");
+            return;
+        }
+
+        if (Time.time < sexyTimeLogic.deepBreatheTimestamp)
+        {
+            Debug.Log("[DeepBreath] Blocked: on SexyTime cooldown.");
+            return;
+        }
 
         var ui = sexyTimeLogic.UI;
-        if (ui == null) return;
 
-        // Apply bar drain now
-        float newPlayerVal = Mathf.Max(0f, ui.PlayerBarValue - sexyTimeLogic.DeepBreathDepleteAmount);
-        ui.UpdateBars(newPlayerVal, ui.PlayerBarMax, ui.PartnerBarValue, ui.PartnerBarMax);
+        if (ui == null)
+        {
+            Debug.LogWarning("[DeepBreath] Blocked: SexyTime UI missing.");
+            return;
+        }
 
-        // Start ONLY the mini-game cooldown
+        float oldPlayerValue = ui.PlayerBarValue;
+
+        float newPlayerValue = Mathf.Max(
+            0f,
+            ui.PlayerBarValue - sexyTimeLogic.DeepBreathDepleteAmount
+        );
+
+        ui.UpdateBars(
+            newPlayerValue,
+            ui.PlayerBarMax,
+            ui.PartnerBarValue,
+            ui.PartnerBarMax
+        );
+
         sexyTimeLogic.deepBreatheTimestamp = Time.time + sexyTimeLogic.deepBreatheCooldown;
         ui.StartDeepBreathCooldown(sexyTimeLogic.deepBreatheCooldown);
-    }
 
+        Debug.Log($"[DeepBreath] Used. Blue bar: {oldPlayerValue} -> {newPlayerValue}");
+    }
 
     public override void SetSkillUpgrade(Skill_DataSO skillData)
     {
@@ -60,7 +92,8 @@ public class SexSkill_DeepBreath : Skill_Base
 
         base.SetSkillUpgrade(skillData);
 
-        if (skillData.upgradeData != null && skillData.upgradeData.upgradeType == SkillUpgradeType.DeepBreath)
+        if (skillData.upgradeData != null &&
+            skillData.upgradeData.upgradeType == SkillUpgradeType.DeepBreath)
         {
             Unlock();
             Debug.Log("[DeepBreath] Unlocked via upgrade data.");
@@ -74,6 +107,13 @@ public class SexSkill_DeepBreath : Skill_Base
     public void Unlock()
     {
         unlocked = true;
+
+        // Important:
+        // Make the base Skill_Base upgrade check pass too.
+        upgradeType = SkillUpgradeType.DeepBreath;
+
+        SaveRuntimeSnapshot();
+
         Debug.Log("✅ SexSkill_DeepBreath unlocked.");
     }
 }

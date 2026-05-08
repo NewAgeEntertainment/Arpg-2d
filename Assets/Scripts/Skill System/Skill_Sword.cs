@@ -39,22 +39,26 @@ public class Skill_Sword : Skill_Base
 
     public override void TryUseSkill()
     {
-        // check is mana is enough.
-
-
         if (CanUseSkill() == false)
             return;
 
-        if (Unlocked(SkillUpgradeType.SwordSpin))
-            HandleSwordRegular();
+        if (Unlocked(SkillUpgradeType.Sword_Multicast))
+        {
+            HandleSwordMulticast();
+            return;
+        }
 
         if (Unlocked(SkillUpgradeType.Sword_MoveToEnemy))
-            HandleSharingMoving();
+        {
+            HandleSwordRegular();
+            return;
+        }
 
-        if (Unlocked(SkillUpgradeType.Sword_Multicast))
-            HandleSwordMulticast();
-
-        
+        if (Unlocked(SkillUpgradeType.SwordSpin))
+        {
+            HandleSwordRegular();
+            return;
+        }
     }
 
     private Vector2 GetPlayerFacingDirection()
@@ -97,15 +101,7 @@ public class Skill_Sword : Skill_Base
         isRecharging = false;
     }
 
-    private void HandleSharingMoving()
-    {
-        // move shard around player.
-
-        CreateSword();
-        currentSword.MoveTowardsClosestTarget(swordSpeed); //
-
-        SetSkillOnCooldown();
-    }
+    
 
     private void HandleSwordRegular()
     {
@@ -120,17 +116,26 @@ public class Skill_Sword : Skill_Base
         currentSword = sword.GetComponent<SkillObject_Sword>();
         currentSword.SetupSword(this);
 
-        Vector2 launchDirection = GetFacingDirection();
-        currentSword.LaunchForward(launchDirection, swordSpeed);
+        if (Unlocked(SkillUpgradeType.Sword_MoveToEnemy))
+        {
+            currentSword.LaunchToClosestEnemy(swordSpeed);
+        }
+        else
+        {
+            Vector2 launchDirection = GetFacingDirection();
+            currentSword.LaunchForward(launchDirection, swordSpeed);
+        }
     }
 
     private Vector2 GetFacingDirection()
     {
-        // If your player flips using localScale.x
-        if (player.transform.localScale.x < 0)
-            return Vector2.left;
+        if (player == null)
+            return Vector2.down;
 
-        return Vector2.right;
+        if (player.lastMoveDirection.sqrMagnitude < 0.01f)
+            return Vector2.down;
+
+        return player.lastMoveDirection.normalized;
     }
 
     public void CreateRawSword()
