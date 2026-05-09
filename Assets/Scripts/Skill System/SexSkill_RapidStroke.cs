@@ -30,6 +30,12 @@ public class SexSkill_RapidStroke : Skill_Base
             return;
         }
 
+        if (!logic.CanUseSexSkill())
+        {
+            Debug.Log("[RapidStroke] Blocked: sex skills are disabled.");
+            return;
+        }
+
         if (!CommitUse())
             return;
 

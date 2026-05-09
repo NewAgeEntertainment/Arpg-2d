@@ -3,7 +3,12 @@
 public class SexSkill_DeepBreath : Skill_Base
 {
     [SerializeField] private SexyTimeLogic sexyTimeLogic;
-    [SerializeField] private bool unlocked = false;
+
+    [Header("Deep Breath")]
+    [SerializeField] private float blueBarDecreaseAmount = 10f;
+
+    [Header("Audio")]
+    [SerializeField] private string deepBreathSfx = "SexDeepBreath";
 
     protected override void Awake()
     {
@@ -15,9 +20,6 @@ public class SexSkill_DeepBreath : Skill_Base
 
     private bool ResolveSexyTimeLogic()
     {
-        if (sexyTimeLogic != null)
-            return true;
-
         if (SexyTimeLogic.Current != null)
         {
             sexyTimeLogic = SexyTimeLogic.Current;
@@ -25,6 +27,7 @@ public class SexSkill_DeepBreath : Skill_Base
         }
 
         sexyTimeLogic = FindFirstObjectByType<SexyTimeLogic>(FindObjectsInactive.Include);
+
         return sexyTimeLogic != null;
     }
 
@@ -36,25 +39,13 @@ public class SexSkill_DeepBreath : Skill_Base
             return;
         }
 
-        if (!SexyTimeLogic.isSexyTimeGoingOn)
-        {
-            Debug.Log("[DeepBreath] Blocked: SexyTime is not active.");
+        if (!sexyTimeLogic.CanUseSexSkill())
             return;
-        }
 
-        if (!unlocked && !Unlocked(SkillUpgradeType.DeepBreath))
-        {
-            Debug.Log("[DeepBreath] Blocked: skill is locked.");
+        if (!IsUnlocked() && !Unlocked(SkillUpgradeType.DeepBreath))
             return;
-        }
 
-        if (Time.time < sexyTimeLogic.deepBreatheTimestamp)
-        {
-            Debug.Log("[DeepBreath] Blocked: on SexyTime cooldown.");
-            return;
-        }
-
-        var ui = sexyTimeLogic.UI;
+        SexyTimeUIController ui = sexyTimeLogic.UI;
 
         if (ui == null)
         {
@@ -62,24 +53,39 @@ public class SexSkill_DeepBreath : Skill_Base
             return;
         }
 
-        float oldPlayerValue = ui.PlayerBarValue;
+        float oldBlue = ui.PlayerBarValue;
+        float oldPink = ui.PartnerBarValue;
 
-        float newPlayerValue = Mathf.Max(
+        float newBlue = Mathf.Max(
             0f,
-            ui.PlayerBarValue - sexyTimeLogic.DeepBreathDepleteAmount
+            oldBlue - blueBarDecreaseAmount
         );
 
         ui.UpdateBars(
-            newPlayerValue,
+            newBlue,
             ui.PlayerBarMax,
-            ui.PartnerBarValue,
+            oldPink,
             ui.PartnerBarMax
         );
 
-        sexyTimeLogic.deepBreatheTimestamp = Time.time + sexyTimeLogic.deepBreatheCooldown;
-        ui.StartDeepBreathCooldown(sexyTimeLogic.deepBreatheCooldown);
+        sexyTimeLogic.CheckDialogueTriggersAfterBars(newBlue, oldPink);
 
-        Debug.Log($"[DeepBreath] Used. Blue bar: {oldPlayerValue} -> {newPlayerValue}");
+        PlayDeepBreathSfx();
+
+        SetSkillOnCooldown();
+
+        Debug.Log($"[DeepBreath] Used. Blue {oldBlue} -> {newBlue}");
+    }
+
+    private void PlayDeepBreathSfx()
+    {
+        if (AudioManager.instance == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(deepBreathSfx))
+            return;
+
+        AudioManager.instance.PlayGlobalSFX(deepBreathSfx);
     }
 
     public override void SetSkillUpgrade(Skill_DataSO skillData)
@@ -95,7 +101,6 @@ public class SexSkill_DeepBreath : Skill_Base
         if (skillData.upgradeData != null &&
             skillData.upgradeData.upgradeType == SkillUpgradeType.DeepBreath)
         {
-            Unlock();
             Debug.Log("[DeepBreath] Unlocked via upgrade data.");
         }
         else
@@ -106,14 +111,10 @@ public class SexSkill_DeepBreath : Skill_Base
 
     public void Unlock()
     {
-        unlocked = true;
-
-        // Important:
-        // Make the base Skill_Base upgrade check pass too.
+        ForceUnlock(true);
         upgradeType = SkillUpgradeType.DeepBreath;
-
         SaveRuntimeSnapshot();
 
-        Debug.Log("✅ SexSkill_DeepBreath unlocked.");
+        Debug.Log("✅ SexSkill_DeepBreath force-unlocked as DeepBreath.");
     }
 }

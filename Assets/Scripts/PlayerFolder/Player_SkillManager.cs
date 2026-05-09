@@ -37,17 +37,17 @@ public class Player_SkillManager : MonoBehaviour
     [SerializeField] private bool blockWhenGameplayInputDisabled = true;
     public int RewiredPlayerId => rewiredPlayerId;
 
-    [Header("Keyboard Fallback Per Slot")]
-    [SerializeField] private KeyCode slotAKey = KeyCode.Alpha1;
-    [SerializeField] private KeyCode slotBKey = KeyCode.Alpha2;
-    [SerializeField] private KeyCode slotCKey = KeyCode.Alpha3;
-    [SerializeField] private KeyCode slotDKey = KeyCode.Alpha4;
+    [SerializeField] private string keyboardSlotAAction = "KeyboardSkillSlotA";
+    [SerializeField] private string keyboardSlotBAction = "KeyboardSkillSlotB";
+    [SerializeField] private string keyboardSlotCAction = "KeyboardSkillSlotC";
+    [SerializeField] private string keyboardSlotDAction = "KeyboardSkillSlotD";
 
-    [Header("Rewired Action Per Slot")]
-    [SerializeField] private string slotAAction = "SkillSlotA";
-    [SerializeField] private string slotBAction = "SkillSlotB";
-    [SerializeField] private string slotCAction = "SkillSlotC";
-    [SerializeField] private string slotDAction = "SkillSlotD";
+    [SerializeField] private string controllerSlotAAction = "ControllerSkillSlotA";
+    [SerializeField] private string controllerSlotBAction = "ControllerSkillSlotB";
+    [SerializeField] private string controllerSlotCAction = "ControllerSkillSlotC";
+    [SerializeField] private string controllerSlotDAction = "ControllerSkillSlotD";
+
+    [SerializeField] private string skillModifierAction = "SkillModifier";
 
     [Header("Debug / Safety")]
     [Tooltip("Create 'Skill - Deep Breath' under the Player at runtime if missing.")]
@@ -320,41 +320,91 @@ public class Player_SkillManager : MonoBehaviour
 
     private void TryHandleAssignedSlotInput()
     {
-        if (blockWhenGameplayInputDisabled && player != null && !player.InputEnabled)
+        // Allow sex skills during SexyTime even if normal player input is disabled.
+        if (!SexyTimeLogic.isSexyTimeGoingOn &&
+            blockWhenGameplayInputDisabled &&
+            player != null &&
+            !player.InputEnabled)
+        {
             return;
+        }
 
-        TryUseAssignedSlot(UISkillSlotId.SlotA, slotAKey, slotAAction);
-        TryUseAssignedSlot(UISkillSlotId.SlotB, slotBKey, slotBAction);
-        TryUseAssignedSlot(UISkillSlotId.SlotC, slotCKey, slotCAction);
-        TryUseAssignedSlot(UISkillSlotId.SlotD, slotDKey, slotDAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotA, keyboardSlotAAction, controllerSlotAAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotB, keyboardSlotBAction, controllerSlotBAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotC, keyboardSlotCAction, controllerSlotCAction);
+        TryUseAssignedSlot(UISkillSlotId.SlotD, keyboardSlotDAction, controllerSlotDAction);
     }
 
-    private void TryUseAssignedSlot(UISkillSlotId slotId, KeyCode keyboardKey, string rewiredActionName)
+
+
+    private void TryUseAssignedSlot(
+    UISkillSlotId slotId,
+    string keyboardActionName,
+    string controllerActionName)
     {
         bool pressed = false;
 
-        if (keyboardKey != KeyCode.None && Input.GetKeyDown(keyboardKey))
+        if (rPlayer == null)
+            TryCacheRewired();
+
+        if (rPlayer == null)
+            return;
+
+        bool keyboardPressed =
+            !string.IsNullOrWhiteSpace(keyboardActionName) &&
+            rPlayer.GetButtonDown(keyboardActionName);
+
+        bool controllerPressed =
+            !string.IsNullOrWhiteSpace(controllerActionName) &&
+            rPlayer.GetButtonDown(controllerActionName);
+
+        bool modifierHeld =
+            !string.IsNullOrWhiteSpace(skillModifierAction) &&
+            rPlayer.GetButton(skillModifierAction);
+
+        if (SexyTimeLogic.isSexyTimeGoingOn)
+        {
+            //Debug.Log(
+            //    $"[SkillManager] SexyTime input check. Slot={slotId}, " +
+            //    $"KeyboardAction={keyboardActionName}, KeyboardPressed={keyboardPressed}, " +
+            //    $"ControllerAction={controllerActionName}, ControllerPressed={controllerPressed}, " +
+            //    $"ModifierHeld={modifierHeld}"
+            //);
+        }
+
+        // Keyboard direct skill use
+        if (keyboardPressed)
             pressed = true;
 
-        if (!pressed && useRewiredSlotInput && !string.IsNullOrWhiteSpace(rewiredActionName))
-        {
-            if (rPlayer == null)
-                TryCacheRewired();
-
-            if (rPlayer != null && rPlayer.GetButtonDown(rewiredActionName))
-                pressed = true;
-        }
+        // Controller modifier skill use
+        if (!pressed && modifierHeld && controllerPressed)
+            pressed = true;
 
         if (!pressed)
             return;
 
         UI_SkillSlot uiSlot = GetUISkillSlotById(slotId);
-        if (uiSlot == null || !uiSlot.HasSkill || uiSlot.Data == null)
+
+        if (uiSlot == null)
+        {
+            Debug.LogWarning($"[SkillManager] No UI slot found for {slotId}.");
+            return;
+        }
+
+        Debug.Log($"[SkillManager] Found slot {slotId}. HasSkill={uiSlot.HasSkill}, Data={(uiSlot.Data != null ? uiSlot.Data.displayName : "NULL")}");
+
+        if (!uiSlot.HasSkill || uiSlot.Data == null)
             return;
 
         Skill_Base runtimeSkill = GetSkillByType(uiSlot.Data.skillType);
+
         if (runtimeSkill == null)
+        {
+            Debug.LogWarning($"[SkillManager] Runtime skill missing for {uiSlot.Data.skillType}.");
             return;
+        }
+
+        Debug.Log($"[SkillManager] Trying to use skill: {uiSlot.Data.displayName}");
 
         switch (uiSlot.Data.skillType)
         {
@@ -367,17 +417,48 @@ public class Player_SkillManager : MonoBehaviour
                 runtimeSkill.TryUseSkill();
                 break;
         }
-
-        runtimeSkill.TryUseSkill();
     }
 
     private UI_SkillSlot GetUISkillSlotById(UISkillSlotId slotId)
     {
+        // During SexyTime, ONLY use the SexyTime hotbar.
+        if (SexyTimeLogic.isSexyTimeGoingOn)
+        {
+            SexyTimeUIController sexUI =
+                FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+
+            if (sexUI != null && sexUI.Hotbar != null && sexUI.Hotbar.Slots != null)
+            {
+                int index = SlotIdToIndex(slotId);
+
+                if (index >= 0 && index < sexUI.Hotbar.Slots.Length)
+                {
+                    UI_SkillSlot sexSlot = sexUI.Hotbar.Slots[index];
+
+                    Debug.Log(
+                        $"[SkillManager] SexyTime slot lookup. " +
+                        $"SlotId={slotId}, Index={index}, " +
+                        $"Slot={(sexSlot != null ? sexSlot.name : "NULL")}, " +
+                        $"HasSkill={(sexSlot != null && sexSlot.HasSkill)}, " +
+                        $"Data={(sexSlot != null && sexSlot.Data != null ? sexSlot.Data.displayName : "NULL")}"
+                    );
+
+                    return sexSlot;
+                }
+            }
+
+            Debug.LogWarning($"[SkillManager] SexyTime hotbar slot not found for {slotId}.");
+            return null;
+        }
+
+        // Normal gameplay hotbar.
         if (player == null || player.ui == null || player.ui.inGameUI == null)
             return null;
 
-        var slots = player.ui.inGameUI.GetComponentsInChildren<UI_SkillSlot>(true);
-        foreach (var slot in slots)
+        UI_SkillSlot[] normalSlots =
+            player.ui.inGameUI.GetComponentsInChildren<UI_SkillSlot>(true);
+
+        foreach (UI_SkillSlot slot in normalSlots)
         {
             if (slot != null && slot.slotId == slotId)
                 return slot;
@@ -385,6 +466,20 @@ public class Player_SkillManager : MonoBehaviour
 
         return null;
     }
+
+    private int SlotIdToIndex(UISkillSlotId slotId)
+    {
+        switch (slotId)
+        {
+            case UISkillSlotId.SlotA: return 0;
+            case UISkillSlotId.SlotB: return 1;
+            case UISkillSlotId.SlotC: return 2;
+            case UISkillSlotId.SlotD: return 3;
+            default: return -1;
+        }
+    }
+
+
 
     private void TryCacheRewired()
     {
@@ -398,17 +493,7 @@ public class Player_SkillManager : MonoBehaviour
         }
     }
 
-    public string GetRewiredActionNameForSlot(UISkillSlotId slotId)
-    {
-        switch (slotId)
-        {
-            case UISkillSlotId.SlotA: return slotAAction;
-            case UISkillSlotId.SlotB: return slotBAction;
-            case UISkillSlotId.SlotC: return slotCAction;
-            case UISkillSlotId.SlotD: return slotDAction;
-            default: return string.Empty;
-        }
-    }
+    
 
     private T SafeFind<T>(T existing) where T : Component
     {
@@ -442,6 +527,33 @@ public class Player_SkillManager : MonoBehaviour
 
         return null;
     }
+
+    public string GetKeyboardActionNameForSlot(UISkillSlotId slotId)
+    {
+        switch (slotId)
+        {
+            case UISkillSlotId.SlotA: return keyboardSlotAAction;
+            case UISkillSlotId.SlotB: return keyboardSlotBAction;
+            case UISkillSlotId.SlotC: return keyboardSlotCAction;
+            case UISkillSlotId.SlotD: return keyboardSlotDAction;
+            default: return string.Empty;
+        }
+    }
+
+    public string GetControllerActionNameForSlot(UISkillSlotId slotId)
+    {
+        switch (slotId)
+        {
+            case UISkillSlotId.SlotA: return controllerSlotAAction;
+            case UISkillSlotId.SlotB: return controllerSlotBAction;
+            case UISkillSlotId.SlotC: return controllerSlotCAction;
+            case UISkillSlotId.SlotD: return controllerSlotDAction;
+            default: return string.Empty;
+        }
+    }
+
+    public string SkillModifierActionName => skillModifierAction;
+
 
     private void InitializeDeepBreathFromData()
     {

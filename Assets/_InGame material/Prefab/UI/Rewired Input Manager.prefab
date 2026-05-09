@@ -668,9 +668,9 @@ MonoBehaviour:
       _userAssignable: 1
       _categoryId: 3
     - _id: 38
-      _name: SkillSlotA
+      _name: ControllerSkillSlotA
       _type: 1
-      _descriptiveName: SkillSlotA
+      _descriptiveName: ControllerSkillSlotA
       _positiveDescriptiveName: 
       _negativeDescriptiveName: 
       _key: 
@@ -680,9 +680,9 @@ MonoBehaviour:
       _userAssignable: 1
       _categoryId: 3
     - _id: 41
-      _name: SkillSlotB
+      _name: ControllerSkillSlotB
       _type: 1
-      _descriptiveName: SkillSlotB
+      _descriptiveName: ControllerSkillSlotB
       _positiveDescriptiveName: 
       _negativeDescriptiveName: 
       _key: 
@@ -692,9 +692,9 @@ MonoBehaviour:
       _userAssignable: 1
       _categoryId: 3
     - _id: 40
-      _name: SkillSlotC
+      _name: ControllerSkillSlotC
       _type: 1
-      _descriptiveName: SkillSlotC
+      _descriptiveName: ControllerSkillSlotC
       _positiveDescriptiveName: 
       _negativeDescriptiveName: 
       _key: 
@@ -704,9 +704,9 @@ MonoBehaviour:
       _userAssignable: 1
       _categoryId: 3
     - _id: 39
-      _name: SkillSlotD
+      _name: ControllerSkillSlotD
       _type: 1
-      _descriptiveName: SkillSlotD
+      _descriptiveName: ControllerSkillSlotD
       _positiveDescriptiveName: 
       _negativeDescriptiveName: 
       _key: 
@@ -787,6 +787,54 @@ MonoBehaviour:
       _behaviorId: 0
       _userAssignable: 1
       _categoryId: 1
+    - _id: 52
+      _name: KeyboardSkillSlotA
+      _type: 1
+      _descriptiveName: KeyboardSkillSlotA
+      _positiveDescriptiveName: 
+      _negativeDescriptiveName: 
+      _key: 
+      _positiveKey: 
+      _negativeKey: 
+      _behaviorId: 0
+      _userAssignable: 1
+      _categoryId: 3
+    - _id: 53
+      _name: KeyboardSkillSlotB
+      _type: 1
+      _descriptiveName: KeyboardSkillSlotB
+      _positiveDescriptiveName: 
+      _negativeDescriptiveName: 
+      _key: 
+      _positiveKey: 
+      _negativeKey: 
+      _behaviorId: 0
+      _userAssignable: 1
+      _categoryId: 3
+    - _id: 54
+      _name: KeyboardSkillSlotC
+      _type: 1
+      _descriptiveName: KeyboardSkillSlotC
+      _positiveDescriptiveName: 
+      _negativeDescriptiveName: 
+      _key: 
+      _positiveKey: 
+      _negativeKey: 
+      _behaviorId: 0
+      _userAssignable: 1
+      _categoryId: 3
+    - _id: 55
+      _name: KeyboardSkillSlotD
+      _type: 1
+      _descriptiveName: KeyboardSkillSlotD
+      _positiveDescriptiveName: 
+      _negativeDescriptiveName: 
+      _key: 
+      _positiveKey: 
+      _negativeKey: 
+      _behaviorId: 0
+      _userAssignable: 1
+      _categoryId: 3
     actionCategories:
     - _name: Default
       _descriptiveName: Default
@@ -813,7 +861,7 @@ MonoBehaviour:
       - categoryId: 1
         actionIds: 11000000120000003200000033000000
       - categoryId: 3
-        actionIds: 230000002400000000000000010000000200000003000000040000000500000008000000090000000a0000000b0000000c0000000d0000000e0000000f000000100000002b0000002c000000130000001400000015000000160000001700000018000000190000001a0000001b0000001c0000001d0000001f00000025000000260000002900000028000000270000002a000000300000002d0000002e000000
+        actionIds: 230000002400000000000000010000000200000003000000040000000500000008000000090000000a0000000b0000000c0000000d0000000e0000000f000000100000002b0000002c000000130000001400000015000000160000001700000018000000190000001a0000001b0000001c0000001d0000001f00000025000000260000002900000028000000270000002a000000300000002d0000002e00000034000000350000003600000037000000
     inputBehaviors:
     - _id: 0
       _name: Default
@@ -1253,7 +1301,7 @@ MonoBehaviour:
       - _actionCategoryId: 0
         _actionId: 38
         _elementType: 1
-        _elementIdentifierId: 16
+        _elementIdentifierId: 8
         _axisRange: 0
         _invert: 0
         _axisContribution: 0
@@ -1607,7 +1655,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 38
+        _actionId: 52
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1618,7 +1666,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 41
+        _actionId: 53
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1629,7 +1677,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 40
+        _actionId: 54
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1640,7 +1688,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 39
+        _actionId: 55
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1867,7 +1915,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 38
+        _actionId: 52
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1878,7 +1926,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 41
+        _actionId: 53
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1889,7 +1937,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 40
+        _actionId: 54
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -1900,7 +1948,7 @@ MonoBehaviour:
         _modifierKey2: 0
         _modifierKey3: 0
       - _actionCategoryId: 0
-        _actionId: 39
+        _actionId: 55
         _elementType: 1
         _elementIdentifierId: -1
         _axisRange: 0
@@ -2274,7 +2322,7 @@ MonoBehaviour:
       _tag: 
       _rules: []
     playerIdCounter: 2
-    actionIdCounter: 52
+    actionIdCounter: 56
     actionCategoryIdCounter: 4
     inputBehaviorIdCounter: 1
     mapCategoryIdCounter: 5

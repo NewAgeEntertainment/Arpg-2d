@@ -759,14 +759,15 @@ MonoBehaviour:
   rewiredPlayerId: 0
   useRewiredSlotInput: 1
   blockWhenGameplayInputDisabled: 1
-  slotAKey: 99
-  slotBKey: 118
-  slotCKey: 98
-  slotDKey: 110
-  slotAAction: SkillSlotA
-  slotBAction: SkillSlotB
-  slotCAction: SkillSlotC
-  slotDAction: SkillSlotD
+  keyboardSlotAAction: KeyboardSkillSlotA
+  keyboardSlotBAction: KeyboardSkillSlotB
+  keyboardSlotCAction: KeyboardSkillSlotC
+  keyboardSlotDAction: KeyboardSkillSlotD
+  controllerSlotAAction: ControllerSkillSlotA
+  controllerSlotBAction: ControllerSkillSlotB
+  controllerSlotCAction: ControllerSkillSlotC
+  controllerSlotDAction: ControllerSkillSlotD
+  skillModifierAction: SkillModifier
   createDeepBreathIfMissingAtRuntime: 1
   autoUnlockDeepBreathIfDataMissing: 1
   verboseLogs: 1
@@ -1348,7 +1349,8 @@ MonoBehaviour:
   manaCost: 0
   unlockedByDefault: 1
   sexyTimeLogic: {fileID: 0}
-  unlocked: 1
+  blueBarDecreaseAmount: 10
+  deepBreathSfx: SexDeepBreath
 --- !u!114 &7896844612355097347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1749,7 +1751,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
   m_SortingLayer: 4
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 405032893, guid: 456573fb778d6194fa2ed0db97db5ff3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

@@ -226,8 +226,7 @@ public class SexyTimeLogic : MonoBehaviour
         if (!isSexyTimeGoingOn && inputRouter != null && inputRouter.StartPressed())
             StartSexyTime();
 
-        if (debugDeepBreathKey != KeyCode.None && Input.GetKeyDown(debugDeepBreathKey))
-            CastDeepBreathe();
+        
 
         if (!isSexyTimeGoingOn) return;
 
@@ -364,7 +363,7 @@ public class SexyTimeLogic : MonoBehaviour
         ui.Show();
         ui.RefreshSexHotbarFromPlayer(skillManager, cachedPlayer != null ? cachedPlayer.mana : null);
 
-        skillManager?.EnsureDeepBreathReady(true);
+        
 
         if (snapObjectToCameraOnStart)
             SnapObjectToCamera();
@@ -426,6 +425,20 @@ public class SexyTimeLogic : MonoBehaviour
         return true;
     }
 
+    public bool CanUseSexSkill()
+    {
+        if (!isSexyTimeGoingOn)
+            return false;
+
+        if (cumReached)
+            return false;
+
+        if (shouldPause)
+            return false;
+
+        return true;
+    }
+
     public void ResetSexyTime()
     {
         GrantSexExpIfNeeded();
@@ -472,9 +485,6 @@ public class SexyTimeLogic : MonoBehaviour
     private void HandleInput()
     {
         if (inputRouter == null) return;
-
-        if (inputRouter.DeepBreathePressed())
-            CastDeepBreathe();
 
         if (inputRouter.PausePressed())
             stateMachine.PauseForDialogue();

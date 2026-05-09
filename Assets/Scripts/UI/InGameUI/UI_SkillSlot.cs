@@ -175,7 +175,6 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (inputKeyText == null)
             return;
 
-        // default/fallback
         string label = !string.IsNullOrWhiteSpace(fallbackLabel) ? fallbackLabel : inputKeyName;
 
         if (!useRewiredBindingLabel || manager == null)
@@ -184,35 +183,61 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             return;
         }
 
-        string actionName = manager.GetRewiredActionNameForSlot(slotId);
-        if (string.IsNullOrWhiteSpace(actionName))
+        string keyboardAction = manager.GetKeyboardActionNameForSlot(slotId);
+        string controllerAction = manager.GetControllerActionNameForSlot(slotId);
+        string modifierAction = manager.SkillModifierActionName;
+
+        string keyboardLabel = GetFirstBindingLabel(manager.RewiredPlayerId, keyboardAction);
+        string controllerLabel = GetFirstBindingLabel(manager.RewiredPlayerId, controllerAction);
+        string modifierLabel = GetFirstBindingLabel(manager.RewiredPlayerId, modifierAction);
+
+        if (!string.IsNullOrWhiteSpace(keyboardLabel) &&
+            !string.IsNullOrWhiteSpace(controllerLabel) &&
+            !string.IsNullOrWhiteSpace(modifierLabel))
         {
-            inputKeyText.text = label;
-            return;
+            label = $"{keyboardLabel} / {modifierLabel}+{controllerLabel}";
         }
-
-        try
+        else if (!string.IsNullOrWhiteSpace(keyboardLabel))
         {
-            var rewiredPlayer = ReInput.players.GetPlayer(manager.RewiredPlayerId);
-            if (rewiredPlayer == null)
-            {
-                inputKeyText.text = label;
-                return;
-            }
-
-            bool skipDisabledMaps = true;
-            var aem = rewiredPlayer.controllers.maps.GetFirstElementMapWithAction(actionName, skipDisabledMaps);
-
-            if (aem != null && !string.IsNullOrWhiteSpace(aem.elementIdentifierName))
-                label = aem.elementIdentifierName;
+            label = keyboardLabel;
         }
-        catch
+        else if (!string.IsNullOrWhiteSpace(controllerLabel) &&
+                 !string.IsNullOrWhiteSpace(modifierLabel))
         {
-            // keep fallback
+            label = $"{modifierLabel}+{controllerLabel}";
         }
 
         inputKeyText.text = label;
         inputKeyName = label;
+    }
+
+    private string GetFirstBindingLabel(int rewiredPlayerId, string actionName)
+    {
+        if (string.IsNullOrWhiteSpace(actionName))
+            return "";
+
+        try
+        {
+            var rewiredPlayer = ReInput.players.GetPlayer(rewiredPlayerId);
+
+            if (rewiredPlayer == null)
+                return "";
+
+            bool skipDisabledMaps = true;
+            var aem = rewiredPlayer.controllers.maps.GetFirstElementMapWithAction(
+                actionName,
+                skipDisabledMaps
+            );
+
+            if (aem != null && !string.IsNullOrWhiteSpace(aem.elementIdentifierName))
+                return aem.elementIdentifierName;
+        }
+        catch
+        {
+            return "";
+        }
+
+        return "";
     }
 
     public void RefreshVisuals(Player_SkillManager manager)

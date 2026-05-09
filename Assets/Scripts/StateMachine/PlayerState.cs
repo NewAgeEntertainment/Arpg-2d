@@ -22,6 +22,8 @@ public abstract class PlayerState : EntityState
     protected virtual string ThrustAction => "Thrust";
     protected virtual string ShardAction => "Shard";
 
+    protected virtual string SkillModifierAction => "SkillModifier";
+
     public PlayerState(Player player, StateMachine stateMachine, string animBoolName)
         : base(stateMachine, animBoolName)
     {
@@ -72,6 +74,9 @@ public abstract class PlayerState : EntityState
                 player.lastMoveDirection = moveInput.y > 0 ? Vector2.up : Vector2.down;
             }
         }
+
+        bool skillModifierHeld = rPlayer.GetButton(SkillModifierAction);
+
 
         // ----- Standalone Dash (no modifier) -----
         if (rPlayer.GetButtonDown(DashAction))
