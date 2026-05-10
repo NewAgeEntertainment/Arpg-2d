@@ -175,11 +175,14 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (inputKeyText == null)
             return;
 
-        string label = !string.IsNullOrWhiteSpace(fallbackLabel) ? fallbackLabel : inputKeyName;
+        string label = !string.IsNullOrWhiteSpace(fallbackLabel)
+            ? fallbackLabel
+            : inputKeyName;
 
         if (!useRewiredBindingLabel || manager == null)
         {
             inputKeyText.text = label;
+            inputKeyName = label;
             return;
         }
 
@@ -191,20 +194,26 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         string controllerLabel = GetFirstBindingLabel(manager.RewiredPlayerId, controllerAction);
         string modifierLabel = GetFirstBindingLabel(manager.RewiredPlayerId, modifierAction);
 
-        if (!string.IsNullOrWhiteSpace(keyboardLabel) &&
-            !string.IsNullOrWhiteSpace(controllerLabel) &&
-            !string.IsNullOrWhiteSpace(modifierLabel))
+        bool controllerMode =
+            InputDeviceModeManager.Instance != null &&
+            InputDeviceModeManager.Instance.IsController;
+
+        if (controllerMode)
         {
-            label = $"{keyboardLabel} / {modifierLabel}+{controllerLabel}";
+            if (!string.IsNullOrWhiteSpace(controllerLabel) &&
+                !string.IsNullOrWhiteSpace(modifierLabel))
+            {
+                label = $"{modifierLabel}+{controllerLabel}";
+            }
+            else if (!string.IsNullOrWhiteSpace(controllerLabel))
+            {
+                label = controllerLabel;
+            }
         }
-        else if (!string.IsNullOrWhiteSpace(keyboardLabel))
+        else
         {
-            label = keyboardLabel;
-        }
-        else if (!string.IsNullOrWhiteSpace(controllerLabel) &&
-                 !string.IsNullOrWhiteSpace(modifierLabel))
-        {
-            label = $"{modifierLabel}+{controllerLabel}";
+            if (!string.IsNullOrWhiteSpace(keyboardLabel))
+                label = keyboardLabel;
         }
 
         inputKeyText.text = label;
@@ -224,6 +233,7 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 return "";
 
             bool skipDisabledMaps = true;
+
             var aem = rewiredPlayer.controllers.maps.GetFirstElementMapWithAction(
                 actionName,
                 skipDisabledMaps

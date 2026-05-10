@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 9061022915423477029}
   - component: {fileID: 470093760912153796}
   - component: {fileID: 5308763098479092007}
-  m_Layer: 7
+  - component: {fileID: 3565287960304525798}
+  m_Layer: 24
   m_Name: Skill_Object Energy Ball
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,12 +49,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   whatIsEnemy:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 4194304
   targetCheck: {fileID: 9061022915423477029}
   checkRadius: 1.26
   lifeTime: 0.89
-  hitRadius: 1.23
+  hitRadius: 0.5
   destroyOnHit: 1
+  debugHits: 1
   hitVfxPrefab: {fileID: 6112724607161003390, guid: 2ff655ead75ad8d459bb63444999e979, type: 3}
   destroyVfxPrefab: {fileID: 0}
   hitVfxOffset: {x: 0, y: 0, z: 0}
@@ -93,6 +95,33 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 1.09
+--- !u!50 &3565287960304525798
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 453335324129619194}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
 --- !u!1 &1750497179354280305
 GameObject:
   m_ObjectHideFlags: 0
@@ -166,7 +195,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1831899741
   m_SortingLayer: 4
-  m_SortingOrder: -1
+  m_SortingOrder: 0
   m_Sprite: {fileID: -7585660988095454295, guid: dd8c6ba6cafaa214aaea2db2c522ec0a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

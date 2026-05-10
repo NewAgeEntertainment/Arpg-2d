@@ -78,22 +78,26 @@ public abstract class PlayerState : EntityState
         bool skillModifierHeld = rPlayer.GetButton(SkillModifierAction);
 
 
-        // ----- Standalone Dash (no modifier) -----
-        if (rPlayer.GetButtonDown(DashAction))
+        // ----- Standalone Dash -----
+        // Block dash when SkillModifier is held.
+        // This lets controller use SkillModifier + Dash button for a skill slot.
+        if (!skillModifierHeld && rPlayer.GetButtonDown(DashAction))
         {
             if (skillManager != null && skillManager.dash != null && skillManager.dash.CanUseSkillCheck(out _))
                 stateMachine.ChangeState(player.dashState);
         }
 
-        // Optional: Thrust on its own button too (keep if you like; otherwise remove)
-        if (rPlayer.GetButtonDown(ThrustAction))
+        // ----- Standalone Thrust -----
+        // Block thrust when SkillModifier is held.
+        if (!skillModifierHeld && rPlayer.GetButtonDown(ThrustAction))
         {
             if (skillManager != null && skillManager.thrust != null && skillManager.thrust.CanUseSkillCheck(out _))
                 stateMachine.ChangeState(player.thrustState);
         }
 
-        // Example instant skill (no state): shard fires right away
-        if (rPlayer.GetButtonDown(ShardAction))
+        // ----- Standalone Shard -----
+        // Block shard when SkillModifier is held.
+        if (!skillModifierHeld && rPlayer.GetButtonDown(ShardAction))
         {
             if (skillManager != null && skillManager.shard != null)
                 skillManager.shard.TryUseSkill();

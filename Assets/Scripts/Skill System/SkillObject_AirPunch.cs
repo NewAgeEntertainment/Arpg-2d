@@ -5,11 +5,15 @@ public class SkillObject_AirPunch : SkillObject_Base
     private Vector2 moveDirection;
     private float speed;
     private float lifeTimer;
+    private bool alreadyHit;
 
     [Header("Air Punch Object")]
     [SerializeField] private float lifeTime = 1.25f;
     [SerializeField] private float hitRadius = 0.5f;
     [SerializeField] private bool destroyOnHit = true;
+
+    [Header("Debug")]
+    [SerializeField] private bool debugHits = true;
 
     [Header("VFX")]
     [SerializeField] private GameObject hitVfxPrefab;
@@ -25,6 +29,7 @@ public class SkillObject_AirPunch : SkillObject_Base
         moveDirection = direction.sqrMagnitude > 0.01f ? direction.normalized : Vector2.down;
         speed = projectileSpeed;
         lifeTimer = lifeTime;
+        alreadyHit = false;
 
         transform.right = moveDirection;
 
@@ -46,16 +51,68 @@ public class SkillObject_AirPunch : SkillObject_Base
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        IDamageable damageable = collision.GetComponent<IDamageable>();
+        if (debugHits)
+        {
+            Debug.Log(
+                $"[AirPunch] Trigger hit: {collision.name}, " +
+                $"Layer={LayerMask.LayerToName(collision.gameObject.layer)}, " +
+                $"IsTrigger={collision.isTrigger}"
+            );
+        }
 
-        if (damageable == null)
+        if (alreadyHit)
             return;
 
-        DamageEnemiesInRadius(transform, hitRadius);
+        if (!IsInEnemyLayer(collision))
+        {
+            if (debugHits)
+                Debug.Log($"[AirPunch] Ignored: {collision.name} is not in whatIsEnemy mask.");
+
+            return;
+        }
+
+        IDamageable damageable =
+            collision.GetComponent<IDamageable>() ??
+            collision.GetComponentInParent<IDamageable>();
+
+        if (damageable == null)
+        {
+            if (debugHits)
+                Debug.LogWarning($"[AirPunch] Hit {collision.name}, but no IDamageable found on it or parent.");
+
+            return;
+        }
+
+        Entity_StatusHandler statusHandler =
+            collision.GetComponent<Entity_StatusHandler>() ??
+            collision.GetComponentInParent<Entity_StatusHandler>();
+
+        AttackData attackData = playerStats.GetAttackData(damageScaleData);
+
+        damageable.TakeDamage(
+            attackData.physicalDamage,
+            attackData.elementalDamage,
+            attackData.element,
+            transform
+        );
+
+        if (attackData.element != ElementType.None)
+            statusHandler?.ApplyStatusEffect(attackData.element, attackData.effectData);
+
+        alreadyHit = true;
+
         SpawnHitVfx();
+
+        if (debugHits)
+            Debug.Log($"[AirPunch] Damaged target through {collision.name}.");
 
         if (destroyOnHit)
             Destroy(gameObject);
+    }
+
+    private bool IsInEnemyLayer(Collider2D collision)
+    {
+        return (whatIsEnemy.value & (1 << collision.gameObject.layer)) != 0;
     }
 
     private void SpawnHitVfx()

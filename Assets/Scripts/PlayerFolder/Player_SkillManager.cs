@@ -338,73 +338,56 @@ public class Player_SkillManager : MonoBehaviour
 
 
     private void TryUseAssignedSlot(
-    UISkillSlotId slotId,
-    string keyboardActionName,
-    string controllerActionName)
+     UISkillSlotId slotId,
+     string keyboardActionName,
+     string controllerActionName)
     {
-        bool pressed = false;
-
         if (rPlayer == null)
             TryCacheRewired();
 
         if (rPlayer == null)
             return;
 
-        bool keyboardPressed =
+        bool keyboardMode =
+            InputDeviceModeManager.Instance == null ||
+            InputDeviceModeManager.Instance.IsKeyboard;
+
+        bool controllerMode =
+            InputDeviceModeManager.Instance != null &&
+            InputDeviceModeManager.Instance.IsController;
+
+        bool pressed = false;
+
+        // Keyboard Mode: single direct key
+        if (keyboardMode &&
             !string.IsNullOrWhiteSpace(keyboardActionName) &&
-            rPlayer.GetButtonDown(keyboardActionName);
-
-        bool controllerPressed =
-            !string.IsNullOrWhiteSpace(controllerActionName) &&
-            rPlayer.GetButtonDown(controllerActionName);
-
-        bool modifierHeld =
-            !string.IsNullOrWhiteSpace(skillModifierAction) &&
-            rPlayer.GetButton(skillModifierAction);
-
-        if (SexyTimeLogic.isSexyTimeGoingOn)
+            rPlayer.GetButtonDown(keyboardActionName))
         {
-            //Debug.Log(
-            //    $"[SkillManager] SexyTime input check. Slot={slotId}, " +
-            //    $"KeyboardAction={keyboardActionName}, KeyboardPressed={keyboardPressed}, " +
-            //    $"ControllerAction={controllerActionName}, ControllerPressed={controllerPressed}, " +
-            //    $"ModifierHeld={modifierHeld}"
-            //);
+            pressed = true;
         }
 
-        // Keyboard direct skill use
-        if (keyboardPressed)
+        // Controller Mode: SkillModifier + controller skill button
+        if (!pressed &&
+            controllerMode &&
+            !string.IsNullOrWhiteSpace(controllerActionName) &&
+            rPlayer.GetButton(skillModifierAction) &&
+            rPlayer.GetButtonDown(controllerActionName))
+        {
             pressed = true;
-
-        // Controller modifier skill use
-        if (!pressed && modifierHeld && controllerPressed)
-            pressed = true;
+        }
 
         if (!pressed)
             return;
 
         UI_SkillSlot uiSlot = GetUISkillSlotById(slotId);
 
-        if (uiSlot == null)
-        {
-            Debug.LogWarning($"[SkillManager] No UI slot found for {slotId}.");
-            return;
-        }
-
-        Debug.Log($"[SkillManager] Found slot {slotId}. HasSkill={uiSlot.HasSkill}, Data={(uiSlot.Data != null ? uiSlot.Data.displayName : "NULL")}");
-
-        if (!uiSlot.HasSkill || uiSlot.Data == null)
+        if (uiSlot == null || !uiSlot.HasSkill || uiSlot.Data == null)
             return;
 
         Skill_Base runtimeSkill = GetSkillByType(uiSlot.Data.skillType);
 
         if (runtimeSkill == null)
-        {
-            Debug.LogWarning($"[SkillManager] Runtime skill missing for {uiSlot.Data.skillType}.");
             return;
-        }
-
-        Debug.Log($"[SkillManager] Trying to use skill: {uiSlot.Data.displayName}");
 
         switch (uiSlot.Data.skillType)
         {

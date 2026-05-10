@@ -16,6 +16,10 @@ public class SkillObject_Sword : SkillObject_Base
     private bool isLaunchedForward;
     private Vector2 launchDirection;
 
+    [Header("Sword Hit")]
+    [SerializeField] private float hitRadius = 1f;
+    [SerializeField] private bool debugHits = true;
+
     protected virtual void Update()
     {
         if (playerTransform == null)
@@ -113,7 +117,24 @@ public class SkillObject_Sword : SkillObject_Base
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
-        DamageEnemiesInRadius(transform, 1);
+        if (debugHits)
+        {
+            Debug.Log(
+                $"[Sword] Trigger hit: {collision.name}, " +
+                $"Layer={LayerMask.LayerToName(collision.gameObject.layer)}, " +
+                $"IsTrigger={collision.isTrigger}"
+            );
+        }
+
+        if (!IsInEnemyLayer(collision))
+        {
+            if (debugHits)
+                Debug.Log($"[Sword] Ignored: {collision.name} is not in whatIsEnemy mask.");
+
+            return;
+        }
+
+        DamageCollider(collision);
     }
 
     private void HandleStopping()
@@ -132,8 +153,78 @@ public class SkillObject_Sword : SkillObject_Base
 
         if (attackTimer < 0)
         {
-            DamageEnemiesInRadius(transform, 1);
+            DamageEnemiesInSwordRadius();
             attackTimer = 1f / attacksPerSecond;
         }
+    }
+
+    private void DamageEnemiesInSwordRadius()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            transform.position,
+            hitRadius,
+            whatIsEnemy
+        );
+
+        foreach (Collider2D hit in hits)
+        {
+            if (hit == null)
+                continue;
+
+            DamageCollider(hit);
+        }
+    }
+
+    private void DamageCollider(Collider2D collision)
+    {
+        IDamageable damageable =
+            collision.GetComponent<IDamageable>() ??
+            collision.GetComponentInParent<IDamageable>();
+
+        if (damageable == null)
+        {
+            if (debugHits)
+                Debug.LogWarning($"[Sword] Hit {collision.name}, but no IDamageable found on it or parent.");
+
+            return;
+        }
+
+        if (playerStats == null || damageScaleData == null)
+        {
+            Debug.LogWarning("[Sword] Missing playerStats or damageScaleData.");
+            return;
+        }
+
+        AttackData attackData = playerStats.GetAttackData(damageScaleData);
+
+        damageable.TakeDamage(
+            attackData.physicalDamage,
+            attackData.elementalDamage,
+            attackData.element,
+            transform
+        );
+
+        Entity_StatusHandler statusHandler =
+            collision.GetComponent<Entity_StatusHandler>() ??
+            collision.GetComponentInParent<Entity_StatusHandler>();
+
+        if (attackData.element != ElementType.None)
+            statusHandler?.ApplyStatusEffect(attackData.element, attackData.effectData);
+
+        usedElement = attackData.element;
+
+        if (debugHits)
+            Debug.Log($"[Sword] Damaged target through {collision.name}.");
+    }
+
+    private bool IsInEnemyLayer(Collider2D collision)
+    {
+        return (whatIsEnemy.value & (1 << collision.gameObject.layer)) != 0;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, hitRadius);
     }
 }

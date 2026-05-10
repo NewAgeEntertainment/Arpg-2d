@@ -5,6 +5,7 @@ using System.Collections;
 using System.Reflection;
 using Rewired;
 using UnityEngine.Audio;
+using TMPro;
 
 #if REWIRED
 using Rewired.UI.ControlMapper;
@@ -20,6 +21,13 @@ public class UI_Options : MonoBehaviour
     [Header("Option Toggles")]
     [SerializeField] private Toggle healthBarToggle;
     [SerializeField] private Toggle manaBarToggle;
+
+    [Header("Input Mode Switch")]
+    [Tooltip("OFF = Keyboard, ON = Controller")]
+    [SerializeField] private Toggle controllerModeToggle;
+
+    [Tooltip("Optional text that displays the current input mode.")]
+    [SerializeField] private TextMeshProUGUI inputModeText;
 
     [Header("Audio Sliders")]
     [SerializeField] private Slider bgmSlider;
@@ -45,13 +53,13 @@ public class UI_Options : MonoBehaviour
     [SerializeField] private Button controlsButton;
 
 #if REWIRED
-    [Tooltip("Existing ControlMapper in scene (optional).")]
+    [Tooltip("Existing ControlMapper in scene optional.")]
     [SerializeField] private ControlMapper controlMapper;
 
-    [Tooltip("Prefab with ControlMapper (used if none found in scene).")]
+    [Tooltip("Prefab with ControlMapper used if none found in scene.")]
     [SerializeField] private GameObject controlMapperPrefab;
 
-    [Tooltip("UI element to reselect when Options is re-shown (Title screen path).")]
+    [Tooltip("UI element to reselect when Options is re-shown.")]
     [SerializeField] private Selectable defaultSelectable;
 #endif
 
@@ -67,13 +75,11 @@ public class UI_Options : MonoBehaviour
     private const float MinMixerDb = -80f;
     private const float MaxMixerDb = 0f;
 
-    // Applied values (the currently saved/committed settings)
     private float appliedBgm = 0.75f;
     private float appliedSfx = 0.75f;
     private bool appliedHealthBar = true;
     private bool appliedManaBar = true;
 
-    // Pending values (what the user is changing right now)
     private float pendingBgm = 0.75f;
     private float pendingSfx = 0.75f;
     private bool pendingHealthBar = true;
@@ -85,10 +91,28 @@ public class UI_Options : MonoBehaviour
     {
         player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
 
-        if (healthBarToggle != null) healthBarToggle.onValueChanged.AddListener(OnHealthToggleChanged);
-        if (manaBarToggle != null) manaBarToggle.onValueChanged.AddListener(OnManaToggleChanged);
-        if (controlsButton != null) controlsButton.onClick.AddListener(OnClickOpenControlMapper);
-        if (applyButton != null) applyButton.onClick.AddListener(ApplyChanges);
+        if (healthBarToggle != null)
+            healthBarToggle.onValueChanged.AddListener(OnHealthToggleChanged);
+
+        if (manaBarToggle != null)
+            manaBarToggle.onValueChanged.AddListener(OnManaToggleChanged);
+
+        if (controllerModeToggle != null)
+        {
+            controllerModeToggle.onValueChanged.RemoveListener(OnControllerModeToggleChanged);
+            controllerModeToggle.onValueChanged.AddListener(OnControllerModeToggleChanged);
+            Debug.Log("[UI_Options] Controller mode toggle listener connected.");
+        }
+        else
+        {
+            Debug.LogWarning("[UI_Options] controllerModeToggle is NOT assigned in Inspector.");
+        }
+
+        if (controlsButton != null)
+            controlsButton.onClick.AddListener(OnClickOpenControlMapper);
+
+        if (applyButton != null)
+            applyButton.onClick.AddListener(ApplyChanges);
 
         if (bgmSlider != null)
         {
@@ -105,11 +129,13 @@ public class UI_Options : MonoBehaviour
         }
 
         cg = GetComponent<CanvasGroup>();
-        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+        if (cg == null)
+            cg = gameObject.AddComponent<CanvasGroup>();
 
         LoadAppliedSettings();
         ResetPendingToApplied();
         RefreshControlsFromPending();
+        RefreshInputModeText();
         UpdateApplyButtonState();
     }
 
@@ -117,6 +143,7 @@ public class UI_Options : MonoBehaviour
     {
         TryCacheRewired();
         CacheTitleMenuManager();
+        RefreshInputModeText();
     }
 
     private void OnEnable()
@@ -124,11 +151,12 @@ public class UI_Options : MonoBehaviour
 #if REWIRED
         HookMapperEvents(true);
 #endif
+
         CacheTitleMenuManager();
 
-        // Every time options opens, start from last applied values
         ResetPendingToApplied();
         RefreshControlsFromPending();
+        RefreshInputModeText();
         UpdateApplyButtonState();
     }
 
@@ -141,18 +169,27 @@ public class UI_Options : MonoBehaviour
 
     private void Update()
     {
-        if (rPlayer == null) { TryCacheRewired(); return; }
-        if (rPlayer.GetButtonDown(cancelAction)) HandleCancel();
+        if (rPlayer == null)
+        {
+            TryCacheRewired();
+            return;
+        }
+
+        if (rPlayer.GetButtonDown(cancelAction))
+            HandleCancel();
     }
 
     public void OpenOptions()
     {
-        if (!gameObject.activeSelf) gameObject.SetActive(true);
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
         BringToFront();
         SetInteractable(true);
 
         ResetPendingToApplied();
         RefreshControlsFromPending();
+        RefreshInputModeText();
         UpdateApplyButtonState();
 
         Debug.Log("[UI_Options] Options panel opened.");
@@ -184,13 +221,24 @@ public class UI_Options : MonoBehaviour
         Debug.Log("[UI_Options] Closed.");
     }
 
+    public bool IsOpen
+    {
+        get
+        {
+            if (!gameObject.activeInHierarchy)
+                return false;
+
+            return cg == null ? true : cg.blocksRaycasts;
+        }
+    }
+
     private void OnHealthToggleChanged(bool isOn)
     {
-        if (suppressCallbacks) return;
+        if (suppressCallbacks)
+            return;
 
         pendingHealthBar = isOn;
 
-        // Preview immediately
         if (player != null && player.health != null)
             player.health.EnableHealthBar(isOn);
 
@@ -199,33 +247,24 @@ public class UI_Options : MonoBehaviour
 
     private void OnManaToggleChanged(bool isOn)
     {
-        if (suppressCallbacks) return;
+        if (suppressCallbacks)
+            return;
 
         pendingManaBar = isOn;
 
-        // Preview immediately
         if (player != null && player.mana != null)
             player.mana.EnableManaBar(isOn);
 
         UpdateApplyButtonState();
     }
 
-    public bool IsOpen
-    {
-        get
-        {
-            if (!gameObject.activeInHierarchy) return false;
-            return cg == null ? true : cg.blocksRaycasts;
-        }
-    }
-
     private void OnBgmSliderChanged(float value)
     {
-        if (suppressCallbacks) return;
+        if (suppressCallbacks)
+            return;
 
         pendingBgm = value;
 
-        // Preview immediately, but do not save yet
         if (AudioManager.instance != null)
             AudioManager.instance.SetBgmVolume(value, saveToPrefs: false);
         else
@@ -236,11 +275,11 @@ public class UI_Options : MonoBehaviour
 
     private void OnSfxSliderChanged(float value)
     {
-        if (suppressCallbacks) return;
+        if (suppressCallbacks)
+            return;
 
         pendingSfx = value;
 
-        // Preview immediately, but do not save yet
         if (AudioManager.instance != null)
             AudioManager.instance.SetSfxVolume(value, saveToPrefs: false);
         else
@@ -297,6 +336,7 @@ public class UI_Options : MonoBehaviour
 
         ApplyGameplayToggles(appliedHealthBar, appliedManaBar);
         RefreshControlsFromPending();
+        RefreshInputModeText();
         UpdateApplyButtonState();
     }
 
@@ -348,7 +388,8 @@ public class UI_Options : MonoBehaviour
 
     private void UpdateApplyButtonState()
     {
-        if (applyButton == null) return;
+        if (applyButton == null)
+            return;
 
         bool hasChanges =
             !Mathf.Approximately(pendingBgm, appliedBgm) ||
@@ -378,13 +419,95 @@ public class UI_Options : MonoBehaviour
         audioMixer.SetFloat(parameterName, db);
     }
 
+    // -------------------------------------------------------
+    // Input Mode Switch
+    // -------------------------------------------------------
+
+    private void OnControllerModeToggleChanged(bool controllerMode)
+    {
+        Debug.Log($"[Options Toggle] Controller Mode Toggle Changed: {controllerMode}");
+
+        if (suppressCallbacks)
+        {
+            Debug.Log("[Options Toggle] Ignored because suppressCallbacks is true.");
+            return;
+        }
+
+        if (InputDeviceModeManager.Instance == null)
+        {
+            Debug.LogWarning("[UI_Options] No InputDeviceModeManager found in scene.");
+            return;
+        }
+
+        if (controllerMode)
+            InputDeviceModeManager.Instance.SetControllerMode();
+        else
+            InputDeviceModeManager.Instance.SetKeyboardMode();
+
+        RefreshInputModeText();
+        RefreshSkillSlotLabels();
+
+        Debug.Log($"[UI_Options] Input mode changed to {InputDeviceModeManager.Instance.CurrentMode}.");
+    }
+
+    private void RefreshInputModeText()
+    {
+        if (InputDeviceModeManager.Instance == null)
+        {
+            if (inputModeText != null)
+                inputModeText.text = "Input: Unknown";
+
+            return;
+        }
+
+        bool isController = InputDeviceModeManager.Instance.IsController;
+
+        if (inputModeText != null)
+            inputModeText.text = isController ? "Input: Controller" : "Input: Keyboard";
+
+        if (controllerModeToggle != null)
+        {
+            suppressCallbacks = true;
+            controllerModeToggle.SetIsOnWithoutNotify(isController);
+            suppressCallbacks = false;
+        }
+    }
+
+    private void RefreshSkillSlotLabels()
+    {
+        if (UI.Instance != null && UI.Instance.inGameUI != null)
+            UI.Instance.inGameUI.RefreshAllSkillSlotLabels();
+
+        SexyTimeUIController sexUI =
+            FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+
+        if (sexUI == null || sexUI.Hotbar == null || sexUI.Hotbar.Slots == null)
+            return;
+
+        Player playerRef = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (playerRef == null || playerRef.skillManager == null)
+            return;
+
+        foreach (UI_SkillSlot slot in sexUI.Hotbar.Slots)
+        {
+            if (slot != null)
+                slot.RefreshBindingLabel(playerRef.skillManager);
+        }
+    }
+
+    // -------------------------------------------------------
+    // Rewired Control Mapper
+    // -------------------------------------------------------
+
     private void OnClickOpenControlMapper()
     {
 #if !REWIRED
         Debug.LogError("[UI_Options] Rewired not present. Cannot open Control Mapper.");
         return;
 #else
-        var cm = EnsureControlMapper();
+        ControlMapper cm = EnsureControlMapper();
+
         if (cm == null)
         {
             Debug.LogError("[UI_Options] ControlMapper not found and no prefab assigned.");
@@ -393,12 +516,21 @@ public class UI_Options : MonoBehaviour
 
         HideOptionsForMapper(true);
 
-        try { cm.Open(); }
+        try
+        {
+            cm.Open();
+        }
         catch
         {
-            var m = cm.GetType().GetMethod("Open", BindingFlags.Public | BindingFlags.Instance);
-            if (m != null) m.Invoke(cm, null);
-            else cm.gameObject.SetActive(true);
+            MethodInfo m = cm.GetType().GetMethod(
+                "Open",
+                BindingFlags.Public | BindingFlags.Instance
+            );
+
+            if (m != null)
+                m.Invoke(cm, null);
+            else
+                cm.gameObject.SetActive(true);
         }
 #endif
     }
@@ -406,27 +538,33 @@ public class UI_Options : MonoBehaviour
 #if REWIRED
     private ControlMapper EnsureControlMapper()
     {
-        if (controlMapper != null) return controlMapper;
+        if (controlMapper != null)
+            return controlMapper;
 
 #if UNITY_2022_1_OR_NEWER
         controlMapper = FindFirstObjectByType<ControlMapper>(FindObjectsInactive.Include);
 #else
         controlMapper = FindObjectOfType<ControlMapper>(true);
 #endif
-        if (controlMapper != null) return controlMapper;
+
+        if (controlMapper != null)
+            return controlMapper;
 
         if (controlMapperPrefab != null)
         {
-            var go = Instantiate(controlMapperPrefab);
+            GameObject go = Instantiate(controlMapperPrefab);
             controlMapper = go.GetComponentInChildren<ControlMapper>(true);
         }
+
         return controlMapper;
     }
 
     private void HookMapperEvents(bool hook)
     {
-        var cm = EnsureControlMapper();
-        if (cm == null) return;
+        ControlMapper cm = EnsureControlMapper();
+
+        if (cm == null)
+            return;
 
         if (hook)
         {
@@ -447,10 +585,7 @@ public class UI_Options : MonoBehaviour
 
     private void OnMapperClosed()
     {
-        if (UI.Instance != null && UI.Instance.inGameUI != null)
-        {
-            UI.Instance.inGameUI.RefreshAllSkillSlotLabels();
-        }
+        RefreshSkillSlotLabels();
 
         if (IsTitleScreenContext())
         {
@@ -466,6 +601,7 @@ public class UI_Options : MonoBehaviour
         {
             HideOptionsForMapper(false);
             BringToFront();
+
             if (defaultSelectable != null && EventSystem.current != null)
                 StartCoroutine(SelectNextFrame(defaultSelectable.gameObject));
         }
@@ -474,7 +610,14 @@ public class UI_Options : MonoBehaviour
 
     private void TryCacheRewired()
     {
-        try { rPlayer = ReInput.players.GetPlayer(playerID); } catch { }
+        try
+        {
+            rPlayer = ReInput.players.GetPlayer(playerID);
+        }
+        catch
+        {
+            rPlayer = null;
+        }
     }
 
     private void CacheTitleMenuManager()
@@ -533,6 +676,8 @@ public class UI_Options : MonoBehaviour
     private IEnumerator SelectNextFrame(GameObject go)
     {
         yield return null;
-        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(go);
+
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(go);
     }
 }

@@ -27,6 +27,14 @@ public class Player_DashState : PlayerState
 
         base.Enter();
 
+
+        if (rPlayer != null && rPlayer.GetButton(SkillModifierAction))
+        {
+            Debug.Log("[Dash] Blocked because SkillModifier is held.");
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+
         // -------------------------------------------------------
         // DASH DIRECTION
         // -------------------------------------------------------

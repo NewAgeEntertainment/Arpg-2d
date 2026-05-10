@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 147249115611855489}
   - component: {fileID: 4502722857356206910}
   - component: {fileID: 342492179000675211}
-  m_Layer: 7
+  m_Layer: 24
   m_Name: SkillObject_Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -111,9 +111,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   whatIsEnemy:
     serializedVersion: 2
-    m_Bits: 4194560
+    m_Bits: 4194304
   targetCheck: {fileID: 6338407599517581773}
   checkRadius: 1.62
+  hitRadius: 1
+  debugHits: 1
 --- !u!1 &5331639984522489117
 GameObject:
   m_ObjectHideFlags: 0
