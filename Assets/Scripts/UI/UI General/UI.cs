@@ -470,8 +470,15 @@ public class UI : MonoBehaviour
         if (mainMenuPanel != null && mainMenuPanel.activeSelf)
             ForceRefreshMenuBars();
 
-        // 🔹 NEW: sync timer from the tracker after every scene load
         ResyncPlayTimeFromTracker();
+
+        // Load input mode selected from title/main menu.
+        if (InputDeviceModeManager.Instance != null)
+            InputDeviceModeManager.Instance.LoadMode();
+
+        // Refresh in-game hotbar labels after loading into gameplay.
+        if (inGameUI != null)
+            inGameUI.RefreshAllSkillSlotLabels();
     }
 
 

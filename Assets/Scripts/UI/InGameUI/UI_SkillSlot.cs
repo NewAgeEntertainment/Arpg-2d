@@ -67,9 +67,15 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private void OnEnable()
     {
-        var mgr = FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
-        RefreshVisuals(mgr);
+        InputDeviceModeManager.OnInputDeviceModeChanged += HandleInputDeviceModeChanged;
+
+        Player_SkillManager manager =
+            FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+
+        if (manager != null)
+            RefreshBindingLabel(manager);
     }
+
 
     // ------------ Public API ------------
 
@@ -350,6 +356,23 @@ public class UI_SkillSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     }
 
 
+    private void OnDisable()
+    {
+        InputDeviceModeManager.OnInputDeviceModeChanged -= HandleInputDeviceModeChanged;
+    }
+
+    private void HandleInputDeviceModeChanged(InputDeviceMode mode)
+    {
+        Player_SkillManager manager =
+            FindFirstObjectByType<Player_SkillManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
+            return;
+
+        RefreshBindingLabel(manager);
+
+        Debug.Log($"[UI_SkillSlot] Refreshed binding label for {slotId}: {mode}");
+    }
 
     private IEnumerator PulseCo(float seconds)
     {

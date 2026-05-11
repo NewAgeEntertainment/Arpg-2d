@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public enum InputDeviceMode
@@ -32,10 +32,19 @@ public class InputDeviceModeManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        LoadMode();
+    }
+
+    public void LoadMode()
+    {
         currentMode = (InputDeviceMode)PlayerPrefs.GetInt(
             PrefKey,
             (int)InputDeviceMode.Keyboard
         );
+
+        Debug.Log($"[InputDeviceMode] Loaded mode: {currentMode}");
+
+        OnInputDeviceModeChanged?.Invoke(currentMode);
     }
 
     public void SetKeyboardMode()
@@ -48,18 +57,21 @@ public class InputDeviceModeManager : MonoBehaviour
         SetMode(InputDeviceMode.Controller);
     }
 
-    public void ToggleMode()
+    // ✅ Use this directly from your Toggle.
+    // Toggle OFF = Keyboard
+    // Toggle ON = Controller
+    public void SetModeFromToggle(bool isController)
     {
-        SetMode(currentMode == InputDeviceMode.Keyboard
-            ? InputDeviceMode.Controller
-            : InputDeviceMode.Keyboard);
+        Debug.Log($"[InputDeviceMode] Toggle changed. IsController={isController}");
+
+        if (isController)
+            SetControllerMode();
+        else
+            SetKeyboardMode();
     }
 
     public void SetMode(InputDeviceMode mode)
     {
-        if (currentMode == mode)
-            return;
-
         currentMode = mode;
 
         PlayerPrefs.SetInt(PrefKey, (int)currentMode);

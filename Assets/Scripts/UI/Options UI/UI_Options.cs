@@ -87,6 +87,10 @@ public class UI_Options : MonoBehaviour
 
     private bool suppressCallbacks = false;
 
+    // Backup polling for the Keyboard/Controller toggle.
+    private bool inputToggleInitialized = false;
+    private bool lastControllerToggleValue = false;
+
     private void Awake()
     {
         player = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
@@ -97,16 +101,7 @@ public class UI_Options : MonoBehaviour
         if (manaBarToggle != null)
             manaBarToggle.onValueChanged.AddListener(OnManaToggleChanged);
 
-        if (controllerModeToggle != null)
-        {
-            controllerModeToggle.onValueChanged.RemoveListener(OnControllerModeToggleChanged);
-            controllerModeToggle.onValueChanged.AddListener(OnControllerModeToggleChanged);
-            Debug.Log("[UI_Options] Controller mode toggle listener connected.");
-        }
-        else
-        {
-            Debug.LogWarning("[UI_Options] controllerModeToggle is NOT assigned in Inspector.");
-        }
+        ConnectInputModeToggle();
 
         if (controlsButton != null)
             controlsButton.onClick.AddListener(OnClickOpenControlMapper);
@@ -153,6 +148,7 @@ public class UI_Options : MonoBehaviour
 #endif
 
         CacheTitleMenuManager();
+        ConnectInputModeToggle();
 
         ResetPendingToApplied();
         RefreshControlsFromPending();
@@ -170,13 +166,12 @@ public class UI_Options : MonoBehaviour
     private void Update()
     {
         if (rPlayer == null)
-        {
             TryCacheRewired();
-            return;
-        }
 
-        if (rPlayer.GetButtonDown(cancelAction))
+        if (rPlayer != null && rPlayer.GetButtonDown(cancelAction))
             HandleCancel();
+
+        PollInputModeToggle();
     }
 
     public void OpenOptions()
@@ -187,9 +182,18 @@ public class UI_Options : MonoBehaviour
         BringToFront();
         SetInteractable(true);
 
+        ConnectInputModeToggle();
+
         ResetPendingToApplied();
         RefreshControlsFromPending();
+
+        if (InputDeviceModeManager.Instance != null)
+            InputDeviceModeManager.Instance.LoadMode();
+        else
+            Debug.LogWarning("[UI_Options] InputDeviceModeManager is missing.");
+
         RefreshInputModeText();
+        RefreshSkillSlotLabels();
         UpdateApplyButtonState();
 
         Debug.Log("[UI_Options] Options panel opened.");
@@ -229,6 +233,138 @@ public class UI_Options : MonoBehaviour
                 return false;
 
             return cg == null ? true : cg.blocksRaycasts;
+        }
+    }
+
+    private void ConnectInputModeToggle()
+    {
+        if (controllerModeToggle == null)
+        {
+            Debug.LogWarning("[UI_Options] controllerModeToggle is NOT assigned in Inspector.");
+            return;
+        }
+
+        controllerModeToggle.onValueChanged.RemoveListener(OnControllerModeToggleChanged);
+        controllerModeToggle.onValueChanged.AddListener(OnControllerModeToggleChanged);
+
+        lastControllerToggleValue = controllerModeToggle.isOn;
+        inputToggleInitialized = true;
+
+        Debug.Log($"[UI_Options] Controller mode toggle listener connected to: {controllerModeToggle.name}");
+    }
+
+    private void PollInputModeToggle()
+    {
+        if (controllerModeToggle == null)
+            return;
+
+        bool currentValue = controllerModeToggle.isOn;
+
+        if (!inputToggleInitialized)
+        {
+            lastControllerToggleValue = currentValue;
+            inputToggleInitialized = true;
+            return;
+        }
+
+        if (currentValue == lastControllerToggleValue)
+            return;
+
+        lastControllerToggleValue = currentValue;
+
+        Debug.Log($"[UI_Options] Poll detected input toggle changed: {currentValue}");
+
+        ApplyInputModeFromToggle(currentValue);
+    }
+
+    public void OnControllerModeToggleChanged(bool controllerMode)
+    {
+        Debug.Log($"[Options Toggle] Controller Mode Toggle Changed: {controllerMode}");
+
+        lastControllerToggleValue = controllerMode;
+        inputToggleInitialized = true;
+
+        ApplyInputModeFromToggle(controllerMode);
+    }
+
+    private void ApplyInputModeFromToggle(bool controllerMode)
+    {
+        if (InputDeviceModeManager.Instance == null)
+        {
+            Debug.LogWarning("[UI_Options] No InputDeviceModeManager found in scene.");
+            return;
+        }
+
+        if (controllerMode)
+            InputDeviceModeManager.Instance.SetControllerMode();
+        else
+            InputDeviceModeManager.Instance.SetKeyboardMode();
+
+        if (inputModeText != null)
+            inputModeText.text = controllerMode ? "Input: Controller" : "Input: Keyboard";
+
+        if (controllerModeToggle != null && controllerModeToggle.graphic != null)
+            controllerModeToggle.graphic.gameObject.SetActive(controllerMode);
+
+        RefreshSkillSlotLabels();
+
+        Debug.Log($"[UI_Options] InputDeviceManager changed to: {InputDeviceModeManager.Instance.CurrentMode}");
+    }
+
+    private void RefreshInputModeText()
+    {
+        if (InputDeviceModeManager.Instance == null)
+        {
+            if (inputModeText != null)
+                inputModeText.text = "Input: Unknown";
+
+            Debug.LogWarning("[UI_Options] RefreshInputModeText failed: InputDeviceModeManager missing.");
+            return;
+        }
+
+        bool isController = InputDeviceModeManager.Instance.IsController;
+
+        if (inputModeText != null)
+            inputModeText.text = isController ? "Input: Controller" : "Input: Keyboard";
+
+        if (controllerModeToggle != null)
+        {
+            suppressCallbacks = true;
+
+            controllerModeToggle.SetIsOnWithoutNotify(isController);
+
+            lastControllerToggleValue = isController;
+            inputToggleInitialized = true;
+
+            if (controllerModeToggle.graphic != null)
+                controllerModeToggle.graphic.gameObject.SetActive(isController);
+
+            suppressCallbacks = false;
+        }
+
+        Debug.Log($"[UI_Options] Input switch synced. Mode={(isController ? "Controller" : "Keyboard")}, ToggleIsOn={(controllerModeToggle != null && controllerModeToggle.isOn)}");
+    }
+
+    private void RefreshSkillSlotLabels()
+    {
+        if (UI.Instance != null && UI.Instance.inGameUI != null)
+            UI.Instance.inGameUI.RefreshAllSkillSlotLabels();
+
+        SexyTimeUIController sexUI =
+            FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
+
+        if (sexUI == null || sexUI.Hotbar == null || sexUI.Hotbar.Slots == null)
+            return;
+
+        Player playerRef = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
+
+        if (playerRef == null || playerRef.skillManager == null)
+            return;
+
+        foreach (UI_SkillSlot slot in sexUI.Hotbar.Slots)
+        {
+            if (slot != null)
+                slot.RefreshBindingLabel(playerRef.skillManager);
         }
     }
 
@@ -418,87 +554,6 @@ public class UI_Options : MonoBehaviour
 
         audioMixer.SetFloat(parameterName, db);
     }
-
-    // -------------------------------------------------------
-    // Input Mode Switch
-    // -------------------------------------------------------
-
-    private void OnControllerModeToggleChanged(bool controllerMode)
-    {
-        Debug.Log($"[Options Toggle] Controller Mode Toggle Changed: {controllerMode}");
-
-        if (suppressCallbacks)
-        {
-            Debug.Log("[Options Toggle] Ignored because suppressCallbacks is true.");
-            return;
-        }
-
-        if (InputDeviceModeManager.Instance == null)
-        {
-            Debug.LogWarning("[UI_Options] No InputDeviceModeManager found in scene.");
-            return;
-        }
-
-        if (controllerMode)
-            InputDeviceModeManager.Instance.SetControllerMode();
-        else
-            InputDeviceModeManager.Instance.SetKeyboardMode();
-
-        RefreshInputModeText();
-        RefreshSkillSlotLabels();
-
-        Debug.Log($"[UI_Options] Input mode changed to {InputDeviceModeManager.Instance.CurrentMode}.");
-    }
-
-    private void RefreshInputModeText()
-    {
-        if (InputDeviceModeManager.Instance == null)
-        {
-            if (inputModeText != null)
-                inputModeText.text = "Input: Unknown";
-
-            return;
-        }
-
-        bool isController = InputDeviceModeManager.Instance.IsController;
-
-        if (inputModeText != null)
-            inputModeText.text = isController ? "Input: Controller" : "Input: Keyboard";
-
-        if (controllerModeToggle != null)
-        {
-            suppressCallbacks = true;
-            controllerModeToggle.SetIsOnWithoutNotify(isController);
-            suppressCallbacks = false;
-        }
-    }
-
-    private void RefreshSkillSlotLabels()
-    {
-        if (UI.Instance != null && UI.Instance.inGameUI != null)
-            UI.Instance.inGameUI.RefreshAllSkillSlotLabels();
-
-        SexyTimeUIController sexUI =
-            FindFirstObjectByType<SexyTimeUIController>(FindObjectsInactive.Include);
-
-        if (sexUI == null || sexUI.Hotbar == null || sexUI.Hotbar.Slots == null)
-            return;
-
-        Player playerRef = FindFirstObjectByType<Player>(FindObjectsInactive.Include);
-
-        if (playerRef == null || playerRef.skillManager == null)
-            return;
-
-        foreach (UI_SkillSlot slot in sexUI.Hotbar.Slots)
-        {
-            if (slot != null)
-                slot.RefreshBindingLabel(playerRef.skillManager);
-        }
-    }
-
-    // -------------------------------------------------------
-    // Rewired Control Mapper
-    // -------------------------------------------------------
 
     private void OnClickOpenControlMapper()
     {
